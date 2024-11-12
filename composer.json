@@ -1,0 +1,27 @@
+{
+    "name": "unopim/dam",
+    "license": "MIT",
+    "description": "Unopim Digital Asset Management (DAM) is a flexible solution for managing digital assets in the Unopim PIM ecosystem. Key features include file and directory management, asset upload, preview, and deletion, advanced metadata tagging, collaboration tools, and CSV/XLSX export/import for asset assignment.",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Webkul",
+            "email": "support@webkul.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Webkul\\DAM\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\DAM\\Providers\\DAMServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "minimum-stability": "dev"
+}

@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.image-card {
+    @apply h-[206px]
+}
+
+@font-face {
+    font-family: 'UnoPim-DAM';    
+    src:  url('../fonts/UnoPim-DAM.woff?9ynohi') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+  }
+  
+@layer components {
+  [class^="icon-dam-"], [class*=" icon-dam-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'UnoPim-DAM' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+  
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html.dark [class^="icon-dam-"],
+  html.dark [class*=" icon-dam-"]{
+      color: #d1d5db;
+  }
+    
+  .icon-dam-tags:before {
+    content: "\e911";
+  }
+  .icon-dam-properties:before {
+    content: "\e912";
+  }
+  .icon-dam-notes:before {
+    content: "\e913";
+  }
+  .icon-dam-link:before {
+    content: "\e914";
+  }
+  .icon-dam-close:before {
+    content: "\e915";
+  }
+  .icon-dam-folder:before {
+    content: "\e916";
+  }
+  .icon-dam-open:before {
+    content: "\e917";
+  }
+  .icon-dam-menu:before {
+    content: "\e910";
+  }
+  .icon-dam-add-folder:before {
+    content: "\e900";
+  }
+  .icon-dam-audio:before {
+    content: "\e901";
+  }
+  .icon-dam-copy:before {
+    content: "\e902";
+  }
+  .icon-dam-cut:before {
+    content: "\e903";
+  }
+  .icon-dam-delete:before {
+    content: "\e904";
+  }
+  .icon-dam-directory:before {
+    content: "\e905";
+  }
+  .icon-dam-doc:before {
+    content: "\e906";
+  }
+  .icon-dam-download:before {
+    content: "\e907";
+  }
+  .icon-dam-edit:before {
+    content: "\e908";
+  }
+  .icon-dam-full:before {
+    content: "\e909";
+  }
+  .icon-dam-image:before {
+    content: "\e90a";
+  }
+  .icon-dam-preview:before {
+    content: "\e90b";
+  }
+  .icon-dam-rename:before {
+    content: "\e90c";
+  }
+  .icon-dam-upload:before {
+    content: "\e90d";
+  }
+  .icon-dam-video:before {
+    content: "\e90e";
+  }
+  .icon-dam-zip:before {
+    content: "\e90f";
+  }
+
+.custom-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: transparent;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position-x: calc(100% - 10px);
+    background-position-y: 50%;
+}
+.dark .custom-select{
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+}
+
+[dir="rtl"] .custom-select {
+    background-position-x: calc(100% - (100% - 10px));
+}
+
+.label-pending,
+.label-processing,
+.label-closed,
+.label-canceled,
+.label-info,
+.label-fraud,
+.label-completed,
+.label-active {
+    @apply text-[12px] text-white font-semibold py-px px-1.5 max-w-max rounded-[35px];
+}
+
+.history-version {
+    @apply text-[12px] text-white font-semibold py-px px-2.5 max-w-max rounded-[35px];
+    @apply bg-gray-600;
+}
+
+.label-pending {
+@apply bg-yellow-500;
+}
+
+.label-processing{
+@apply bg-cyan-600;
+}
+
+.label-completed,
+.label-active {
+@apply bg-green-600;
+}
+
+.label-closed {
+@apply bg-blue-600;
+}
+
+.label-canceled,
+.label-fraud {
+    @apply bg-red-500;
+}
+
+.label-info {
+    @apply bg-slate-400;
+}
+
+/* status */
+.status-enable {
+    @apply text-green-600;
+}
+
+.status-disable {
+    @apply text-red-600;
+}
+
+.shimmer {
+    animation-duration: 2.2s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: skeleton;
+    animation-timing-function: linear;
+    background: linear-gradient(
+        to right,
+        #f6f6f6 8%,
+        #f0f0f0 18%,
+        #f6f6f6 33%
+    );
+    background-size: 1250px 100%;
+}
+
+.dark .shimmer {
+    background: linear-gradient(
+        to right,
+        #1f2937 8%,
+        #1a2232 18%,
+        #1f2937 33%
+    );
+}
+
+@keyframes skeleton {
+    0% {
+        @apply bg-[-1250px_0];
+    }
+
+    100% {
+        @apply bg-[1250px_0];
+    }
+}
+
+.required:after {
+    @apply content-['*'];
+}
+
+.CodeMirror {
+    @apply !h-[calc(100vh-367px)]
+}
+}
