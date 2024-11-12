@@ -159,17 +159,7 @@ class DirectoryRepository extends Repository
         $sourcePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
         $destinationPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
         if (Storage::disk(Directory::ASSETS_DISK)->exists($sourcePath)) {
-            $mainDirectory = str_replace($sourcePath, $destinationPath, $sourcePath);
-            // dd($sourcePath, $mainDirectory);
-            // Storage::disk(Directory::ASSETS_DISK)->makeDirectory($destinationPath);
-            // $allDirectories = Storage::disk(Directory::ASSETS_DISK)->allDirectories($sourcePath);
-            // // Copy the file
-            // // Recreate subdirectories in the destination folder
-            // foreach ($allDirectories as $directory) {
-            //     $newDirectoryPath = str_replace($sourcePath, $destinationPath, $directory);
-            //     dump($newDirectoryPath);
-            //     Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectoryPath);
-            // }
+            
         }
     }
 

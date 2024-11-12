@@ -168,13 +168,8 @@
                     this.showContextMenuFlag = false;
                     document.removeEventListener('click', this.closeContextMenu);
                 },
-                previewImage(record) {
-                    console.log('preview Image', record);
-                },
                 editImage(recordId) {
-
-                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;
-                    
+                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;                    
                 }
             }
         });

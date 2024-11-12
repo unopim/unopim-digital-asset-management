@@ -6,6 +6,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Http\Middleware\DAM;
 
 class DAMServiceProvider extends ServiceProvider
@@ -26,6 +27,12 @@ class DAMServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'dam');
 
         $this->app->register(EventServiceProvider::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                DamInstaller::class,
+            ]);
+        }
 
         $this->app->bind(
             \Webkul\DataTransfer\Helpers\Exporters\Product\Exporter::class,

@@ -442,7 +442,6 @@ class AssetController extends Controller
             }
         }
 
-        // dd(Storage::disk(Directory::ASSETS_DISK)->download($asset->path));
         return Storage::disk(Directory::ASSETS_DISK)->download($asset->path);
     }
 
