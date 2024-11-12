@@ -26,7 +26,7 @@ UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system buil
   Multi-user reply comments and linked resources allow teams to collaborate effectively on assets.
 
 - **Asset Assignment and Export/Import**  
-  Assign assets to products and categories, with CSV/XLSX export/import for smooth data transfer and management.
+  Assign assets to products and categories, with CSV/XLSX export for smooth data transfer and management.
 
 
 ## Installation with composer
