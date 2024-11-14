@@ -41,7 +41,7 @@ class AssetPropertyDataGrid extends DataGrid
     {
         $this->addColumn([
             'index'      => 'name',
-            'label'      => trans('Name'),
+            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.name'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -50,18 +50,25 @@ class AssetPropertyDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'type',
-            'label'      => trans('Type'),
+            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.type'),
             'type'       => 'string',
             'searchable' => true,
-            'filterable' => true,
+            'filterable' => false,
             'sortable'   => true,
         ]);
 
         $this->addColumn([
             'index'      => 'language',
-            'label'      => trans('Language'),
-            'type'       => 'string',
-            'searchable' => true,
+            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.language'),
+            'type'       => 'dropdown',
+            'options'    => [
+                'type' => 'basic',
+
+                'params' => [
+                    'options' => $this->getActiveLocales(),
+                ],
+            ],
+            'searchable' => false,
             'filterable' => true,
             'sortable'   => true,
             'closure'    => function ($row) {
@@ -73,7 +80,7 @@ class AssetPropertyDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'value',
-            'label'      => trans('Value'),
+            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.value'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -88,11 +95,11 @@ class AssetPropertyDataGrid extends DataGrid
      */
     public function prepareActions()
     {
-        if (bouncer()->hasPermission('dam.assets.edit')) {
+        if (bouncer()->hasPermission('dam.asset.properties.edit')) {
             $this->addAction([
                 'index'  => 'edit',
                 'icon'   => 'icon-edit',
-                'title'  => trans('admin::app.catalog.attributes.index.datagrid.edit'),
+                'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
                 'method' => 'GET',
                 'url'    => function ($row) {
 
@@ -101,11 +108,11 @@ class AssetPropertyDataGrid extends DataGrid
             ]);
         }
 
-        if (bouncer()->hasPermission('dam.assets.delete')) {
+        if (bouncer()->hasPermission('dam.asset.properties.delete')) {
             $this->addAction([
                 'index'  => 'delete',
                 'icon'   => 'icon-delete',
-                'title'  => trans('admin::app.catalog.attributes.index.datagrid.delete'),
+                'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
                 'method' => 'DELETE',
                 'url'    => function ($row) {
                     return route('admin.dam.asset.properties.delete', ['asset_id' => $row->dam_asset_id, 'id' => $row->id]);
@@ -121,13 +128,26 @@ class AssetPropertyDataGrid extends DataGrid
      */
     public function prepareMassActions()
     {
-        if (bouncer()->hasPermission('dam.assets.delete')) {
+        if (bouncer()->hasPermission('dam.asset.properties.delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),
-                'url'     => route('admin.dam.assets.mass_delete'),
+                'url'     => route('admin.dam.asset.properties.mass_delete', ['asset_id' => request()->id]),
                 'method'  => 'POST',
                 'options' => ['actionType' => 'delete'],
             ]);
         }
+    }
+
+    public function getActiveLocales()
+    {
+        return array_map(
+            function ($data) {
+                $data['value'] = $data['id'];
+                $data['label'] = $data['name'];
+
+                return $data;
+            },
+            $this->localeRepository->getActiveLocales()->toArray()
+        );
     }
 }

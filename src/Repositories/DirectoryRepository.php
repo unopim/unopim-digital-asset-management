@@ -42,19 +42,19 @@ class DirectoryRepository extends Repository
      */
     public function update(array $data, $id)
     {
-        $olddirectory = $this->find($id);
+        $oldDirectory = $this->find($id);
 
-        $oldPath = $olddirectory->generatePath();
+        $oldPath = $oldDirectory->generatePath();
 
-        $newdirectory = parent::update($data, $id);
+        $newDirectory = parent::update($data, $id);
 
-        $newPath = $newdirectory->generatePath();
+        $newPath = $newDirectory->generatePath();
 
-        if ($olddirectory->name != $newdirectory->name) {
+        if ($oldDirectory->name != $newDirectory->name) {
             $this->createDirectoryWithStorage($newPath, $oldPath);
         }
 
-        return $newdirectory;
+        return $newDirectory;
     }
 
     /**
@@ -159,7 +159,7 @@ class DirectoryRepository extends Repository
         $sourcePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
         $destinationPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
         if (Storage::disk(Directory::ASSETS_DISK)->exists($sourcePath)) {
-            
+
         }
     }
 

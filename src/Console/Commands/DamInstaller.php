@@ -27,7 +27,7 @@ class DamInstaller extends Command
         $this->call('vendor:publish', [
             '--tag' => 'dam-config',
         ]);
-        
+
         $this->info('Unopim DAM package installed successfully!');
     }
 }

@@ -8,7 +8,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Webkul\DAM\Enums\EventType;
-use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
@@ -53,11 +52,12 @@ class DeleteDirectory implements ShouldQueue
             }
 
             $path = $directory->generatePath();
-            $directoryRepository->deleteDirectoryWithStorage($path);
 
             $directory->assets()->delete();
 
             $directory->delete();
+
+            $directoryRepository->deleteDirectoryWithStorage($path);
         }
     }
 }

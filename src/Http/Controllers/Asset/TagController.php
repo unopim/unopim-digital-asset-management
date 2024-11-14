@@ -24,7 +24,7 @@ class TagController extends Controller
     protected function addOrUpdateTag(Request $request)
     {
         $request->validate([
-            'tag'      => 'required',
+            'tag'      => 'required|max:100',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 

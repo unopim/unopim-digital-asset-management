@@ -51,6 +51,7 @@ Route::group([
             Route::put('/edit/{id}/properties/update', 'propertiesUpdate')->name('admin.dam.asset.properties.update');
             Route::get('edit/properties/edit/{id}', 'propertiesEdit')->name('admin.dam.asset.property.edit');
             Route::delete('edit/{asset_id}/properties/destroy/{id}', 'propertiesDestroy')->name('admin.dam.asset.properties.delete');
+            Route::post('/edit/{asset_id}/properties/mass-delete', 'massDestroy')->name('admin.dam.asset.properties.mass_delete');
         });
 
         Route::controller(CommentController::class)->prefix('')->group(function () {

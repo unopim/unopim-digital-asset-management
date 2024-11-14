@@ -5,6 +5,7 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Kalnoy\Nestedset\NodeTrait;
 use Webkul\DAM\Contracts\Directory as DirectoryContract;
+use Webkul\DAM\Database\Eloquent\Builder;
 
 class Directory extends Model implements DirectoryContract
 {
@@ -51,11 +52,25 @@ class Directory extends Model implements DirectoryContract
         return ! in_array($this->id, self::NON_DELETABLE_DRECTORIES);
     }
 
-    public function generatePath()
+    /**
+     * Overrides the default Eloquent query builder.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Webkul\DAM\Database\Eloquent\Builder
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new Builder($query);
+    }
+
+    /**
+     * Generate path for directory
+     */
+    public function generatePath(): string
     {
         $path = [];
 
-        foreach ($this->ancestorsAndSelf($this->id) as $directory) {
+        foreach ($this->ancestorsAndSelfAndDefaultOrder($this->id) as $directory) {
             $path[] = $directory->name;
         }
 

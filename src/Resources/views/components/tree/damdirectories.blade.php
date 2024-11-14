@@ -384,7 +384,6 @@
                             ref="fileInput"
                             @change="handleFileChange"
                             multiple="multiple"
-                            accept="image/*"
                             name="files[]"
                          />
                         <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.upload-files') </span>

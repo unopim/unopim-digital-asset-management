@@ -16,7 +16,7 @@ class DirectoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^(?!\.)[\w .-]+$/',
+                'regex:/^[^\\/\\\:\*\?\"\<\>\|]+$/',
                 Rule::unique('dam_directories')->where(function ($query) {
                     return $query->where('parent_id', $this->input('parent_id', 1));
                 })

@@ -45,20 +45,24 @@ class MoveDirectoryStructure
 
         if ($newParentDirectory && ! $newParentDirectory->isDescendantOf($directory) && $directory->id !== $newParentDirectory->id) {
             $directory->name = $name;
-            $directory->appendToNode($newParentDirectory)->save();
+            $directory->parent()->associate($newParentDirectory)->save();
         } else {
             throw new \Exception(trans('dam::app.admin.dam.index.directory.cannot-move'));
         }
 
-        $directory->refresh();
+        try {
+            $this->updateDirectoryParentAndChildren($directory, $directoryRepository);
 
-        $this->updateDirectoryParentAndChildren($directory, $directoryRepository);
+            $directory->refresh();
 
-        $newPath = $directory->generatePath();
+            $newPath = $directory->generatePath();
 
-        $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
+            $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
 
-        $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE, $this->userId);
+            $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE, $this->userId);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
     }
 
     /**

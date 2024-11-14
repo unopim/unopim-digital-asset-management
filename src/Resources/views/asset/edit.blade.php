@@ -240,7 +240,11 @@
                                                                     </tr>
                                                                 @endforeach
                                                             @else
-                                                                {{ $metaInfoValue }}
+                                                                @if ('FileDateTime' == $metaInfoName)
+                                                                    {{ date('Y-m-d H:i:s', $metaInfoValue) }}
+                                                                @else
+                                                                    {{ $metaInfoValue }}
+                                                                @endif
                                                             @endif
                                                         </p>
                                                     </x-admin::table.td>
@@ -495,6 +499,10 @@
                         const formatWidth = params.width;
 
                         let downloadLink = `{{ route('admin.dam.assets.custom_download', '') }}/${this.selectedItem.id}?format=${format}&height=${formatHeight}&width=${formatWidth}`;
+
+                        this.selectedItemExtension = this.selectedItem?.extension;
+                        this.selectedItemWidth = this.selectedItem?.embeddedMetaInfo?.COMPUTED?.Width;
+                        this.selectedItemHeight = this.selectedItem?.embeddedMetaInfo?.COMPUTED?.Height;
 
                         this.$refs.assetCustomDownloadModal.close();
 

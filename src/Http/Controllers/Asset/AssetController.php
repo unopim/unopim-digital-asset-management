@@ -68,6 +68,12 @@ class AssetController extends Controller
             $metaData = $this->getMetadata($asset->path);
 
             if ($metaData['success']) {
+                // fix: Remove problematic metadata entries to prevent errors
+
+                if (isset($metaData['data']['UndefinedTag:0xEA1C'])) {
+                    unset($metaData['data']['UndefinedTag:0xEA1C']);
+                }
+                
                 $asset->embeddedMetaInfo = $metaData['data'] ?? [];
             }
         }
@@ -116,7 +122,7 @@ class AssetController extends Controller
     {
         $request->validate([
             'files'        => 'required|array',
-            'files.*'      => 'file|max:2048',
+            'files.*'      => 'file',
             'directory_id' => 'required|exists:dam_directories,id',
         ]);
 
@@ -177,7 +183,7 @@ class AssetController extends Controller
     {
         $request->validate([
             'file'     => 'required',
-            'file.*'   => 'file|max:2048',
+            'file.*'   => 'file',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -200,6 +206,8 @@ class AssetController extends Controller
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
 
         if ($file instanceof UploadedFile) {
+
+            Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
 
             $originalName = $file->getClientOriginalName();
             $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);

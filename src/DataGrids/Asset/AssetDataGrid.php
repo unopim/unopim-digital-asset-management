@@ -142,7 +142,7 @@ class AssetDataGrid extends DataGrid
         $this->addColumn([
             'index'      => 'created_at',
             'label'      => trans('Created At'),
-            'type'       => 'string',
+            'type'       => 'date_range',
             'searchable' => true,
             'filterable' => true,
             'sortable'   => true,
@@ -151,7 +151,7 @@ class AssetDataGrid extends DataGrid
         $this->addColumn([
             'index'      => 'updated_at',
             'label'      => trans('Updated At'),
-            'type'       => 'string',
+            'type'       => 'date_range',
             'searchable' => true,
             'filterable' => true,
             'sortable'   => true,

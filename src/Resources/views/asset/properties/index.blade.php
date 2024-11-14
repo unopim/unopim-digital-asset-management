@@ -52,30 +52,29 @@
             :src="route('admin.dam.asset.properties.index', $id)"
             ref="datagrid"
         >
-            <template #body="{ columns, records, performAction, setPropertySelectionMode, applied }">
+            <template #body="{ columns, records, performAction, available, selectAllRecords, setPropertySelectionMode, applied }">
                 <div
                     v-for="record in records"
                     class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 dark:hover:bg-cherry-800"
                     :style="`grid-template-columns: repeat(${gridsCount}, minmax(0, 1fr))`"
                 >
-                    @if (
-                        bouncer()->hasPermission('dam.asset.properties.edit')
-                        || bouncer()->hasPermission('dam.asset.properties.delete')
-                    )
-                        <input 
-                            type="checkbox"
-                            :name="`mass_action_select_record_${record.id}`"
-                            :id="`mass_action_select_record_${record.id}`"
-                            :value="record.id"
-                            class="hidden peer"
-                            v-model="applied.massActions.indices"
-                            @change="setPropertySelectionMode"
-                        >
-                        <label
-                            class="icon-checkbox-normal rounded-md text-2xl cursor-pointer perr-checked:icon-checkbox-check peer-checked:text-violet-700"
-                            :for="`mass_action_select_record_${record.id}`"
-                        >
-                        </label>
+                    @if (bouncer()->hasPermission('dam.asset.properties.delete'))
+                        <p v-if="available.massActions.length">
+                            <label :for="`mass_action_select_record_${record[available.meta.primary_column]}`">
+                                <input
+                                    type="checkbox"
+                                    class="peer hidden"
+                                    :name="`mass_action_select_record_${record[available.meta.primary_column]}`"
+                                    :value="record[available.meta.primary_column]"
+                                    :id="`mass_action_select_record_${record[available.meta.primary_column]}`"
+                                    v-model="applied.massActions.indices"
+                                    @change="setCurrentSelectionMode"
+                                >
+
+                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
+                                </span>
+                            </label>
+                        </p>
                     @endif
                      
 
@@ -92,7 +91,7 @@
                             <a @click="selectedProperties=1; editModel(record.actions.find(action => action.index === 'edit')?.url)">
                                 <span
                                     :class="record.actions.find(action => action.index === 'edit')?.icon"
-                                    title="@lang('edit')"
+                                    title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.edit')"
                                     class="cursor-pointer icon-edit rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                 >
                                 </span>
@@ -103,7 +102,7 @@
                             <a @click="performAction(record.actions.find(action => action.index === 'delete'))">
                                 <span
                                     :class="record.actions.find(action => action.index === 'delete')?.icon"
-                                    title="@lang('edit')"
+                                    title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.delete')"
                                     class="cursor-pointer icon-delete rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                 >
                                 </span>
@@ -204,6 +203,7 @@
                                 :options="$attributeTypesJson"
                                 track-by="id"
                                 label-by="label"
+                                ::disabled="true!== codeIsNew"
                             />
 
                             <x-admin::form.control-group.error control-name="type" />
@@ -230,6 +230,7 @@
                                 :placeholder="trans('dam::app.admin.dam.asset.properties.index.create.language')"
                                 track-by="id"
                                 label-by="name"
+                                ::disabled="true!== codeIsNew"
                             />
                             
                             <x-admin::form.control-group.error control-name="language" />

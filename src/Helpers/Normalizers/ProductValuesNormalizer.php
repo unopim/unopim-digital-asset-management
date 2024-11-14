@@ -2,10 +2,22 @@
 
 namespace Webkul\DAM\Helpers\Normalizers;
 
+use Webkul\Attribute\Services\AttributeService;
+use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 
 class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
 {
+    /**
+     * Constructor for object creation
+     */
+    public function __construct(
+        AttributeService $attributeService,
+        protected AssetRepository $assetRepository
+    ) {
+        parent::__construct($attributeService);
+    }
+
     /**
      * Normalize attribute data with options for product
      */
@@ -35,7 +47,11 @@ class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
             }
 
             if ($attribute->type === 'asset') {
-                $value = implode(', ', $value);
+                $assets = str_contains($value, ',') ? explode(',', $value) : [$value];
+
+                $assets = $this->assetRepository->findWhereIn('id', $assets)->pluck('path')->toArray();
+
+                $value = implode(', ', $assets);
             }
 
             $values[$attributeCode] = $value;

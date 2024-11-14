@@ -3,7 +3,10 @@
 namespace Webkul\DAM\Http\Controllers\Asset;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\Rule;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\Core\Filesystem\FileStorer;
 use Webkul\DAM\DataGrids\Asset\AssetPropertyDataGrid;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
@@ -47,7 +50,18 @@ class PropertyController extends Controller
         ];
 
         $this->validate(request(), [
-            'name' => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
+            'type'     => 'required',
+            'language' => 'required',
+            'name'     => [
+                'required',
+                'min:3',
+                'max:100',
+                Rule::unique('dam_asset_properties')
+                    ->where(function ($query) use ($id) {
+                        return $query->where('dam_asset_id', $id)
+                            ->where('language', request()->get('language'));
+                    }),
+            ],
         ], $messages);
 
         $this->assetPropertyRepository->create(array_merge(request()->only([
@@ -120,5 +134,35 @@ class PropertyController extends Controller
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.properties.index.delete-failed'),
         ], 500);
+    }
+
+    /**
+     * Mass delete assets
+     */
+    public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
+    {
+        $assetPropertyIds = $massDestroyRequest->input('indices');
+
+        try {
+            foreach ($assetPropertyIds as $assetPropertyId) {
+                $asset = $this->assetPropertyRepository->find($assetPropertyId);
+
+                if (isset($asset)) {
+                    Event::dispatch('dam.asset.property.delete.before', $assetPropertyId);
+
+                    $this->assetPropertyRepository->delete($assetPropertyId);
+
+                    Event::dispatch('dam.asset.property.delete.after', $assetPropertyId);
+                }
+            }
+
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.asset.datagrid.mass-delete-success'),
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

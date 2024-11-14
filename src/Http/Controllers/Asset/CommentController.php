@@ -38,7 +38,7 @@ class CommentController extends Controller
         ];
 
         $this->validate(request(), [
-            'comments' => 'required|min:2',
+            'comments' => 'required|min:2|max:1000',
         ], $messages);
 
         $this->assetCommentRepository->create(array_merge(request()->only([

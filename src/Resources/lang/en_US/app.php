@@ -87,6 +87,16 @@ return [
                     'index' => [
                         'title'      => 'Asset Properties',
                         'create-btn' => 'Create Property',
+
+                        'datagrid'      => [
+                            'name'     => 'Name',
+                            'type'     => 'Type',
+                            'language' => 'Language',
+                            'value'    => 'Value',
+                            'edit'     => 'Edit',
+                            'delete'   => 'Delete',
+                        ],
+
                         'create'     => [
                             'title'    => 'Create Property',
                             'name'     => 'Name',

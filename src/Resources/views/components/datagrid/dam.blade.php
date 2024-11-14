@@ -117,7 +117,8 @@
 
             mounted() {
                 this.$emitter.on('data-grid:reset-all-filters', () => {
-                   this.applied.filters.columns = [{index: 'all',value: []}];
+                    this.applied.filters.columns = [{index: 'all',value: []}];
+                    this.applied.pagination.page = 1;
                 })
 
                 this.$emitter.on('data-grid:refresh', () => this.get())
