@@ -75,9 +75,9 @@ To manually install UnoPim DAM:
      ```
 
 5. **Enable Queue Operations**  
-   - Start the queue to execute directory operations:
+   - Start the queue to execute actions, such as job operations, by running the following command:
      ```bash
-     php artisan queue:work
+       php artisan queue:work
      ```
    - If the `queue:work` command is configured to run via a process manager like Supervisor, restart the Supervisor (or related) service after module installation to apply changes:
      ```bash
