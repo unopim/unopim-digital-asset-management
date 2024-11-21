@@ -372,6 +372,7 @@
                 class="absolute bg-white border border-gray-300 px-4 py-2 rounded shadow-lg z-50 dark:border-cherry-800 dark:bg-cherry-800 dark:text-white"
             >
                 <div>
+                    @if (bouncer()->hasPermission('dam.asset.upload'))
                      <div 
                         class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
                         @click="uploadFile"
@@ -388,14 +389,18 @@
                          />
                         <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.upload-files') </span>
                     </div>
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300" 
-                        @click="createDirectory"
-                        v-if="requestType != 'asset'"
-                    >
-                        <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
-                        <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.add-directory') </span>
-                    </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.directory.store'))
+                        <div 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300" 
+                            @click="createDirectory"
+                            v-if="requestType != 'asset'"
+                        >
+                            <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.add-directory') </span>
+                        </div>
+                    @endif
                     <!-- @TODO: Feature Update -->
                     <!-- <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" @click="copyDirectory">
                         <i class="icon-dam-copy"></i>
@@ -409,10 +414,30 @@
                         <i class="icon-export"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.paste')</span>
                     </div> -->
-                    <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" @click="renameItem">
+
+                    @if (bouncer()->hasPermission('dam.directory.rename'))
+                    <div 
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                        @click="renameItem"
+                        v-if="requestType == 'directory'"
+                    >
                         <i class="icon-dam-rename"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.rename')</span>
                     </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.asset.rename'))
+                        <div 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            @click="renameItem"
+                            v-if="requestType == 'asset'"
+                        >
+                            <i class="icon-dam-rename"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.rename')</span>
+                        </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.directory.destroy'))
                     <div 
                         class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
                         @click="deleteItem"
@@ -421,30 +446,42 @@
                         <i class="icon-dam-delete"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.delete')</span>
                     </div>
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
-                        @click="deleteFile"
-                        v-if="requestType == 'asset'"
-                    >
-                        <i class="icon-dam-delete"></i>
-                        <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.delete')</span>
-                    </div>
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
-                        @click="copyDirectory"
-                        v-if="requestType != 'asset'"
-                    >
-                        <i class="icon-dam-directory"></i>
-                        <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.copy-directory-structured')</span>
-                    </div>
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
-                        @click="downloadItem('directory')"
-                        v-if="requestType != 'asset'"
-                    >
-                        <i class="icon-dam-zip"></i>
-                        <span class="text-sm text-zinc-600  dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.download-zip')</span>
-                    </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.asset.destroy'))
+                        <div 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            @click="deleteFile"
+                            v-if="requestType == 'asset'"
+                        >
+                            <i class="icon-dam-delete"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.delete')</span>
+                        </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.directory.copy_structure'))
+                        <div 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            @click="copyDirectory"
+                            v-if="requestType != 'asset'"
+                        >
+                            <i class="icon-dam-directory"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.copy-directory-structured')</span>
+                        </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.directory.download_zip'))
+                        <div 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            @click="downloadItem('directory')"
+                            v-if="requestType != 'asset'"
+                        >
+                            <i class="icon-dam-zip"></i>
+                            <span class="text-sm text-zinc-600  dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.download-zip')</span>
+                        </div>
+                    @endif
+
+                    @if (bouncer()->hasPermission('dam.asset.download'))
                     <div 
                         class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
                         @click="downloadItem('asset')"
@@ -453,6 +490,7 @@
                         <i class="icon-import"></i>
                         <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.download')</span>
                     </div>
+                    @endif
                 </div>
             </div>
 
@@ -974,7 +1012,7 @@
                 this.$axios.post("{{ route('admin.dam.directory.copy_structure') }}", this.selectedItem)
                     .then((response) => {
                         setTimeout(() => {
-                            this.checkActionStatus('copy_directory_directory');
+                            this.checkActionStatus('copy_directory_structure');
                         }, 1000);
 
                         this.$emitter.emit('add-flash', {
@@ -1103,6 +1141,8 @@
                             type: 'error',
                             message: error.response.data.message
                         });
+
+                        this.loadDirectories();
                     });
             },
 
@@ -1231,6 +1271,14 @@
                     .then((response) => {
                         this.actionStatus = response.data.status;
 
+                        if (this.actionStatus == 'failed') {
+                                this.$emitter.emit('add-flash', { type: 'error', message: response.data.message });
+                                this.isLoading = false;
+
+                                return;
+                            }
+
+
                         if (this.actionStatus == 'error') {
                             this.$emitter.emit('add-flash', {
                                 type: 'error',
@@ -1251,7 +1299,7 @@
             },
 
             goForNextAction(action) {
-                if (action == 'delete_directory' || action == 'copy_directory_directory') {
+                if (action == 'delete_directory' || action == 'copy_directory_structure') {
                     this.loadDirectories();
                 }
             }

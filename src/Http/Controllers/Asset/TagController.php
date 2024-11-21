@@ -28,6 +28,10 @@ class TagController extends Controller
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
+        if (! bouncer()->hasPermission('dam.asset.update')) {
+            abort(401, trans('dam::app.admin.errors.401'));
+        }
+
         $newTag = $request->get('tag');
 
         $assetId = $request->get('asset_id');
@@ -45,11 +49,21 @@ class TagController extends Controller
 
         $oldTags = $asset->tags->pluck('name')->toArray();
 
-        if (! $assetTag) {
+        if ($assetTag) {
+            $existingAssetTagIds = $asset->tags->pluck('id')->toArray();
+
+            if (in_array($assetTag->id, $existingAssetTagIds)) {
+                return response()->json([
+                    'success' => false,
+                    'file'    => $asset,
+                    'message' => trans('dam::app.admin.dam.asset.edit.tag-already-exists'),
+                ], 404);
+            }
+
+            $asset->tags()->attach($assetTag->id);
+        } else {
             $newTag = $this->assetTagRepository->create(['name' => $newTag]);
             $asset->tags()->attach($newTag->id);
-        } else {
-            $asset->tags()->attach($assetTag->id);
         }
 
         Event::dispatch('core.model.proxy.sync.tag', [
@@ -74,6 +88,10 @@ class TagController extends Controller
             'tag'      => 'required',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
+
+        if (! bouncer()->hasPermission('dam.asset.update')) {
+            abort(401, trans('dam::app.admin.errors.401'));
+        }
 
         $newTag = $request->get('tag');
 

@@ -34,36 +34,49 @@
     @php
         $items = [
             [
-                'url'    => '?',
-                'code'   => 'preview',
-                'name'   => 'dam::app.admin.dam.asset.edit.tab.preview',
-                'icon'   => 'icon-dam-preview'
+            'url'    => '?',
+            'code'   => 'preview',
+            'name'   => 'dam::app.admin.dam.asset.edit.tab.preview',
+            'icon'   => 'icon-dam-preview'
             ],
-            [
+        ];
+
+        if (bouncer()->hasPermission('dam.asset.property')) {
+            $items[] = [
                 'url'    => '?properties',
                 'code'   => 'properties',
                 'name'   => 'dam::app.admin.dam.asset.edit.tab.properties',
                 'icon'   => 'icon-dam-properties'
-            ],
-            [
+            ];
+        }
+
+        if (bouncer()->hasPermission('dam.asset.comment')) {
+            $items[] = [
                 'url'    => '?comments',
                 'code'   => 'comments',
                 'name'   => 'dam::app.admin.dam.asset.edit.tab.comments',
                 'icon'   => 'icon-dam-notes'
-            ],
-            [
+            ];
+        }
+
+        if (bouncer()->hasPermission('dam.asset.linked_resources')) {
+            $items[] = [
                 'url'    => '?linked-resources',
                 'code'   => 'linked-resources',
                 'name'   => 'dam::app.admin.dam.asset.edit.tab.linked_resources',
                 'icon'   => 'icon-dam-link'
-            ],
-            [
+            ];
+        }
+
+        if (bouncer()->hasPermission('history.view')) {
+            $items[] = [
                 'url'    => '?history',
                 'code'   => 'history',
                 'name'   => 'dam::app.admin.dam.asset.edit.tab.history',
                 'icon'   => 'icon-information'
-            ],
-        ];
+            ];
+        }
+
     @endphp
 
     <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
@@ -80,12 +93,14 @@
 
     <x-slot:comments>
         {!! view_render_event('unopim.admin.dam.assets.edit.properties.before') !!}
-            @include('dam::asset.comments.index')
+            @include('dam::asset..comments.index')
         {!! view_render_event('unopim.admin.dam.assets.edit.properties.after') !!}
     </x-slot:comments>
 
     <x-slot:linked_resources>
-        @include('dam::asset.linked-resources.index', ['assetId' => $asset->id])
+        @if (bouncer()->hasPermission('dam.asset.linked_resources.index'))
+            @include('dam::asset.linked-resources.index', ['assetId' => $asset->id])
+        @endif
     </x-slot:linked_resources>
     
     {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
@@ -148,7 +163,7 @@
                         <div class="flex flex-col gap-5 w-[360px] h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             <!-- Tags -->
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
-
+                            
                             <x-admin::accordion>
                                 <x-slot:header>
                                     <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
@@ -163,7 +178,7 @@
                                             $options = json_encode($tags->toArray());
 
                                             $selectedOptions =  old('tags') ?? json_encode($asset->tags->pluck('id')->toArray());
-                                             
+                                            
                                         @endphp
 
                                         <x-admin::form.control-group.control
@@ -184,11 +199,27 @@
                                         <x-admin::form.control-group.error control-name="tags" />
 
                                     </x-admin::form.control-group>
-                                     
+                                    
                                 </x-slot>
                             </x-admin::accordion>
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.after', ['asset' => $asset]) !!}
+
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.befor', ['asset' => $asset]) !!}
+
+                            <x-admin::accordion>
+                                <x-slot:header>
+                                    <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
+                                        @lang('dam::app.admin.dam.asset.edit.directory-path')
+                                    </p>
+                                </x-slot>
+
+                                <x-slot:content class="gap-4">
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300"> {{ $asset->getPathWithOutFileSystemRoot() }}</p>
+                                </x-slot>
+                            </x-admin::accordion>
+
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.after', ['asset' => $asset]) !!}
 
                             <!-- Embedded MetaInfo -->
                             @if ($asset->embeddedMetaInfo)
@@ -331,16 +362,18 @@
             type="text/x-template"
             id="v-custom-download-template"
         >
-            @if ($asset->file_type === 'image')
-                <button class="secondary-button" @click="customDownloadModel">
-                    <span class="text-xl text-violet-700 icon-dam-download"></span>
-                    <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>    
-                </button>
-            @else
-                <button class="secondary-button" @click="downloadItem">
-                    <span class="text-xl text-violet-700 icon-dam-download"></span>
-                    <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>    
-                </button>
+            @if (bouncer()->hasPermission('dam.asset.download'))
+                @if ($asset->file_type === 'image')
+                    <button class="secondary-button" @click="customDownloadModel">
+                        <span class="text-xl text-violet-700 icon-dam-download"></span>
+                        <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>    
+                    </button>
+                @else
+                    <button class="secondary-button" @click="downloadItem">
+                        <span class="text-xl text-violet-700 icon-dam-download"></span>
+                        <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>    
+                    </button>
+                @endif
             @endif
                 
             <x-admin::form
@@ -358,7 +391,7 @@
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
                             >
-                                @lang('dam::app.admin.dam.asset.edit.button.download')
+                                @lang('dam::app.admin.dam.asset.edit.custom-download.title')
                             </p>
                         </x-slot>
 
@@ -375,23 +408,8 @@
                             <!-- format -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
-                                    @lang('Format')
+                                    @lang('dam::app.admin.dam.asset.edit.custom-download.format')
                                 </x-admin::form.control-group.label>
-
-                                @php
-                                    $supportedTypes = ['jpg', 'jpeg', 'webp', 'png'];
-
-                                    $options = [];
-
-                                    foreach($supportedTypes as $type) {
-                                        $options[] = [
-                                            'id'    => $type,
-                                            'label' => trans(''. $type)
-                                        ];
-                                    }
-
-                                    $optionsJson = json_encode($options);
-                                @endphp
 
                                 <x-admin::form.control-group.control
                                     type="select"
@@ -399,11 +417,11 @@
                                     class="cursor-pointer"
                                     rules="required"
                                     :value="old('format')"
-                                    :label="trans('format')"
-                                    :placeholder="trans('format')"
+                                    :label="trans('dam::app.admin.dam.asset.edit.custom-download.format')"
+                                    :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.format')"
                                     v-model="selectedItemExtension"
-                                    :options="$optionsJson"
-                                    track-by="id"
+                                    ::options="supportedExtensionTypes"
+                                    track-by="value"
                                     label-by="label"
                                 />
 
@@ -414,7 +432,7 @@
                                 <!-- width -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
-                                        @lang('Width')
+                                        @lang('dam::app.admin.dam.asset.edit.custom-download.width')
                                     </x-admin::form.control-group.label>
     
                                     <x-admin::form.control-group.control
@@ -423,8 +441,8 @@
                                         rules="required"
                                         :value="old('width')"
                                         v-model="selectedItemWidth"
-                                        :label="trans('width (px)')"
-                                        :placeholder="trans('200')"
+                                        :label="trans('dam::app.admin.dam.asset.edit.custom-download.width')"
+                                        :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.width-placeholder')"
                                     />
     
                                     <x-admin::form.control-group.error control-name="width" />
@@ -433,7 +451,7 @@
                                 <!-- height -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
-                                        @lang('Height')
+                                        @lang('dam::app.admin.dam.asset.edit.custom-download.height')
                                     </x-admin::form.control-group.label>
     
                                     <x-admin::form.control-group.control
@@ -442,8 +460,8 @@
                                         rules="required"
                                         :value="old('height')"
                                         v-model="selectedItemHeight"
-                                        :label="trans('height (px)')"
-                                        :placeholder="trans('200')"
+                                        :label="trans('dam::app.admin.dam.asset.edit.custom-download.height')"
+                                        :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.height-placeholder')"
                                     />
     
                                     <x-admin::form.control-group.error control-name="height" />
@@ -460,7 +478,7 @@
                                     type="submit"
                                     class="primary-button"
                                 >
-                                    @lang('Download')
+                                    @lang('dam::app.admin.dam.asset.edit.custom-download.download-btn')
                                 </button>
                             </div>
                         </x-slot>
@@ -477,6 +495,29 @@
                     const selectedItem = @json($asset);
                     return {
                         selectedItem: selectedItem,
+                        supportedExtensionTypes: [
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.original')",
+                                value: selectedItem?.extension,
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpg')",
+                                value: 'jpg'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpeg')",
+                                value: 'jpeg'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.png')",
+                                value: 'png'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.webp')",
+                                value: 'webp'
+                            },
+                        ],
+
                         selectedItemExtension: selectedItem?.extension,
                         selectedItemWidth: selectedItem?.embeddedMetaInfo?.COMPUTED?.Width,
                         selectedItemHeight: selectedItem?.embeddedMetaInfo?.COMPUTED?.Height,
@@ -490,11 +531,12 @@
                         
                         const format = (() => {
                             try {
-                                return JSON.parse(params.format).id;
+                                return JSON.parse(params.format).value;
                             } catch (e) {
                                 return params.format;
                             }
                         })();
+
                         const formatHeight = params.height;
                         const formatWidth = params.width;
 
@@ -522,10 +564,12 @@
             type="text/x-template"
             id="v-rename-asset-template"
         >
-            <button class="secondary-button" @click="renameItem">
-                <span class="text-xl text-violet-700 icon-dam-rename"></span>    
-                <span>@lang('dam::app.admin.dam.asset.edit.button.rename')</span>
-            </button>
+            @if (bouncer()->hasPermission('dam.asset.rename'))
+                <button class="secondary-button" @click="renameItem">
+                    <span class="text-xl text-violet-700 icon-dam-rename"></span>    
+                    <span>@lang('dam::app.admin.dam.asset.edit.button.rename')</span>
+                </button>
+            @endif
             <!-- Asset Rename -->
             <x-admin::form
                 v-slot="{ meta, errors, handleSubmit }"
@@ -642,20 +686,22 @@
         <script
             type="text/x-template"
             id="v-reupload-asset-template"
-        >            
-            <input type="file"
-                name="file"
-                id="file-upload"
-                class="hidden"
-                @change="onFileChange"
-            />
-            <label
-                for="file-upload"
-                class="secondary-button cursor-pointer"
-            >
-                <span class="text-xl text-violet-700 icon-dam-upload"></span>
-                <span>@lang('dam::app.admin.dam.asset.edit.button.re_upload')</span>
-            </label>
+        >      
+            @if (bouncer()->hasPermission('dam.asset.re_upload'))    
+                <input type="file"
+                    name="file"
+                    id="file-upload"
+                    class="hidden"
+                    @change="onFileChange"
+                />
+                <label
+                    for="file-upload"
+                    class="secondary-button cursor-pointer"
+                >
+                    <span class="text-xl text-violet-700 icon-dam-upload"></span>
+                    <span>@lang('dam::app.admin.dam.asset.edit.button.re_upload')</span>
+                </label>
+            @endif
         </script>
 
         <script type="module">
@@ -708,10 +754,12 @@
             type="text/x-template"
             id="v-delete-asset-template"
         >
-            <button class="secondary-button" @click="deleteFile"> 
-                <span class="text-xl text-violet-700 icon-dam-delete"></span>
-                <span>@lang('dam::app.admin.dam.asset.edit.button.delete')</span>
-            </button>
+            @if (bouncer()->hasPermission('dam.asset.delete'))
+                <button class="secondary-button" @click="deleteFile"> 
+                    <span class="text-xl text-violet-700 icon-dam-delete"></span>
+                    <span>@lang('dam::app.admin.dam.asset.edit.button.delete')</span>
+                </button>
+            @endif
         </script>
 
         <script type="module">

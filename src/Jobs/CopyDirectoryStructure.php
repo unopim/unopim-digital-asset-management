@@ -35,6 +35,8 @@ class CopyDirectoryStructure implements ShouldQueue
         try {
             $originalDirectory = $directoryRepository->find($this->directoryId);
 
+            $directoryRepository->isDirectoryWritable($originalDirectory->parent, 'copy');
+
             if ($originalDirectory) {
                 $newDirectory = $originalDirectory->replicate();
                 $newDirectory->name = $this->setDirectoryNameForCopy($newDirectory->name, $originalDirectory->parent_id);
@@ -47,9 +49,9 @@ class CopyDirectoryStructure implements ShouldQueue
                 $this->copyDirectoryAndChildren($originalDirectory, $newDirectory, $directoryRepository);
             }
 
-            $this->completed(EventType::COPY_DIRECTORY_STRUCTURE, $this->userId);
+            $this->completed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::COPY_DIRECTORY_STRUCTURE, $this->userId, $e->getMessage());
+            $this->failed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId, $e->getMessage());
         }
     }
 

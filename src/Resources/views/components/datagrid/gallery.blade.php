@@ -61,18 +61,22 @@
                                         <!-- Actions -->
                                         <div class="flex justify-center">
                                             <!-- delete icon -->
-                                            <span 
-                                                class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
-                                                @click="deleteImage(record.id)"
-                                            >
-                                            </span>
+                                            @if (bouncer()->hasPermission('dam.asset.destroy'))
+                                                <span 
+                                                    class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
+                                                    @click="deleteImage(record.id)"
+                                                >
+                                                </span>
+                                            @endif
 
                                             <!-- edit icon -->
-                                            <div 
-                                                class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
-                                                @click="editImage(record.id)"
-                                            >
-                                            </div>
+                                            @if (bouncer()->hasPermission('dam.asset.edit'))
+                                                <div 
+                                                    class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
+                                                    @click="editImage(record.id)"
+                                                >
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

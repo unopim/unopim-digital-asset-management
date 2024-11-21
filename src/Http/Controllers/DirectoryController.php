@@ -117,7 +117,7 @@ class DirectoryController
                     'name' => $request->input('name'),
                 ], $id);
 
-                $requestAction = $this->start(EventType::RENAME_DIRECTORY);
+                $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
 
                 RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
             }
@@ -152,16 +152,22 @@ class DirectoryController
             ], 403);
         }
 
-        $parentDirectory = $directory->parent()->with(['children', 'assets'])->get()?->first();
+        try {
+            $parentDirectory = $directory->parent()->with(['children', 'assets'])->get()?->first();
 
-        $requestAction = $this->start(EventType::DELETE_DIRECTORY);
+            $requestAction = $this->start(EventType::DELETE_DIRECTORY->value);
 
-        DeleteDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+            DeleteDirectoryJob::dispatch($id, $requestAction->getUser()->id);
 
-        return new JsonResponse([
-            'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
-            'data'    => $parentDirectory,
-        ]);
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
+                'data'    => $parentDirectory,
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -206,7 +212,7 @@ class DirectoryController
             ], 403);
         }
 
-        $requestAction = $this->start(EventType::COPY_DIRECTORY_STRUCTURE);
+        $requestAction = $this->start(EventType::COPY_DIRECTORY_STRUCTURE->value);
 
         try {
             CopyDirectoryStructureJob::dispatch($copyId, $requestAction->getUser()->id);
@@ -232,7 +238,7 @@ class DirectoryController
         ]);
 
         try {
-            $requestAction = $this->start(EventType::MOVE_DIRECTORY_STRUCTURE);
+            $requestAction = $this->start(EventType::MOVE_DIRECTORY_STRUCTURE->value);
 
             MoveDirectoryStructureJob::dispatch($request->input('move_item_id'), $request->input('new_parent_id'), $requestAction->getUser()->id);
 
@@ -242,7 +248,7 @@ class DirectoryController
         } catch (\Exception $e) {
             return new JsonResponse([
                 'message' => $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
@@ -252,13 +258,18 @@ class DirectoryController
     public function downloadArchive(int $id)
     {
         $directory = $this->directoryRepository->findOrFail($id);
+
+        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
+        $files = Storage::disk(Directory::ASSETS_DISK)->allFiles($folderPath);
+        $directories = Storage::disk(Directory::ASSETS_DISK)->allDirectories($folderPath);
+
+        if (empty($directories) && empty($files)) {
+            return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
+        }
+
         $zip = new ZipArchive;
         $zipFileName = sprintf('%s.zip', $directory->name);
         if ($zip->open(public_path($zipFileName), ZipArchive::CREATE) === true) {
-            $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
-            $files = Storage::disk(Directory::ASSETS_DISK)->allFiles($folderPath);
-            $directories = Storage::disk(Directory::ASSETS_DISK)->allDirectories($folderPath);
-
             // Add files to the ZIP archive
             foreach ($files as $file) {
                 $relativePath = str_replace($folderPath.'/', '', $file);
@@ -275,7 +286,7 @@ class DirectoryController
 
             return response()->download(public_path($zipFileName))->deleteFileAfterSend(true);
         } else {
-            return 'Failed to create the zip file.';
+            return back()->with('error', trans('dam::app.admin.dam.index.directory.failed-download-directory'));
         }
     }
 }

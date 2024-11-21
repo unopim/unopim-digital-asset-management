@@ -34,7 +34,7 @@ class CommentController extends Controller
     public function commentCreate($id)
     {
         $messages = [
-            'comments.required' => 'Comment message is required.',
+            'comments.required' => trans('dam::app.admin.validation.comment.required'),
         ];
 
         $this->validate(request(), [

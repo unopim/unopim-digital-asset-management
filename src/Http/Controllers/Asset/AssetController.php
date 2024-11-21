@@ -73,7 +73,7 @@ class AssetController extends Controller
                 if (isset($metaData['data']['UndefinedTag:0xEA1C'])) {
                     unset($metaData['data']['UndefinedTag:0xEA1C']);
                 }
-                
+
                 $asset->embeddedMetaInfo = $metaData['data'] ?? [];
             }
         }
@@ -94,7 +94,7 @@ class AssetController extends Controller
             $filePath = Storage::disk($disk)->path($path);
 
             if (! Storage::disk($disk)->exists($path) || ! is_readable($filePath)) {
-                throw new \Exception('Image source not readable');
+                throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
             return [
@@ -108,7 +108,7 @@ class AssetController extends Controller
 
             return [
                 'success' => false,
-                'message' => 'Failed to read image metadata: '.$e->getMessage(),
+                'message' => trans('dam::app.admin.dam.asset.edit.failed-to-read', ['exception' => $e->getMessage()]),
             ];
         }
     }
@@ -135,43 +135,58 @@ class AssetController extends Controller
         $uploadFiles = [];
         $assetIds = [];
 
-        foreach ($files as $file) {
-            if ($file instanceof UploadedFile) {
+        try {
+            foreach ($files as $file) {
+                if ($file instanceof UploadedFile) {
 
-                $originalName = $file->getClientOriginalName();
-                $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
+                    $originalName = $file->getClientOriginalName();
+                    $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
 
-                $filePath = $this->fileStorer->store(
-                    path: $directoryPath,
-                    file: $file,
-                    fileName: $uniqueFileName,
-                    options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => Directory::ASSETS_DISK]
-                );
+                    if (! $directory->isWritable($directoryPath)) {
+                        throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                            'type'       => 'file',
+                            'actionType' => 'create',
+                            'path'       => $directoryPath,
+                        ]));
+                    }
 
-                $asset = Asset::create([
-                    'file_name' => $uniqueFileName,
-                    'file_type' => AssetHelper::getFileType($file),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'extension' => $file->getClientOriginalExtension(),
-                    'path'      => $filePath,
-                ]);
+                    $filePath = $this->fileStorer->store(
+                        path: $directoryPath,
+                        file: $file,
+                        fileName: $uniqueFileName,
+                        options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => Directory::ASSETS_DISK]
+                    );
 
-                $assetIds[] = $asset->id;
+                    $asset = Asset::create([
+                        'file_name' => $uniqueFileName,
+                        'file_type' => AssetHelper::getFileType($file),
+                        'file_size' => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'extension' => $file->getClientOriginalExtension(),
+                        'path'      => $filePath,
+                    ]);
 
-                array_push($uploadFiles, $asset);
+                    $assetIds[] = $asset->id;
+
+                    array_push($uploadFiles, $asset);
+                }
             }
-        }
 
-        if ($request->has('directory_id')) {
-            $this->mappedWithDirectory($assetIds, $request->get('directory_id'));
-        }
+            if ($request->has('directory_id')) {
+                $this->mappedWithDirectory($assetIds, $request->get('directory_id'));
+            }
 
-        return response()->json([
-            'success' => true,
-            'files'   => $uploadFiles,
-            'message' => count($files) > 1 ? trans('dam::app.admin.dam.asset.datagrid.file_upload_success') : trans('File uploaded successfully'),
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'files'   => $uploadFiles,
+                'message' => count($files) > 1 ? trans('dam::app.admin.dam.asset.datagrid.files_upload_success') : trans('dam::app.admin.dam.asset.datagrid.file_upload_success'),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -205,6 +220,14 @@ class AssetController extends Controller
 
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
 
+        if (! $directory->isWritable($directoryPath)) {
+            throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                'type'       => 'file',
+                'actionType' => 'create',
+                'path'       => $directoryPath,
+            ]));
+        }
+
         if ($file instanceof UploadedFile) {
 
             Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
@@ -232,7 +255,7 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
-            'message' => trans('File re-uploaded successfully'),
+            'message' => trans('dam::app.admin.dam.asset.edit.file_re_upload_success'),
         ], 201);
     }
 
@@ -314,11 +337,20 @@ class AssetController extends Controller
         if ($asset->resources()->get()->count()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),
             ], 404);
         }
 
-        Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+        $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+
+        if (! $fileDeleted) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.index.directory.not-writable', [
+                    'type'       => 'file',
+                    'actionType' => 'delete',
+                    'path'       => $asset->path,
+                ])], 500);
+        }
 
         $asset->delete();
 
@@ -334,20 +366,41 @@ class AssetController extends Controller
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
         $assetIds = $massDestroyRequest->input('indices');
+        $skippedAssetNames = [];
 
         try {
             foreach ($assetIds as $assetId) {
                 $asset = $this->assetRepository->find($assetId);
 
                 if (isset($asset)) {
+                    if ($asset->resources()->get()->count()) {
+                        $skippedAssetNames[] = $asset->file_name;
+
+                        continue;
+                    }
+
+                    $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+
+                    if (! $fileDeleted) {
+                        throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                            'type'       => 'file',
+                            'actionType' => 'rename',
+                            'path'       => $asset->path,
+                        ]));
+                    }
+
                     Event::dispatch('dam.asset.delete.before', $assetId);
 
                     $this->assetRepository->delete($assetId);
 
-                    Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
-
                     Event::dispatch('dam.asset.delete.after', $assetId);
                 }
+            }
+
+            if (! empty($skippedAssetNames)) {
+                return new JsonResponse([
+                    'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => implode(', ', $skippedAssetNames)]),
+                ], 404);
             }
 
             return new JsonResponse([
@@ -459,7 +512,7 @@ class AssetController extends Controller
     public function rename(Request $request): JsonResponse
     {
         $request->validate([
-            'file_name' => 'required|string|max:255',
+            'file_name' => 'required|string|max:255|regex:/^(?!\.)[\w .-]+$/',
             'id'        => 'required|exists:dam_assets,id',
         ]);
 
@@ -493,7 +546,16 @@ class AssetController extends Controller
                 }
 
                 if (Storage::disk(Directory::ASSETS_DISK)->exists($oldPath)) {
-                    Storage::disk(Directory::ASSETS_DISK)->move($oldPath, $newPath);
+                    $fileRenamed = Storage::disk(Directory::ASSETS_DISK)->move($oldPath, $newPath);
+
+                    if (! $fileRenamed) {
+                        throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                            'type'       => 'file',
+                            'actionType' => 'rename',
+                            'path'       => $newPath,
+                        ]));
+                    }
+
                     $asset->update([
                         'file_name' => $name,
                         'path'      => $newPath,
@@ -529,6 +591,19 @@ class AssetController extends Controller
         $asset = Asset::find($id);
         $oldDirectory = $asset->directories()->first();
         $oldPath = sprintf('%s/%s', $oldDirectory->generatePath(), $asset->file_name);
+
+        $directory = $this->directoryRepository->find($request->input('new_parent_id'));
+
+        $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
+
+        if (! $directory->isWritable($directoryPath)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.index.directory.not-writable', [
+                    'type'       => 'file',
+                    'actionType' => 'move',
+                    'path'       => $directoryPath,
+                ])], 500);
+        }
 
         $asset->directories()->sync($request->input('new_parent_id'));
         $newDirectory = $asset->directories()->first();

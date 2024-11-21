@@ -20,6 +20,14 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
 
     protected $fillable = ['name', 'type', 'language', 'value', 'dam_asset_id'];
 
+    /**
+     * These columns history will not be generated
+     */
+    protected $auditExclude = [
+        'id',
+        'dam_asset_id',
+    ];
+
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'dam_asset_id');
@@ -39,9 +47,10 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
     public static function getPresenters(): array
     {
         return [
-            'name'  => AssetPropertyPresenter::class,
-            'type'  => AssetPropertyPresenter::class,
-            'value' => AssetPropertyPresenter::class,
+            'name'     => AssetPropertyPresenter::class,
+            'type'     => AssetPropertyPresenter::class,
+            'value'    => AssetPropertyPresenter::class,
+            'language' => AssetPropertyPresenter::class,
         ];
     }
 }

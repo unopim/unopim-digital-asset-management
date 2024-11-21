@@ -95,30 +95,26 @@ class AssetPropertyDataGrid extends DataGrid
      */
     public function prepareActions()
     {
-        if (bouncer()->hasPermission('dam.asset.properties.edit')) {
-            $this->addAction([
-                'index'  => 'edit',
-                'icon'   => 'icon-edit',
-                'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
-                'method' => 'GET',
-                'url'    => function ($row) {
+        $this->addAction([
+            'index'  => 'edit',
+            'icon'   => 'icon-edit',
+            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
+            'method' => 'GET',
+            'url'    => function ($row) {
 
-                    return route('admin.dam.asset.property.edit', $row->id);
-                },
-            ]);
-        }
+                return route('admin.dam.asset.property.edit', $row->id);
+            },
+        ]);
 
-        if (bouncer()->hasPermission('dam.asset.properties.delete')) {
-            $this->addAction([
-                'index'  => 'delete',
-                'icon'   => 'icon-delete',
-                'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
-                'method' => 'DELETE',
-                'url'    => function ($row) {
-                    return route('admin.dam.asset.properties.delete', ['asset_id' => $row->dam_asset_id, 'id' => $row->id]);
-                },
-            ]);
-        }
+        $this->addAction([
+            'index'  => 'delete',
+            'icon'   => 'icon-delete',
+            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
+            'method' => 'DELETE',
+            'url'    => function ($row) {
+                return route('admin.dam.asset.properties.delete', ['asset_id' => $row->dam_asset_id, 'id' => $row->id]);
+            },
+        ]);
     }
 
     /**
@@ -128,7 +124,7 @@ class AssetPropertyDataGrid extends DataGrid
      */
     public function prepareMassActions()
     {
-        if (bouncer()->hasPermission('dam.asset.properties.delete')) {
+        if (bouncer()->hasPermission('dam.asset.property.delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),
                 'url'     => route('admin.dam.asset.properties.mass_delete', ['asset_id' => request()->id]),

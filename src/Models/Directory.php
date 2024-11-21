@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Kalnoy\Nestedset\NodeTrait;
 use Webkul\DAM\Contracts\Directory as DirectoryContract;
 use Webkul\DAM\Database\Eloquent\Builder;
@@ -75,5 +76,12 @@ class Directory extends Model implements DirectoryContract
         }
 
         return implode('/', $path);
+    }
+
+    public function isWritable(string $path): bool
+    {
+        $path = Storage::disk(self::ASSETS_DISK)->path($path);
+
+        return is_writable($path);
     }
 }

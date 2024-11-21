@@ -52,7 +52,7 @@ class LinkedResourcesDataGrid extends DataGrid
     {
         $this->addColumn([
             'index'      => 'type',
-            'label'      => trans('Resource Type'),
+            'label'      => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-type'),
             'type'       => 'dropdown',
             'searchable' => true,
             'filterable' => true,
@@ -77,7 +77,7 @@ class LinkedResourcesDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'resource',
-            'label'      => trans('Resource'),
+            'label'      => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource'),
             'type'       => 'string',
             'searchable' => false,
             'filterable' => false,
@@ -99,7 +99,7 @@ class LinkedResourcesDataGrid extends DataGrid
     {
         $this->addAction([
             'icon'   => 'icon-view',
-            'title'  => trans('View Resource'),
+            'title'  => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-view'),
             'method' => 'GET',
             'url'    => function ($row) {
                 return strtolower($row->type) === 'product' ? route('admin.catalog.products.edit', $row->product_id) : route('admin.catalog.categories.edit', $row->category_id);

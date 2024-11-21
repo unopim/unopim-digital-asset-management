@@ -52,7 +52,7 @@ class Exporter extends CategoryExporter
 
             $fieldValues[$fieldCode] = $additionalData[$fieldCode] ?? null;
 
-            if ($withMedia && in_array($field->type, $this->mediaTypeFields)) {
+            if (in_array($field->type, $this->mediaTypeFields)) {
                 $mediaValues = [];
 
                 $exitingFilePaths = $additionalData[$fieldCode] ?? [];
@@ -69,23 +69,29 @@ class Exporter extends CategoryExporter
                     $isAssetField = true;
                 }
 
-                $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
+                if ($withMedia) {
+                    $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
 
-                foreach ($exitingFilePaths as $exitingFilePath) {
-                    if ($mediaSourceType === 'url') {
-                        $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
+                    foreach ($exitingFilePaths as $exitingFilePath) {
+                        if ($mediaSourceType === 'url') {
+                            $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
 
-                        continue;
+                            continue;
+                        }
+
+                        $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
+
+                        $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
                     }
 
-                    $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
-
-                    $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
+                    if (! empty($mediaValues)) {
+                        $fieldValues[$fieldCode] = implode(', ', $mediaValues);
+                    }
                 }
+            }
 
-                if (! empty($mediaValues)) {
-                    $fieldValues[$fieldCode] = implode(', ', $mediaValues);
-                }
+            if (isset($fieldValues[$fieldCode]) && is_array($fieldValues[$fieldCode])) {
+                $fieldValues[$fieldCode] = implode(', ', $fieldValues[$fieldCode]);
             }
         }
 

@@ -79,7 +79,7 @@ class AssetDataGrid extends DataGrid
     {
         $this->addColumn([
             'index'      => 'file_name',
-            'label'      => trans('File Name'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.file-name'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -93,7 +93,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'tag',
-            'label'      => trans('Tags'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.tags'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -102,7 +102,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'property_name',
-            'label'      => trans('Property Names'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.property-name'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -111,7 +111,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'property_value',
-            'label'      => trans('Property Values'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.property-value'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -120,7 +120,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'extension',
-            'label'      => trans('Extension'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.extension'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => true,
@@ -129,7 +129,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'path',
-            'label'      => trans('Path'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.path'),
             'type'       => 'string',
             'searchable' => true,
             'filterable' => false,
@@ -141,7 +141,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'created_at',
-            'label'      => trans('Created At'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.created-at'),
             'type'       => 'date_range',
             'searchable' => true,
             'filterable' => true,
@@ -150,7 +150,7 @@ class AssetDataGrid extends DataGrid
 
         $this->addColumn([
             'index'      => 'updated_at',
-            'label'      => trans('Updated At'),
+            'label'      => trans('dam::app.admin.dam.index.datagrid.updated-at'),
             'type'       => 'date_range',
             'searchable' => true,
             'filterable' => true,
@@ -263,7 +263,7 @@ class AssetDataGrid extends DataGrid
      */
     public function prepareMassActions()
     {
-        if (bouncer()->hasPermission('dam.assets.delete')) {
+        if (bouncer()->hasPermission('dam.asset.mass_delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),
                 'url'     => route('admin.dam.assets.mass_delete'),

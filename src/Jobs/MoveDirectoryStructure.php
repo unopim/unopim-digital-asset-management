@@ -43,6 +43,8 @@ class MoveDirectoryStructure
 
         $newParentDirectory = $directoryRepository->find($this->newParentId);
 
+        $directoryRepository->isDirectoryWritable($newParentDirectory, 'move');
+
         if ($newParentDirectory && ! $newParentDirectory->isDescendantOf($directory) && $directory->id !== $newParentDirectory->id) {
             $directory->name = $name;
             $directory->parent()->associate($newParentDirectory)->save();
@@ -59,7 +61,7 @@ class MoveDirectoryStructure
 
             $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
 
-            $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE, $this->userId);
+            $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

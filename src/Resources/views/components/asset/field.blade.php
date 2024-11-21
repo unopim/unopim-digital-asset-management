@@ -22,7 +22,7 @@
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
             <div class="flex flex-wrap gap-3" v-else>
-                <input type="hidden" :name="name" value="">
+                <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
                 <!-- Uploaded assets -->
                 <div 
@@ -70,7 +70,9 @@
                     <!--Modal Content -->
                     <x-slot:content>
                         <div class="flex gap-3">
-                            <x-dam::asset.picker.directory-tree />
+                            @if (bouncer()->hasPermission('dam.directory.index'))
+                                <x-dam::asset.picker.directory-tree />
+                            @endif
 
                             <x-dam::asset.picker 
                                 :src="route('admin.dam.asset_picker.index')"
@@ -103,13 +105,15 @@
                                             </label>
                                             <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white"  >@lang("Select All")</span>
                                         </div>
-
-                                        <span 
-                                            @click="saveAssets"
-                                            class="secondary-button"
-                                        >
-                                            Assign
-                                        </span>
+                                        
+                                        @if (bouncer()->hasPermission('dam.asset_assign'))
+                                            <span 
+                                                @click="saveAssets"
+                                                class="secondary-button"
+                                            >
+                                                Assign
+                                            </span>
+                                        @endif
                                     </div>
                                 </template>
                                 <template #body="{ columns, records, performAction, setCurrentSelectionMode, meta, applied, isLoading }">

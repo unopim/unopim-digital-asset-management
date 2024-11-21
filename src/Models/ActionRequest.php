@@ -12,7 +12,7 @@ class ActionRequest extends Model implements ActionRequestContract
     protected $fillable = [
         'event_type',
         'status',
-        'erorr_message',
+        'error_message',
         'admin_id',
     ];
 

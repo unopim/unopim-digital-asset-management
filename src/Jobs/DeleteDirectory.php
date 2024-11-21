@@ -33,9 +33,9 @@ class DeleteDirectory implements ShouldQueue
         try {
             $this->deleteDirectoryAndChildren($this->directoryId, $directoryRepository);
 
-            $this->completed(EventType::DELETE_DIRECTORY, $this->userId);
+            $this->completed(EventType::DELETE_DIRECTORY->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::DELETE_DIRECTORY, $this->userId, $e->getMessage());
+            $this->failed(EventType::DELETE_DIRECTORY->value, $this->userId, $e->getMessage());
         }
     }
 
@@ -45,6 +45,8 @@ class DeleteDirectory implements ShouldQueue
     public function deleteDirectoryAndChildren(int $directoryId, DirectoryRepository $directoryRepository): void
     {
         $directory = $directoryRepository->find($directoryId);
+
+        $directoryRepository->isDirectoryWritable($directory->parent, 'delete');
 
         if ($directory) {
             foreach ($directory->children as $child) {

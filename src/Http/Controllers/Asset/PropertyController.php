@@ -45,13 +45,14 @@ class PropertyController extends Controller
     public function propertiesCreate(int $id)
     {
         $messages = [
-            'name.required' => 'The name field is required.',
-            'name.unique'   => 'This property already exists.',
+            'name.required' => trans('dam::app.admin.validation.property.name.required'),
+            'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
         ];
 
         $this->validate(request(), [
             'type'     => 'required',
             'language' => 'required',
+            'value'    => 'required|max:1000',
             'name'     => [
                 'required',
                 'min:3',

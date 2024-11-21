@@ -50,7 +50,7 @@ class AssetHelper
         } elseif (in_array($extension, $spreadsheetExtensions)) {
             return 'sheet';
         } elseif (in_array($extension, $documentExtensions)) {
-            return 'doc';
+            return 'file';
         } else {
             return 'unspecified';
         }

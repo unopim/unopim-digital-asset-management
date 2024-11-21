@@ -12,6 +12,21 @@ use Webkul\DAM\Http\Middleware\DAM;
 class DAMServiceProvider extends ServiceProvider
 {
     /**
+     * The container bindings that should be registered.
+     *
+     * @var array
+     */
+    public $bindings = [
+        \Webkul\DataTransfer\Helpers\Exporters\Product\Exporter::class     => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
+        \Webkul\Product\Normalizer\ProductAttributeValuesNormalizer::class => \Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer::class,
+        \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class    => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
+        \Webkul\DataTransfer\Helpers\Importers\Product\Importer::class     => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
+        \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class    => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
+        \Webkul\Attribute\Models\Attribute::class                          => \Webkul\DAM\Models\Attribute::class,
+        \Webkul\Attribute\Models\AttributeTranslation::class               => \Webkul\DAM\Models\AttributeTranslation::class,
+    ];
+
+    /**
      * {@inheritDoc}
      */
     public function boot(Router $router)
@@ -33,21 +48,6 @@ class DAMServiceProvider extends ServiceProvider
                 DamInstaller::class,
             ]);
         }
-
-        $this->app->bind(
-            \Webkul\DataTransfer\Helpers\Exporters\Product\Exporter::class,
-            \Webkul\DAM\Helpers\Exporters\Product\Exporter::class
-        );
-
-        $this->app->bind(
-            \Webkul\Product\Normalizer\ProductAttributeValuesNormalizer::class,
-            \Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer::class
-        );
-
-        $this->app->bind(
-            \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class,
-            \Webkul\DAM\Helpers\Exporters\Category\Exporter::class
-        );
 
         Blade::anonymousComponentPath(__DIR__.'/../Resources/views/components', 'dam');
 

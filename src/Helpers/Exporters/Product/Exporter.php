@@ -59,7 +59,7 @@ class Exporter extends BaseExporter
                 unset($attributeValues[$attributeCode]);
             }
 
-            if ($withMedia && in_array($attributeType, [AttributeTypes::FILE_ATTRIBUTE_TYPE, AttributeTypes::IMAGE_ATTRIBUTE_TYPE, 'asset'])) {
+            if (in_array($attributeType, [AttributeTypes::FILE_ATTRIBUTE_TYPE, AttributeTypes::IMAGE_ATTRIBUTE_TYPE, 'asset'])) {
                 $isAssetField = false;
                 $mediaValues = [];
 
@@ -75,24 +75,26 @@ class Exporter extends BaseExporter
                     $isAssetField = true;
                 }
 
-                $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
+                if ($withMedia) {
+                    $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
 
-                foreach ($exitingFilePaths as $exitingFilePath) {
-                    if ($mediaSourceType == 'url') {
-                        $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
+                    foreach ($exitingFilePaths as $exitingFilePath) {
+                        if ($mediaSourceType == 'url') {
+                            $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
 
-                        continue;
+                            continue;
+                        }
+
+                        $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
+
+                        $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
                     }
 
-                    $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
-
-                    $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
+                    $attributeValues[$attributeCode] = empty($mediaValues) ? $attributeValues[$attributeCode] : implode(', ', $mediaValues);
                 }
-
-                $attributeValues[$attributeCode] = empty($mediaValues) ? $attributeValues[$attributeCode] : implode(', ', $mediaValues);
             }
 
-            if (is_array($attributeValues[$attributeCode] ?? null)) {
+            if (isset($attributeValues[$attributeCode]) && is_array($attributeValues[$attributeCode])) {
                 $attributeValues[$attributeCode] = implode(', ', $attributeValues[$attributeCode]);
             }
         }

@@ -29,6 +29,10 @@ class DirectoryRepository extends Repository
      */
     public function create(array $data)
     {
+        $parentDirectory = $this->find($data['parent_id']);
+
+        $this->isDirectoryWritable($parentDirectory, 'create');
+
         $directory = parent::create($data);
         $newPath = $directory->generatePath();
 
@@ -45,6 +49,10 @@ class DirectoryRepository extends Repository
         $oldDirectory = $this->find($id);
 
         $oldPath = $oldDirectory->generatePath();
+
+        $hasParent = $oldDirectory->parent ? true : false;
+
+        $this->isDirectoryWritable($hasParent ? $oldDirectory->parent : $oldDirectory, 'rename', $hasParent);
 
         $newDirectory = parent::update($data, $id);
 
@@ -63,6 +71,9 @@ class DirectoryRepository extends Repository
     public function delete($id)
     {
         $directory = $this->find($id);
+
+        $this->isDirectoryWritable($directory, 'delete');
+
         $path = $directory->generatePath();
 
         parent::delete($id);
@@ -174,5 +185,23 @@ class DirectoryRepository extends Repository
         return $id
             ? $this->model->where('id', '=', $id)->with(['assets', 'assets.directories'])->get()->toTree()
             : $this->model->with(['assets', 'assets.directories'])->get()->toTree();
+    }
+
+    /**
+     * Check if a directory is writable in the file system.
+     */
+    public function isDirectoryWritable(Directory $directory, string $actionType = 'create', bool $hasParent = true): bool
+    {
+        $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $hasParent ? $directory->generatePath() : '');
+
+        if (! $directory->isWritable($directoryPath)) {
+            throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                'type'       => 'directory',
+                'actionType' => $actionType,
+                'path'       => $directoryPath,
+            ]));
+        }
+
+        return true;
     }
 }

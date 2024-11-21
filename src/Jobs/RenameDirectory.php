@@ -33,7 +33,7 @@ class RenameDirectory implements ShouldQueue
 
         $this->renameAssetDirectory($this->directoryId, $directoryRepository);
 
-        $this->completed(EventType::RENAME_DIRECTORY, $this->userId);
+        $this->completed(EventType::RENAME_DIRECTORY->value, $this->userId);
     }
 
     /**

@@ -29,6 +29,17 @@ return [
             'index' => [
                 'title' => 'DAM',
 
+                'datagrid' => [
+                    'file-name'      => 'File Name',
+                    'tags'           => 'Tags',
+                    'property-name'  => 'Property Name',
+                    'property-value' => 'Property Value',
+                    'created-at'     => 'Created At',
+                    'updated-at'     => 'Updated At',
+                    'extension'      => 'Extension',
+                    'path'           => 'Path',
+                ],
+
                 'directory' => [
                     'title'        => 'Directory',
                     'create'       => [
@@ -66,7 +77,7 @@ return [
                     'moved-success'                             => 'Directory moved successfully',
                     'can-not-deleted'                           => 'Directory cannot be deleted as it is Root Directory.',
                     'deleting-in-progress'                      => 'Directory deleting in-progress',
-                    'can-not-copy'                              => 'Directory cannot be deleted as it is Root Directory.',
+                    'can-not-copy'                              => 'Directory cannot be copy as it is Root Directory.',
                     'coping-in-progress'                        => 'Directory structure coping in-progress.',
                     'asset-not-found'                           => 'No asset found',
                     'asset-renamed-success'                     => 'Asset renamed successfully',
@@ -75,6 +86,9 @@ return [
                     'asset-name-conflict-in-the-same-directory' => 'The asset name conflicts with an existing file in the same directory.',
                     'old-file-not-found'                        => 'The file requested at the path :old_path was not found.',
                     'image-name-is-the-same'                    => 'This name is already exist. Please enter a different one.',
+                    'not-writable'                              => 'You are not allowed to :actionType a :type in this location ":path".',
+                    'empty-directory'                           => 'This directory is empty.',
+                    'failed-download-directory'                 => 'Failed to create the zip file.',
                 ],
 
                 'title'       => 'DAM',
@@ -124,6 +138,7 @@ return [
                     'add-reply'    => 'Add Reply',
                     'add-comment'  => 'Add Comment',
                     'no-comments'  => 'No Comments Yet',
+
                 ],
                 'edit' => [
                     'title'              => 'Edit Asset',
@@ -136,6 +151,7 @@ return [
                     'tags'               => 'Tags',
                     'select-tags'        => 'Choose or Create a Tag',
                     'tag'                => 'Tag',
+                    'directory-path'     => 'Directory Path',
                     'add_tags'           => 'Add Tags',
                     'tab'                => [
                         'preview'          => 'Preview',
@@ -152,6 +168,29 @@ return [
                         'delete'          => 'Delete',
                     ],
 
+                    'custom-download' => [
+                        'title'              => 'Custom Download',
+                        'format'             => 'Format',
+                        'width'              => 'Width (px)',
+                        'width-placeholder'  => '200',
+                        'height'             => 'Height (px)',
+                        'height-placeholder' => '200',
+                        'download-btn'       => 'Download',
+
+                        'extension-types' => [
+                            'jpg'      => 'JPG',
+                            'png'      => 'PNG',
+                            'jpeg'     => 'JPEG',
+                            'webp'     => 'WEBP',
+                            'original' => 'Original',
+                        ],
+                    ],
+
+                    'tag-already-exists'        => 'Tag already exists',
+                    'image-source-not-readable' => 'Image source not readable',
+                    'failed-to-read'            => 'Failed to read image metadata :exception',
+                    'file_re_upload_success'    => 'Files Re-Uploaded Successfully.',
+
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -160,14 +199,18 @@ return [
                             'category'      => 'Category',
                             'product-sku'   => 'Product Sku: ',
                             'category code' => 'Category Code: ',
+                            'resource-type' => 'Resource Type',
+                            'resource'      => 'Resource',
+                            'resource-view' => 'Resource View',
                         ],
                     ],
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
-                'delete-failed-due-to-attached-resources' => 'Failed to delete asset as it is linked to resources',
+                'delete-failed-due-to-attached-resources' => 'Failed to delete asset as it is linked to resources (Asset Name: :assetNames)',
                 'datagrid'                                => [
-                    'mass-delete-success' => 'Mass Deleted Successfully.',
-                    'file_upload_success' => 'Files Uploaded Successfully.',
+                    'mass-delete-success'  => 'Mass Deleted Successfully.',
+                    'files_upload_success' => 'Files Uploaded Successfully.',
+                    'file_upload_success'  => 'File Uploaded Successfully.',
                 ],
             ],
         ],
@@ -184,29 +227,52 @@ return [
             ],
         ],
         'acl' => [
-            'menu'                      => 'DAM',
-            'asset'                     => 'Asset',
-            'property'                  => 'Property',
-            'comment'                   => 'Comment',
-            'linked_resources'          => 'Linked Resources',
-            'directory'                 => 'Directory',
-            'tag'                       => 'Tag',
-            'create'                    => 'Create',
-            'edit'                      => 'Edit',
-            'update'                    => 'Update',
-            'delete'                    => 'Delete',
-            'list'                      => 'List',
-            'view'                      => 'View',
-            'upload'                    => 'Upload',
-            're_upload'                 => 'Re-Upload',
-            'mass_update'               => 'Mass Update',
-            'mass_delete'               => 'Mass Delete',
-            'download'                  => 'Download',
-            'custom_download'           => 'Custom Download',
-            'rename'                    => 'Rename',
-            'move'                      => 'Move',
-            'copy'                      => 'Copy',
+            'menu'             => 'DAM',
+            'asset'            => 'Asset',
+            'property'         => 'Property',
+            'comment'          => 'Comment',
+            'linked_resources' => 'Linked Resources',
+            'directory'        => 'Directory',
+            'tag'              => 'Tag',
+            'create'           => 'Create',
+            'edit'             => 'Edit',
+            'update'           => 'Update',
+            'delete'           => 'Delete',
+            'list'             => 'List',
+            'view'             => 'View',
+            'upload'           => 'Upload',
+            're_upload'        => 'Re-Upload',
+            'mass_update'      => 'Mass Update',
+            'mass_delete'      => 'Mass Delete',
+            'download'         => 'Download',
+            'custom_download'  => 'Custom Download',
+            'rename'           => 'Rename',
+            'move'             => 'Move',
+            'copy'             => 'Copy',
+            'copy-structure'   => 'Copy Directory Structure',
+            'download-zip'     => 'Download Zip',
+            'asset-assign'     => 'Assign Asset',
+        ],
 
+        'validation' => [
+            'asset' => [
+                'required' => 'The :attribute field is required.',
+            ],
+
+            'comment' => [
+                'required' => 'The Comment message is required.',
+            ],
+
+            'property' => [
+                'name' => [
+                    'required' => 'The Name field is required.',
+                    'unique'   => 'The Name has already been taken.',
+                ],
+            ],
+        ],
+
+        'errors' => [
+            '401' => 'This action is unauthorized.',
         ],
     ],
 ];

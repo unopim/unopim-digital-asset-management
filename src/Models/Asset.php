@@ -11,11 +11,20 @@ class Asset extends Model implements AssetContract, HistoryAuditable
 {
     use HistoryTrait;
 
+    const ASSET_ATTRIBUTE_TYPE = 'asset';
+
     protected $historyTags = ['asset'];
 
     protected $table = 'dam_assets';
 
     protected $fillable = ['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension'];
+
+    /**
+     * These columns history will not be generated
+     */
+    protected $auditExclude = [
+        'id',
+    ];
 
     public function tags()
     {
@@ -42,5 +51,13 @@ class Asset extends Model implements AssetContract, HistoryAuditable
     public function resources()
     {
         return $this->hasMany(AssetResourceMapping::class, 'dam_asset_id');
+    }
+
+    /**
+     * Get the path without file system root
+     */
+    public function getPathWithOutFileSystemRoot()
+    {
+        return str_replace(Directory::ASSETS_DIRECTORY.'/', '', $this->path);
     }
 }

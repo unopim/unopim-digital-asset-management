@@ -48,70 +48,84 @@
             </div>
         </div>
 
-        <x-admin::datagrid
-            :src="route('admin.dam.asset.properties.index', $id)"
-            ref="datagrid"
-        >
-            <template #body="{ columns, records, performAction, available, selectAllRecords, setPropertySelectionMode, applied }">
-                <div
-                    v-for="record in records"
-                    class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 dark:hover:bg-cherry-800"
-                    :style="`grid-template-columns: repeat(${gridsCount}, minmax(0, 1fr))`"
-                >
-                    @if (bouncer()->hasPermission('dam.asset.properties.delete'))
-                        <p v-if="available.massActions.length">
-                            <label :for="`mass_action_select_record_${record[available.meta.primary_column]}`">
-                                <input
-                                    type="checkbox"
-                                    class="peer hidden"
-                                    :name="`mass_action_select_record_${record[available.meta.primary_column]}`"
-                                    :value="record[available.meta.primary_column]"
-                                    :id="`mass_action_select_record_${record[available.meta.primary_column]}`"
-                                    v-model="applied.massActions.indices"
-                                    @change="setCurrentSelectionMode"
-                                >
+        @if (bouncer()->hasPermission('dam.asset.property.view'))
+            <x-admin::datagrid
+                :src="route('admin.dam.asset.properties.index', $id)"
+                ref="datagrid"
+            >
+                <template #body="{ columns, records, performAction, available, selectAllRecords, setPropertySelectionMode, applied }">
+                    <div
+                        v-for="record in records"
+                        class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 dark:hover:bg-cherry-800"
+                        :style="`grid-template-columns: repeat(${gridsCount}, minmax(0, 1fr))`"
+                    >
+                        @if (bouncer()->hasPermission('dam.asset.property.delete'))
+                            <p v-if="available.massActions.length">
+                                <label :for="`mass_action_select_record_${record[available.meta.primary_column]}`">
+                                    <input
+                                        type="checkbox"
+                                        class="peer hidden"
+                                        :name="`mass_action_select_record_${record[available.meta.primary_column]}`"
+                                        :value="record[available.meta.primary_column]"
+                                        :id="`mass_action_select_record_${record[available.meta.primary_column]}`"
+                                        v-model="applied.massActions.indices"
+                                        @change="setCurrentSelectionMode"
+                                    >
 
-                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
-                                </span>
-                            </label>
-                        </p>
-                    @endif
-                     
-
-                    <p v-html="record.name"></p>
-
-                    <p v-html="record.type"></p>
-
-                    <p v-html="record.language"></p>
-
-                    <p v-html="record.value"></p>
-
-                    <div class="flex justify-end">
-                        @if (bouncer()->hasPermission('dam.asset.properties.edit'))
-                            <a @click="selectedProperties=1; editModel(record.actions.find(action => action.index === 'edit')?.url)">
-                                <span
-                                    :class="record.actions.find(action => action.index === 'edit')?.icon"
-                                    title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.edit')"
-                                    class="cursor-pointer icon-edit rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
-                                >
-                                </span>
-                            </a>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
+                                    </span>
+                                </label>
+                            </p>
                         @endif
+                        
 
-                        @if (bouncer()->hasPermission('dam.asset.properties.delete'))
-                            <a @click="performAction(record.actions.find(action => action.index === 'delete'))">
-                                <span
-                                    :class="record.actions.find(action => action.index === 'delete')?.icon"
-                                    title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.delete')"
-                                    class="cursor-pointer icon-delete rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
-                                >
-                                </span>
-                            </a>
-                        @endif
+                        <p 
+                            v-html="record.name"
+                            class="break-words"
+                        ></p>
+
+                        <p 
+                            v-html="record.type"
+                            class="break-words"
+                        ></p>
+
+                        <p 
+                            v-html="record.language"
+                            class="break-words"
+                        ></p>
+
+                        <p 
+                            v-html="record.value"
+                            class="break-words"
+                        ></p>
+
+                        <div class="flex justify-end">
+                            @if (bouncer()->hasPermission('dam.asset.property.update'))
+                                <a @click="selectedProperties=1; editModel(record.actions.find(action => action.index === 'edit')?.url)">
+                                    <span
+                                        :class="record.actions.find(action => action.index === 'edit')?.icon"
+                                        title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.edit')"
+                                        class="cursor-pointer icon-edit rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                    >
+                                    </span>
+                                </a>
+                            @endif
+
+                            @if (bouncer()->hasPermission('dam.asset.property.delete'))
+                                <a @click="performAction(record.actions.find(action => action.index === 'delete'))">
+                                    <span
+                                        :class="record.actions.find(action => action.index === 'delete')?.icon"
+                                        title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.delete')"
+                                        class="cursor-pointer icon-delete rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                    >
+                                    </span>
+                                </a>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            </template>
-        </x-admin::datagrid>
+                </template>
+            </x-admin::datagrid>
+        @endif
 
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"

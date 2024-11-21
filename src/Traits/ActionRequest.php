@@ -77,7 +77,7 @@ trait ActionRequest
         return $this;
     }
 
-    public function failed(string $eventType, int $userId, string $error, array $options = []): self
+    public function failed(string $eventType, int $userId, ?string $error = null, array $options = []): self
     {
         $whereCondition = [
             'event_type'  => $eventType,
@@ -92,8 +92,8 @@ trait ActionRequest
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
         $request->update([
-            'status' => 'failed',
-            'error'  => $error,
+            'status'         => 'failed',
+            'error_message'  => $error,
         ]);
 
         $this->actionRequest = $request;

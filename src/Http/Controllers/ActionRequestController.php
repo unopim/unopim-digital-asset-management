@@ -8,7 +8,10 @@ use Webkul\DAM\Models\ActionRequest;
 
 class ActionRequestController
 {
-    public function fetchStatus($eventType)
+    /**
+     * Fetches the status of a specific action request based on the event type.
+     */
+    public function fetchStatus(string $eventType)
     {
         try {
             $request = ActionRequest::findOneWhere([
@@ -18,7 +21,7 @@ class ActionRequestController
 
             return new JsonResponse([
                 'status'  => $request?->status,
-                'message' => $request?->erorr_message,
+                'message' => $request?->error_message,
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
