@@ -175,7 +175,7 @@
                 fetchAdminDetails() {
                     if (this.comment.admin_id) {
 
-                        this.$axios.get(`/{{ config('app.admin_url') }}/settings/users/edit/${this.comment.admin_id}`)
+                        this.$axios.get("{{ route('admin.settings.users.edit', 'admin_id') }}".replace('admin_id', this.comment.admin_id))
                             .then(response => {
                                 this.commentDetails.admin = response.data;
                             })
