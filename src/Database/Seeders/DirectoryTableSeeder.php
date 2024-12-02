@@ -21,9 +21,11 @@ class DirectoryTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('dam_directories')->delete();
-
         $now = Carbon::now();
+
+        if (Directory::find(1)) {
+            return;
+        }
 
         DB::table('dam_directories')->insert([
             [
