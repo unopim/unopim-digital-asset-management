@@ -10,26 +10,40 @@ UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system buil
 - **Asset Gallery Grid View**  
   Browse and manage assets through a visual gallery grid, featuring filters and a search box for quick file access. Supports efficient organization with options for mass actions, including bulk delete.
 
-- **Directory (Folder) Structure**  
-  Organize assets in a clear directory tree structure. Right-click to upload files, add directories, rename, delete, copy, and download folders as ZIP files. Files can be dragged and dropped between directories, with support for unlimited subdirectory creation.
-
 - **Resource Editing**  
   Add tags to assets for enhanced filtering in the gallery view, and apply custom properties such as copyright, source, author, and more. Users can also add comments and view linked resources associated with assets.
 
 - **Linked Resources**  
   Directly link related resources from the asset edit page, allowing for easier navigation and improved resource relevance.
 
+- **Directory (Folder) Structure**  
+  Organize assets in a clear directory tree structure. Right-click to upload files, add directories, rename, delete, copy, and download folders as ZIP files. Files can be dragged and dropped between directories, with support for unlimited subdirectory creation.
+  
+![Comprehensive File & Directory Management](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/directory-management.png)
+
 - **Comprehensive Asset Operations**  
   Perform key asset actions such as uploading, previewing, renaming, deleting, re-uploading, and downloading to meet team needs. Supports a wide range of file types, including images, CSV, XLSX, PDF, audio, and video files.
 
+![Advanced Asset Operations](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-operations.png)
+
 - **Metadata and Tagging**  
   Enhance asset searchability and organization by adding tags, custom properties, and embedded metadata.
+  
+![Metadata and Tagging](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/metadata-tagging.png)
 
+- **History Tracking**
+ Maintain a complete history of changes made to assets, ensuring transparency and easy tracking of modifications over time
+![History Tracking](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/history.png)
+  
 - **Collaboration and Resource Linking**  
   Enable multi-user comments and resource linking for effective team collaboration on assets.
 
+![Collaboration and Resource Linking](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/collaboration.png)
+
 - **Asset Detail Export in Product CSV**  
   Export asset details as part of the product CSV export job, enabling smooth data transfer and management by including asset information directly in product CSV files.
+
+![Asset Assignment via Export / Import](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-assignment.png)
 
 ## Installation with Composer
 
