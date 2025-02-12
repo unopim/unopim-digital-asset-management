@@ -18,21 +18,21 @@ class TagController extends Controller
         protected AssetTagRepository $assetTagRepository,
     ) {}
 
-
     public function tags(int $id)
     {
         $tags = $this->assetTagRepository->find($id);
 
-        if (!$tags) {
+        if (! $tags) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.tags.not-found'),
             ], 404);
         }
+
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.tags.found-success'),
-            'data' => $tags,
+            'data'    => $tags,
         ], 200);
     }
 
@@ -128,18 +128,16 @@ class TagController extends Controller
                 'new_values' => $asset->refresh()->tags->pluck('name')->toArray(),
                 'model'      => $asset,
             ]);
+
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.asset.tags.delete-success'),
             ], 201);
-        }
-        else
-        {
+        } else {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.tags.not-found'),
             ], 404);
         }
     }
-
 }

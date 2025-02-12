@@ -3,8 +3,6 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
@@ -21,8 +19,6 @@ class DirectoryController
 
     /**
      * Get all the directory.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -31,7 +27,7 @@ class DirectoryController
         return new JsonResponse([
             'success' => true,
             'message' => trans('dam::app.admin.dam.index.directory.fetch-all-success'),
-            'data' => $directories,
+            'data'    => $directories,
         ]);
     }
 
@@ -65,14 +61,13 @@ class DirectoryController
     }
 
     /**
-    * Get a directory by its id.
-    *
-    * @param int $id.
-    * @throws ModelNotFoundException If a directory with the given id is not found.
-    */
+     * Get a directory by its id.
+     *
+     * @throws ModelNotFoundException If a directory with the given id is not found.
+     */
     public function getDirectory(int $id): JsonResponse
     {
-        $directory  = $this->directoryRepository->getDirectoryTree($id);
+        $directory = $this->directoryRepository->getDirectoryTree($id);
         if (! $directory) {
             return response()->json([
                 'success' => false,
@@ -82,14 +77,12 @@ class DirectoryController
 
         return response()->json([
             'success' => true,
-            'data' => $directory,
+            'data'    => $directory,
         ], 200);
     }
 
     /**
      * Update the specified directory.
-     *
-     * @return JsonResponse
      */
     public function update(DirectoryRequest $request, int $id): JsonResponse
     {
@@ -108,7 +101,7 @@ class DirectoryController
                     'name' => $request->input('name'),
                 ], $id);
                 $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
-                RenameDirectoryJob::dispatch($id, $requestAction->getUser ()->id);
+                RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
             }
 
             return response()->json([
@@ -126,10 +119,8 @@ class DirectoryController
     }
 
     /**
-    * Delete the specified directory.
-    *
-    * @return JsonResponse
-    */
+     * Delete the specified directory.
+     */
     public function destroy(int $id): JsonResponse
     {
         $directory = $this->directoryRepository->find($id);
@@ -153,7 +144,7 @@ class DirectoryController
 
             $requestAction = $this->start(EventType::DELETE_DIRECTORY->value);
 
-            DeleteDirectoryJob::dispatch($id, $requestAction->getUser ()->id);
+            DeleteDirectoryJob::dispatch($id, $requestAction->getUser()->id);
 
             return response()->json([
                 'success' => true,

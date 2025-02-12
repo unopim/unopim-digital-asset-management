@@ -5,24 +5,19 @@ namespace Webkul\DAM\Http\Controllers\API\Asset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 use Webkul\Admin\Http\Controllers\Controller;
-use Webkul\Admin\Http\Requests\MassDestroyRequest;
-use Webkul\Admin\Http\Requests\MassUpdateRequest;
 use Webkul\DAM\DataGrids\Asset\AssetDataGrid;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Models\Tag;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Models\Tag;
+use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
-use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
-use Symfony\Component\HttpFoundation\Response;
 
 class AssetController extends Controller
 {
@@ -44,7 +39,7 @@ class AssetController extends Controller
      *
      * @return void
      */
-    public function index():JsonResponse
+    public function index(): JsonResponse
     {
         try {
             return app(AssetDataGrid::class)->toJson();
@@ -55,8 +50,6 @@ class AssetController extends Controller
 
     /**
      * to upload the asset
-     *
-     * @return JsonResponse
      */
     public function upload(Request $request): JsonResponse
     {
@@ -142,7 +135,7 @@ class AssetController extends Controller
         $file = $request->file('file');
         $assetId = $request->get('asset_id');
         $asset = $this->assetRepository->find($assetId);
-        if (!$asset) {
+        if (! $asset) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
@@ -153,13 +146,13 @@ class AssetController extends Controller
         $directory = $this->directoryRepository->find($directoryId);
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
 
-        if (!$directory->isWritable($directoryPath)) {
+        if (! $directory->isWritable($directoryPath)) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.index.directory.not-writable', [
-                    'type' => 'file',
+                    'type'       => 'file',
                     'actionType' => 'create',
-                    'path' => $directoryPath,
+                    'path'       => $directoryPath,
                 ]),
             ], 403);
         }
@@ -182,23 +175,20 @@ class AssetController extends Controller
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'extension' => $file->getClientOriginalExtension(),
-                'path' => $filePath,
+                'path'      => $filePath,
             ]);
         }
 
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.edit.file_re_upload_success'),
-            'file' => $asset,
+            'file'    => $asset,
         ], 201);
     }
 
     /**
-    * Display the specified asset.
-    *
-    * @param int $id
-    * @return JsonResponse
-    */
+     * Display the specified asset.
+     */
     public function show(int $id): JsonResponse
     {
         $asset = $this->assetRepository->find($id);
@@ -235,11 +225,11 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.datagrid.show-success'),
-            'data' => [
-                'asset' => $asset,
-                'tags' => $tags,
-                'property' => $properties
-            ]
+            'data'    => [
+                'asset'    => $asset,
+                'tags'     => $tags,
+                'property' => $properties,
+            ],
         ], 200);
     }
 
@@ -280,11 +270,11 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.datagrid.edit-success'),
-            'data' => [
-                'asset' => $asset,
+            'data'    => [
+                'asset'    => $asset,
                 'comments' => $asset->comments,
-                'tags' => $tags
-            ]
+                'tags'     => $tags,
+            ],
         ], 200);
     }
 
@@ -320,7 +310,7 @@ class AssetController extends Controller
         if ($request->has('tags')) {
             $invalidTags = array_diff($request->input('tags'), Tag::pluck('id')->toArray());
 
-            if (!empty($invalidTags)) {
+            if (! empty($invalidTags)) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('dam::app.admin.dam.asset.tags.not-found'),
@@ -395,7 +385,7 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Asset found. You can download the file from the provided link.',
-            'data' => [
+            'data'    => [
                 'download_url' => $downloadUrl,
             ],
         ], 200);

@@ -45,10 +45,8 @@ class AssetTagRepository extends Repository
         return $asset;
     }
 
-     /**
+    /**
      * Get asset Tag.
-     *
-     * @param  int  $asset_Id
      */
     public function getTagsByAssetId(int $asset_Id)
     {

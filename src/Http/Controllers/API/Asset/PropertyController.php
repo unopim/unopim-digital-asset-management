@@ -4,12 +4,9 @@ namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
 use Webkul\Admin\Http\Controllers\Controller;
-use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\Core\Filesystem\FileStorer;
-use Webkul\DAM\DataGrids\Asset\AssetPropertyDataGrid;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 
@@ -26,28 +23,27 @@ class PropertyController extends Controller
 
     /**
      * Get the property
-     *
      */
     public function properties(int $id)
     {
         $property = $this->assetPropertyRepository->find($id);
 
-        if (!$property) {
+        if (! $property) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.not-found'),
             ], 404);
         }
+
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.properties.index.found-success'),
-            'data' => $property,
+            'data'    => $property,
         ], 200);
     }
 
     /**
      * Create new Property
-     *
      */
     public function addProperty(int $id)
     {
@@ -80,28 +76,25 @@ class PropertyController extends Controller
         ]), ['dam_asset_id' => $id]));
 
         return response()->json([
-            'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.properties.index.create-success'),
-            "property" => $property,
+            'success'  => true,
+            'message'  => trans('dam::app.admin.dam.asset.properties.index.create-success'),
+            'property' => $property,
         ], 200);
     }
 
     /**
      * Properties update
-     *
-     * @param  int  $id
-     * @return JsonResponse
      */
     public function update(Request $request, int $id): JsonResponse
     {
         $this->validate($request, [
-            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,' . $id,
+            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
             'value' => 'required',
         ]);
 
         $property = $this->assetPropertyRepository->find($id);
 
-        if (!$property) {
+        if (! $property) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.not-found'),
@@ -112,8 +105,8 @@ class PropertyController extends Controller
             $updatedProperty = $this->assetPropertyRepository->update($request->only(['value']), $id);
 
             return response()->json([
-                'success' => true,
-                'message' => trans('dam::app.admin.dam.asset.properties.index.update-success'),
+                'success'  => true,
+                'message'  => trans('dam::app.admin.dam.asset.properties.index.update-success'),
                 'property' => $updatedProperty,
             ], 200);
 
@@ -121,22 +114,19 @@ class PropertyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.update-failure'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * Delete the property
-     *
-     * @param  int  $id
-     * @return JsonResponse
      */
     public function delete(Request $request, int $id): JsonResponse
     {
         $property = $this->assetPropertyRepository->find($id);
 
-        if (!$property) {
+        if (! $property) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.not-found'),
@@ -155,7 +145,7 @@ class PropertyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.delete-failed'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

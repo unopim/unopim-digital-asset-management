@@ -3,7 +3,6 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Webkul\Admin\Http\Controllers\Controller;
-use Webkul\DAM\DataGrids\Asset\LinkedResourcesDataGrid;
 use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 class LinkedResourcesController extends Controller
@@ -16,16 +15,17 @@ class LinkedResourcesController extends Controller
     {
         $resource = $this->assetResourceMappingRepository->find($id);
 
-        if (!$resource) {
+        if (! $resource) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.linked-resources.not-found'),
             ], 404);
         }
+
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.linked-resources.found-success'),
-            'data' => $resource,
+            'data'    => $resource,
         ], 200);
     }
 }

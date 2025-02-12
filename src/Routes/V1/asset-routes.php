@@ -2,15 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Webkul\DAM\Http\Controllers\API\Asset\AssetController;
-use Webkul\DAM\Http\Controllers\API\Asset\DirectoryController;
 use Webkul\DAM\Http\Controllers\API\Asset\CommentController;
-use Webkul\DAM\Http\Controllers\API\Asset\TagController;
-use Webkul\DAM\Http\Controllers\API\Asset\PropertyController;
-use Webkul\DAM\Http\Controllers\ActionRequestController;
+use Webkul\DAM\Http\Controllers\API\Asset\DirectoryController;
 use Webkul\DAM\Http\Controllers\API\Asset\LinkedResourcesController;
-use Webkul\DAM\Http\Controllers\AssetPickerController;
-use Webkul\DAM\Http\Controllers\DAMController;
-use Webkul\DAM\Http\Controllers\FileController;
+use Webkul\DAM\Http\Controllers\API\Asset\PropertyController;
+use Webkul\DAM\Http\Controllers\API\Asset\TagController;
 
 Route::group([
     'middleware' => [
@@ -20,7 +16,7 @@ Route::group([
     /** Assets API Routes */
     Route::controller(AssetController::class)->prefix('assets')->group(function () {
         Route::get('', 'index');
-        Route::put('/edit/{id}','edit')->name('admin.api.dam.assets.edit');
+        Route::put('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
         Route::get('/{id}', 'show')->name('admin.api.dam.assets.show');
         Route::post('/reupload', 'reUpload')->name('admin.api.dam.assets.reUpload');
         Route::put('/{id}', 'update')->name('admin.api.dam.assets.update');
