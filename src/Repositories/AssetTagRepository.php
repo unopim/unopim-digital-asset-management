@@ -44,4 +44,16 @@ class AssetTagRepository extends Repository
 
         return $asset;
     }
+
+     /**
+     * Get asset Tag.
+     *
+     * @param  int  $asset_Id
+     */
+    public function getTagsByAssetId(int $asset_Id)
+    {
+        return Tag::whereHas('assets', function ($query) use ($asset_Id) {
+            $query->where('asset_id', $asset_Id);
+        })->get();
+    }
 }

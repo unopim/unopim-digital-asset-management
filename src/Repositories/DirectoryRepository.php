@@ -183,7 +183,7 @@ class DirectoryRepository extends Repository
     public function getDirectoryTree($id = null)
     {
         return $id
-            ? $this->model->where('id', '=', $id)->with(['assets', 'assets.directories'])->get()->toTree()
+            ? $this->model->with(['assets', 'assets.directories', 'children'])->where('id', $id)->first()
             : $this->model->with(['assets', 'assets.directories'])->get()->toTree();
     }
 
