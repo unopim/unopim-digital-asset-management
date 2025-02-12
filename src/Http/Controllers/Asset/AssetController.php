@@ -272,7 +272,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'), //asset not found for show
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'), // asset not found for show
             ], 404);
         }
 
@@ -295,7 +295,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'), //Asset not found for update
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'), // Asset not found for update
             ], 404);
         }
 
@@ -312,7 +312,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'), //Asset updated successfully
+            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'), // Asset updated successfully
             'asset'   => $asset,
         ]);
     }
@@ -330,7 +330,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'), //Asset not found to destroy
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'), // Asset not found to destroy
             ], 404);
         }
 
