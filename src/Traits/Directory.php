@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 
 trait Directory
@@ -63,5 +64,43 @@ trait Directory
         }
 
         return $newFileName;
+    }
+
+    public function mappedWithDirectory($assetIds, $directoryId): ?ModelDirectory
+    {
+        $directory = $this->directoryRepository->find($directoryId);
+
+        if (! $directory) {
+            return null;
+        }
+
+        $directory->assets()->attach($assetIds);
+
+        return $directory;
+    }
+
+    public function getMetadata(string $path, string $disk = 'private')
+    {
+        try {
+            $filePath = Storage::disk($disk)->path($path);
+
+            if (! Storage::disk($disk)->exists($path) || ! is_readable($filePath)) {
+                throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
+            }
+
+            return [
+                'success' => true,
+                'data'    => Image::make($filePath)->exif(),
+            ];
+
+        } catch (\Exception $e) {
+
+            report($e);
+
+            return [
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.edit.failed-to-read', ['exception' => $e->getMessage()]),
+            ];
+        }
     }
 }
