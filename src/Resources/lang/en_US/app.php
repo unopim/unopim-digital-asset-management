@@ -75,7 +75,6 @@ return [
                     'created-success'                           => 'Directory created successfully',
                     'updated-success'                           => 'Directory updated successfully',
                     'moved-success'                             => 'Directory moved successfully',
-                    'fetch-all-success'                         => 'Directories fetched successfully',
                     'can-not-deleted'                           => 'Directory cannot be deleted as it is Root Directory.',
                     'deleting-in-progress'                      => 'Directory deleting in-progress',
                     'can-not-copy'                              => 'Directory cannot be copy as it is Root Directory.',
@@ -126,27 +125,19 @@ return [
                         'delete-success' => 'Asset Property Deleted Successfully',
                         'create-success' => 'Asset Property Created Successfully',
                         'update-success' => 'Asset Property Updated Successfully',
-                        'not-found'      => 'Property Not Found',
-                        'found-success'  => 'Property Found Successfully',
                     ],
                 ],
                 'comments' => [
                     'index'  => 'Add Comment',
                     'create' => [
                         'create-success' => 'Comment has been successfully added',
-                        'create-failure' => 'Comment failed to create',
                     ],
-                    'post-comment'    => 'Post Comment',
-                    'post-reply'      => 'Post Reply',
-                    'reply'           => 'Reply',
-                    'add-reply'       => 'Add Reply',
-                    'add-comment'     => 'Add Comment',
-                    'no-comments'     => 'No Comments Yet',
-                    'not-found'       => 'Comments Not Found',
-                    'updated-success' => 'Comment updated Successfully',
-                    'update-failed'   => 'Comment failed to update',
-                    'delete-success'  => 'Asset Comment Deleted Successfully',
-                    'delete-failed'   => 'Asset Comment failed to delete',
+                    'post-comment' => 'Post Comment',
+                    'post-reply'   => 'Post Reply',
+                    'reply'        => 'Reply',
+                    'add-reply'    => 'Add Reply',
+                    'add-comment'  => 'Add Comment',
+                    'no-comments'  => 'No Comments Yet',
 
                 ],
                 'edit' => [
@@ -195,6 +186,12 @@ return [
                         ],
                     ],
 
+                    'rename' => [
+                        'title'          => 'Rename',
+                        'file-name'      => 'File Name',
+                        'rename-btn'     => 'Save',
+                    ],
+
                     'tag-already-exists'        => 'Tag already exists',
                     'image-source-not-readable' => 'Image source not readable',
                     'failed-to-read'            => 'Failed to read image metadata :exception',
@@ -213,24 +210,6 @@ return [
                             'resource-view' => 'Resource View',
                         ],
                     ],
-                    'found-success' => 'Resource Found Successfully',
-                    'not-found'     => 'Resource Not Found',
-                ],
-                'tags' => [
-                    'index'  => 'Add tags',
-                    'create' => [
-                        'create-success' => 'Tags has been successfully added',
-                        'create-failure' => 'Tags failed to create',
-                    ],
-
-                    'no-comments'    => 'No Tags Yet',
-                    'found-success'  => 'Tag Found Successfully',
-                    'not-found'      => 'Tags Not Found',
-                    'update-success' => 'Tags updated Successfully',
-                    'update-failed'  => 'Tags failed to update',
-                    'delete-success' => 'Asset Tags Deleted Successfully',
-                    'delete-failed'  => 'Asset Tags failed to delete',
-
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
                 'delete-failed-due-to-attached-resources' => 'Failed to delete asset as it is linked to resources (Asset Name: :assetNames)',
@@ -238,12 +217,6 @@ return [
                     'mass-delete-success'  => 'Mass Deleted Successfully.',
                     'files_upload_success' => 'Files Uploaded Successfully.',
                     'file_upload_success'  => 'File Uploaded Successfully.',
-                    'not-found'            => 'File not Found',
-                    'edit-success'         => 'File Uploaded Successfully',
-                    'show-success'         => 'File Found Successfully',
-                    'update-success'       => 'File Updated Successfully',
-                    'not-found-to-update'  => 'File does not Exits',
-                    'not-found-to-destroy' => 'File does not Exits',
                 ],
             ],
         ],
@@ -295,11 +268,7 @@ return [
             'comment' => [
                 'required' => 'The Comment message is required.',
             ],
-            'tag' => [
-                'name' => [
-                    'required' => 'The Tag field is required.',
-                ],
-            ],
+
             'property' => [
                 'name' => [
                     'required' => 'The Name field is required.',

@@ -60,6 +60,7 @@ class DeleteDirectory implements ShouldQueue
             $directory->delete();
 
             $directoryRepository->deleteDirectoryWithStorage($path);
+            $directoryRepository->deleteThumbnailDirectoryWithStorage($path);
         }
     }
 }

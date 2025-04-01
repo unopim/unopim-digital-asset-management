@@ -3,7 +3,7 @@
 namespace Webkul\DAM\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\DAM\Contracts\Tag as TagContract;
 
 class Tag extends Model implements TagContract
@@ -12,8 +12,8 @@ class Tag extends Model implements TagContract
 
     protected $fillable = ['name'];
 
-    public function assets(): BelongsToMany
+    public function assets(): BelongsTo
     {
-        return $this->belongsToMany(Asset::class, 'dam_asset_tag', 'tag_id', 'asset_id');
+        return $this->belongsTo(Asset::class, 'dam_asset_id');
     }
 }

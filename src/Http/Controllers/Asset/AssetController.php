@@ -138,7 +138,6 @@ class AssetController extends Controller
         try {
             foreach ($files as $file) {
                 if ($file instanceof UploadedFile) {
-
                     $originalName = $file->getClientOriginalName();
                     $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
 
@@ -165,6 +164,8 @@ class AssetController extends Controller
                         'extension' => $file->getClientOriginalExtension(),
                         'path'      => $filePath,
                     ]);
+                    
+                    Event::dispatch('dam.asset.upload.after', [$asset, auth()->user()]);
 
                     $assetIds[] = $asset->id;
 
@@ -198,7 +199,7 @@ class AssetController extends Controller
     {
         $request->validate([
             'file'     => 'required',
-            'file.*'   => 'file',
+            'file.*'   => 'file|max:2048',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -231,6 +232,8 @@ class AssetController extends Controller
         if ($file instanceof UploadedFile) {
 
             Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+            $thumbnailPath = 'thumbnails/'.$asset->path;
+            Storage::disk(Directory::ASSETS_DISK)->delete($thumbnailPath);
 
             $originalName = $file->getClientOriginalName();
             $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
@@ -250,6 +253,8 @@ class AssetController extends Controller
                 'extension' => $file->getClientOriginalExtension(),
                 'path'      => $filePath,
             ]);
+
+            Event::dispatch('dam.asset.re_upload.after', [$asset, auth()->user()]);
         }
 
         return response()->json([
@@ -272,7 +277,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'), // asset not found for show
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'), //asset not found for show
             ], 404);
         }
 
@@ -295,7 +300,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'), // Asset not found for update
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'), //Asset not found for update
             ], 404);
         }
 
@@ -312,7 +317,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'), // Asset updated successfully
+            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'), //Asset updated successfully
             'asset'   => $asset,
         ]);
     }
@@ -330,7 +335,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'), // Asset not found to destroy
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'), //Asset not found to destroy
             ], 404);
         }
 
@@ -342,6 +347,8 @@ class AssetController extends Controller
         }
 
         $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+        $thumbnailPath = 'thumbnails/'.$asset->path;
+        Storage::disk(Directory::ASSETS_DISK)->delete($thumbnailPath);
 
         if (! $fileDeleted) {
             return new JsonResponse([
@@ -380,6 +387,8 @@ class AssetController extends Controller
                     }
 
                     $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+                    $thumbnailPath = 'thumbnails/'.$asset->path;
+                    Storage::disk(Directory::ASSETS_DISK)->delete($thumbnailPath);
 
                     if (! $fileDeleted) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
@@ -614,6 +623,8 @@ class AssetController extends Controller
             'path'      => sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath),
             'file_name' => $uniqueFileName,
         ]);
+
+        Event::dispatch('dam.asset.move.asset.after', [$newDirectory, $asset, auth()->user()]);
 
         $this->directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
 

@@ -64,7 +64,7 @@
                                             @if (bouncer()->hasPermission('dam.asset.destroy'))
                                                 <span 
                                                     class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
-                                                    @click="deleteImage(record.id)"
+                                                    @click="deleteImage(record.actions.find(action => action.index === 'delete'))"
                                                 >
                                                 </span>
                                             @endif
@@ -73,7 +73,7 @@
                                             @if (bouncer()->hasPermission('dam.asset.edit'))
                                                 <div 
                                                     class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
-                                                    @click="editImage(record.id)"
+                                                    @click="editImage(record.actions.find(action => action.index === 'edit'))"
                                                 >
                                                 </div>
                                             @endif
@@ -147,11 +147,11 @@
             },
 
             methods: {
-                deleteImage(recordId) {
+                deleteImage(record) {
                     this.$emitter.emit('open-delete-modal', {
                         agree: () => {
                             this.$axios
-                                .delete(`{{ route('admin.dam.assets.destroy', '') }}/${recordId}`)
+                                .delete(record.url)
                                 .then(({
                                     data
                                 }) => {
@@ -172,8 +172,8 @@
                     this.showContextMenuFlag = false;
                     document.removeEventListener('click', this.closeContextMenu);
                 },
-                editImage(recordId) {
-                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;                    
+                editImage(record) {
+                    window.location.href = record.url;                    
                 }
             }
         });

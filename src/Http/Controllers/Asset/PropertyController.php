@@ -65,12 +65,14 @@ class PropertyController extends Controller
             ],
         ], $messages);
 
-        $this->assetPropertyRepository->create(array_merge(request()->only([
+        $property = $this->assetPropertyRepository->create(array_merge(request()->only([
             'name',
             'type',
             'language',
             'value',
         ]), ['dam_asset_id' => $id]));
+
+        Event::dispatch('dam.asset.asset_property.create.after', [$property, auth()->user()]);
 
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.properties.index.create-success'),

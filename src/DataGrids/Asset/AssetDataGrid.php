@@ -190,9 +190,15 @@ class AssetDataGrid extends DataGrid
                 if (in_array($requestedColumn, ['directory_id', 'directory_asset_id'])) {
                     $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedColumn, $requestedValues) {
                         foreach ($requestedValues as $value) {
-                            $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $value);
+                            if ('directory_id' === $requestedColumn) {
+                                $directoryIds = $this->getAllChildDirectoriesAndSelf($value);
+                                $scopeQueryBuilder->orWhereIn($this->customFilterColumns[$requestedColumn], $directoryIds);
+                            } else {
+                                $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $value);
+                            }
                         }
                     });
+
 
                     continue;
                 }
@@ -254,6 +260,60 @@ class AssetDataGrid extends DataGrid
         }
 
         return $this->queryBuilder;
+    }
+
+    /**
+     * Get all child directives with self
+     */
+    public function getAllChildDirectoriesAndSelf(int $parentId): array
+    {
+        $queryBuilder = DB::select("
+            WITH RECURSIVE directory_hierarchy AS (
+                SELECT id
+                FROM dam_directories
+                WHERE id = :parent_id
+            
+                UNION ALL
+            
+                SELECT d.id
+                FROM dam_directories d
+                INNER JOIN directory_hierarchy dh ON d.parent_id = dh.id
+            )
+            SELECT * 
+            FROM directory_hierarchy
+        ", ['parent_id' => $parentId]);
+        
+        $directoryIds = array_column($queryBuilder, 'id');
+
+        return $directoryIds;
+    }
+
+    /**
+     * Prepare actions.
+     *
+     * @return void
+     */
+    public function prepareActions()
+    {
+        $this->addAction([
+            'index'  => 'edit',
+            'icon'   => 'icon-edit',
+            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
+            'method' => 'GET',
+            'url'    => function ($row) {
+                return route('admin.dam.assets.edit', $row->id);
+            },
+        ]);
+
+        $this->addAction([
+            'index'  => 'delete',
+            'icon'   => 'icon-delete',
+            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
+            'method' => 'DELETE',
+            'url'    => function ($row) {
+                return route('admin.dam.assets.destroy', ['id' => $row->id]);
+            },
+        ]);
     }
 
     /**

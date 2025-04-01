@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -51,6 +52,7 @@ class RenameDirectory implements ShouldQueue
             $path = $directory->generatePath();
             foreach ($directory->assets()->get() as $asset) {
                 $asset->update(['path' => sprintf('%s/%s/%s', Directory::ASSETS_DIRECTORY, $path, $asset->file_name)]);
+                Event::dispatch('dam.asset.rename.directory.after', [$directory, $asset, $this->userId]);
             }
         }
     }

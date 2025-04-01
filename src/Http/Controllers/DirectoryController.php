@@ -4,6 +4,7 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -85,6 +86,8 @@ class DirectoryController
                 'parent_id' => $parentDirectoryId,
             ]);
 
+            Event::dispatch('dam.asset.directory.create.after', [$newDirectory, auth()->user()]);
+
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
                 'data'    => $newDirectory,
@@ -120,6 +123,8 @@ class DirectoryController
                 $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
 
                 RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+
+                Event::dispatch('dam.asset.directory.update.after', [$directory, auth()->user()]);
             }
 
             return new JsonResponse([

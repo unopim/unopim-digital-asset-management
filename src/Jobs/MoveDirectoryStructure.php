@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -61,6 +62,8 @@ class MoveDirectoryStructure
 
             $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
 
+            $directoryRepository->createThumbnailDirectoryWithStorage($newPath, $oldPath);
+
             $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -93,6 +96,7 @@ class MoveDirectoryStructure
         $path = $directory->generatePath();
         foreach ($directory->assets()->get() as $asset) {
             $asset->update(['path' => sprintf('%s/%s/%s', ModelDirectory::ASSETS_DIRECTORY, $path, $asset->file_name)]);
+            Event::dispatch('dam.asset.move.directory.after', [$directory, $asset, $this->userId]);
         }
     }
 }

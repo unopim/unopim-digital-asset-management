@@ -106,7 +106,7 @@ class DirectoryRepository extends Repository
         // Step 1: Replicate the node itself (without its children)
         $childrens = $directory->children()->get();
 
-        // @TODO: Need to improve this
+        //@TODO: Need to improve this
 
         $newDirectory = $directory->replicate();   // Create a copy of the node
         $newDirectory->parent_id = $newParentId;  // Assign the new parent ID (or set it to null for root)
@@ -151,11 +151,49 @@ class DirectoryRepository extends Repository
     }
 
     /**
+     * Create a thumbnail directory with storage
+     */
+    public function createThumbnailDirectoryWithStorage($newPath, $oldPath = null)
+    {
+        try {
+            $newDirectory = sprintf('thumbnails/%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
+
+            if (! $oldPath) {
+                Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectory);
+
+                return;
+            }
+
+            $oldDirectory = sprintf('thumbnails/%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
+            // Check if a directory exists
+            if (Storage::disk(Directory::ASSETS_DISK)->exists($oldDirectory)) {
+                Storage::disk(Directory::ASSETS_DISK)->move($oldDirectory, $newDirectory);
+            } else {
+                Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectory);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Delete a directory from storage
      */
     public function deleteDirectoryWithStorage($path)
     {
         $directory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $path);
+
+        if (Storage::disk(Directory::ASSETS_DISK)->exists($directory)) {
+            Storage::disk(Directory::ASSETS_DISK)->deleteDirectory($directory);
+        }
+    }
+
+    /**
+     * Delete a  thumbnail directory from storage
+     */
+    public function deleteThumbnailDirectoryWithStorage($path)
+    {
+        $directory = sprintf('thumbnails/%s/%s', Directory::ASSETS_DIRECTORY, $path);
 
         if (Storage::disk(Directory::ASSETS_DISK)->exists($directory)) {
             Storage::disk(Directory::ASSETS_DISK)->deleteDirectory($directory);
@@ -183,7 +221,7 @@ class DirectoryRepository extends Repository
     public function getDirectoryTree($id = null)
     {
         return $id
-            ? $this->model->with(['assets', 'assets.directories', 'children'])->where('id', $id)->first()
+            ? $this->model->where('id', '=', $id)->with(['assets', 'assets.directories'])->get()->toTree()
             : $this->model->with(['assets', 'assets.directories'])->get()->toTree();
     }
 

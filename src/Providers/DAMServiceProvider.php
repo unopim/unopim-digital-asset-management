@@ -80,10 +80,5 @@ class DAMServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../Config/category_field_types.php', 'category_field_types'
         );
-
-        Route::prefix('api')
-            ->middleware('api')
-            ->group(__DIR__.'/../Routes/api.php');
-
     }
 }
