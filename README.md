@@ -57,6 +57,14 @@ UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system buil
    php artisan dam-package:install;
    php artisan optimize:clear;
    ```
+- Start the queue to execute actions, such as job operations, by running the following command:
+    ```bash
+      php artisan queue:work
+    ```
+- If the `queue:work` command is configured to run via a process manager like Supervisor, restart the Supervisor (or related) service after module installation to apply changes:
+     ```bash
+     sudo service supervisor restart
+     ```
 
 ## Installation without Composer
 
