@@ -61,9 +61,9 @@ UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system buil
     ```bash
       php artisan queue:work
     ```
-- If the `queue:work` command is configured to run via a process manager like Supervisor, restart the Supervisor (or related) service after module installation to apply changes:
+- If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
-     sudo service supervisor restart
+     sudo supervisorctl restart unopim-worker
      ```
 
 ## Installation without Composer
@@ -101,7 +101,7 @@ To manually install UnoPim DAM:
      ```bash
        php artisan queue:work
      ```
-   - If the `queue:work` command is configured to run via a process manager like Supervisor, restart the Supervisor (or related) service after module installation to apply changes:
+   - If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
-     sudo service supervisor restart
+     sudo supervisorctl restart unopim-worker
      ```
