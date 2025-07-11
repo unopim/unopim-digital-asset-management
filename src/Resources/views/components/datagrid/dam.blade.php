@@ -124,12 +124,8 @@
                 this.$emitter.on('data-grid:refresh', () => this.get())
 
                 this.$emitter.on('data-grid:filter', (data) => {
-                    data.value.forEach( (value, index) => {
-                        this.applyFilter(data.column, value);
-                    });
-
-                   
-                   this.get();
+                    this.applyFilter(data.column, data.value);
+                    this.get();
                 })
 
                 this.boot();
@@ -495,7 +491,7 @@
                                 } else {
                                     this.applied.filters.columns.push({
                                         ...column,
-                                        value: [requestedValue]
+                                        value: requestedValue
                                     });
                                 }
 
