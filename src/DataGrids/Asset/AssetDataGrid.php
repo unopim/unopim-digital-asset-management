@@ -5,6 +5,7 @@ namespace Webkul\DAM\DataGrids\Asset;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\FileController;
+use Webkul\DAM\Models\Directory;
 use Webkul\DataGrid\DataGrid;
 use Webkul\DataGrid\Enums\ColumnTypeEnum;
 
@@ -66,7 +67,7 @@ class AssetDataGrid extends DataGrid
 
         $this->customFilterColumns = [
             'directory_asset_id' => 'dam_asset_directory.asset_id',
-            'directory_id'       => 'dam_directories.id',
+            'directory_id'       => 'dam_directories._lft',
         ];
 
         return $queryBuilder;
@@ -187,11 +188,24 @@ class AssetDataGrid extends DataGrid
             } else {
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
 
-                if (in_array($requestedColumn, ['directory_id', 'directory_asset_id'])) {
+                if ($requestedColumn === 'directory_id') {
                     $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedColumn, $requestedValues) {
-                        foreach ($requestedValues as $value) {
-                            $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $value);
-                        }
+                        $parent = Directory::where('id', $requestedValues)->first();
+                        $scopeQueryBuilder->orWhereBetween(
+                            $this->customFilterColumns[$requestedColumn],
+                            [
+                                $parent->_lft,
+                                $parent->_rgt,
+                            ]
+                        );
+                    });
+
+                    continue;
+                }
+
+                if ($requestedColumn === 'directory_asset_id') {
+                    $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedColumn, $requestedValues) {
+                        $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $requestedValues);
                     });
 
                     continue;

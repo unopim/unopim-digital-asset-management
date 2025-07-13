@@ -147,36 +147,18 @@
 
                     this.parentItem = item.hasOwnProperty('directories') ? item.directories[0] : item;
 
-                    let column = type == 'directory' ? 'directory_id' : 'directory_asset_id';
-
-                    let value = [this.selectedItem.id];
-
-                    if (type == 'directory') {
-                        value = [...value, ...this.findAllDirectoryIds(this.selectedItem)];
-                    }
+                    let column = type === 'directory' ? 'directory_id' : 'directory_asset_id';
 
                     this.$emitter.emit('current-directory', this.selectedItem);
                     this.$emitter.emit('data-grid:reset-all-filters');
-                    this.$emitter.emit('data-grid:filter', { column: {column: column, index: column}, value});
-                },
-
-                findAllDirectoryIds(selectedItem){
-                    let ids = [];
-
-                    function traverse(item) {
-                        if (item.id) {
-                            ids.push(item.id);
-                        }
-
-                        if (item.children && item.children.length > 0) {
-                            item.children.forEach(child => traverse(child));
-                        }
-                    }
-
-                    traverse(selectedItem);
-
-                    return ids;
-                },
+                    this.$emitter.emit('data-grid:filter', {
+                        column: {
+                            column: column,
+                            index: column
+                        },
+                        value: this.selectedItem.id
+                    });
+                }
             }
         });
     </script>
