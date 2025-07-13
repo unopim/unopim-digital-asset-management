@@ -67,7 +67,7 @@ class AssetDataGrid extends DataGrid
 
         $this->customFilterColumns = [
             'directory_asset_id' => 'dam_asset_directory.asset_id',
-            'directory_id'       => 'dam_directories.id',
+            'directory_id'       => 'dam_directories._lft',
         ];
 
         return $queryBuilder;
