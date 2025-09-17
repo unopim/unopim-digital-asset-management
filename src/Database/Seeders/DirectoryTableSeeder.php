@@ -40,9 +40,10 @@ class DirectoryTableSeeder extends Seeder
         ]);
 
         $newDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, 'Root');
+        $disk = Directory::getAssetDisk();
 
-        if (! Storage::disk(Directory::ASSETS_DISK)->exists($newDirectory)) {
-            Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectory);
+        if (! Storage::disk($disk)->exists($newDirectory)) {
+            Storage::disk($disk)->makeDirectory($newDirectory);
         }
     }
 }

@@ -52,7 +52,6 @@ class CommentController extends Controller
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.comments.create.create-success'),
         ]);
-
     }
 
     /**

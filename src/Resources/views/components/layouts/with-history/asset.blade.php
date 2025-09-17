@@ -3,6 +3,7 @@
     <head>
         
         {!! view_render_event('unopim.admin.layout.head.before') !!}
+        {!! view_render_event('unopim.admin.layout.head') !!}
         
         <title>{{ $title ?? '' }}</title>
 

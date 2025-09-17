@@ -2,9 +2,12 @@
 
 namespace Webkul\DAM\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\DAM\Contracts\AssetProperty as AssetPropertyContract;
+use Webkul\DAM\Database\Factories\PropertyFactory;
 use Webkul\DAM\Presenters\AssetProperty as AssetPropertyPresenter;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
 use Webkul\HistoryControl\Interfaces\PresentableHistoryInterface;
@@ -12,6 +15,7 @@ use Webkul\HistoryControl\Traits\HistoryTrait;
 
 class AssetProperty extends Model implements AssetPropertyContract, HistoryAuditable, PresentableHistoryInterface
 {
+    use HasFactory;
     use HistoryTrait;
 
     protected $historyTags = ['asset'];
@@ -52,5 +56,13 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
             'value'    => AssetPropertyPresenter::class,
             'language' => AssetPropertyPresenter::class,
         ];
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return PropertyFactory::new();
     }
 }

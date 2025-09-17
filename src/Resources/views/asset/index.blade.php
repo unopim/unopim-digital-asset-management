@@ -1,13 +1,12 @@
 <x-admin::layouts>
     @push('styles')
-        @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-        
+    @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
     @endpush
 
     <x-slot:title>
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
-     
+
 
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
@@ -16,11 +15,11 @@
     {!! view_render_event('unopim.dam.admin.main.after') !!}
 
     @pushOnce('scripts')
-        <script
-            type="text/x-template"
-            id="v-dam-main-template"
-        >
-            <div>
+    <script
+        type="text/x-template"
+        id="v-dam-main-template"
+    >
+        <div>
                 {!! view_render_event('dam.admin.main.form.before') !!}
                     <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
                         <!-- left sub component -->
@@ -60,27 +59,27 @@
             </div>
         </script>
 
-        <script type="module">
-            app.component('v-dam-main', {
-                template: '#v-dam-main-template',
+    <script type="module">
+        app.component('v-dam-main', {
+            template: '#v-dam-main-template',
 
-                data() {
-                    return {}
-                },
+            data() {
+                return {}
+            },
 
-                methods: {
+            methods: {
 
-                }
-            })
-        </script>
+            }
+        })
+    </script>
     @endPushOnce
 
     @pushOnce('scripts')
-        <script
-            type="text/x-template"
-            id="v-dam-upload-template"
-        >
-            <div>
+    <script
+        type="text/x-template"
+        id="v-dam-upload-template"
+    >
+        <div>
                 <div class="flex justify-between items-center w-full">
                     <p
                         class="text-base text-gray-600 dark:text-gray-300 font-bold"
@@ -126,61 +125,66 @@
             </div>
     
         </script>
-        <script type="module">
-    
-            app.component('v-dam-upload', {
-                template: '#v-dam-upload-template',
-    
-                data() {
-                    return {
-                        currentDirectory: null,
-                    }
-                },
+    <script type="module">
+        app.component('v-dam-upload', {
+            template: '#v-dam-upload-template',
 
-                mounted() {
-                    this.$emitter.on('current-directory', (data) => {
-                        this.currentDirectory = data;
-                    });
-                },
-    
-                methods: {
-                    onFileChange(e) {
-                        e.preventDefault();
-                        let fileInput = e.target.files;
-    
-                        if (fileInput.length > 0) {
-                            let formData = new FormData();
-                                    
-                            for (let index = 0; index < fileInput.length; index++) {
-                                formData.append('files[]', fileInput[index]);
-                            }
+            data() {
+                return {
+                    currentDirectory: null,
+                }
+            },
 
-                            if (this.currentDirectory) {
-                                formData.append('directory_id', this.currentDirectory.id);
-                            }
-                            
-                            this.handleFileUpload(formData);
+            mounted() {
+                this.$emitter.on('current-directory', (data) => {
+                    this.currentDirectory = data;
+                });
+            },
+
+            methods: {
+                onFileChange(e) {
+                    e.preventDefault();
+                    let fileInput = e.target.files;
+
+                    if (fileInput.length > 0) {
+                        let formData = new FormData();
+
+                        for (let index = 0; index < fileInput.length; index++) {
+                            formData.append('files[]', fileInput[index]);
                         }
 
-                        e.target.value = null;
-                    },
-                    handleFileUpload(formData) {   
-                        this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            }
-                        }).then((response) => {
-                            this.$refs.datagrid.get();
-                            this.$emitter.emit('uploaded-assets', response.data.files);
-                            this.$emitter.emit('add-flash', {type: 'success', message: response.data.message});
-                        }).catch((error) => {
-                            console.log(error);
-                            this.$emitter.emit('add-flash', {type: 'error', message: error.response.data.message});
-                                console.error('Upload failed:', error);
-                        });
+                        if (this.currentDirectory) {
+                            formData.append('directory_id', this.currentDirectory.id);
+                        }
+
+                        this.handleFileUpload(formData);
                     }
+
+                    e.target.value = null;
+                },
+                handleFileUpload(formData) {
+                    this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    }).then((response) => {
+                        this.$refs.datagrid.get();
+                        this.$emitter.emit('uploaded-assets', response.data.files);
+                        this.$emitter.emit('add-flash', {
+                            type: 'success',
+                            message: response.data.message
+                        });
+                    }).catch((error) => {
+                        console.log(error);
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: error.response.data.message
+                        });
+                        console.error('Upload failed:', error);
+                    });
                 }
-            })
-        </script>
+            }
+        })
+    </script>
     @endPushOnce
 </x-admin::layouts>

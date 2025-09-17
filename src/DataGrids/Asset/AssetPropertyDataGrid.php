@@ -101,7 +101,6 @@ class AssetPropertyDataGrid extends DataGrid
             'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
             'method' => 'GET',
             'url'    => function ($row) {
-
                 return route('admin.dam.asset.property.edit', $row->id);
             },
         ]);

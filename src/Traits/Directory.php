@@ -4,6 +4,7 @@ namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 
 trait Directory
@@ -57,11 +58,20 @@ trait Directory
         $newFileName = $fileName;
         $counter = 1;
 
-        // Check if the file exists and modify the file name until a unique one is found
-        while (Storage::disk(ModelDirectory::ASSETS_DISK)->exists(sprintf('%s/%s', $directory, $newFileName))) {
+        $disk = ModelDirectory::getAssetDisk();
+
+        do {
+            $filePath = sprintf('%s/%s', $directory, $newFileName);
+
+            $fileExistsInStorage = Storage::disk($disk)->exists($filePath);
+            $fileExistsInDatabase = Asset::where('path', $filePath)->exists();
+            if (! $fileExistsInStorage && ! $fileExistsInDatabase) {
+                break;
+            }
+
             $newFileName = $nameWithoutExtension.'('.$counter.').'.$extension;
             $counter++;
-        }
+        } while (true);
 
         return $newFileName;
     }
@@ -79,20 +89,22 @@ trait Directory
         return $directory;
     }
 
-    public function getMetadata(string $path, string $disk = 'private')
+    public function getMetadata(string $path, string $disk)
     {
         try {
-            $filePath = Storage::disk($disk)->path($path);
+            $storage = Storage::disk($disk);
 
-            if (! Storage::disk($disk)->exists($path) || ! is_readable($filePath)) {
+            if (! $storage->exists($path)) {
                 throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
+            $fileContent = $storage->get($path);
+            $image = Image::make($fileContent);
+
             return [
                 'success' => true,
-                'data'    => Image::make($filePath)->exif(),
+                'data'    => $image->exif(),
             ];
-
         } catch (\Exception $e) {
 
             report($e);

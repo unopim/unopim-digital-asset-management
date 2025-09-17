@@ -25,6 +25,40 @@ class AssetController extends Controller
 {
     use DirectoryTrait;
 
+    public const FORBIDDEN_EXTENSIONS = [
+        'php',
+        'js',
+        'py',
+        'sh',
+        'bat',
+        'pl',
+        'cgi',
+        'asp',
+        'aspx',
+        'jsp',
+        'exe',
+        'rb',
+        'jar',
+    ];
+
+    public const FORBIDDEN_MIME_TYPES = [
+        'application/x-php',
+        'application/x-javascript',
+        'text/javascript',
+        'application/javascript',
+        'text/x-python',
+        'application/x-sh',
+        'application/x-bat',
+        'application/x-perl',
+        'application/x-cgi',
+        'text/x-asp',
+        'application/x-aspx',
+        'application/x-jsp',
+        'application/x-msdownload',
+        'application/java-archive',
+        'application/x-ruby',
+    ];
+
     /**
      *  Create instance
      */
@@ -64,8 +98,9 @@ class AssetController extends Controller
 
         $asset->previewPath = route('admin.dam.file.preview', ['path' => urlencode($asset->path), 'size' => '1356']);
 
+        $disk = Directory::getAssetDisk();
         if ($asset->file_type === 'image') {
-            $metaData = $this->getMetadata($asset->path);
+            $metaData = $this->getMetadata($asset->path, $disk);
 
             if ($metaData['success']) {
                 // fix: Remove problematic metadata entries to prevent errors
@@ -88,22 +123,28 @@ class AssetController extends Controller
     /**
      * Get metadata for a given file
      */
-    public function getMetadata(string $path, string $disk = 'private')
+    public function getMetadata(string $path, string $disk)
     {
         try {
-            $filePath = Storage::disk($disk)->path($path);
+            $storage = Storage::disk($disk);
 
-            if (! Storage::disk($disk)->exists($path) || ! is_readable($filePath)) {
+            if (! $storage->exists($path)) {
                 throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
-            return [
-                'success' => true,
-                'data'    => Image::make($filePath)->exif(),
+            $fileContent = $storage->get($path);
+            $image = Image::make($fileContent);
+
+            $data = [
+                'Width'     => $image->width(),
+                'Height'    => $image->height(),
             ];
 
+            return [
+                'success' => true,
+                'data'    => $data,
+            ];
         } catch (\Exception $e) {
-
             report($e);
 
             return [
@@ -126,6 +167,9 @@ class AssetController extends Controller
             'directory_id' => 'required|exists:dam_directories,id',
         ]);
 
+        $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
+        $forbiddenMimeTypes = self::FORBIDDEN_MIME_TYPES;
+
         $files = $request->file('files');
         $directoryId = $request->get('directory_id');
 
@@ -139,6 +183,13 @@ class AssetController extends Controller
             foreach ($files as $file) {
                 if ($file instanceof UploadedFile) {
 
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $mimeType = $file->getMimeType();
+
+                    if (in_array($extension, $forbiddenExtensions) || in_array($mimeType, $forbiddenMimeTypes)) {
+                        throw new \Exception(trans('dam::app.admin.dam.index.directory.not-allowed'));
+                    }
+
                     $originalName = $file->getClientOriginalName();
                     $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
 
@@ -150,11 +201,13 @@ class AssetController extends Controller
                         ]));
                     }
 
+                    $disk = Directory::getAssetDisk();
+
                     $filePath = $this->fileStorer->store(
                         path: $directoryPath,
                         file: $file,
                         fileName: $uniqueFileName,
-                        options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => Directory::ASSETS_DISK]
+                        options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
                     );
 
                     $asset = Asset::create([
@@ -165,9 +218,7 @@ class AssetController extends Controller
                         'extension' => $file->getClientOriginalExtension(),
                         'path'      => $filePath,
                     ]);
-
                     $assetIds[] = $asset->id;
-
                     array_push($uploadFiles, $asset);
                 }
             }
@@ -179,7 +230,7 @@ class AssetController extends Controller
             return response()->json([
                 'success' => true,
                 'files'   => $uploadFiles,
-                'message' => count($files) > 1 ? trans('dam::app.admin.dam.asset.datagrid.files_upload_success') : trans('dam::app.admin.dam.asset.datagrid.file_upload_success'),
+                'message' => count($files) > 1 ? trans('dam::app.admin.dam.asset.datagrid.files-upload-success') : trans('dam::app.admin.dam.asset.datagrid.file-upload-success'),
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -190,7 +241,7 @@ class AssetController extends Controller
     }
 
     /**
-     * to upload the asset
+     * to Re upload the asset
      *
      * @return void
      */
@@ -203,9 +254,7 @@ class AssetController extends Controller
         ]);
 
         $file = $request->file('file');
-
         $assetId = $request->get('asset_id');
-
         $asset = $this->assetRepository->find($assetId);
 
         if (! $asset) {
@@ -214,32 +263,44 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
             ], 404);
         }
+
         $directoryId = $asset?->directories()?->get()[0]?->id;
-
         $directory = $this->directoryRepository->find($directoryId);
-
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
 
-        if (! $directory->isWritable($directoryPath)) {
-            throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                'type'       => 'file',
-                'actionType' => 'create',
-                'path'       => $directoryPath,
-            ]));
-        }
+        $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
+        $forbiddenMimeTypes = self::FORBIDDEN_MIME_TYPES;
 
         if ($file instanceof UploadedFile) {
+            $extension = strtolower($file->getClientOriginalExtension());
+            $mimeType = $file->getMimeType();
 
-            Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+            if (in_array($extension, $forbiddenExtensions) || in_array($mimeType, $forbiddenMimeTypes)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => trans('dam::app.admin.dam.index.directory.not-allowed', ['fileName' => $file->getClientOriginalName()]),
+                ], 400);
+            }
+
+            $disk = Directory::getAssetDisk();
+            Storage::disk($disk)->delete($asset->path);
 
             $originalName = $file->getClientOriginalName();
             $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
+
+            if (! $directory->isWritable($directoryPath)) {
+                throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                    'type'       => 'file',
+                    'actionType' => 'create',
+                    'path'       => $directoryPath,
+                ]));
+            }
 
             $filePath = $this->fileStorer->store(
                 path: $directoryPath,
                 file: $file,
                 fileName: $uniqueFileName,
-                options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => Directory::ASSETS_DISK]
+                options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
             );
 
             $asset->update([
@@ -255,7 +316,7 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
-            'message' => trans('dam::app.admin.dam.asset.edit.file_re_upload_success'),
+            'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
         ], 201);
     }
 
@@ -295,7 +356,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'), // Asset not found for update
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'),
             ], 404);
         }
 
@@ -312,7 +373,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'), // Asset updated successfully
+            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'),
             'asset'   => $asset,
         ]);
     }
@@ -341,7 +402,9 @@ class AssetController extends Controller
             ], 404);
         }
 
-        $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+        $disk = Directory::getAssetDisk();
+
+        $fileDeleted = Storage::disk($disk)->delete($asset->path);
 
         if (! $fileDeleted) {
             return new JsonResponse([
@@ -349,7 +412,8 @@ class AssetController extends Controller
                     'type'       => 'file',
                     'actionType' => 'delete',
                     'path'       => $asset->path,
-                ])], 500);
+                ]),
+            ], 500);
         }
 
         $asset->delete();
@@ -378,8 +442,9 @@ class AssetController extends Controller
 
                         continue;
                     }
+                    $disk = Directory::getAssetDisk();
 
-                    $fileDeleted = Storage::disk(Directory::ASSETS_DISK)->delete($asset->path);
+                    $fileDeleted = Storage::disk($disk)->delete($asset->path);
 
                     if (! $fileDeleted) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
@@ -441,12 +506,13 @@ class AssetController extends Controller
     public function download(int $id)
     {
         $asset = Asset::find($id);
+        $disk = Directory::getAssetDisk();
 
-        if (! $asset || ! Storage::disk(Directory::ASSETS_DISK)->exists($asset->path)) {
+        if (! $asset || ! Storage::disk($disk)->exists($asset->path)) {
             abort(404);
         }
 
-        return Storage::disk(Directory::ASSETS_DISK)->download($asset->path);
+        return Storage::disk($disk)->download($asset->path);
     }
 
     /**
@@ -462,6 +528,7 @@ class AssetController extends Controller
         $format = $request->query('format', null);
         $height = $request->query('height', null);
         $width = $request->query('width', null);
+        $disk = Directory::getAssetDisk();
 
         $asset = Asset::find($id);
 
@@ -472,14 +539,29 @@ class AssetController extends Controller
             ], 404);
         }
 
-        $format = request()->query('format', null);
-        $height = request()->query('height', null);
-        $width = request()->query('width', null);
+        // Svg Image Download
+        if ($asset->extension === 'svg' && $format) {
+            $svgContent = Storage::disk($disk)->get($asset->path);
 
+            $imagick = new \Imagick;
+            $imagick->readImageBlob($svgContent);
+            $imagick->setImageFormat($format);
+
+            $fileName = pathinfo($asset->file_name, PATHINFO_FILENAME).'.'.$format;
+            $tempFilePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.$fileName;
+            $imagick->writeImage($tempFilePath);
+
+            return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+        }
+
+        // Image Download
         if ($asset->file_type === 'image' && ($format || $height || $width)) {
             try {
-                $filePath = Storage::disk(Directory::ASSETS_DISK)->path($asset->path);
-                $image = Image::make($filePath);
+                $disk = Directory::getAssetDisk();
+
+                $fileContent = Storage::disk($disk)->get($asset->path);
+
+                $image = Image::make($fileContent);
 
                 if ($width || $height) {
                     $image->resize($width, $height, function ($constraint) {
@@ -499,11 +581,13 @@ class AssetController extends Controller
 
                 return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
             } catch (\Exception $e) {
-
+                return response()->json([
+                    'message' => 'Image processing failed: '.$e->getMessage(),
+                ], 500);
             }
         }
 
-        return Storage::disk(Directory::ASSETS_DISK)->download($asset->path);
+        return Storage::disk($disk)->download($asset->path);
     }
 
     /**
@@ -531,7 +615,9 @@ class AssetController extends Controller
             $newPath = str_replace($asset->file_name, $name, $oldPath);
 
             if ($newPath !== $oldPath) {
-                if (Storage::disk(Directory::ASSETS_DISK)->exists($newPath)) {
+                $disk = Directory::getAssetDisk();
+
+                if (Storage::disk($disk)->exists($newPath)) {
                     return new JsonResponse([
                         'message' => trans('dam::app.admin.dam.index.directory.asset-name-conflict-in-the-same-directory'),
                     ], 404);
@@ -545,8 +631,8 @@ class AssetController extends Controller
                     }
                 }
 
-                if (Storage::disk(Directory::ASSETS_DISK)->exists($oldPath)) {
-                    $fileRenamed = Storage::disk(Directory::ASSETS_DISK)->move($oldPath, $newPath);
+                if (Storage::disk($disk)->exists($oldPath)) {
+                    $fileRenamed = Storage::disk($disk)->move($oldPath, $newPath);
 
                     if (! $fileRenamed) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
@@ -602,7 +688,8 @@ class AssetController extends Controller
                     'type'       => 'file',
                     'actionType' => 'move',
                     'path'       => $directoryPath,
-                ])], 500);
+                ]),
+            ], 500);
         }
 
         $asset->directories()->sync($request->input('new_parent_id'));

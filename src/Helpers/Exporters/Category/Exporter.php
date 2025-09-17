@@ -5,6 +5,7 @@ namespace Webkul\DAM\Helpers\Exporters\Category;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\Category\Validator\FieldValidator;
+use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CategoryExporter;
@@ -103,8 +104,9 @@ class Exporter extends CategoryExporter
      */
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
-        if ($isAssetField && Storage::disk('private')->exists($sourcePath)) {
-            Storage::writeStream($destinationPath, Storage::disk('private')->readStream($sourcePath));
+        $disk = Directory::getAssetDisk();
+        if ($isAssetField && Storage::disk($disk)->exists($sourcePath)) {
+            Storage::writeStream($destinationPath, Storage::disk($disk)->readStream($sourcePath));
 
             return;
         }

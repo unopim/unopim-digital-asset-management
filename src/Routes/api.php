@@ -15,5 +15,4 @@ Route::group([
      * Assets API
      */
     require 'V1/asset-routes.php';
-
 });

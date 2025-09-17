@@ -18,7 +18,7 @@ class PropertyController extends Controller
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
-        protected FileStorer $fileStorer
+        protected FileStorer $fileStorer,
     ) {}
 
     /**
@@ -68,6 +68,16 @@ class PropertyController extends Controller
             ],
         ], $messages);
 
+        $language = request()->get('language');
+        $locale = $this->localeRepository->where('code', $language)->where('status', 1)->first();
+
+        if (! $locale) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.validation.property.language.not-found'),
+            ], 400);
+        }
+
         $property = $this->assetPropertyRepository->create(array_merge(request()->only([
             'name',
             'type',
@@ -88,7 +98,6 @@ class PropertyController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $this->validate($request, [
-            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
             'value' => 'required',
         ]);
 
@@ -109,7 +118,6 @@ class PropertyController extends Controller
                 'message'  => trans('dam::app.admin.dam.asset.properties.index.update-success'),
                 'property' => $updatedProperty,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -140,7 +148,6 @@ class PropertyController extends Controller
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.delete-success'),
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -131,19 +131,22 @@ class DirectoryRepository extends Repository
     {
         try {
             $newDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
+            $disk = Directory::getAssetDisk();
 
             if (! $oldPath) {
-                Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectory);
+                Storage::disk($disk)->makeDirectory($newDirectory);
 
                 return;
             }
 
             $oldDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
+            $disk = Directory::getAssetDisk();
+
             // Check if a directory exists
-            if (Storage::disk(Directory::ASSETS_DISK)->exists($oldDirectory)) {
-                Storage::disk(Directory::ASSETS_DISK)->move($oldDirectory, $newDirectory);
+            if (Storage::disk($disk)->exists($oldDirectory)) {
+                Storage::disk($disk)->move($oldDirectory, $newDirectory);
             } else {
-                Storage::disk(Directory::ASSETS_DISK)->makeDirectory($newDirectory);
+                Storage::disk($disk)->makeDirectory($newDirectory);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -156,9 +159,10 @@ class DirectoryRepository extends Repository
     public function deleteDirectoryWithStorage($path)
     {
         $directory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $path);
+        $disk = Directory::getAssetDisk();
 
-        if (Storage::disk(Directory::ASSETS_DISK)->exists($directory)) {
-            Storage::disk(Directory::ASSETS_DISK)->deleteDirectory($directory);
+        if (Storage::disk($disk)->exists($directory)) {
+            Storage::disk($disk)->deleteDirectory($directory);
         }
     }
 
@@ -169,8 +173,8 @@ class DirectoryRepository extends Repository
     {
         $sourcePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
         $destinationPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
-        if (Storage::disk(Directory::ASSETS_DISK)->exists($sourcePath)) {
-
+        $disk = Directory::getAssetDisk();
+        if (Storage::disk($disk)->exists($sourcePath)) {
         }
     }
 

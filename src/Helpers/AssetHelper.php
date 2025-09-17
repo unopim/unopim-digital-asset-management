@@ -35,7 +35,7 @@ class AssetHelper
     {
         $extension = strtolower($extension);
 
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp', 'tiff', 'tif'];
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp', 'tiff', 'tif', 'jfif'];
         $videoExtensions = ['mp4', 'mkv', 'avi', 'mov', 'flv'];
         $audioExtensions = ['mp3', 'wav', 'aac', 'flac'];
         $documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'];

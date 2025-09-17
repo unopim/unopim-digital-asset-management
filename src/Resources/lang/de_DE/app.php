@@ -5,12 +5,12 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam' => 'DAMM', // Consider a more descriptive translation like "Digital Asset Management"
+                    'dam' => 'DAM',
                 ],
             ],
             'modal' => [
                 'confirm' => [
-                    'message' => 'Das Löschen dieses Verzeichnisses löscht auch alle Unterverzeichnisse darin. Dieser Vorgang ist dauerhaft und kann nicht rückgängig gemacht werden.',
+                    'message' => 'Wenn Sie dieses Verzeichnis löschen, werden auch alle Unterverzeichnisse darin gelöscht. Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.',
                 ],
             ],
             'asset' => [
@@ -27,17 +27,18 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAMM', // Consider a more descriptive translation
+                'title' => 'DAM',
 
                 'datagrid' => [
                     'file-name'      => 'Dateiname',
-                    'tags'           => 'Tags', // or "Schlagwörter"
+                    'tags'           => 'Tags',
                     'property-name'  => 'Eigenschaftsname',
                     'property-value' => 'Eigenschaftswert',
                     'created-at'     => 'Erstellt am',
                     'updated-at'     => 'Aktualisiert am',
                     'extension'      => 'Erweiterung',
                     'path'           => 'Pfad',
+                    'size'           => 'Größe',
                 ],
 
                 'directory' => [
@@ -75,26 +76,27 @@ return [
                     'created-success'                           => 'Verzeichnis erfolgreich erstellt',
                     'updated-success'                           => 'Verzeichnis erfolgreich aktualisiert',
                     'moved-success'                             => 'Verzeichnis erfolgreich verschoben',
-                    'can-not-deleted'                           => 'Das Verzeichnis kann nicht gelöscht werden, da es das Stammverzeichnis ist.',
+                    'fetch-all-success'                         => 'Verzeichnisse erfolgreich abgerufen',
+                    'can-not-deleted'                           => 'Verzeichnis kann nicht gelöscht werden, da es das Root-Verzeichnis ist.',
                     'deleting-in-progress'                      => 'Verzeichnis wird gelöscht',
-                    'can-not-copy'                              => 'Das Verzeichnis kann nicht kopiert werden, da es das Stammverzeichnis ist.',
-                    'coping-in-progress'                        => 'Verzeichnisstruktur wird kopiert',
+                    'can-not-copy'                              => 'Verzeichnis kann nicht kopiert werden, da es das Root-Verzeichnis ist.',
+                    'coping-in-progress'                        => 'Verzeichnisstruktur wird kopiert.',
                     'asset-not-found'                           => 'Kein Asset gefunden',
                     'asset-renamed-success'                     => 'Asset erfolgreich umbenannt',
                     'asset-moved-success'                       => 'Asset erfolgreich verschoben',
-                    'asset-name-already-exist'                  => 'Der neue Name existiert bereits mit einem anderen Asset namens :asset_name',
-                    'asset-name-conflict-in-the-same-directory' => 'Der Asset-Name kollidiert mit einer vorhandenen Datei im selben Verzeichnis.',
-                    'old-file-not-found'                        => 'Die angeforderte Datei unter dem Pfad :old_path wurde nicht gefunden.',
+                    'asset-name-already-exist'                  => 'Der neue Name existiert bereits für ein anderes Asset namens :asset_name',
+                    'asset-name-conflict-in-the-same-directory' => 'Der Asset-Name steht im Konflikt mit einer bestehenden Datei im selben Verzeichnis.',
+                    'old-file-not-found'                        => 'Die Datei unter dem Pfad :old_path wurde nicht gefunden.',
                     'image-name-is-the-same'                    => 'Dieser Name existiert bereits. Bitte geben Sie einen anderen ein.',
-                    'not-writable'                              => 'Sie sind nicht berechtigt, :type an diesem Speicherort ":path" zu :actionType.',
+                    'not-writable'                              => 'Sie dürfen eine :type an diesem Speicherort ":path" nicht :actionType.',
                     'empty-directory'                           => 'Dieses Verzeichnis ist leer.',
                     'failed-download-directory'                 => 'Fehler beim Erstellen der ZIP-Datei.',
-
+                    'not-allowed'                               => 'Das Hochladen von Skriptdateien ist nicht erlaubt.',
                 ],
 
-                'title'       => 'DAMM',  // Consider a more descriptive translation
-                'description' => 'Mit diesem Tool können Sie alle Ihre Medieninhalte an einem Ort organisieren, speichern und verwalten.',
-                'root'        => 'Stammverzeichnis',
+                'title'       => 'DAM',
+                'description' => 'Dieses Tool hilft Ihnen, alle Ihre Medienassets an einem Ort zu organisieren, zu speichern und zu verwalten.',
+                'root'        => 'Root',
                 'upload'      => 'Hochladen',
             ],
             'asset' => [
@@ -103,7 +105,7 @@ return [
                         'title'      => 'Asset-Eigenschaften',
                         'create-btn' => 'Eigenschaft erstellen',
 
-                        'datagrid' => [
+                        'datagrid'      => [
                             'name'     => 'Name',
                             'type'     => 'Typ',
                             'language' => 'Sprache',
@@ -112,7 +114,7 @@ return [
                             'delete'   => 'Löschen',
                         ],
 
-                        'create' => [
+                        'create'     => [
                             'title'    => 'Eigenschaft erstellen',
                             'name'     => 'Name',
                             'type'     => 'Typ',
@@ -126,20 +128,28 @@ return [
                         'delete-success' => 'Asset-Eigenschaft erfolgreich gelöscht',
                         'create-success' => 'Asset-Eigenschaft erfolgreich erstellt',
                         'update-success' => 'Asset-Eigenschaft erfolgreich aktualisiert',
+                        'not-found'      => 'Eigenschaft nicht gefunden',
+                        'found-success'  => 'Eigenschaft erfolgreich gefunden',
+
                     ],
                 ],
                 'comments' => [
-                    'index'        => 'Kommentar hinzufügen',
-                    'create'       => [
+                    'index'  => 'Kommentar hinzufügen',
+                    'create' => [
                         'create-success' => 'Kommentar wurde erfolgreich hinzugefügt',
+                        'create-failure' => 'Kommentar konnte nicht erstellt werden',
                     ],
-                    'post-comment' => 'Kommentar posten',
-                    'post-reply'   => 'Antwort posten',
-                    'reply'        => 'Antworten',
-                    'add-reply'    => 'Antwort hinzufügen',
-                    'add-comment'  => 'Kommentar hinzufügen',
-                    'no-comments'  => 'Noch keine Kommentare',
-
+                    'post-comment'    => 'Kommentar posten',
+                    'post-reply'      => 'Antwort posten',
+                    'reply'           => 'Antwort',
+                    'add-reply'       => 'Antwort hinzufügen',
+                    'add-comment'     => 'Kommentar hinzufügen',
+                    'no-comments'     => 'Noch keine Kommentare',
+                    'not-found'       => 'Kommentare nicht gefunden',
+                    'updated-success' => 'Kommentar erfolgreich aktualisiert',
+                    'update-failed'   => 'Kommentar konnte nicht aktualisiert werden',
+                    'delete-success'  => 'Asset-Tags wurden erfolgreich entfernt',
+                    'delete-failed'   => 'Asset-Kommentar konnte nicht gelöscht werden',
                 ],
                 'edit' => [
                     'title'              => 'Asset bearbeiten',
@@ -149,18 +159,17 @@ return [
                     'save-btn'           => 'Speichern',
                     'embedded_meta_info' => 'Eingebettete Metadaten',
                     'custom_meta_info'   => 'Benutzerdefinierte Metadaten',
-                    'tags'               => 'Tags', // or "Schlagwörter"
-                    'select-tags'        => 'Tag auswählen oder erstellen',  // or "Schlagwort"
-                    'tag'                => 'Tag',  // or "Schlagwort"
+                    'tags'               => 'Tags',
+                    'select-tags'        => 'Tag wählen oder erstellen',
+                    'tag'                => 'Tag',
                     'directory-path'     => 'Verzeichnispfad',
-                    'add_tags'           => 'Tags hinzufügen',  // or "Schlagwörter"
+                    'add_tags'           => 'Tags hinzufügen',
                     'tab'                => [
-                        'preview'           => 'Vorschau',
-                        'properties'        => 'Eigenschaften',
-                        'comments'          => 'Kommentare',
-                        'linked_resources'  => 'Verknüpfte Ressourcen',
-                        'history'           => 'Verlauf',
-                        'metadata'          => 'Metadaten', // Added metadata tab
+                        'preview'          => 'Vorschau',
+                        'properties'       => 'Eigenschaften',
+                        'comments'         => 'Kommentare',
+                        'linked_resources' => 'Verknüpfte Ressourcen',
+                        'history'          => 'Verlauf',
                     ],
                     'button' => [
                         'download'        => 'Herunterladen',
@@ -190,31 +199,65 @@ return [
 
                     'tag-already-exists'        => 'Tag existiert bereits',
                     'image-source-not-readable' => 'Bildquelle nicht lesbar',
-                    'failed-to-read'            => 'Fehler beim Lesen der Bildmetadaten :exception',
-                    'file_re_upload_success'    => 'Dateien erfolgreich erneut hochgeladen.',
-
+                    'failed-to-read'            => 'Metadaten des Bildes konnten nicht gelesen werden: :exception',
+                    'file-re-upload-success'    => 'Dateien wurden erfolgreich erneut hochgeladen.',
                 ],
+
                 'linked-resources' => [
                     'index' => [
                         'datagrid' => [
                             'product'       => 'Produkt',
                             'category'      => 'Kategorie',
                             'product-sku'   => 'Produkt-SKU: ',
-                            'category code' => 'Kategoriecode: ',
+                            'category code' => 'Kategorie-Code: ',
                             'resource-type' => 'Ressourcentyp',
                             'resource'      => 'Ressource',
                             'resource-view' => 'Ressourcenansicht',
                         ],
                     ],
+                    'found-success' => 'Ressource erfolgreich gefunden',
+                    'not-found'     => 'Ressource nicht gefunden',
                 ],
+
+                'tags' => [
+                    'index'  => 'Tags hinzufügen',
+                    'create' => [
+                        'create-success' => 'Tags wurden erfolgreich hinzugefügt',
+                        'create-failure' => 'Fehler beim Erstellen der Tags',
+                    ],
+                    'no-comments'    => 'Noch keine Tags',
+                    'found-success'  => 'Tag erfolgreich gefunden',
+                    'not-found'      => 'Tags nicht gefunden',
+                    'update-success' => 'Tags erfolgreich aktualisiert',
+                    'update-failed'  => 'Tags konnten nicht aktualisiert werden',
+                    'delete-success' => 'Asset-Tags erfolgreich gelöscht',
+                    'delete-failed'  => 'Asset-Tags konnten nicht gelöscht werden',
+                ],
+
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
                 'delete-failed-due-to-attached-resources' => 'Asset konnte nicht gelöscht werden, da es mit Ressourcen verknüpft ist (Asset-Name: :assetNames)',
-                'datagrid'                                => [
-                    'mass-delete-success'  => 'Massenlöschung erfolgreich.',
-                    'files_upload_success' => 'Dateien erfolgreich hochgeladen.',
-                    'file_upload_success'  => 'Datei erfolgreich hochgeladen.',
+
+                'datagrid' => [
+                    'mass-delete-success'                 => 'Massenlöschung erfolgreich.',
+                    'files-upload-success'                => 'Dateien erfolgreich hochgeladen.',
+                    'file-upload-success'                 => 'Datei erfolgreich hochgeladen.',
+                    'not-found'                           => 'Datei nicht gefunden',
+                    'edit-success'                        => 'Datei erfolgreich hochgeladen',
+                    'show-success'                        => 'Datei erfolgreich gefunden',
+                    'update-success'                      => 'Datei erfolgreich aktualisiert',
+                    'not-found-to-update'                 => 'Datei existiert nicht',
+                    'not-found-to-destroy'                => 'Datei existiert nicht',
+                    'files-upload-failed'                 => 'Fehler beim Hochladen der Dateien.',
+                    'file-upload-failed'                  => 'Datei konnte nicht hochgeladen werden',
+                    'invalid-file'                        => 'Ungültige Datei bereitgestellt',
+                    'invalid-file-format'                 => 'Ungültiges Format',
+                    'invali-file-format-or-not-provided'  => 'Keine Datei bereitgestellt oder ungültiges Format.',
+                    'download-image-failed'               => 'Fehler beim Herunterladen des Bildes von der URL',
+                    'file-process-failed'                 => 'Einige Dateien konnten nicht verarbeitet werden',
+                    'file-forbidden-type'                 => 'Die Datei hat einen verbotenen Typ oder eine verbotene Erweiterung.',
                 ],
             ],
+
         ],
         'catalog' => [
             'attributes' => [
@@ -229,19 +272,19 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAMM',  // Consider a more descriptive translation
+            'menu'             => 'DAM',
             'asset'            => 'Asset',
             'property'         => 'Eigenschaft',
             'comment'          => 'Kommentar',
             'linked_resources' => 'Verknüpfte Ressourcen',
             'directory'        => 'Verzeichnis',
-            'tag'              => 'Tag', // or "Schlagwort"
+            'tag'              => 'Tag',
             'create'           => 'Erstellen',
             'edit'             => 'Bearbeiten',
             'update'           => 'Aktualisieren',
             'delete'           => 'Löschen',
-            'list'             => 'Liste',
-            'view'             => 'Anzeigen',
+            'list'             => 'Auflisten',
+            'view'             => 'Ansehen',
             'upload'           => 'Hochladen',
             're_upload'        => 'Erneut hochladen',
             'mass_update'      => 'Massenaktualisierung',
@@ -262,17 +305,23 @@ return [
             ],
 
             'comment' => [
-                'required' => 'Die Kommentarnachricht ist erforderlich.',
+                'required' => 'Das Kommentarfeld ist erforderlich.',
             ],
-
+            'tag' => [
+                'name' => [
+                    'required' => 'Das Tag-Feld ist erforderlich.',
+                ],
+            ],
             'property' => [
                 'name' => [
-                    'required' => 'Das Feld "Name" ist erforderlich.',
-                    'unique'   => 'Der Name ist bereits vergeben.',
+                    'required' => 'Das Namensfeld ist erforderlich.',
+                    'unique'   => 'Der Name wurde bereits vergeben.',
+                ],
+                'language' => [
+                    'not-found' => 'Die ausgewählte Sprache wurde nicht gefunden oder ist derzeit deaktiviert.',
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Diese Aktion ist nicht autorisiert.',
         ],

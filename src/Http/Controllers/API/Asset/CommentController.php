@@ -137,7 +137,6 @@ class CommentController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.comments.create.create-success'),
                 'comment' => $comment,
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => trans('dam::app.admin.dam.asset.comments.create.create-failure'),

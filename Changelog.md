@@ -1,18 +1,25 @@
-# Changelog for UnoPim DAM
+# Changelog for v1.0.0
 
-## **Version 1.0.0** - Initial Release
+## **Version 1.0.0** - Initial Release  
 
-### 🎉 Initial Features
-- **Asset Gallery Grid View**: Visual, grid-based interface with filters and a search box for easy browsing and management of assets. Supports mass actions like bulk delete.
+### Features
+- **Comprehensive File and Directory Management**:  
+  - Added functionality to add, remove, rename, move, and copy directories.
+  - Enabled drag-and-drop file uploads.
+  - Added ZIP file downloads for directories and ability to duplicate directory structures.
 
-- **Directory Structure**: Organize assets in a structured directory tree. Allows right-click actions for file upload, adding/renaming/deleting directories, copying directory structures, and downloading directories as ZIP files.
+- **Advanced Asset Operations**:  
+  - Introduced upload, preview, delete, rename, re-upload, and custom download options for assets.
 
-- **Resource Editing**: Add tags and custom properties (e.g., copyright, source, author) to assets, with the option to add comments and link related resources.
+- **Metadata and Tagging**:  
+  - Added support for tagging, custom properties, and embedded meta-information to enhance asset organization, searchability, and retrieval.
 
-- **Linked Resources**: Direct linking of related resources from the asset edit page for enhanced navigation and relevance.
+- **Collaboration and Resource Linking**:  
+  - Enabled multi-user reply comments for assets.
+  - Added linked resource views for assets associated with categories and products.
 
-- **Comprehensive Asset Operations**: Upload, preview, rename, delete, re-upload, and download assets across various file types (images, CSV, XLSX, PDF, audio, video).
+- **Asset Assignment via Export**:  
+  - Implemented CSV/XLSX export to assign assets to products and categories efficiently.
 
-- **Metadata and Tagging**: Add embedded metadata, tags, and custom properties to improve searchability and organization.
-- **Collaboration**: Multi-user comments and resource linking for team collaboration on assets.
-- **Asset Detail Export in Product CSV**: Export asset details as part of product CSV export for streamlined data management.
+- **Change History Tracking**:  
+  - Added full change history tracking for assets, enabling users to view all modifications made over time.

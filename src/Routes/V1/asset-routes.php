@@ -15,19 +15,20 @@ Route::group([
 ], function () {
     /** Assets API Routes */
     Route::controller(AssetController::class)->prefix('assets')->group(function () {
-        Route::get('', 'index');
+        Route::get('', 'index')->name('admin.api.dam.assets.index');
         Route::put('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
         Route::get('/{id}', 'show')->name('admin.api.dam.assets.show');
         Route::post('/reupload', 'reUpload')->name('admin.api.dam.assets.reUpload');
         Route::put('/{id}', 'update')->name('admin.api.dam.assets.update');
         Route::post('', 'upload')->name('admin.api.dam.assets.upload');
         Route::delete('/{id}', 'destroy')->name('admin.api.dam.assets.destroy');
+        Route::get('/signUrlDownload/{id}', 'signedUrl')->name('admin.api.dam.assets.private.download');
         Route::get('/download/{id}', 'download')->name('admin.api.dam.assets.download');
     });
 
     /** Directory API Routes */
     Route::controller(DirectoryController::class)->prefix('directories')->group(function () {
-        Route::get('', 'index');
+        Route::get('', 'index')->name('admin.api.dam.directory.index');
         Route::get('{id}', 'getDirectory')->name('admin.api.dam.directory.get');
         Route::post('', 'store')->name('admin.api.dam.directory.store');
         Route::put('/{id}', 'update')->name('admin.api.dam.directory.update');
@@ -53,7 +54,7 @@ Route::group([
     Route::controller(PropertyController::class)->prefix('properties')->group(function () {
         Route::get('{id}', 'properties')->name('admin.api.dam.property.get');
         Route::post('/{id}', 'addProperty')->name('admin.api.dam.property.add');
-        Route::put('/{id}', 'update')->name('admin.api.dam.property.update');
+        Route::patch('/{id}', 'update')->name('admin.api.dam.property.update');
         Route::delete('/{id}', 'delete')->name('admin.api.dam.property.delete');
     });
 
