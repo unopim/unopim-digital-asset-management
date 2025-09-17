@@ -140,7 +140,6 @@ class MoveDamAssetsToS3 extends Command
             Storage::disk('s3')->put($filePath, $fileContents);
             if ($delete) {
                 $previewPath = 'preview/1356/'.$filePath;
-                // dd($previewPath);
                 Storage::disk('private')->delete($filePath);
                 Storage::disk('private')->delete($previewPath);
                 Storage::disk('private')->delete('thumbnails/'.$filePath);
@@ -162,12 +161,10 @@ class MoveDamAssetsToS3 extends Command
                 Storage::disk('s3')->put($filePath, $fileContents);
                 if ($delete) {
                     $previewPath = 'preview/1356/'.$filePath;
-                    // dd($previewPath);
                     Storage::disk('private')->delete($filePath);
                     Storage::disk('private')->delete($previewPath);
                     Storage::disk('private')->delete('thumbnails/'.$filePath);
                 }
-                // preview path is -> preview/1356/assets/Root/image 4.png
                 $logs[] = "Moved File for asset ID {$asset->id} to s3";
             } else {
                 $logs[] = "File for asset ID {$asset->id} already exists on S3. Skipped.";

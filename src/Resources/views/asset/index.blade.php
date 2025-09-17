@@ -7,7 +7,6 @@
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
 
-
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
     <v-dam-main></v-dam-main>

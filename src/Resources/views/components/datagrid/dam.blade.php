@@ -108,7 +108,7 @@
                                 {
                                 index: 'all',
                                 value: [],
-                                }, 
+                                },
                             ],
                         },
                     },
@@ -130,7 +130,6 @@
                     data.value.forEach((value, index) => {
                         this.applyFilter(data.column, value);
                     });
-
 
                     this.get();
                 })

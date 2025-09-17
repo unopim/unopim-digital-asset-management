@@ -18,7 +18,7 @@ class PropertyController extends Controller
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
-        protected FileStorer $fileStorer,
+        protected FileStorer $fileStorer
     ) {}
 
     /**

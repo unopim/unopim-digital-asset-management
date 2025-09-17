@@ -140,7 +140,6 @@
                         this.applyFilter(data.column, value);
                     });
 
-
                     this.get();
                 })
 

@@ -105,10 +105,10 @@
 
                         filters: {
                             columns: [
-                            {
+                                {
                                 index: 'all',
                                 value: [],
-                                }, 
+                                },
                             ],
                         },
                     },
@@ -132,7 +132,6 @@
 
                     if (urlParams.has('search')) {
                         let searchAppliedColumn = this.findAppliedColumn('all');
-
                         searchAppliedColumn.value = [urlParams.get('search')];
                     }
 

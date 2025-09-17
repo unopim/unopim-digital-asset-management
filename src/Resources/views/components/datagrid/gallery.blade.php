@@ -49,7 +49,7 @@
                             <div
                                 v-for="record in $parent.available.records"
                                 >
-                                <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">                    
+                                <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
                                     <img
                                         :src="record.path"
                                         :alt="record.file_name"
