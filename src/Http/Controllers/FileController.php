@@ -161,11 +161,8 @@ class FileController
             if (strtolower($extension) === 'jfif') {
                 $mimeType = 'image/jpeg';
             }
-            if ($includeSvg) {
-                return Str::startsWith($mimeType, 'image/');
-            } else {
-                return Str::startsWith($mimeType, 'image/') && $mimeType !== 'image/svg+xml';
-            }
+
+            return $includeSvg ? Str::startsWith($mimeType, 'image/') : Str::startsWith($mimeType, 'image/') && $mimeType !== 'image/svg+xml';
         }
 
         return false;
@@ -201,15 +198,14 @@ class FileController
 
         if ($disk === 's3') {
             $visibility = Storage::disk($disk)->getVisibility($path);
+
             if ($visibility === 'public') {
                 $url = Storage::disk($disk)->url($path);
-
-                return redirect($url);
-            } else {
-                $url = Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(5));
-
                 return redirect($url);
             }
+
+            $url = Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(5));
+            return redirect($url);
         }
 
         $file = Storage::disk($disk)->get($path);
