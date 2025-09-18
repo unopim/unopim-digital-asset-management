@@ -136,7 +136,7 @@
                 this.$emitter.on('data-grid:refresh', () => this.get())
 
                 this.$emitter.on('data-grid:filter', (data) => {
-                    data.value.forEach((value, index) => {
+                    data.value.forEach( (value, index) => {
                         this.applyFilter(data.column, value);
                     });
 
@@ -434,10 +434,10 @@
                      * activated. In this case, we will search for `all` indices and update the
                      * value accordingly.
                      */
-                    if (!column) {
+                    if (! column) {
                         let appliedColumn = this.findAppliedColumn('all');
 
-                        if (!requestedValue) {
+                        if (! requestedValue) {
                             appliedColumn.value = [];
 
                             return;

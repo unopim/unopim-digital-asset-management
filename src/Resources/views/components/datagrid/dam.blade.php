@@ -425,10 +425,10 @@
                      * activated. In this case, we will search for `all` indices and update the
                      * value accordingly.
                      */
-                    if (!column) {
+                    if (! column) {
                         let appliedColumn = this.findAppliedColumn('all');
 
-                        if (!requestedValue) {
+                        if (! requestedValue) {
                             appliedColumn.value = [];
 
                             return;
@@ -559,7 +559,7 @@
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
 
-                    if (!this.available.records.length) {
+                    if (! this.available.records.length) {
                         return;
                     }
 
@@ -649,7 +649,7 @@
                         this.applied.massActions.value = currentOption.value;
                     }
 
-                    if (!this.validateMassAction()) {
+                    if (! this.validateMassAction()) {
                         return;
                     }
 

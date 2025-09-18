@@ -201,10 +201,12 @@ class FileController
 
             if ($visibility === 'public') {
                 $url = Storage::disk($disk)->url($path);
+
                 return redirect($url);
             }
 
             $url = Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(5));
+
             return redirect($url);
         }
 
