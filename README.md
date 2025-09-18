@@ -140,50 +140,17 @@ During execution, the command will prompt you to choose:
 php artisan unopim:dam:move-asset-to-s3
 ```
 
-Prompts:
+### API Support
 
-```text
-Enter your Email: admin@example.com
-Enter your Password: ********
-Want to migrate only new uploaded files from your local to s3 (yes/no): yes
-Want to delete files from local once uploaded to s3? (yes/no): no
-```
+- **Directories Management Endpoints:**
+  - **Create Directory:** `POST /api/v1/rest/directories`
+  - **Update Directory:** `PUT /api/v1/rest/directories/{directory_id}`
+  - **Delete Directory:** `DELETE /api/v1/rest/directories/{directory_id}`
+  - **List Directories:** `GET /api/v1/rest/directories`
 
-### ✅ Features
-
--   Authenticated access
--   Batch processing (in chunks of 1000 records)
--   Progress bar display
--   Logging of all migrated files and skipped entries
--   Supports:
-
-    -   Full migration
-    -   Incremental (new only) migration
-    -   Optional local deletion
-
-### 📁 Storage Disks Used
-
-Make sure the following disks are correctly configured in `config/filesystems.php`:
-
-```php
-'disks' => [
-    'private' => [
-        'driver' => 'local',
-        'root' => storage_path('app/private'),
-    ],
-
-    's3' => [
-        'driver' => 's3',
-        'key' => env('AWS_ACCESS_KEY_ID'),
-        'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION'),
-        'bucket' => env('AWS_BUCKET'),
-    ],
-],
-```
-
-### 📌 Note
-
--   Ensure AWS credentials and bucket permissions are properly set up.
--   It's recommended to test the command on a staging environment before running in production.
--   Logs are recorded in `storage/logs/laravel.log`.
+- **Assets Management Endpoints:**
+  - **Upload Asset:** `POST /api/v1/rest/assets`
+  - **Update Asset Metadata:** `PUT /api/v1/rest/assets/{asset_id}`
+  - **Delete Asset:** `DELETE /api/v1/rest/assets/{asset_id}`
+  - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
+  - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`

@@ -17,9 +17,11 @@
   - Added input support for SVG files. Now, when downloading an SVG file, you’ll only see the available options in the type dropdown (JPG, PNG, JPEG).
   - Included support for uploading and viewing `.mp4` and `.step` files, expanding the range of supported file types in the DAM system.
 
-- **S3 Writeability Check**:
-  - Resolved an issue where Models/Directory::isWritable() always returned false for AWS S3 disks configured via Flysystem.
-  - Updated the logic to use a file creation attempt as a fallback check for writeability, improving compatibility with remote storage drivers.
+- **API Support:**:
+  - API endpoints for managing directories (create, update, delete, list)
+  - API endpoints for managing assets (upload, update metadata, delete, list, retrieve)
+
+
 
 
 ## **Version 1.0.0** - Initial Release
