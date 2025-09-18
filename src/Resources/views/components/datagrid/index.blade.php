@@ -106,8 +106,8 @@
                         filters: {
                             columns: [
                                 {
-                                index: 'all',
-                                value: [],
+                                    index: 'all',
+                                    value: [],
                                 },
                             ],
                         },

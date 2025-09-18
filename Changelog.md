@@ -17,33 +17,24 @@
   - Added input support for SVG files. Now, when downloading an SVG file, you’ll only see the available options in the type dropdown (JPG, PNG, JPEG).
   - Included support for uploading and viewing `.mp4` and `.step` files, expanding the range of supported file types in the DAM system.
 
-## Files
-
 - **S3 Writeability Check**:
+  - Resolved an issue where Models/Directory::isWritable() always returned false for AWS S3 disks configured via Flysystem.
+  - Updated the logic to use a file creation attempt as a fallback check for writeability, improving compatibility with remote storage drivers.
 
-- Resolved an issue where Models/Directory::isWritable() always returned false for AWS S3 disks configured via Flysystem.
-- Updated the logic to use a file creation attempt as a fallback check for writeability, improving compatibility with remote storage drivers.
 
-## **Version 1.0.0** - Initial Release  
+## **Version 1.0.0** - Initial Release
 
-### Features
-- **Comprehensive File and Directory Management**:  
-  - Added functionality to add, remove, rename, move, and copy directories.
-  - Enabled drag-and-drop file uploads.
-  - Added ZIP file downloads for directories and ability to duplicate directory structures.
+### 🎉 Initial Features
+- **Asset Gallery Grid View**: Visual, grid-based interface with filters and a search box for easy browsing and management of assets. Supports mass actions like bulk delete.
 
-- **Advanced Asset Operations**:  
-  - Introduced upload, preview, delete, rename, re-upload, and custom download options for assets.
+- **Directory Structure**: Organize assets in a structured directory tree. Allows right-click actions for file upload, adding/renaming/deleting directories, copying directory structures, and downloading directories as ZIP files.
 
-- **Metadata and Tagging**:  
-  - Added support for tagging, custom properties, and embedded meta-information to enhance asset organization, searchability, and retrieval.
+- **Resource Editing**: Add tags and custom properties (e.g., copyright, source, author) to assets, with the option to add comments and link related resources.
 
-- **Collaboration and Resource Linking**:  
-  - Enabled multi-user reply comments for assets.
-  - Added linked resource views for assets associated with categories and products.
+- **Linked Resources**: Direct linking of related resources from the asset edit page for enhanced navigation and relevance.
 
-- **Asset Assignment via Export**:  
-  - Implemented CSV/XLSX export to assign assets to products and categories efficiently.
+- **Comprehensive Asset Operations**: Upload, preview, rename, delete, re-upload, and download assets across various file types (images, CSV, XLSX, PDF, audio, video).
 
-- **Change History Tracking**:  
-  - Added full change history tracking for assets, enabling users to view all modifications made over time.
+- **Metadata and Tagging**: Add embedded metadata, tags, and custom properties to improve searchability and organization.
+- **Collaboration**: Multi-user comments and resource linking for team collaboration on assets.
+- **Asset Detail Export in Product CSV**: Export asset details as part of product CSV export for streamlined data management.

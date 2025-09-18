@@ -50,7 +50,7 @@
                                 v-for="record in $parent.available.records"
                                 >
                                 <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
-                                    <img
+                                    <img 
                                         :src="record.path"
                                         :alt="record.file_name"
                                         class="w-full h-full object-cover object-center"
@@ -125,7 +125,7 @@
         app.component('v-gallery-table', {
             template: '#v-gallery-table-template',
 
-            data: function() {
+            data: function () {
                 return {
 
                 }

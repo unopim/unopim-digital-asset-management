@@ -658,7 +658,7 @@
                         this.applied.massActions.value = currentOption.value;
                     }
 
-                    if (!this.validateMassAction()) {
+                    if (! this.validateMassAction()) {
                         return;
                     }
 

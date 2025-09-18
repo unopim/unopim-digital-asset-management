@@ -14,11 +14,11 @@
     {!! view_render_event('unopim.dam.admin.main.after') !!}
 
     @pushOnce('scripts')
-    <script
-        type="text/x-template"
-        id="v-dam-main-template"
-    >
-        <div>
+        <script
+            type="text/x-template"
+            id="v-dam-main-template"
+        >
+            <div>
                 {!! view_render_event('dam.admin.main.form.before') !!}
                     <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
                         <!-- left sub component -->
@@ -58,27 +58,27 @@
             </div>
         </script>
 
-    <script type="module">
-        app.component('v-dam-main', {
-            template: '#v-dam-main-template',
+        <script type="module">
+            app.component('v-dam-main', {
+                template: '#v-dam-main-template',
 
-            data() {
-                return {}
-            },
+                data() {
+                    return {}
+                },
 
-            methods: {
+                methods: {
 
-            }
-        })
-    </script>
+                }
+            })
+        </script>
     @endPushOnce
 
     @pushOnce('scripts')
-    <script
-        type="text/x-template"
-        id="v-dam-upload-template"
-    >
-        <div>
+        <script
+            type="text/x-template"
+            id="v-dam-upload-template"
+        >
+            <div>
                 <div class="flex justify-between items-center w-full">
                     <p
                         class="text-base text-gray-600 dark:text-gray-300 font-bold"
