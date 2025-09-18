@@ -70,8 +70,11 @@ return [
                         'add-directory'             => 'Add Directory',
                         'upload-files'              => 'Upload Files',
                         'copy-directory-structured' => 'Copy Directory Structured',
+                        'get-by-id'                 => 'Get By Id',
+                        'comment'                   => 'Comment',
                     ],
 
+                    'linked-resources'                          => 'Linked Resources',
                     'not-found'                                 => 'No directory found',
                     'created-success'                           => 'Directory created successfully',
                     'updated-success'                           => 'Directory updated successfully',

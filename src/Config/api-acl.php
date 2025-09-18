@@ -11,7 +11,7 @@ return [
     */
     [
         'key'   => 'api.dam',
-        'name'  => 'DAM',
+        'name'  => 'dam::app.admin.dam.index.title',
         'route' => 'admin.api.dam.assets.index',
         'sort'  => 3,
     ], [
@@ -46,7 +46,7 @@ return [
         'sort'  => 5,
     ], [
         'key'   => 'api.dam.assets.getById',
-        'name'  => 'Get By Id',
+        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.assets.show',
         'sort'  => 6,
     ], [
@@ -71,12 +71,12 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.directory.getById',
-        'name'  => 'Get By Id',
+        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.directory.get',
         'sort'  => 4,
     ], [
         'key'   => 'api.dam.comment',
-        'name'  => 'Comment',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.comment',
         'route' => 'admin.api.dam.comment.get',
         'sort'  => 2,
     ], [
@@ -96,7 +96,7 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.comment.getById',
-        'name'  => 'Get By Id',
+        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.comment.get',
         'sort'  => 4,
     ], [
@@ -121,7 +121,7 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.tags',
-        'name'  => 'Tag',
+        'name'  => 'dam::app.admin.dam.datagrid.tags',
         'route' => 'admin.api.dam.tags.get',
         'sort'  => 4,
     ], [
@@ -136,12 +136,12 @@ return [
         'sort'  => 2,
     ], [
         'key'   => 'api.dam.linked-resource',
-        'name'  => 'Linked Resources',
+        'name'  => 'dam::app.admin.dam.index.directory.linked-resources',
         'route' => 'admin.api.dam.linked_resource.get',
         'sort'  => 5,
     ], [
         'key'   => 'api.dam.linked-resource.get',
-        'name'  => 'Linked Resources',
+        'name'  => 'dam::app.admin.dam.index.directory.linked-resources',
         'route' => 'admin.api.dam.linked_resource.get',
         'sort'  => 1,
     ],

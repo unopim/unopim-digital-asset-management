@@ -174,12 +174,10 @@
                             message: response.data.message
                         });
                     }).catch((error) => {
-                        console.log(error);
                         this.$emitter.emit('add-flash', {
                             type: 'error',
                             message: error.response.data.message
                         });
-                        console.error('Upload failed:', error);
                     });
                 }
             }

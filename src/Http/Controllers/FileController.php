@@ -196,7 +196,7 @@ class FileController
     {
         $disk = Directory::getAssetDisk();
 
-        if ($disk === 's3') {
+        if ($disk === Directory::ASSETS_DISK_AWS) {
             $visibility = Storage::disk($disk)->getVisibility($path);
 
             if ($visibility === 'public') {

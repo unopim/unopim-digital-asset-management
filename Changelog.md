@@ -8,7 +8,6 @@
 - **AWS S3 Integration**:
   - Added AWS S3 feature to the Digital Asset Management (DAM) system. You can now configure AWS S3 credentials and upload images directly to AWS S3.
   - Created a new command for migrating local/public assets to the existing AWS S3 cloud, allowing you to seamlessly transfer your files.
-  - Introduced a visibility option in the AWS Connector Module to choose between public or private URL access for assets stored in AWS S3.
 
 - **Comment and Link History**:
   - Added history generation for comments and linked properties, enabling tracking of changes over time for better collaboration and versioning.
