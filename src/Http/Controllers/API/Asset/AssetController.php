@@ -25,40 +25,6 @@ class AssetController extends Controller
 {
     use DirectoryTrait;
 
-    public const FORBIDDEN_EXTENSIONS = [
-        'php',
-        'js',
-        'py',
-        'sh',
-        'bat',
-        'pl',
-        'cgi',
-        'asp',
-        'aspx',
-        'jsp',
-        'exe',
-        'rb',
-        'jar',
-    ];
-
-    public const FORBIDDEN_MIME_TYPES = [
-        'application/x-php',
-        'application/x-javascript',
-        'text/javascript',
-        'application/javascript',
-        'text/x-python',
-        'application/x-sh',
-        'application/x-bat',
-        'application/x-perl',
-        'application/x-cgi',
-        'text/x-asp',
-        'application/x-aspx',
-        'application/x-jsp',
-        'application/x-msdownload',
-        'application/java-archive',
-        'application/x-ruby',
-    ];
-
     /**
      *  Create instance
      */
@@ -187,9 +153,6 @@ class AssetController extends Controller
             $files = $request->file('files');
         }
 
-        $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
-        $forbiddenMimeTypes = self::FORBIDDEN_MIME_TYPES;
-
         $directoryId = $request->get('directory_id');
         $directory = $this->directoryRepository->find($directoryId);
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
@@ -209,7 +172,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (in_array($extension, $forbiddenExtensions) || in_array($mimeType, $forbiddenMimeTypes)) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
                 $errors[] = trans('dam::app.admin.dam.asset.datagrid.file-forbidden-type').': '.$file->getClientOriginalName();
 
                 continue;
@@ -283,8 +246,7 @@ class AssetController extends Controller
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
-        $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
-        $forbiddenMimeTypes = self::FORBIDDEN_MIME_TYPES;
+    // Use AssetHelper for forbidden checks
 
         $file = $request->file('file');
         $assetId = $request->get('asset_id');
@@ -315,7 +277,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (in_array($extension, $forbiddenExtensions) || in_array($mimeType, $forbiddenMimeTypes)) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('dam::app.admin.dam.index.directory.not-allowed'),
