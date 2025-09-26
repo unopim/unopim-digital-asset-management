@@ -289,9 +289,9 @@ class FileController
     private function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
-            Str::startsWith($mimeType, 'application/pdf') ||
-            Str::startsWith($mimeType, 'video/') ||
-            Str::startsWith($mimeType, 'audio/');
+               Str::startsWith($mimeType, 'application/pdf') ||
+               Str::startsWith($mimeType, 'video/') ||
+               Str::startsWith($mimeType, 'audio/');
     }
 
     /**

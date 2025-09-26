@@ -133,7 +133,6 @@ return [
                         'update-success' => 'Asset Property Updated Successfully',
                         'not-found'      => 'Property Not Found',
                         'found-success'  => 'Property Found Successfully',
-
                     ],
                 ],
                 'comments' => [

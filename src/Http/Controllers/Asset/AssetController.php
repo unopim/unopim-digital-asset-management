@@ -517,9 +517,7 @@ class AssetController extends Controller
         if ($asset->file_type === 'image' && ($format || $height || $width)) {
             try {
                 $disk = Directory::getAssetDisk();
-
                 $fileContent = Storage::disk($disk)->get($asset->path);
-
                 $image = Image::make($fileContent);
 
                 if ($width || $height) {
@@ -575,7 +573,6 @@ class AssetController extends Controller
 
             if ($newPath !== $oldPath) {
                 $disk = Directory::getAssetDisk();
-
                 if (Storage::disk($disk)->exists($newPath)) {
                     return new JsonResponse([
                         'message' => trans('dam::app.admin.dam.index.directory.asset-name-conflict-in-the-same-directory'),

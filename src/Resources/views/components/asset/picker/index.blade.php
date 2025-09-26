@@ -115,10 +115,12 @@
                         },
 
                         filters: {
-                            columns: [{
-                                index: 'all',
-                                value: [],
-                            }, ],
+                            columns: [
+                                {
+                                    index: 'all',
+                                    value: [],
+                                }, 
+                            ],
                         },
                     },
                 };
@@ -298,7 +300,7 @@
 
                             return;
                         }
-                    } else if (typeof directionOrPageNumber === 'number') {
+                    }  else if (typeof directionOrPageNumber === 'number') {
                         newPage = directionOrPageNumber;
                     } else {
                         console.warn('Invalid Input Provided: ' + directionOrPageNumber);
@@ -568,7 +570,7 @@
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
 
-                    if (!this.available.records.length) {
+                    if (! this.available.records.length) {
                         return;
                     }
 
@@ -608,7 +610,7 @@
                             let found = this.applied.massActions.indices.find(selectedId => selectedId ===
                                 id);
 
-                            if (!found) {
+                            if (! found) {
                                 this.applied.massActions.indices.push(id);
                             }
                         });
@@ -618,7 +620,7 @@
                 },
 
                 validateMassAction() {
-                    if (!this.applied.massActions.indices.length) {
+                    if (! this.applied.massActions.indices.length) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
                             message: "@lang('admin::app.components.datagrid.index.no-records-selected')"
@@ -627,7 +629,7 @@
                         return false;
                     }
 
-                    if (!this.applied.massActions.meta.action) {
+                    if (! this.applied.massActions.meta.action) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
                             message: "@lang('admin::app.components.datagrid.index.must-select-a-mass-action')"
@@ -669,7 +671,7 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
-                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal' : 'open-confirm-modal', {
+                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal': 'open-confirm-modal', {
                         agree: () => {
                             switch (method) {
                                 case 'post':
@@ -736,9 +738,7 @@
                     let datagrids = this.getDatagrids();
 
                     if (datagrids?.length) {
-                        const currentDatagrid = datagrids.find(({
-                            src
-                        }) => src === this.src);
+                        const currentDatagrid = datagrids.find(({ src }) => src === this.src);
 
                         if (currentDatagrid) {
                             datagrids = datagrids.map(datagrid => {

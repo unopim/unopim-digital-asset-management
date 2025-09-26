@@ -246,8 +246,6 @@ class AssetController extends Controller
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
-    // Use AssetHelper for forbidden checks
-
         $file = $request->file('file');
         $assetId = $request->get('asset_id');
         $asset = $this->assetRepository->find($assetId);

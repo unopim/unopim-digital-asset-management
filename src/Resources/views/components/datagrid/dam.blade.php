@@ -127,7 +127,7 @@
                 this.$emitter.on('data-grid:refresh', () => this.get())
 
                 this.$emitter.on('data-grid:filter', (data) => {
-                    data.value.forEach((value, index) => {
+                    data.value.forEach( (value, index) => {
                         this.applyFilter(data.column, value);
                     });
 
@@ -660,7 +660,7 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
-                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal' : 'open-confirm-modal', {
+                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal': 'open-confirm-modal', {
                         agree: () => {
                             switch (method) {
                                 case 'post':

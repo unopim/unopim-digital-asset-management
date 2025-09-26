@@ -270,7 +270,7 @@
 
                             return;
                         }
-                    } else if (typeof directionOrPageNumber === 'number') {
+                    }  else if (typeof directionOrPageNumber === 'number') {
                         newPage = directionOrPageNumber;
                     } else {
                         console.warn('Invalid Input Provided: ' + directionOrPageNumber);
@@ -406,10 +406,10 @@
                      * activated. In this case, we will search for `all` indices and update the
                      * value accordingly.
                      */
-                    if (!column) {
+                    if (! column) {
                         let appliedColumn = this.findAppliedColumn('all');
 
-                        if (!requestedValue) {
+                        if (! requestedValue) {
                             appliedColumn.value = [];
 
                             return;
@@ -540,7 +540,7 @@
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
 
-                    if (!this.available.records.length) {
+                    if (! this.available.records.length) {
                         return;
                     }
 
@@ -580,7 +580,7 @@
                             let found = this.applied.massActions.indices.find(selectedId => selectedId ===
                                 id);
 
-                            if (!found) {
+                            if (! found) {
                                 this.applied.massActions.indices.push(id);
                             }
                         });
@@ -630,7 +630,7 @@
                         this.applied.massActions.value = currentOption.value;
                     }
 
-                    if (!this.validateMassAction()) {
+                    if (! this.validateMassAction()) {
                         return;
                     }
 
@@ -641,7 +641,7 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
-                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal' : 'open-confirm-modal', {
+                    this.$emitter.emit('delete' === actionType ? 'open-delete-modal': 'open-confirm-modal', {
                         agree: () => {
                             switch (method) {
                                 case 'post':
