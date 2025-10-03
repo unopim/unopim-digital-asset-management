@@ -610,7 +610,6 @@
                         resetForm,
                         setErrors
                     }) {
-
                         const format = (() => {
                             try {
                                 return JSON.parse(params.format).value;
@@ -619,10 +618,7 @@
                             }
                         })();
 
-
-
-                        let downloadLink =
-                            `{{ route('admin.dam.assets.custom_download', '') }}/${this.selectedItem.id}?format=${format}`;
+                        let downloadLink = `{{ route('admin.dam.assets.custom_download', '') }}/${this.selectedItem.id}?format=${format}`;
 
                         this.selectedItemExtension = this.selectedItem?.extension;
 
@@ -637,7 +633,6 @@
                         resetForm,
                         setErrors
                     }) {
-
                         const format = (() => {
                             try {
                                 return JSON.parse(params.format).value;
