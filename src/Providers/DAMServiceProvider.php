@@ -69,21 +69,29 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/acl.php', 'acl');
 
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/api-acl.php', 'api-acl');
+
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/unopim-vite.php', 'unopim-vite.viters'
+            __DIR__.'/../Config/unopim-vite.php',
+            'unopim-vite.viters'
         );
 
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/attribute_types.php', 'attribute_types'
+            __DIR__.'/../Config/attribute_types.php',
+            'attribute_types'
         );
 
         $this->mergeConfigFrom(
-            __DIR__.'/../Config/category_field_types.php', 'category_field_types'
+            __DIR__.'/../Config/category_field_types.php',
+            'category_field_types'
         );
 
         Route::prefix('api')
             ->middleware('api')
             ->group(__DIR__.'/../Routes/api.php');
 
+        $this->commands([
+            \Webkul\DAM\Console\Commands\MoveDamAssetsToS3::class,
+        ]);
     }
 }

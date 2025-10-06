@@ -1,13 +1,11 @@
 <x-admin::layouts>
     @push('styles')
-        @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-        
+    @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
     @endpush
 
     <x-slot:title>
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
-     
 
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
@@ -126,61 +124,64 @@
             </div>
     
         </script>
-        <script type="module">
-    
-            app.component('v-dam-upload', {
-                template: '#v-dam-upload-template',
-    
-                data() {
-                    return {
-                        currentDirectory: null,
-                    }
-                },
+    <script type="module">
+        app.component('v-dam-upload', {
+            template: '#v-dam-upload-template',
 
-                mounted() {
-                    this.$emitter.on('current-directory', (data) => {
-                        this.currentDirectory = data;
-                    });
-                },
-    
-                methods: {
-                    onFileChange(e) {
-                        e.preventDefault();
-                        let fileInput = e.target.files;
-    
-                        if (fileInput.length > 0) {
-                            let formData = new FormData();
-                                    
-                            for (let index = 0; index < fileInput.length; index++) {
-                                formData.append('files[]', fileInput[index]);
-                            }
+            data() {
+                return {
+                    currentDirectory: null,
+                }
+            },
 
-                            if (this.currentDirectory) {
-                                formData.append('directory_id', this.currentDirectory.id);
-                            }
-                            
-                            this.handleFileUpload(formData);
+            mounted() {
+                this.$emitter.on('current-directory', (data) => {
+                    this.currentDirectory = data;
+                });
+            },
+
+            methods: {
+                onFileChange(e) {
+                    e.preventDefault();
+                    let fileInput = e.target.files;
+
+                    if (fileInput.length > 0) {
+                        let formData = new FormData();
+
+                        for (let index = 0; index < fileInput.length; index++) {
+                            formData.append('files[]', fileInput[index]);
                         }
 
-                        e.target.value = null;
-                    },
-                    handleFileUpload(formData) {   
-                        this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            }
-                        }).then((response) => {
-                            this.$refs.datagrid.get();
-                            this.$emitter.emit('uploaded-assets', response.data.files);
-                            this.$emitter.emit('add-flash', {type: 'success', message: response.data.message});
-                        }).catch((error) => {
-                            console.log(error);
-                            this.$emitter.emit('add-flash', {type: 'error', message: error.response.data.message});
-                                console.error('Upload failed:', error);
-                        });
+                        if (this.currentDirectory) {
+                            formData.append('directory_id', this.currentDirectory.id);
+                        }
+
+                        this.handleFileUpload(formData);
                     }
+
+                    e.target.value = null;
+                },
+                handleFileUpload(formData) {
+                    this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    }).then((response) => {
+                        this.$refs.datagrid.get();
+                        this.$emitter.emit('uploaded-assets', response.data.files);
+                        this.$emitter.emit('add-flash', {
+                            type: 'success',
+                            message: response.data.message
+                        });
+                    }).catch((error) => {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: error.response.data.message
+                        });
+                    });
                 }
-            })
-        </script>
+            }
+        })
+    </script>
     @endPushOnce
 </x-admin::layouts>

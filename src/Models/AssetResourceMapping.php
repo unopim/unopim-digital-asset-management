@@ -6,10 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\Category\Models\CategoryProxy;
 use Webkul\DAM\Contracts\AssetResourceMapping as AssetResourceMappingContract;
+use Webkul\HistoryControl\Contracts\HistoryAuditable;
+use Webkul\HistoryControl\Traits\HistoryTrait;
 use Webkul\Product\Models\ProductProxy;
 
-class AssetResourceMapping extends Model implements AssetResourceMappingContract
+class AssetResourceMapping extends Model implements AssetResourceMappingContract, HistoryAuditable
 {
+    use HistoryTrait;
+
+    protected $historyTags = ['asset'];
+
+    /**
+     * These columns history will not be generated
+     */
+    protected $auditExclude = [
+        'id',
+    ];
+
     protected $table = 'dam_asset_resource_mappings';
 
     protected $fillable = [
@@ -42,5 +55,13 @@ class AssetResourceMapping extends Model implements AssetResourceMappingContract
     public function category(): BelongsTo
     {
         return $this->belongsTo(CategoryProxy::class, 'category_id');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPrimaryModelIdForHistory(): int
+    {
+        return $this->dam_asset_id;
     }
 }

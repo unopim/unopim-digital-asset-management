@@ -127,7 +127,7 @@
 
             data: function () {
                 return {
-                 
+
                 }
             },
             computed: {
@@ -155,13 +155,21 @@
                                 .then(({
                                     data
                                 }) => {
-                                    this.$emitter.emit('add-flash', { type: 'success', message: 'successfully deleted' });
-                                    this.$emitter.emit('delete-assets', { actionType: 'single-action'});
+                                    this.$emitter.emit('add-flash', {
+                                        type: 'success',
+                                        message: 'successfully deleted'
+                                    });
+                                    this.$emitter.emit('delete-assets', {
+                                        actionType: 'single-action'
+                                    });
                                     this.$parent.get();
                                 })
                                 .catch(error => {
                                     console.log(error);
-                                    this.$emitter.emit('add-flash', { type: 'error', message: error?.response?.data?.message });
+                                    this.$emitter.emit('add-flash', {
+                                        type: 'error',
+                                        message: error?.response?.data?.message
+                                    });
                                 });
                         }
                     });
@@ -173,7 +181,7 @@
                     document.removeEventListener('click', this.closeContextMenu);
                 },
                 editImage(recordId) {
-                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;                    
+                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;
                 }
             }
         });

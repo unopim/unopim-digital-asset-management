@@ -2,13 +2,17 @@
 
 namespace Webkul\DAM\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\DAM\Contracts\Asset as AssetContract;
+use Webkul\DAM\Database\Factories\AssetFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
 use Webkul\HistoryControl\Traits\HistoryTrait;
 
 class Asset extends Model implements AssetContract, HistoryAuditable
 {
+    use HasFactory;
     use HistoryTrait;
 
     const ASSET_ATTRIBUTE_TYPE = 'asset';
@@ -59,5 +63,13 @@ class Asset extends Model implements AssetContract, HistoryAuditable
     public function getPathWithOutFileSystemRoot()
     {
         return str_replace(Directory::ASSETS_DIRECTORY.'/', '', $this->path);
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return AssetFactory::new();
     }
 }

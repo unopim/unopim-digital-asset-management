@@ -117,7 +117,10 @@
 
             mounted() {
                 this.$emitter.on('data-grid:reset-all-filters', () => {
-                    this.applied.filters.columns = [{index: 'all',value: []}];
+                    this.applied.filters.columns = [{
+                        index: 'all',
+                        value: []
+                    }];
                     this.applied.pagination.page = 1;
                 })
 
@@ -128,8 +131,7 @@
                         this.applyFilter(data.column, value);
                     });
 
-                   
-                   this.get();
+                    this.get();
                 })
 
                 this.boot();
@@ -153,7 +155,9 @@
                     }
 
                     if (datagrids?.length) {
-                        const currentDatagrid = datagrids.find(({ src }) => src === this.src);
+                        const currentDatagrid = datagrids.find(({
+                            src
+                        }) => src === this.src);
 
                         if (currentDatagrid) {
                             this.applied.pagination = currentDatagrid.applied.pagination;
@@ -211,7 +215,10 @@
 
                     this.$axios
                         .get(this.src, {
-                            params: { ...params, ...extraParams }
+                            params: {
+                                ...params,
+                                ...extraParams
+                            }
                         })
                         .then((response) => {
                             /**
@@ -245,10 +252,10 @@
 
                             this.updateDatagrids();
 
-                           /**
-                            * This event should be fired at the end, but only in the GET method. This allows the export feature to listen to it
-                            * and update its properties accordingly.
-                            */
+                            /**
+                             * This event should be fired at the end, but only in the GET method. This allows the export feature to listen to it
+                             * and update its properties accordingly.
+                             */
                             this.$emitter.emit('change-datagrid', {
                                 available: this.available,
                                 applied: this.applied
@@ -282,7 +289,7 @@
 
                             return;
                         }
-                    }  else if (typeof directionOrPageNumber === 'number') {
+                    } else if (typeof directionOrPageNumber === 'number') {
                         newPage = directionOrPageNumber;
                     } else {
                         console.warn('Invalid Input Provided: ' + directionOrPageNumber);
@@ -401,11 +408,11 @@
                      * We need to reset the page on filtering.
                      */
                     this.applied.pagination.page = 1;
-                    if ('search' == $event.srcElement.name ) {
+                    if ('search' == $event.srcElement.name) {
                         this.get();
                     }
                 },
-                 
+
                 runFilters() {
                     this.get();
                 },
@@ -533,12 +540,14 @@
                      * Clean up is done here. If there are no applied values present, there is no point in including the applied column as well.
                      */
                     if (!appliedColumn.value.length) {
-                        this.applied.filters.columns = this.applied.filters.columns.filter(column => column.index !== columnIndex);
+                        this.applied.filters.columns = this.applied.filters.columns.filter(column => column
+                            .index !== columnIndex);
                     }
                 },
 
                 removeAppliedColumnAllValues(columnIndex) {
-                    this.applied.filters.columns = this.applied.filters.columns.filter(column => column.index !== columnIndex);
+                    this.applied.filters.columns = this.applied.filters.columns.filter(column => column.index !==
+                        columnIndex);
 
                     this.get();
                 },
@@ -578,7 +587,8 @@
                         this.available.records.forEach(record => {
                             const id = record[this.available.meta.primary_column];
 
-                            this.applied.massActions.indices = this.applied.massActions.indices.filter(selectedId => selectedId !== id);
+                            this.applied.massActions.indices = this.applied.massActions.indices.filter(
+                                selectedId => selectedId !== id);
                         });
 
                         this.applied.massActions.meta.mode = 'none';
@@ -586,7 +596,8 @@
                         this.available.records.forEach(record => {
                             const id = record[this.available.meta.primary_column];
 
-                            let found = this.applied.massActions.indices.find(selectedId => selectedId === id);
+                            let found = this.applied.massActions.indices.find(selectedId => selectedId ===
+                                id);
 
                             if (!found) {
                                 this.applied.massActions.indices.push(id);
@@ -598,14 +609,20 @@
                 },
 
                 validateMassAction() {
-                    if (! this.applied.massActions.indices.length) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('admin::app.components.datagrid.index.no-records-selected')" });
+                    if (!this.applied.massActions.indices.length) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: "@lang('admin::app.components.datagrid.index.no-records-selected')"
+                        });
 
                         return false;
                     }
 
-                    if (! this.applied.massActions.meta.action) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('admin::app.components.datagrid.index.must-select-a-mass-action')" });
+                    if (!this.applied.massActions.meta.action) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: "@lang('admin::app.components.datagrid.index.must-select-a-mass-action')"
+                        });
 
                         return false;
                     }
@@ -614,7 +631,10 @@
                         this.applied.massActions.meta.action?.options?.length &&
                         this.applied.massActions.value === null
                     ) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('admin::app.components.datagrid.index.must-select-a-mass-action-option')" });
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: "@lang('admin::app.components.datagrid.index.must-select-a-mass-action-option')"
+                        });
 
                         return false;
                     }
@@ -651,12 +671,20 @@
                                             value: this.applied.massActions.value,
                                         })
                                         .then(response => {
-                                            this.$emitter.emit('add-flash', { type: 'success', message: response.data.message });
-                                            this.$emitter.emit('delete-assets', { actionType: 'mass-action'});
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'success',
+                                                message: response.data.message
+                                            });
+                                            this.$emitter.emit('delete-assets', {
+                                                actionType: 'mass-action'
+                                            });
                                             this.get();
                                         })
                                         .catch((error) => {
-                                            this.$emitter.emit('add-flash', { type: 'error', message: error.response.data.message });
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'error',
+                                                message: error.response.data.message
+                                            });
                                         });
 
                                     break;
@@ -666,12 +694,18 @@
                                             indices: this.applied.massActions.indices
                                         })
                                         .then(response => {
-                                            this.$emitter.emit('add-flash', { type: 'success', message: response.data.message });
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'success',
+                                                message: response.data.message
+                                            });
 
                                             this.get();
                                         })
                                         .catch((error) => {
-                                            this.$emitter.emit('add-flash', { type: 'error', message: error.response.data.message });
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'error',
+                                                message: error.response.data.message
+                                            });
                                         });
 
                                     break;
@@ -682,7 +716,7 @@
                                     break;
                             }
 
-                            this.applied.massActions.indices  = [];
+                            this.applied.massActions.indices = [];
                         }
                     });
                 },
@@ -695,7 +729,9 @@
                     let datagrids = this.getDatagrids();
 
                     if (datagrids?.length) {
-                        const currentDatagrid = datagrids.find(({ src }) => src === this.src);
+                        const currentDatagrid = datagrids.find(({
+                            src
+                        }) => src === this.src);
 
                         if (currentDatagrid) {
                             datagrids = datagrids.map(datagrid => {
@@ -770,12 +806,18 @@
                                 agree: () => {
                                     this.$axios[method](action.url)
                                         .then(response => {
-                                            this.$emitter.emit('add-flash', { type: 'success', message: response.data.message });
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'success',
+                                                message: response.data.message
+                                            });
 
                                             this.get();
                                         })
                                         .catch((error) => {
-                                            this.$emitter.emit('add-flash', { type: 'error', message: error.response.data.message });
+                                            this.$emitter.emit('add-flash', {
+                                                type: 'error',
+                                                message: error.response.data.message
+                                            });
                                         });
                                 }
                             });

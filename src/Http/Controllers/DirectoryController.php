@@ -188,7 +188,7 @@ class DirectoryController
     }
 
     /**
-     * Cop the directory structure
+     * Copy the directory structure
      */
     public function copyStructure(Request $request): JsonResponse
     {
@@ -260,8 +260,9 @@ class DirectoryController
         $directory = $this->directoryRepository->findOrFail($id);
 
         $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
-        $files = Storage::disk(Directory::ASSETS_DISK)->allFiles($folderPath);
-        $directories = Storage::disk(Directory::ASSETS_DISK)->allDirectories($folderPath);
+        $disk = Directory::getAssetDisk();
+        $files = Storage::disk($disk)->allFiles($folderPath);
+        $directories = Storage::disk($disk)->allDirectories($folderPath);
 
         if (empty($directories) && empty($files)) {
             return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
@@ -273,7 +274,8 @@ class DirectoryController
             // Add files to the ZIP archive
             foreach ($files as $file) {
                 $relativePath = str_replace($folderPath.'/', '', $file);
-                $zip->addFile(Storage::disk(Directory::ASSETS_DISK)->path($file), $relativePath);
+                $fileContents = Storage::disk($disk)->get($file);
+                $zip->addFromString($relativePath, $fileContents);
             }
 
             // Add directories to the ZIP archive

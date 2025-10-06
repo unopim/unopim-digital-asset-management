@@ -38,6 +38,7 @@ return [
                     'updated-at'     => 'Updated At',
                     'extension'      => 'Extension',
                     'path'           => 'Path',
+                    'size'           => 'Size',
                 ],
 
                 'directory' => [
@@ -69,8 +70,11 @@ return [
                         'add-directory'             => 'Add Directory',
                         'upload-files'              => 'Upload Files',
                         'copy-directory-structured' => 'Copy Directory Structured',
+                        'get-by-id'                 => 'Get By Id',
+                        'comment'                   => 'Comment',
                     ],
 
+                    'linked-resources'                          => 'Linked Resources',
                     'not-found'                                 => 'No directory found',
                     'created-success'                           => 'Directory created successfully',
                     'updated-success'                           => 'Directory updated successfully',
@@ -90,6 +94,7 @@ return [
                     'not-writable'                              => 'You are not allowed to :actionType a :type in this location ":path".',
                     'empty-directory'                           => 'This directory is empty.',
                     'failed-download-directory'                 => 'Failed to create the zip file.',
+                    'not-allowed'                               => 'Uploading script files is not allowed.',
                 ],
 
                 'title'       => 'DAM',
@@ -147,7 +152,6 @@ return [
                     'update-failed'   => 'Comment failed to update',
                     'delete-success'  => 'Asset Comment Deleted Successfully',
                     'delete-failed'   => 'Asset Comment failed to delete',
-
                 ],
                 'edit' => [
                     'title'              => 'Edit Asset',
@@ -198,7 +202,7 @@ return [
                     'tag-already-exists'        => 'Tag already exists',
                     'image-source-not-readable' => 'Image source not readable',
                     'failed-to-read'            => 'Failed to read image metadata :exception',
-                    'file_re_upload_success'    => 'Files Re-Uploaded Successfully.',
+                    'file-re-upload-success'    => 'Files Re-Uploaded Successfully.',
 
                 ],
                 'linked-resources' => [
@@ -228,22 +232,29 @@ return [
                     'not-found'      => 'Tags Not Found',
                     'update-success' => 'Tags updated Successfully',
                     'update-failed'  => 'Tags failed to update',
-                    'delete-success' => 'Asset Tags Deleted Successfully',
+                    'delete-success' => 'Asset Tags Removed Successfully',
                     'delete-failed'  => 'Asset Tags failed to delete',
-
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
                 'delete-failed-due-to-attached-resources' => 'Failed to delete asset as it is linked to resources (Asset Name: :assetNames)',
                 'datagrid'                                => [
-                    'mass-delete-success'  => 'Mass Deleted Successfully.',
-                    'files_upload_success' => 'Files Uploaded Successfully.',
-                    'file_upload_success'  => 'File Uploaded Successfully.',
-                    'not-found'            => 'File not Found',
-                    'edit-success'         => 'File Uploaded Successfully',
-                    'show-success'         => 'File Found Successfully',
-                    'update-success'       => 'File Updated Successfully',
-                    'not-found-to-update'  => 'File does not Exits',
-                    'not-found-to-destroy' => 'File does not Exits',
+                    'mass-delete-success'                 => 'Mass Deleted Successfully.',
+                    'files-upload-success'                => 'Files Uploaded Successfully.',
+                    'file-upload-success'                 => 'File Uploaded Successfully.',
+                    'not-found'                           => 'File not Found',
+                    'edit-success'                        => 'File Uploaded Successfully',
+                    'show-success'                        => 'File Found Successfully',
+                    'update-success'                      => 'File Updated Successfully',
+                    'not-found-to-update'                 => 'File does not Exits',
+                    'not-found-to-destroy'                => 'File does not Exits',
+                    'files-upload-failed'                 => 'Files failed to upload.',
+                    'file-upload-failed'                  => 'File failed to upload',
+                    'invalid-file'                        => 'Invalid File Provided',
+                    'invalid-file-format'                 => 'Invalid Format',
+                    'invalid-file-format-or-not-provided' => 'No files provided or invalid format.',
+                    'download-image-failed'               => 'Failed to download image from URL',
+                    'file-process-failed'                 => 'Some files failed to process',
+                    'file-forbidden-type'                 => 'File has forbidden type or extension.',
                 ],
             ],
         ],
@@ -304,6 +315,9 @@ return [
                 'name' => [
                     'required' => 'The Name field is required.',
                     'unique'   => 'The Name has already been taken.',
+                ],
+                'language' => [
+                    'not-found' => 'The selected language could not be found or is currently disabled.',
                 ],
             ],
         ],

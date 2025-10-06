@@ -3,7 +3,7 @@
 UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system built on Laravel. It enables businesses to store, organize, and manage digital assets such as images, videos, documents, and more. The system is designed for seamless cross-team asset management. Key features include:
 
 ## Requirements
-- **UnoPim**: v0.1.6
+- **UnoPim**: v0.3.2
 
 ## ✨ Features
 
@@ -105,3 +105,52 @@ To manually install UnoPim DAM:
      ```bash
      sudo supervisorctl restart unopim-worker
      ```
+
+
+## 📦 DAM Asset Migration to AWS S3
+
+This Laravel Artisan command is used to **migrate DAM asset files** from the **local private disk** to **AWS S3 storage**. It supports migrating all files or only newly uploaded ones, and optionally deleting local files after successful migration.
+
+### 🛠 Command Signature
+
+```bash
+php artisan unopim:dam:move-asset-to-s3
+```
+
+### 🔐 Authentication
+
+To execute this command, valid admin credentials are required:
+
+-   You'll be prompted to enter your **email** and **password**.
+-   Access is granted only if the credentials match an admin user.
+
+### 🧭 Options Prompts
+
+During execution, the command will prompt you to choose:
+
+-   **Migrate only new files?**
+    If `yes`, only assets not already present on S3 will be migrated.
+
+-   **Delete files from local disk after uploading?**
+    If `yes`, local files will be deleted after successful transfer to S3.
+
+### 📋 Example Workflow
+
+```bash
+php artisan unopim:dam:move-asset-to-s3
+```
+
+### API Support
+
+- **Directories Management Endpoints:**
+  - **Create Directory:** `POST /api/v1/rest/directories`
+  - **Update Directory:** `PUT /api/v1/rest/directories/{directory_id}`
+  - **Delete Directory:** `DELETE /api/v1/rest/directories/{directory_id}`
+  - **List Directories:** `GET /api/v1/rest/directories`
+
+- **Assets Management Endpoints:**
+  - **Upload Asset:** `POST /api/v1/rest/assets`
+  - **Update Asset Metadata:** `PUT /api/v1/rest/assets/{asset_id}`
+  - **Delete Asset:** `DELETE /api/v1/rest/assets/{asset_id}`
+  - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
+  - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`

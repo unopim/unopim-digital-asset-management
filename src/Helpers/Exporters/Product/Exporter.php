@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Attribute\Rules\AttributeTypes;
 use Webkul\Core\Repositories\ChannelRepository;
+use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as BaseExporter;
+use Webkul\DataTransfer\Helpers\Sources\Export\ProductSource;
 use Webkul\DataTransfer\Jobs\Export\File\FlatItemBuffer as FileExportFileBuffer;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
@@ -23,9 +25,16 @@ class Exporter extends BaseExporter
         FileExportFileBuffer $exportFileBuffer,
         ChannelRepository $channelRepository,
         AttributeRepository $attributeRepository,
-        protected AssetRepository $assetRepository
+        ProductSource $productSource,
+        protected AssetRepository $assetRepository,
     ) {
-        parent::__construct($exportBatchRepository, $exportFileBuffer, $channelRepository, $attributeRepository);
+        parent::__construct(
+            $exportBatchRepository,
+            $exportFileBuffer,
+            $channelRepository,
+            $attributeRepository,
+            $productSource
+        );
     }
 
     /**
@@ -121,11 +130,7 @@ class Exporter extends BaseExporter
      */
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
-        if ($isAssetField && Storage::disk('private')->exists($sourcePath)) {
-            Storage::writeStream($destinationPath, Storage::disk('private')->readStream($sourcePath));
-
-            return;
-        }
+        $disk = Directory::getAssetDisk();
 
         parent::copyMedia($sourcePath, $destinationPath);
     }

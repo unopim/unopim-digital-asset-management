@@ -1,4 +1,27 @@
-# Changelog for UnoPim DAM
+# Changelog
+
+
+## **Version 1.1.0** - AWS S3 Integration & Enhanced File Support
+
+## Features
+
+- **AWS S3 Integration**:
+  - Added AWS S3 feature to the Digital Asset Management (DAM) system. You can now configure AWS S3 credentials and upload images directly to AWS S3.
+  - Created a new command for migrating local/public assets to the existing AWS S3 cloud, allowing you to seamlessly transfer your files.
+
+- **Comment and Link History**:
+  - Added history generation for comments and linked properties, enabling tracking of changes over time for better collaboration and versioning.
+
+- **Support for New File Types**:
+  - Added input support for SVG files. Now, when downloading an SVG file, you’ll only see the available options in the type dropdown (JPG, PNG, JPEG).
+  - Included support for uploading and viewing `.mp4` and `.step` files, expanding the range of supported file types in the DAM system.
+
+- **API Support:**:
+  - API endpoints for managing directories (create, update, delete, list)
+  - API endpoints for managing assets (upload, update metadata, delete, list, retrieve)
+
+
+
 
 ## **Version 1.0.0** - Initial Release
 

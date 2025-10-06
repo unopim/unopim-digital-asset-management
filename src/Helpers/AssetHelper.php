@@ -35,7 +35,7 @@ class AssetHelper
     {
         $extension = strtolower($extension);
 
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp', 'tiff', 'tif'];
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp', 'tiff', 'tif', 'jfif'];
         $videoExtensions = ['mp4', 'mkv', 'avi', 'mov', 'flv'];
         $audioExtensions = ['mp3', 'wav', 'aac', 'flac'];
         $documentExtensions = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'];
@@ -66,5 +66,47 @@ class AssetHelper
         }
 
         return $fileName;
+    }
+
+    /**
+     * Check if given extension or mime type is forbidden for upload
+     *
+     * @param string|null $extension
+     * @param string|null $mimeType
+     * @return bool
+     */
+    public static function isForbiddenFile(?string $extension, ?string $mimeType): bool
+    {
+        $forbiddenExtensions = [
+            'php', 'js', 'py', 'sh', 'bat', 'pl', 'cgi', 'asp', 'aspx', 'jsp', 'exe', 'rb', 'jar',
+        ];
+
+        $forbiddenMimeTypes = [
+            'application/x-php',
+            'application/x-javascript',
+            'text/javascript',
+            'application/javascript',
+            'text/x-python',
+            'application/x-sh',
+            'application/x-bat',
+            'application/x-perl',
+            'application/x-cgi',
+            'text/x-asp',
+            'application/x-aspx',
+            'application/x-jsp',
+            'application/x-msdownload',
+            'application/java-archive',
+            'application/x-ruby',
+        ];
+
+        if ($extension) {
+            $extension = strtolower($extension);
+        }
+
+        if ($mimeType) {
+            $mimeType = strtolower($mimeType);
+        }
+
+        return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));
     }
 }
