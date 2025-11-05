@@ -47,12 +47,10 @@ class AssetRepository extends Repository
 
     /**
      * This function returns a query builder instance for the Attribute model.
-     * It eager loads the 'translations' relationship for the Attribute.
-     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function queryBuilder()
     {
-        return $this->with(['translations']);
+        return $this;
     }
 }
