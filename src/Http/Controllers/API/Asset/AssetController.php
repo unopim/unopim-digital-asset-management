@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Webkul\Admin\Http\Controllers\Controller;
-use Webkul\DAM\DataGrids\Asset\AssetDataGrid;
+use Webkul\DAM\ApiDataSource\AssetDataSource;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Asset;
@@ -44,7 +44,7 @@ class AssetController extends Controller
     public function index(): JsonResponse
     {
         try {
-            return app(AssetDataGrid::class)->toJson();
+            return app(AssetDataSource::class)->toJson();
         } catch (\Exception $e) {
             return $this->storeExceptionLog($e);
         }
