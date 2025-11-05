@@ -1,7 +1,4 @@
-# Changelog
-
-
-## **Version 1.1.0** - AWS S3 Integration & Enhanced File Support
+## **Version 1.1.0** - AWS S3 Storage Support & REST API Support
 
 ## Features
 
@@ -19,9 +16,6 @@
 - **API Support:**:
   - API endpoints for managing directories (create, update, delete, list)
   - API endpoints for managing assets (upload, update metadata, delete, list, retrieve)
-
-
-
 
 ## **Version 1.0.0** - Initial Release
 
