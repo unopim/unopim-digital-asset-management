@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\Core\Filesystem\FileStorer;
+use Webkul\Core\Repositories\LocaleRepository;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 
@@ -18,7 +19,8 @@ class PropertyController extends Controller
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
-        protected FileStorer $fileStorer
+        protected FileStorer $fileStorer,
+        protected LocaleRepository $localeRepository
     ) {}
 
     /**
