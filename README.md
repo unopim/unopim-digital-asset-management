@@ -140,6 +140,15 @@ During execution, the command will prompt you to choose:
 php artisan unopim:dam:move-asset-to-s3
 ```
 
+## 📬 Postman API Collection
+
+To interact with UnoPim DAM's API, you can use our official Postman collection:
+
+[UnoPim DAM APIs Documentation](https://documenter.getpostman.com/view/4385199/2sBXVhEWjQ)
+[UnoPim DAM APIs on Postman](https://www.postman.com/unopim/unopim-apis/collection/4385199-086948c4-9e81-4271-abb7-6d6995a67304?ctx=info)
+
+This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs.
+
 ### API Support
 
 - **Directories Management Endpoints:**
