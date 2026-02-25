@@ -46,7 +46,7 @@ return [
         'sort'  => 5,
     ], [
         'key'   => 'api.dam.assets.getById',
-        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.assets.show',
         'sort'  => 6,
     ], [
@@ -71,7 +71,7 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.directory.getById',
-        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.directory.get',
         'sort'  => 4,
     ], [
@@ -96,7 +96,7 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.comment.getById',
-        'name'  => 'dam:app.admin.dam.index.directory.actions.get-by-id',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get-by-id',
         'route' => 'admin.api.dam.comment.get',
         'sort'  => 4,
     ], [
@@ -121,7 +121,7 @@ return [
         'sort'  => 3,
     ], [
         'key'   => 'api.dam.tags',
-        'name'  => 'dam::app.admin.dam.datagrid.tags',
+        'name'  => 'dam::app.admin.dam.index.datagrid.tags',
         'route' => 'admin.api.dam.tags.get',
         'sort'  => 4,
     ], [

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetCommentsRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\User\Repositories\AdminRepository;
 
 class CommentController extends Controller
 {
@@ -16,6 +17,7 @@ class CommentController extends Controller
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetCommentsRepository $assetCommentRepository,
+        protected AdminRepository $adminRepository,
     ) {}
 
     /**
@@ -26,6 +28,27 @@ class CommentController extends Controller
         $property = $this->assetCommentRepository->findOrFail($id);
 
         return new JsonResponse($property);
+    }
+
+    /**
+     * To fetch User Info
+     *
+     * @param  int  $id
+     */
+    public function getUserInfo($id): JsonResponse
+    {
+        $user = $this->adminRepository->findOrFail($id);
+
+
+        $timezone = ['id' => $user?->timezone, 'label' => $user?->timezone];
+
+        return new JsonResponse([
+            'user'     => [
+                'name' => $user->name,
+                'status' => (bool) $user->status,
+            ],
+            'timezone' => $timezone,
+        ]);
     }
 
     /**

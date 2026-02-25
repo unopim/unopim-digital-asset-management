@@ -3,7 +3,7 @@
 UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system built on Laravel. It enables businesses to store, organize, and manage digital assets such as images, videos, documents, and more. The system is designed for seamless cross-team asset management. Key features include:
 
 ## Requirements
-- **UnoPim**: v0.3.2
+- **UnoPim**: v1.0.0
 
 ## ✨ Features
 

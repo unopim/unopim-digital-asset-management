@@ -55,6 +55,7 @@ Route::group([
         });
 
         Route::controller(CommentController::class)->prefix('')->group(function () {
+            Route::get('/get-user-info/{id}', 'getUserInfo')->name('admin.dam.asset.comments.get_user_info')->where('id', '[0-9]+');
             Route::get('/edit/{id}/comments', 'comments')->name('admin.dam.asset.comments.index')->where('id', '[0-9]+');
             Route::post('/edit/{id}/comment/create', 'commentCreate')->name('admin.dam.asset.comment.store');
             Route::put('/edit/{id}/comment/update', 'commentUpdate')->name('admin.dam.asset.comment.update');

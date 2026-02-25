@@ -233,7 +233,7 @@ return [
                     'delete-failed'  => 'Хэрэглэгдэхүүний таг устгахад алдаа гарлаа',
                 ],
                 'delete-success'                          => 'Хэрэглэгдэхүүн амжилттай устгагдлаа',
-                'delete-failed-due-to-attached-resources' => 'Хэрэглэгдэхүүнийг устгах боломжгүй, учир нь энэ нь нөөцүүдтэй холбогдсон байна (Хэрэглэгдэхүүний Нэр: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'Хөрөнгө ашиглагдаж байна. Устгахаас өмнө салгана уу',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Олон Файлууд Амжилттай Устгагдлаа.',
                     'files-upload-success'                => 'Файлууд амжилттай ачаалагдлаа.',

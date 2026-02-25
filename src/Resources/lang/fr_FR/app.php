@@ -233,7 +233,7 @@ return [
                     'delete-failed'  => 'Échec de la suppression des étiquettes d\'actif',
                 ],
                 'delete-success'                          => 'Actif supprimé avec succès',
-                'delete-failed-due-to-attached-resources' => 'Échec de la suppression de l\'actif car il est lié à des ressources (Nom de l\'actif : :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'La ressource est utilisée. Détachez-la avant de supprimer',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Suppression en masse réussie.',
                     'files-upload-success'                => 'Fichiers téléchargés avec succès.',

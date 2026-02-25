@@ -234,7 +234,7 @@ return [
                     'delete-failed'  => 'Error al eliminar las etiquetas del activo',
                 ],
                 'delete-success'                          => 'Activo eliminado con éxito',
-                'delete-failed-due-to-attached-resources' => 'Error al eliminar el activo, ya que está vinculado a recursos (Nombre del Activo: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'El recurso está en uso. Desvincúlalo antes de eliminarlo',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminación masiva realizada con éxito.',
                     'files-upload-success'                => 'Archivos subidos con éxito.',

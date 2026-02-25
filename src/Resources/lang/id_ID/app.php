@@ -234,7 +234,7 @@ return [
                     'delete-failed'  => 'Tag Aset Gagal Dihapus',
                 ],
                 'delete-success'                          => 'Aset berhasil dihapus',
-                'delete-failed-due-to-attached-resources' => 'Gagal menghapus aset karena terhubung dengan sumber daya (Nama Aset: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'Aset sedang digunakan. Lepaskan tautan sebelum menghapus',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Penghapusan Massal Berhasil.',
                     'files-upload-success'                => 'File Berhasil Diupload.',

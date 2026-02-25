@@ -234,7 +234,7 @@ return [
                     'delete-failed'  => '资产标签删除失败',
                 ],
                 'delete-success'                          => '资产删除成功',
-                'delete-failed-due-to-attached-resources' => '删除资产失败，因为它与资源关联（资产名称：:assetNames）',
+                'delete-failed-due-to-attached-resources' => '资源正在使用中。删除前请先取消关联',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '批量删除成功。',
                     'files-upload-success'                => '文件上传成功。',

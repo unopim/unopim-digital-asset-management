@@ -235,8 +235,7 @@ return [
                 ],
 
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
-                'delete-failed-due-to-attached-resources' => 'Asset konnte nicht gelöscht werden, da es mit Ressourcen verknüpft ist (Asset-Name: :assetNames)',
-
+                'delete-failed-due-to-attached-resources' => 'Asset wird verwendet. Vor dem Löschen bitte trennen',
                 'datagrid' => [
                     'mass-delete-success'                 => 'Massenlöschung erfolgreich.',
                     'files-upload-success'                => 'Dateien erfolgreich hochgeladen.',

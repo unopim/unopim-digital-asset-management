@@ -233,7 +233,7 @@ return [
                     'delete-failed'  => 'فشل في حذف علامات الأصل',
                 ],
                 'delete-success'                          => 'تم حذف الأصل بنجاح',
-                'delete-failed-due-to-attached-resources' => 'فشل في حذف الأصل لأنه مرتبط بالموارد (اسم الأصل: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'الأصل قيد الاستخدام. يرجى فصله قبل الحذف',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'تم الحذف الجماعي بنجاح.',
                     'files-upload-success'                => 'تم تحميل الملفات بنجاح.',

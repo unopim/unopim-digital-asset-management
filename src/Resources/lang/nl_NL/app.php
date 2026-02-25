@@ -233,7 +233,7 @@ return [
                     'delete-failed'  => 'Asset Tags konden niet worden verwijderd',
                 ],
                 'delete-success'                          => 'Asset succesvol verwijderd',
-                'delete-failed-due-to-attached-resources' => 'Verwijderen van asset mislukt omdat het gekoppeld is aan bronnen (Asset Naam: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'Asset is in gebruik. Ontkoppel voordat je verwijdert',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massa verwijdering succesvol.',
                     'files-upload-success'                => 'Bestanden succesvol geüpload.',

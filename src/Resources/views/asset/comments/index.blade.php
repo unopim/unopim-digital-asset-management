@@ -36,10 +36,10 @@
         id="v-comment-box-template">
         @if (bouncer()->hasPermission('dam.asset.comment.store'))
             <div :class="[{ 'ml-8 pl-4 border-l-2': parentId !== null }, 'flex flex-col gap-2 w-full text-base font-medium text-gray-600 dark:text-gray-300']">
-                <p v-if="parentId">@lang('dam::app.admin.dam.asset.comments.reply')</p>
-                <p v-else>@lang('dam::app.admin.dam.asset.comments.index')</p>
+                <p class="text-gray-600 dark:text-gray-300" v-if="parentId">@lang('dam::app.admin.dam.asset.comments.reply')</p>
+                <p class="text-gray-600 dark:text-gray-300" v-else>@lang('dam::app.admin.dam.asset.comments.index')</p>
                 <textarea 
-                    class="overflow-hidden border rounded-lg p-3" 
+                    class="overflow-hidden border rounded-lg p-3 dark:text-gray-400" 
                     rows="4" 
                     :placeholder="parentId !== null ? '{{ trans('dam::app.admin.dam.asset.comments.add-reply') }}' : '{{ trans('dam::app.admin.dam.asset.comments.add-comment') }}'" 
                 />
@@ -83,7 +83,7 @@
                 </div>
 
             </div>
-            <p :class="isChild ? 'indent-2' : ''" v-text="commentDetails.comments" />
+            <p :class="[isChild ? 'indent-2' : '', 'text-gray-800 dark:text-gray-300']" v-text="commentDetails.comments" />
         </div>
 
     </script>
@@ -175,7 +175,7 @@
                 fetchAdminDetails() {
                     if (this.comment.admin_id) {
 
-                        this.$axios.get("{{ route('admin.settings.users.edit', 'admin_id') }}".replace('admin_id', this.comment.admin_id))
+                        this.$axios.get("{{ route('admin.dam.asset.comments.get_user_info', 'admin_id') }}".replace('admin_id', this.comment.admin_id))
                             .then(response => {
                                 this.commentDetails.admin = response.data;
                             })

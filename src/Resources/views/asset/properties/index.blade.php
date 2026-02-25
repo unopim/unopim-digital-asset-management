@@ -175,7 +175,6 @@
                                 v-model="selectedProperty.name"
                                 :label="trans('dam::app.admin.dam.asset.properties.index.create.name')"
                                 :placeholder="trans('dam::app.admin.dam.asset.properties.index.create.name')"
-                                ::readonly="true !== codeIsNew"
                             />
 
                             <x-admin::form.control-group.error control-name="name" />

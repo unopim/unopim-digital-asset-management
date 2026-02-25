@@ -234,7 +234,7 @@ return [
                     'delete-failed'  => 'アセットタグの削除に失敗しました',
                 ],
                 'delete-success'                          => 'アセットが正常に削除されました',
-                'delete-failed-due-to-attached-resources' => 'リソースにリンクされているため、アセットの削除に失敗しました（アセット名: :assetNames）',
+                'delete-failed-due-to-attached-resources' => 'アセットは使用中です。削除する前にリンクを解除してください',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '一括削除が正常に完了しました。',
                     'files-upload-success'                => 'ファイルが正常にアップロードされました。',

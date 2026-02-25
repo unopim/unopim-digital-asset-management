@@ -234,7 +234,7 @@ return [
                     'delete-failed'  => 'Не удалось удалить теги актива',
                 ],
                 'delete-success'                          => 'Актив успешно удален',
-                'delete-failed-due-to-attached-resources' => 'Не удалось удалить актив, так как он связан с ресурсами (Имя актива: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'Ресурс используется. Отвяжите перед удалением',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Массовое удаление прошло успешно.',
                     'files-upload-success'                => 'Файлы успешно загружены.',

@@ -1,3 +1,8 @@
+## **Version 1.1.1**
+- Fixed issues with Product and Category imports
+- Enabled updating the **Name** field in Asset Properties
+- Updated translation message for asset deletion
+
 ## **Version 1.1.0** - AWS S3 Storage Support & REST API Support
 
 ## Features

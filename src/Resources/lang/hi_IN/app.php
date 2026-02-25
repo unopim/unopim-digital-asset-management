@@ -233,7 +233,7 @@ return [
                     'delete-failed'  => 'संपत्ति टैग हटाने में विफल',
                 ],
                 'delete-success'                          => 'संपत्ति सफलतापूर्वक हटा दी गई',
-                'delete-failed-due-to-attached-resources' => 'संपत्ति को हटाने में विफल, क्योंकि यह संसाधनों से जुड़ी है (संपत्ति नाम: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'एसेट उपयोग में है। हटाने से पहले अनलिंक करें',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'संपत्ति समूह में सफलतापूर्वक हटा दी गई।',
                     'files-upload-success'                => 'फाइलें सफलतापूर्वक अपलोड की गईं।',

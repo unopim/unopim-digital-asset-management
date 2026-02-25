@@ -236,7 +236,7 @@ return [
                     'delete-failed'  => 'Asset Tags failed to delete',
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
-                'delete-failed-due-to-attached-resources' => 'Failed to delete asset as it is linked to resources (Asset Name: :assetNames)',
+                'delete-failed-due-to-attached-resources' => 'Asset in use. Unlink before deleting',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Mass Deleted Successfully.',
                     'files-upload-success'                => 'Files Uploaded Successfully.',

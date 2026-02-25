@@ -105,6 +105,7 @@ class PropertyController extends Controller
         ]);
 
         $this->assetPropertyRepository->update(request()->only([
+            'name',
             'value',
         ]), $id);
 

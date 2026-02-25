@@ -357,7 +357,7 @@ class AssetController extends Controller
         if ($asset->resources()->get()->count()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
             ], 404);
         }
 
@@ -423,7 +423,7 @@ class AssetController extends Controller
 
             if (! empty($skippedAssetNames)) {
                 return new JsonResponse([
-                    'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => implode(', ', $skippedAssetNames)]),
+                    'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
                 ], 404);
             }
 
