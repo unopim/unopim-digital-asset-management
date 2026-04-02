@@ -3,12 +3,16 @@
 namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Exception\NotReadableException;
+use Intervention\Image\Image;
+use Intervention\Image\ImageManager;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Directory;
 
@@ -117,7 +121,6 @@ class FileController
 
         $path = urldecode(request()->path);
         $thumbnailPath = 'thumbnails/'.$path;
-
         if ($this->isImageFile($thumbnailPath, true)) {
             return $this->getFileResponse($thumbnailPath);
         }
@@ -126,10 +129,13 @@ class FileController
             $mimeType = Storage::disk($disk)->mimeType($path);
             try {
                 $image = $this->resizeImage(Storage::disk($disk)->get($path), 300);
-                Storage::disk($disk)->put($thumbnailPath, (string) $image->encode());
 
-                return response($image->encode(), 200)->header('Content-Type', $mimeType);
-            } catch (\Intervention\Image\Exception\NotReadableException $e) {
+                $imageData = $this->encodeImageByExtension($image, $path); // v3 method
+
+                Storage::disk($disk)->put($thumbnailPath, $imageData);
+
+                return response($imageData, 200)->header('Content-Type', $mimeType);
+            } catch (NotReadableException $e) {
                 //
             }
         } elseif ($this->isSvgFile($path)) {
@@ -225,9 +231,9 @@ class FileController
      */
     private function resizeImage($file, $width)
     {
-        return Image::make($file)->resize($width, null, function ($constraint) {
-            $constraint->aspectRatio();
-        });
+        $manager = new ImageManager(new Driver);
+
+        return $manager->read($file)->cover($width, $width);
     }
 
     /**
@@ -253,8 +259,8 @@ class FileController
         $customSize = intval(request()->get('size'));
 
         $maxSize = 1920;
-
         $customSize = min($maxSize, $customSize);
+
         $previewDirectory = 'preview/'.$customSize;
         $previewPath = $previewDirectory.'/'.$path;
 
@@ -267,10 +273,13 @@ class FileController
             if ($this->isImageFile($path) && $customSize > 0) {
                 try {
                     $image = $this->resizeImage(Storage::disk($disk)->get($path), $customSize);
-                    Storage::disk($disk)->put($previewPath, (string) $image->encode());
 
-                    return response($image->encode(), 200)->header('Content-Type', $mimeType);
-                } catch (\Intervention\Image\Exception\NotReadableException $e) {
+                    $imageData = $this->encodeImageByExtension($image, $path);
+
+                    Storage::disk($disk)->put($previewPath, $imageData);
+
+                    return response($imageData, 200)->header('Content-Type', $mimeType);
+                } catch (NotReadableException $e) {
                     Log::info('Failed Generating Image preview: '.json_encode($e));
                 }
             } elseif ($this->isSupportedMediaFile($mimeType)) {
@@ -289,9 +298,9 @@ class FileController
     private function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
-               Str::startsWith($mimeType, 'application/pdf') ||
-               Str::startsWith($mimeType, 'video/') ||
-               Str::startsWith($mimeType, 'audio/');
+            Str::startsWith($mimeType, 'application/pdf') ||
+            Str::startsWith($mimeType, 'video/') ||
+            Str::startsWith($mimeType, 'audio/');
     }
 
     /**
@@ -304,7 +313,7 @@ class FileController
      *
      * @param  string  $path
      * @param  string  $directoryPrefix
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     private function getDefaultImage($path, $directoryPrefix)
     {
@@ -329,7 +338,7 @@ class FileController
      * This method uses the helper to fetch a thumbnail placeholder.
      *
      * @param  string  $path
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getDefaultThumbnailImage($path)
     {
@@ -342,10 +351,37 @@ class FileController
      * This method uses the helper to fetch a preview placeholder.
      *
      * @param  string  $path
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getDefaultPreviewImage($path)
     {
         return $this->getDefaultImage($path, 'preview');
+    }
+
+    /**
+     * Encode the given image into an appropriate format based on the file extension.
+     *
+     * This method determines the file extension from the provided path and converts
+     * the image into a matching format such as PNG, JPEG, WebP, GIF, BMP, TIFF, or AVIF.
+     * If the extension is not recognized, it defaults to JPEG encoding.
+     *
+     * @param  Image  $image
+     * @param  string  $path
+     * @return string
+     */
+    private function encodeImageByExtension($image, $path)
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'png'  => $image->toPng(),
+            'webp' => $image->toWebp(),
+            'gif'  => $image->toGif(),
+            'bmp'  => $image->toBmp(),
+            'tiff', 'tif' => $image->toTiff(),
+            'avif' => $image->toAvif(),
+            'jpg', 'jpeg', 'jfif' => $image->toJpeg(),
+            default => $image->toJpeg(),
+        };
     }
 }

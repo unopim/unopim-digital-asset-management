@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\Admin\Http\Requests\MassUpdateRequest;
@@ -52,7 +54,7 @@ class AssetController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function edit(int $id)
     {
@@ -99,7 +101,7 @@ class AssetController extends Controller
             }
 
             $fileContent = $storage->get($path);
-            $image = Image::make($fileContent);
+            $image = (new ImageManager(new Driver))->read($fileContent);
 
             $data = [
                 'Width'     => $image->width(),
@@ -518,17 +520,14 @@ class AssetController extends Controller
             try {
                 $disk = Directory::getAssetDisk();
                 $fileContent = Storage::disk($disk)->get($asset->path);
-                $image = Image::make($fileContent);
+                $image = (new ImageManager(new Driver))->read($fileContent);
 
                 if ($width || $height) {
-                    $image->resize($width, $height, function ($constraint) {
-                        $constraint->aspectRatio();
-                    });
+                    $image->resize($width ? (int) $width : null, $height ? (int) $height : null);
                 }
 
                 if ($format) {
-                    $image->encode($format);
-                    $fileName = pathinfo($asset->file_name, PATHINFO_FILENAME).'.'.$format;
+                    $fileName = pathinfo($asset->file_name, PATHINFO_FILENAME).'.'.strtolower($format);
                 } else {
                     $fileName = $asset->file_name;
                 }
