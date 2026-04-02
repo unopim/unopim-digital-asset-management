@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Models;
 
 use Webkul\Attribute\Models\Attribute as BaseAttribute;
+use Webkul\DAM\Rules\AssetRule;
 
 class Attribute extends BaseAttribute
 {
@@ -15,7 +16,7 @@ class Attribute extends BaseAttribute
 
         switch ($this->type) {
             case 'asset':
-                $rules[] = new \Webkul\DAM\Rules\AssetRule($this);
+                $rules[] = new AssetRule($this);
 
                 break;
         }

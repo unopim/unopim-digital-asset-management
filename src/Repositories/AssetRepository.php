@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Repositories;
 
+use Illuminate\Database\Eloquent\Builder;
 use Webkul\Core\Eloquent\Repository;
 use Webkul\DAM\Models\Asset;
 
@@ -47,7 +48,8 @@ class AssetRepository extends Repository
 
     /**
      * This function returns a query builder instance for the Asset model.
-     * @return \Illuminate\Database\Eloquent\Builder
+     *
+     * @return Builder
      */
     public function queryBuilder()
     {

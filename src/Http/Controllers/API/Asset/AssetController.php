@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\View\View;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\ApiDataSource\AssetDataSource;
 use Webkul\DAM\Filesystem\FileStorer;
@@ -362,7 +363,7 @@ class AssetController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function edit(int $id): JsonResponse
     {
