@@ -18,9 +18,9 @@ it('should create a new property', function () {
     $asset = Asset::factory()->create();
 
     $data = [
-        'name'     => 'Text',
-        'type'     => 'Text',
-        'value'    => 'Testing',
+        'name' => 'Text',
+        'type' => 'Text',
+        'value' => 'Testing',
         'language' => 'English',
     ];
 
@@ -40,7 +40,7 @@ it('should update the Property', function () {
     $property = AssetProperty::factory()->create();
 
     $data = [
-        'name'  => 'Text',
+        'name' => 'Text',
         'value' => 'Testing',
     ];
 
@@ -57,7 +57,7 @@ it('should delete the property by ID', function () {
 
     $property = AssetProperty::factory()->create();
 
-    $this->delete(route('admin.dam.asset.properties.delete', ['asset_id'  => $assetId, 'id' => $property->id]))
+    $this->delete(route('admin.dam.asset.properties.delete', ['asset_id' => $assetId, 'id' => $property->id]))
         ->assertOk()
         ->assertJson([
             'message' => trans('dam::app.admin.dam.asset.properties.index.delete-success'),

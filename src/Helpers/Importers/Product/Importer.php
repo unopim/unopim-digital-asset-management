@@ -2,16 +2,16 @@
 
 namespace Webkul\DAM\Helpers\Importers\Product;
 
-use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Repositories\AssetRepository;
-use Webkul\DataTransfer\Helpers\Importers\Product\Importer as ProductImporter;
-use Webkul\DataTransfer\Helpers\Importers\Product\SKUStorage;
 use Webkul\Attribute\Repositories\AttributeFamilyRepository;
 use Webkul\Attribute\Repositories\AttributeOptionRepository;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
+use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Importers\FieldProcessor;
+use Webkul\DataTransfer\Helpers\Importers\Product\Importer as ProductImporter;
+use Webkul\DataTransfer\Helpers\Importers\Product\SKUStorage;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 use Webkul\Product\Repositories\ProductRepository;
 
@@ -77,7 +77,7 @@ class Importer extends ProductImporter
                     $assets = [];
                     foreach ($values as $value) {
                         $asset = $this->assetRepository->findWhereIn('path', [trim($value)])->first();
-                        
+
                         if ($asset) {
                             $assets[] = $asset->id;
                         }
@@ -89,6 +89,7 @@ class Importer extends ProductImporter
                         $attribute->setProductValue($value, $attributeValues, $rowData['channel'] ?? null, $rowData['locale'] ?? null);
                     }
                 }
+
                 continue;
             }
 

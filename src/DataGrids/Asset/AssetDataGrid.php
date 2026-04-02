@@ -66,7 +66,7 @@ class AssetDataGrid extends DataGrid
 
         $this->customFilterColumns = [
             'directory_asset_id' => 'dam_asset_directory.asset_id',
-            'directory_id'       => 'dam_directories.id',
+            'directory_id' => 'dam_directories.id',
         ];
 
         return $queryBuilder;
@@ -78,13 +78,13 @@ class AssetDataGrid extends DataGrid
     public function prepareColumns()
     {
         $this->addColumn([
-            'index'      => 'file_name',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.file-name'),
-            'type'       => 'string',
+            'index' => 'file_name',
+            'label' => trans('dam::app.admin.dam.index.datagrid.file-name'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
-            'closure'    => function ($row) {
+            'sortable' => true,
+            'closure' => function ($row) {
                 $fileName = $row->file_name;
 
                 return $fileName ? AssetHelper::getDisplayFileName($fileName) : trans('no file name');
@@ -92,69 +92,69 @@ class AssetDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
-            'index'      => 'tag',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.tags'),
-            'type'       => 'string',
+            'index' => 'tag',
+            'label' => trans('dam::app.admin.dam.index.datagrid.tags'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'property_name',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.property-name'),
-            'type'       => 'string',
+            'index' => 'property_name',
+            'label' => trans('dam::app.admin.dam.index.datagrid.property-name'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'property_value',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.property-value'),
-            'type'       => 'string',
+            'index' => 'property_value',
+            'label' => trans('dam::app.admin.dam.index.datagrid.property-value'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'extension',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.extension'),
-            'type'       => 'string',
+            'index' => 'extension',
+            'label' => trans('dam::app.admin.dam.index.datagrid.extension'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'path',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.path'),
-            'type'       => 'string',
+            'index' => 'path',
+            'label' => trans('dam::app.admin.dam.index.datagrid.path'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => false,
-            'sortable'   => true,
-            'closure'    => function ($row) {
+            'sortable' => true,
+            'closure' => function ($row) {
                 return isset($row->path) ? route('admin.dam.file.thumbnail', ['path' => urlencode($row->path)]) : '';
             },
         ]);
 
         $this->addColumn([
-            'index'      => 'created_at',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.created-at'),
-            'type'       => 'date_range',
+            'index' => 'created_at',
+            'label' => trans('dam::app.admin.dam.index.datagrid.created-at'),
+            'type' => 'date_range',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'updated_at',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.updated-at'),
-            'type'       => 'date_range',
+            'index' => 'updated_at',
+            'label' => trans('dam::app.admin.dam.index.datagrid.updated-at'),
+            'type' => 'date_range',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
     }
 
@@ -265,9 +265,9 @@ class AssetDataGrid extends DataGrid
     {
         if (bouncer()->hasPermission('dam.asset.mass_delete')) {
             $this->addMassAction([
-                'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),
-                'url'     => route('admin.dam.assets.mass_delete'),
-                'method'  => 'POST',
+                'title' => trans('admin::app.catalog.products.index.datagrid.delete'),
+                'url' => route('admin.dam.assets.mass_delete'),
+                'method' => 'POST',
                 'options' => ['actionType' => 'delete'],
             ]);
         }

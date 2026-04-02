@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Database\Eloquent;
 
+use Kalnoy\Nestedset\Collection;
 use Kalnoy\Nestedset\QueryBuilder as BaseBuilder;
 
 /**
@@ -10,7 +11,7 @@ use Kalnoy\Nestedset\QueryBuilder as BaseBuilder;
 class Builder extends BaseBuilder
 {
     /**
-     * @return \Kalnoy\Nestedset\Collection
+     * @return Collection
      */
     public function ancestorsAndSelfAndDefaultOrder(int $id, array $columns = ['*'])
     {

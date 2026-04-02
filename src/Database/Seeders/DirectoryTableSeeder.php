@@ -29,11 +29,11 @@ class DirectoryTableSeeder extends Seeder
 
         DB::table('dam_directories')->insert([
             [
-                'id'         => '1',
-                '_lft'       => '1',
-                '_rgt'       => '14',
-                'name'       => 'Root',
-                'parent_id'  => null,
+                'id' => '1',
+                '_lft' => '1',
+                '_rgt' => '14',
+                'name' => 'Root',
+                'parent_id' => null,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

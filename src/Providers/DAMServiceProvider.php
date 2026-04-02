@@ -6,8 +6,15 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Webkul\Attribute\Models\Attribute;
+use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\DamInstaller;
+use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
+use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
+use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
+use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
+use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 
 class DAMServiceProvider extends ServiceProvider
 {
@@ -17,13 +24,13 @@ class DAMServiceProvider extends ServiceProvider
      * @var array
      */
     public $bindings = [
-        \Webkul\DataTransfer\Helpers\Exporters\Product\Exporter::class     => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
-        \Webkul\Product\Normalizer\ProductAttributeValuesNormalizer::class => \Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer::class,
-        \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class    => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
-        \Webkul\DataTransfer\Helpers\Importers\Product\Importer::class     => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
-        \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class    => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
-        \Webkul\Attribute\Models\Attribute::class                          => \Webkul\DAM\Models\Attribute::class,
-        \Webkul\Attribute\Models\AttributeTranslation::class               => \Webkul\DAM\Models\AttributeTranslation::class,
+        Exporter::class => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
+        ProductAttributeValuesNormalizer::class => ProductValuesNormalizer::class,
+        \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
+        Importer::class => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
+        \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
+        Attribute::class => \Webkul\DAM\Models\Attribute::class,
+        AttributeTranslation::class => \Webkul\DAM\Models\AttributeTranslation::class,
     ];
 
     /**
@@ -91,7 +98,7 @@ class DAMServiceProvider extends ServiceProvider
             ->group(__DIR__.'/../Routes/api.php');
 
         $this->commands([
-            \Webkul\DAM\Console\Commands\MoveDamAssetsToS3::class,
+            MoveDamAssetsToS3::class,
         ]);
     }
 }

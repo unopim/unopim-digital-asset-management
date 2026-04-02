@@ -40,28 +40,28 @@ class AssetPropertyDataGrid extends DataGrid
     public function prepareColumns()
     {
         $this->addColumn([
-            'index'      => 'name',
-            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.name'),
-            'type'       => 'string',
+            'index' => 'name',
+            'label' => trans('dam::app.admin.dam.asset.properties.index.datagrid.name'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'type',
-            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.type'),
-            'type'       => 'string',
+            'index' => 'type',
+            'label' => trans('dam::app.admin.dam.asset.properties.index.datagrid.type'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => false,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'language',
-            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.language'),
-            'type'       => 'dropdown',
-            'options'    => [
+            'index' => 'language',
+            'label' => trans('dam::app.admin.dam.asset.properties.index.datagrid.language'),
+            'type' => 'dropdown',
+            'options' => [
                 'type' => 'basic',
 
                 'params' => [
@@ -70,8 +70,8 @@ class AssetPropertyDataGrid extends DataGrid
             ],
             'searchable' => false,
             'filterable' => true,
-            'sortable'   => true,
-            'closure'    => function ($row) {
+            'sortable' => true,
+            'closure' => function ($row) {
                 $local = $this->localeRepository->findOneByField('id', $row->language);
 
                 return \Locale::getDisplayName($local?->code, core()->getCurrentLocale()?->code);
@@ -79,12 +79,12 @@ class AssetPropertyDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
-            'index'      => 'value',
-            'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.value'),
-            'type'       => 'string',
+            'index' => 'value',
+            'label' => trans('dam::app.admin.dam.asset.properties.index.datagrid.value'),
+            'type' => 'string',
             'searchable' => true,
             'filterable' => true,
-            'sortable'   => true,
+            'sortable' => true,
         ]);
     }
 
@@ -96,21 +96,21 @@ class AssetPropertyDataGrid extends DataGrid
     public function prepareActions()
     {
         $this->addAction([
-            'index'  => 'edit',
-            'icon'   => 'icon-edit',
-            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
+            'index' => 'edit',
+            'icon' => 'icon-edit',
+            'title' => trans('dam::app.admin.dam.asset.properties.index.datagrid.edit'),
             'method' => 'GET',
-            'url'    => function ($row) {
+            'url' => function ($row) {
                 return route('admin.dam.asset.property.edit', $row->id);
             },
         ]);
 
         $this->addAction([
-            'index'  => 'delete',
-            'icon'   => 'icon-delete',
-            'title'  => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
+            'index' => 'delete',
+            'icon' => 'icon-delete',
+            'title' => trans('dam::app.admin.dam.asset.properties.index.datagrid.delete'),
             'method' => 'DELETE',
-            'url'    => function ($row) {
+            'url' => function ($row) {
                 return route('admin.dam.asset.properties.delete', ['asset_id' => $row->dam_asset_id, 'id' => $row->id]);
             },
         ]);
@@ -125,9 +125,9 @@ class AssetPropertyDataGrid extends DataGrid
     {
         if (bouncer()->hasPermission('dam.asset.property.delete')) {
             $this->addMassAction([
-                'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),
-                'url'     => route('admin.dam.asset.properties.mass_delete', ['asset_id' => request()->id]),
-                'method'  => 'POST',
+                'title' => trans('admin::app.catalog.products.index.datagrid.delete'),
+                'url' => route('admin.dam.asset.properties.mass_delete', ['asset_id' => request()->id]),
+                'method' => 'POST',
                 'options' => ['actionType' => 'delete'],
             ]);
         }

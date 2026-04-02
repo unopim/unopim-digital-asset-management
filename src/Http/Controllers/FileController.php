@@ -3,11 +3,13 @@
 namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Facades\Image;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Directory;
@@ -129,7 +131,7 @@ class FileController
                 Storage::disk($disk)->put($thumbnailPath, (string) $image->encode());
 
                 return response($image->encode(), 200)->header('Content-Type', $mimeType);
-            } catch (\Intervention\Image\Exception\NotReadableException $e) {
+            } catch (NotReadableException $e) {
                 //
             }
         } elseif ($this->isSvgFile($path)) {
@@ -270,7 +272,7 @@ class FileController
                     Storage::disk($disk)->put($previewPath, (string) $image->encode());
 
                     return response($image->encode(), 200)->header('Content-Type', $mimeType);
-                } catch (\Intervention\Image\Exception\NotReadableException $e) {
+                } catch (NotReadableException $e) {
                     Log::info('Failed Generating Image preview: '.json_encode($e));
                 }
             } elseif ($this->isSupportedMediaFile($mimeType)) {
@@ -304,7 +306,7 @@ class FileController
      *
      * @param  string  $path
      * @param  string  $directoryPrefix
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     private function getDefaultImage($path, $directoryPrefix)
     {
@@ -329,7 +331,7 @@ class FileController
      * This method uses the helper to fetch a thumbnail placeholder.
      *
      * @param  string  $path
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getDefaultThumbnailImage($path)
     {
@@ -342,7 +344,7 @@ class FileController
      * This method uses the helper to fetch a preview placeholder.
      *
      * @param  string  $path
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function getDefaultPreviewImage($path)
     {

@@ -71,7 +71,7 @@ class Directory extends Model implements DirectoryContract
      * Overrides the default Eloquent query builder.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Webkul\DAM\Database\Eloquent\Builder
+     * @return Builder
      */
     public function newEloquentBuilder($query)
     {
