@@ -179,9 +179,13 @@ it('should allow downloading the asset file', function () {
 
 // Custom Download Asset
 it('should allow custom downloading of the asset', function () {
+    Storage::fake('private');
+
+    $image = UploadedFile::fake()->image('sample.jpg');
+
     Storage::disk('private')->put(
         'assets/Root/sample.jpg',
-        file_get_contents(base_path('public/storage/Fixtures/sample.jpg'))
+        file_get_contents($image->getPathname())
     );
 
     $asset = Asset::factory()->create([
