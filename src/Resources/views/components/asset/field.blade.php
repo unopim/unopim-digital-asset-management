@@ -377,7 +377,7 @@
                 },
 
                 download() {
-                    let downloadLink = `{{ route('admin.dam.assets.download', '') }}/${this.asset.id}`;
+                    let downloadLink = `{{ route('admin.dam.assets.download', ':id') }}`.replace(':id', this.asset.id);
 
                     window.open(downloadLink, '_self');
                 },

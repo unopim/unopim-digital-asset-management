@@ -151,7 +151,7 @@
                     this.$emitter.emit('open-delete-modal', {
                         agree: () => {
                             this.$axios
-                                .delete(`{{ route('admin.dam.assets.destroy', '') }}/${recordId}`)
+                                .delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', recordId))
                                 .then(({
                                     data
                                 }) => {
@@ -181,7 +181,7 @@
                     document.removeEventListener('click', this.closeContextMenu);
                 },
                 editImage(recordId) {
-                    window.location.href = `{{ route('admin.dam.assets.edit', '') }}/${recordId}`;
+                    window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId);
                 }
             }
         });
