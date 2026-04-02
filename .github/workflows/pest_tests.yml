@@ -1,0 +1,92 @@
+name: Pest Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  pest_tests:
+    runs-on: ${{ matrix.operating-systems }}
+
+    strategy:
+      matrix:
+        operating-systems: [ubuntu-latest]
+        php-versions: ['8.2']
+
+    name: PHP ${{ matrix.php-versions }} test on ${{ matrix.operating-systems }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: unopim
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout DAM Package
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
+          tools: composer:v2
+
+      - name: Clone UnoPim
+        run: git clone -b 1.0 https://github.com/unopim/unopim.git core
+
+      - name: Move Package to UnoPim
+        run: |
+          mkdir -p core/packages/Webkul/DAM
+          rsync -av ./ core/packages/Webkul/DAM --exclude core
+
+      - name: Install UnoPim Dependencies
+        working-directory: core
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Register Local Package
+        working-directory: core
+        run: composer config repositories.dam path packages/Webkul/DAM
+
+      - name: Require DAM Package (local)
+        working-directory: core
+        run: composer require unopim/dam:@dev --no-interaction --prefer-source
+
+      - name: Setup Environment
+        working-directory: core
+        run: |
+          cp .env.example .env
+          sed -i "s|^\(APP_ENV=\s*\).*$|\1testing|" .env
+          sed -i "s|^\(DB_HOST=\s*\).*$|\1127.0.0.1|" .env
+          sed -i "s|^\(DB_PORT=\s*\).*$|\1${{ job.services.mysql.ports['3306'] }}|" .env
+          sed -i "s|^\(DB_DATABASE=\s*\).*$|\1unopim|" .env
+          sed -i "s|^\(DB_USERNAME=\s*\).*$|\1root|" .env
+          sed -i "s|^\(DB_PASSWORD=\s*\).*$|\1root|" .env
+
+      - name: Install UnoPim
+        working-directory: core
+        run: php artisan unopim:install --skip-env-check --skip-admin-creation
+
+      - name: Bind DAM Tests to Pest
+        working-directory: core
+        run: |
+          echo "uses(Webkul\Admin\Tests\AdminTestCase::class)->in('../packages/Webkul/DAM/tests');" >> tests/Pest.php
+            
+      - name: Install DAM Package
+        working-directory: core
+        run: |
+          php artisan dam-package:install
+          php artisan optimize:clear
+
+      - name: Reset Database
+        working-directory: core
+        run: php artisan migrate:fresh --seed
+
+      - name: Run DAM Tests
+        working-directory: core
+        run: vendor/bin/pest vendor/unopim/dam/tests --colors=always
