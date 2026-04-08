@@ -124,6 +124,14 @@ jobs:
         working-directory: unopim
         run: php artisan dam-package:install --no-interaction
 
+      - name: Reset PostgreSQL sequences after seeding
+        run: |
+          PGPASSWORD=unopim psql -h 127.0.0.1 -U unopim -d unopim -c "
+            SELECT setval(pg_get_serial_sequence('dam_directories', 'id'), COALESCE((SELECT MAX(id) FROM dam_directories), 1));
+            SELECT setval(pg_get_serial_sequence('dam_assets', 'id'), COALESCE((SELECT MAX(id) FROM dam_assets), 1));
+            SELECT setval(pg_get_serial_sequence('dam_tags', 'id'), COALESCE((SELECT MAX(id) FROM dam_tags), 1));
+          "
+
       - name: Running Pest Tests
         working-directory: unopim
         run: vendor/bin/pest --colors=always
