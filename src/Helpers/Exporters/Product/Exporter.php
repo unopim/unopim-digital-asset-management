@@ -132,6 +132,18 @@ class Exporter extends BaseExporter
     {
         $disk = Directory::getAssetDisk();
 
+        if ($isAssetField && Storage::disk($disk)->exists($sourcePath)) {
+            $stream = Storage::disk($disk)->readStream($sourcePath);
+
+            if ($stream === false) {
+                throw new \RuntimeException("Unable to read stream: {$sourcePath}");
+            }
+
+            Storage::writeStream($destinationPath, $stream);
+
+            return;
+        }
+
         parent::copyMedia($sourcePath, $destinationPath);
     }
 }

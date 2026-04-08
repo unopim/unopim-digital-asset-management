@@ -41,9 +41,9 @@ it('should update the asset details successfully', function () {
     $asset = Asset::factory()->create();
 
     $updateData = [
-        'id'         => $asset->id,
-        'file_name'  => 'updated-name.png',
-        'tags'       => ['tag1', 'tag2'],
+        'id'        => $asset->id,
+        'file_name' => 'updated-name.png',
+        'tags'      => ['tag1', 'tag2'],
     ];
 
     $this->put(route('admin.dam.assets.update', $asset->id), $updateData)
@@ -69,7 +69,8 @@ it('should upload the asset file to the specified directory', function () {
         'parent_id' => null,
     ]);
 
-    $file = UploadedFile::fake()->image('simple.png', 600, 600)->size(23);
+    $fileName = 'sample-'.uniqid().'.png';
+    $file = UploadedFile::fake()->image($fileName, 600, 600)->size(23);
     $uploadData = [
         'files'        => [$file],
         'directory_id' => $directory->id,
@@ -99,9 +100,10 @@ it('should re-upload the asset file to the specified directory and update the as
 
     $directory = Directory::factory()->create(['name' => 'Root']);
 
-    $initialFilePath = 'assets/Root/original.png';
+    $originalFileName = 'original-'.uniqid().'.png';
+    $initialFilePath = 'assets/Root/'.$originalFileName;
     $asset = Asset::factory()->create([
-        'file_name' => 'original.png',
+        'file_name' => $originalFileName,
         'path'      => $initialFilePath,
     ]);
 
@@ -109,7 +111,7 @@ it('should re-upload the asset file to the specified directory and update the as
 
     Storage::disk('private')->put($initialFilePath, 'dummy content');
 
-    $newFile = UploadedFile::fake()->image('simple.png', 600, 600)->size(23);
+    $newFile = UploadedFile::fake()->image('sample.png', 600, 600)->size(23);
 
     $response = $this->postJson(route('admin.dam.assets.re_upload'), [
         'file'     => $newFile,
@@ -164,11 +166,14 @@ it('should mass delete the asset successfully', function () {
 // Download the Asset
 it('should allow downloading the asset file', function () {
     Storage::fake('private');
-    Storage::disk('private')->put('assets/Root/sample.pdf', 'dummy content');
+
+    $fileName = 'sample-'.uniqid().'.pdf';
+    $filePath = 'assets/Root/'.$fileName;
+    Storage::disk('private')->put($filePath, 'dummy content');
 
     $asset = Asset::factory()->create([
-        'file_name' => 'sample.pdf',
-        'path'      => 'assets/Root/sample.pdf',
+        'file_name' => $fileName,
+        'path'      => $filePath,
     ]);
 
     $response = $this->get(route('admin.dam.assets.download', $asset->id));
@@ -179,20 +184,19 @@ it('should allow downloading the asset file', function () {
 
 // Custom Download Asset
 it('should allow custom downloading of the asset', function () {
-    Storage::disk('private')->put(
-        'assets/Root/sample.jpg',
-        file_get_contents(base_path('public/storage/Fixtures/sample.jpg'))
-    );
+    $assetDisk = Directory::getAssetDisk();
+    Storage::fake($assetDisk);
+
+    $fileName = 'sample-'.uniqid().'.jpg';
+    $file = UploadedFile::fake()->image($fileName, 600, 600)->size(23);
+    Storage::disk($assetDisk)->putFileAs('assets/Root', $file, $fileName);
 
     $asset = Asset::factory()->create([
-        'path'      => 'assets/Root/sample.jpg',
-        'file_name' => 'sample.jpg',
+        'path'      => 'assets/Root/'.$fileName,
+        'file_name' => $fileName,
     ]);
 
-    $response = $this->get(route('admin.dam.assets.custom_download', [
-        'id'     => $asset->id,
-        'format' => 'png',
-    ]));
+    $response = $this->get(route('admin.dam.assets.custom_download', ['id' => $asset->id]).'?format=png');
 
     $response->assertOk();
     $response->assertHeader('Content-Type', 'image/png');
@@ -202,8 +206,8 @@ it('should allow custom downloading of the asset', function () {
 it('should rename the file name', function () {
     Storage::fake('private');
 
-    $originalName = 'original-name.pdf';
-    $newName = 'renamed-file.pdf';
+    $originalName = 'original-name-'.uniqid().'.pdf';
+    $newName = 'renamed-file-'.uniqid().'.pdf';
 
     $directory = 'uploads/assets/';
     $originalPath = $directory.$originalName;
@@ -248,9 +252,12 @@ it('should move asset from one directory to another', function () {
     $rootDir = Directory::factory()->create(['name' => 'Root']);
     $newDirectory = Directory::factory()->create(['name' => 'Screenshots', 'parent_id' => $rootDir->id]);
 
+    $fileName = 'sample-'.uniqid().'.jpg';
+    $originalPath = 'assets/Root/'.$fileName;
+
     $asset = Asset::factory()->create([
-        'file_name' => 'sample.jpg',
-        'path'      => 'assets/Root/sample.jpg',
+        'file_name' => $fileName,
+        'path'      => $originalPath,
     ]);
 
     $asset->directories()->sync([$rootDir->id]);
@@ -266,9 +273,10 @@ it('should move asset from one directory to another', function () {
         ]);
 
     $updatedAsset = Asset::find($asset->id);
-    $this->assertEquals('assets/Root/Screenshots/sample.jpg', $updatedAsset->path);
+    $expectedPath = 'assets/Root/Screenshots/'.$fileName;
+    $this->assertEquals($expectedPath, $updatedAsset->path);
 
-    Storage::disk('private')->assertExists('assets/Root/Screenshots/sample.jpg');
+    Storage::disk('private')->assertExists($expectedPath);
 
-    Storage::disk('private')->assertMissing('assets/Root/sample.jpg');
+    Storage::disk('private')->assertMissing($originalPath);
 });

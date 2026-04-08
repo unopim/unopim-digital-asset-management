@@ -34,7 +34,7 @@ class DirectoryController
     /**
      * Store a newly created directory.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function store(DirectoryRequest $request)
     {

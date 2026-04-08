@@ -182,7 +182,7 @@ class DirectoryRepository extends Repository
      * Specify directory tree.
      *
      * @param  int  $id
-     * @return \Webkul\DAM\Models\Directory
+     * @return Directory
      */
     public function getDirectoryTree($id = null)
     {

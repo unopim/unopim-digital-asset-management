@@ -39,12 +39,11 @@ class CommentController extends Controller
     {
         $user = $this->adminRepository->findOrFail($id);
 
-
         $timezone = ['id' => $user?->timezone, 'label' => $user?->timezone];
 
         return new JsonResponse([
             'user'     => [
-                'name' => $user->name,
+                'name'   => $user->name,
                 'status' => (bool) $user->status,
             ],
             'timezone' => $timezone,

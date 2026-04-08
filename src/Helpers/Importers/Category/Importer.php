@@ -2,15 +2,15 @@
 
 namespace Webkul\DAM\Helpers\Importers\Category;
 
-use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Repositories\AssetRepository;
-use Webkul\DataTransfer\Helpers\Importers\Category\Importer as CategoryImporter;
-use Webkul\DataTransfer\Helpers\Importers\Category\Storage;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\Core\Repositories\LocaleRepository;
+use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DataTransfer\Helpers\Importers\Category\Importer as CategoryImporter;
+use Webkul\DataTransfer\Helpers\Importers\Category\Storage;
 use Webkul\DataTransfer\Helpers\Importers\FieldProcessor;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 use Webkul\DataTransfer\Validators\Import\CategoryRulesExtractor;
@@ -79,7 +79,7 @@ class Importer extends CategoryImporter
                     $assets = [];
                     foreach ($values as $value) {
                         $asset = $this->assetRepository->findWhereIn('path', [trim($value)])->first();
-                        
+
                         if ($asset) {
                             $assets[] = $asset->id;
                         }
@@ -91,6 +91,7 @@ class Importer extends CategoryImporter
                         $data['additional_data']['common'][$field] = $value;
                     }
                 }
+
                 continue;
             }
 

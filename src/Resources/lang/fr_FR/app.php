@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Nom du Fichier',
                     'tags'           => 'Étiquettes',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Chemin',
                     'size'           => 'Taille',
                 ],
-
                 'directory' => [
-                    'title'        => 'Répertoire',
-                    'create'       => [
+                    'title'  => 'Répertoire',
+                    'create' => [
                         'title'    => 'Créer un Répertoire',
                         'name'     => 'Nom',
                         'save-btn' => 'Enregistrer le Répertoire',
                     ],
-
                     'rename' => [
                         'title' => 'Renommer le Répertoire',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Renommer l\'Actif',
                             'save-btn' => 'Enregistrer l\'Actif',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Supprimer',
                         'rename'                    => 'Renommer',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Ajouter un Répertoire',
                         'upload-files'              => 'Télécharger des Fichiers',
                         'copy-directory-structured' => 'Copier la Structure du Répertoire',
+                        'get-by-id'                 => 'Get By Id',
+                        'comment'                   => 'Comment',
                     ],
-
+                    'linked-resources'                          => 'Ressources liées',
                     'not-found'                                 => 'Aucun répertoire trouvé',
                     'created-success'                           => 'Répertoire créé avec succès',
                     'updated-success'                           => 'Répertoire mis à jour avec succès',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'Échec de la création du fichier zip.',
                     'not-allowed'                               => 'Le téléchargement de fichiers de script n\'est pas autorisé.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'L\'outil peut vous aider à organiser, stocker et gérer tous vos actifs multimédias au même endroit',
                 'root'        => 'Racine',
                 'upload'      => 'Télécharger',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Propriétés des Actifs',
                         'create-btn' => 'Créer une Propriété',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Nom',
                             'type'     => 'Type',
                             'language' => 'Langue',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Éditer',
                             'delete'   => 'Supprimer',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Créer une Propriété',
                             'name'     => 'Nom',
                             'type'     => 'Type',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Propriété de l\'actif mise à jour avec succès',
                         'not-found'      => 'Propriété non trouvée',
                         'found-success'  => 'Propriété trouvée avec succès',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Re-Télécharger',
                         'delete'          => 'Supprimer',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Téléchargement Personnalisé',
                         'format'             => 'Format',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Hauteur (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Télécharger',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,7 +186,6 @@ return [
                             'original' => 'Original',
                         ],
                     ],
-
                     'tag-already-exists'        => 'L\'étiquette existe déjà',
                     'image-source-not-readable' => 'Source de l\'image non lisible',
                     'failed-to-read'            => 'Échec de la lecture des métadonnées de l\'image :exception',
@@ -223,7 +212,6 @@ return [
                         'create-success' => 'Les étiquettes ont été ajoutées avec succès',
                         'create-failure' => 'L\'ajout des étiquettes a échoué',
                     ],
-
                     'no-comments'    => 'Pas encore d\'étiquettes',
                     'found-success'  => 'Étiquette trouvée avec succès',
                     'not-found'      => 'Étiquettes non trouvées',
@@ -294,12 +282,10 @@ return [
             'download-zip'     => 'Télécharger le Zip',
             'asset-assign'     => 'Attribuer un Actif',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'Le champ :attribute est requis.',
             ],
-
             'comment' => [
                 'required' => 'Le message du commentaire est requis.',
             ],
@@ -318,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Cette action est non autorisée.',
         ],

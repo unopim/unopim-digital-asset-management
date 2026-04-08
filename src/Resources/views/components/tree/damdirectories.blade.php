@@ -941,7 +941,7 @@
                     message: "@lang('dam::app.admin.components.modal.confirm.message')",
                     agree: () => {
                         this.isLoading = true;
-                        this.$axios.delete(`{{ route('admin.dam.directory.destroy', '') }}/${this.selectedItem.id}`)
+                        this.$axios.delete(`{{ route('admin.dam.directory.destroy', ':id') }}`.replace(':id', this.selectedItem.id))
                             .then(response => {
                                 this.parentItem = response.data.data;
                                 this.$emitter.emit('add-flash', {
@@ -970,7 +970,7 @@
             deleteFile() {
                 this.$emitter.emit('open-delete-modal', {
                     agree: () => {
-                        this.$axios.delete(`{{ route('admin.dam.assets.destroy', '') }}/${this.selectedItem.id}`)
+                        this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', this.selectedItem.id))
                             .then(response => {
                                 this.loadDirectories();
 
@@ -998,10 +998,9 @@
             downloadItem(type = 'directory', ) {
                 let downloadLink = '';
                 if (type == 'directory') {
-                    downloadLink = `{{ route('admin.dam.directory.zip_download', '') }}/${this.selectedItem.id}`;
+                    downloadLink = `{{ route('admin.dam.directory.zip_download', ':id') }}`.replace(':id', this.selectedItem.id);
                 } else {
-                    downloadLink = `{{ route('admin.dam.assets.download', '') }}/${this.selectedItem.id}`;
-
+                    downloadLink = `{{ route('admin.dam.assets.download', ':id') }}`.replace(':id', this.selectedItem.id);
                 }
 
                 window.open(downloadLink, '_self');
@@ -1212,7 +1211,7 @@
             },
 
             loadDirectoryChildrens() {
-                this.$axios.get(`{{ route('admin.dam.directory.children', '') }}/${this.parentItem.id}`)
+                this.$axios.get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.parentItem.id))
                     .then((response) => {
                         this.selectedItem = response.data.data;
                     })
@@ -1222,7 +1221,7 @@
             },
             // @TODO: need to future implements this method
             loadDirectoryAssets() {
-                this.$axios.get(`{{ route('admin.dam.directory.assets', '') }}/${this.parentItem.id}`)
+                this.$axios.get(`{{ route('admin.dam.directory.assets', ':id') }}`.replace(':id', this.parentItem.id))
                     .then((response) => {
                         this.parentItem.assets = response.data.data;
                     })
@@ -1266,8 +1265,7 @@
 
                     return true;
                 }
-
-                this.$axios.get(`{{ route('admin.dam.action_request.status', '') }}/${action}`)
+                this.$axios.get(`{{ route('admin.dam.action_request.status', ':eventType') }}`.replace(':eventType', action))
                     .then((response) => {
                         this.actionStatus = response.data.status;
 

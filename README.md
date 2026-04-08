@@ -3,7 +3,7 @@
 UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system built on Laravel. It enables businesses to store, organize, and manage digital assets such as images, videos, documents, and more. The system is designed for seamless cross-team asset management. Key features include:
 
 ## Requirements
-- **UnoPim**: v1.0.0
+- **UnoPim**: v2.0.0
 
 ## ✨ Features
 
@@ -75,10 +75,15 @@ To manually install UnoPim DAM:
    - Rename the folder to `DAM` and place it in the `packages/Webkul` directory within the project's root.
 
 2. **Register the Package Provider**  
-   - Add the following provider class to `config/app.php` under the `providers` key:
-     ```php
-     Webkul\DAM\Providers\DAMServiceProvider::class,
-     ```
+   - Add the following to `bootstrap/providers.php`:
+     - At the top, add the use statement:
+       ```php
+       use Webkul\DAM\Providers\DAMServiceProvider;
+       ```
+     - In the return array, in the Webkul package service providers section, add:
+       ```php
+       DAMServiceProvider::class,
+       ```
 
 3. **Update Autoload Configuration**  
    - Register the DAM directory in `composer.json` under `autoload` `psr-4`:

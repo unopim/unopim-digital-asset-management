@@ -1,3 +1,24 @@
+# CHANGELOG for unopim-digital-asset-management
+
+## v1.1.x
+
+### v1.1.2
+
+> Compatible with **UnoPim v2.0.0**
+
+#### Bug Fixes
+
+- **Asset Media Export** — Resolved issue with assets media not exporting with product exports. The `Exporter::copyMedia()` method now correctly handles asset field media using
+`Storage::writeStream()`/`readStream()` when the source file exists. ([6e8c7c6](https://github.com/vipinkutthi-webkul/unopim-digital-asset-management/commit/6e8c7c65f290093ef4e9ce11aa060f6557eb4d25))
+
+- **Image Saving (Intervention Image v3)** — Fixed issue with saving the image. Migrated `AssetController` and `FileController` from the deprecated `Image::make()` facade to Intervention Image v3 API
+(`ImageManager` + `Driver`). Added `encodeImageByExtension()` for format-aware encoding (PNG, WebP, GIF, BMP, TIFF, AVIF, JPEG) and replaced constraint-based resize callbacks with `cover()`.
+([5903c3e](https://github.com/unopim/unopim-digital-asset-management/commit/5903c3e71c6999ab4e5740586b15b5d0356628a8))
+
+- **Route Required Parameters** — Fixed the issue with the required parameters in asset views. Replaced direct `${id}` interpolation with `:id` placeholder and `.replace(':id', id)` pattern across
+`asset/edit`, `asset/field`, `datagrid/gallery`, and `datagrid/tree` Blade views to prevent Laravel route generation failures.
+([31ca5ca](https://github.com/unopim/unopim-digital-asset-management/commit/31ca5ca8ded29af018b891f64e144b7adff860fe))
+
 ## **Version 1.1.1**
 - Fixed issues with Product and Category imports
 - Enabled updating the **Name** field in Asset Properties

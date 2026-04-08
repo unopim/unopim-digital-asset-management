@@ -236,7 +236,7 @@ return [
 
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
                 'delete-failed-due-to-attached-resources' => 'Asset wird verwendet. Vor dem Löschen bitte trennen',
-                'datagrid' => [
+                'datagrid'                                => [
                     'mass-delete-success'                 => 'Massenlöschung erfolgreich.',
                     'files-upload-success'                => 'Dateien erfolgreich hochgeladen.',
                     'file-upload-success'                 => 'Datei erfolgreich hochgeladen.',

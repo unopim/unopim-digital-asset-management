@@ -3,7 +3,8 @@
 namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 
@@ -99,7 +100,7 @@ trait Directory
             }
 
             $fileContent = $storage->get($path);
-            $image = Image::make($fileContent);
+            $image = (new ImageManager(new Driver))->read($fileContent);
 
             return [
                 'success' => true,

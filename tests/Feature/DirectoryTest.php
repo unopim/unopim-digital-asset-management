@@ -1,8 +1,12 @@
 <?php
 
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
+use Webkul\DAM\Jobs\CopyDirectoryStructure;
+use Webkul\DAM\Jobs\DeleteDirectory;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Repositories\DirectoryRepository;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -19,9 +23,17 @@ it('should return all directories with correct structure', function () {
 it('should return the children directory data when directory exists', function () {
     $parent = Directory::factory()->create();
 
-    $children = Directory::factory()->count(3)->create([
+    $children = Directory::factory()->count(3)->make([
         'parent_id' => $parent->id,
     ]);
+
+    $parent->setRelation('children', $children);
+
+    $this->mock(DirectoryRepository::class, function ($mock) use ($parent) {
+        $mock->shouldReceive('getDirectoryTree')
+            ->with($parent->id)
+            ->andReturn(collect([$parent]));
+    });
 
     $response = $this->get(route('admin.dam.directory.children', $parent->id));
 
@@ -31,11 +43,13 @@ it('should return the children directory data when directory exists', function (
             'id',
             'name',
             'parent_id',
+            'children',
         ],
     ]);
 
     $responseData = $response->json('data');
     expect($responseData['id'])->toBe($parent->id);
+    expect($responseData['children'])->toHaveCount(3);
 });
 
 it('returns assets of the directory when directory exists (many-to-many)', function () {
@@ -44,7 +58,7 @@ it('returns assets of the directory when directory exists (many-to-many)', funct
 
     $directory->assets()->attach($assets->pluck('id')->toArray());
 
-    $this->mock(\Webkul\DAM\Repositories\DirectoryRepository::class, function ($mock) use ($directory) {
+    $this->mock(DirectoryRepository::class, function ($mock) use ($directory) {
         $mock->shouldReceive('getDirectoryTree')
             ->with($directory->id)
             ->andReturn(collect([$directory]));
@@ -117,12 +131,17 @@ it('updates a directory name and dispatches RenameDirectoryJob', function () {
 });
 
 it('should delete an existing directory', function () {
+    Bus::fake();
+
     $directory = Directory::factory()->create([
         'name'      => 'New',
         'parent_id' => null,
     ]);
+
     $response = $this->delete(route('admin.dam.directory.destroy', $directory->id));
+
     $response->assertOk();
+    Bus::assertDispatched(DeleteDirectory::class);
 });
 
 it('downloads a zip archive of the directory files and folders', function () {
@@ -130,7 +149,7 @@ it('downloads a zip archive of the directory files and folders', function () {
         'name' => 'TestDirectory',
     ]);
 
-    $this->mock(\Webkul\DAM\Repositories\DirectoryRepository::class, function ($mock) use ($directory) {
+    $this->mock(DirectoryRepository::class, function ($mock) use ($directory) {
         $mock->shouldReceive('findOrFail')
             ->with($directory->id)
             ->andReturn($directory);
@@ -160,6 +179,7 @@ it('downloads a zip archive of the directory files and folders', function () {
 });
 
 it('dispatches copy job when directory is copyable', function () {
+    Bus::fake();
 
     $directory = Directory::factory()->create();
 
@@ -171,4 +191,6 @@ it('dispatches copy job when directory is copyable', function () {
     $response->assertJson([
         'message' => trans('dam::app.admin.dam.index.directory.coping-in-progress'),
     ]);
+
+    Bus::assertDispatched(CopyDirectoryStructure::class);
 });
