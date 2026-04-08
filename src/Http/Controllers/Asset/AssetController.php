@@ -125,7 +125,7 @@ class AssetController extends Controller
     /**
      * to upload the asset
      *
-     * @return void
+     * @return void|JsonResponse
      */
     public function upload(Request $request)
     {
@@ -208,7 +208,7 @@ class AssetController extends Controller
     /**
      * to Re upload the asset
      *
-     * @return void
+     * @return void|JsonResponse
      */
     public function reUpload(Request $request)
     {
@@ -285,7 +285,7 @@ class AssetController extends Controller
      * To Display the asset.
      *
      * @param [type] $id
-     * @return void
+     * @return void|JsonResponse
      */
     public function show($id)
     {
@@ -308,7 +308,7 @@ class AssetController extends Controller
      * To update the asset
      *
      * @param [type] $id
-     * @return void
+     * @return void|JsonResponse
      */
     public function update(Request $request, $id)
     {
@@ -343,7 +343,7 @@ class AssetController extends Controller
      * Delete asset
      *
      * @param [type] $id
-     * @return void
+     * @return void|JsonResponse
      */
     public function destroy($id)
     {
@@ -523,7 +523,7 @@ class AssetController extends Controller
                 $image = (new ImageManager(new Driver))->read($fileContent);
 
                 if ($width || $height) {
-                    $image->resize($width ? (int) $width : null, $height ? (int) $height : null);
+                    $image->scale($width ? (int) $width : null, $height ? (int) $height : null);
                 }
 
                 if ($format) {

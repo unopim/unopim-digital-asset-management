@@ -41,9 +41,9 @@ it('should update the asset details successfully', function () {
     $asset = Asset::factory()->create();
 
     $updateData = [
-        'id'         => $asset->id,
-        'file_name'  => 'updated-name.png',
-        'tags'       => ['tag1', 'tag2'],
+        'id'        => $asset->id,
+        'file_name' => 'updated-name.png',
+        'tags'      => ['tag1', 'tag2'],
     ];
 
     $this->put(route('admin.dam.assets.update', $asset->id), $updateData)
@@ -196,7 +196,7 @@ it('should allow custom downloading of the asset', function () {
         'file_name' => $fileName,
     ]);
 
-    $response = $this->get("/admin/dam/assets/custom-download/{$asset->id}?format=png");
+    $response = $this->get(route('admin.dam.assets.custom_download', ['id' => $asset->id]).'?format=png');
 
     $response->assertOk();
     $response->assertHeader('Content-Type', 'image/png');

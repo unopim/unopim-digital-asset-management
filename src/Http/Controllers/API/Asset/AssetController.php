@@ -363,7 +363,7 @@ class AssetController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @return View
+     * @return View|JsonResponse
      */
     public function edit(int $id): JsonResponse
     {

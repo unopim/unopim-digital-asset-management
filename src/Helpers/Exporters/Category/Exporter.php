@@ -105,8 +105,15 @@ class Exporter extends CategoryExporter
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
         $disk = Directory::getAssetDisk();
+
         if ($isAssetField && Storage::disk($disk)->exists($sourcePath)) {
-            Storage::writeStream($destinationPath, Storage::disk($disk)->readStream($sourcePath));
+            $stream = Storage::disk($disk)->readStream($sourcePath);
+
+            if ($stream === false) {
+                throw new \RuntimeException("Unable to read stream: {$sourcePath}");
+            }
+
+            Storage::writeStream($destinationPath, $stream);
 
             return;
         }

@@ -42,7 +42,7 @@ class DAMServiceProvider extends ServiceProvider
 
         Route::middleware('web')->group(__DIR__.'/../Routes/web.php');
 
-        $this->loadMigrationsFrom(__DIR__.'/../Database/Migration');
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'dam');
 

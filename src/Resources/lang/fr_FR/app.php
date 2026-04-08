@@ -68,7 +68,7 @@ return [
                         'get-by-id'                 => 'Get By Id',
                         'comment'                   => 'Comment',
                     ],
-                    'linked-resources'                          => 'Linked Resources',
+                    'linked-resources'                          => 'Ressources liées',
                     'not-found'                                 => 'Aucun répertoire trouvé',
                     'created-success'                           => 'Répertoire créé avec succès',
                     'updated-success'                           => 'Répertoire mis à jour avec succès',

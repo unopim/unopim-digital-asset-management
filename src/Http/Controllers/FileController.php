@@ -233,7 +233,7 @@ class FileController
     {
         $manager = new ImageManager(new Driver);
 
-        return $manager->read($file)->cover($width, $width);
+        return $manager->read($file)->scale(width: $width);
     }
 
     /**
