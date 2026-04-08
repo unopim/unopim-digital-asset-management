@@ -23,13 +23,12 @@ class DirectoryTableSeeder extends Seeder
     {
         $now = Carbon::now();
 
-        if (Directory::find(1)) {
+        if (Directory::where('name', 'Root')->whereNull('parent_id')->exists()) {
             return;
         }
 
         DB::table('dam_directories')->insert([
             [
-                'id' => '1',
                 '_lft' => '1',
                 '_rgt' => '14',
                 'name' => 'Root',
