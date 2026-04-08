@@ -1,0 +1,79 @@
+name: Translation Tests
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  translation_tests:
+    runs-on: ubuntu-24.04
+    name: Translation Integrity Audit
+
+    steps:
+      - name: Checkout DAM
+        uses: actions/checkout@v5
+        with:
+          path: dam-package
+
+      - name: Checkout UnoPim
+        uses: actions/checkout@v5
+        with:
+          repository: unopim/unopim
+          path: unopim
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_mysql, tokenizer, zip
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: none
+
+      - name: Symlink DAM into UnoPim packages
+        run: |
+          mkdir -p unopim/packages/Webkul/DAM
+          cp -r dam-package/src unopim/packages/Webkul/DAM/src
+          cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
+
+      - name: Patch composer.json for DAM
+        working-directory: unopim
+        run: |
+          php -r "
+            \$json = json_decode(file_get_contents('composer.json'), true);
+            \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
+            \$json['require']['unopim/dam'] = '*@dev';
+            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+          "
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            unopim/vendor
+            ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-dam-${{ hashFiles('unopim/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-dam-
+
+      - name: Install dependencies
+        working-directory: unopim
+        run: composer update --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Prepare environment
+        working-directory: unopim
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Translation Checker
+        working-directory: unopim
+        run: php artisan unopim:translations:check
