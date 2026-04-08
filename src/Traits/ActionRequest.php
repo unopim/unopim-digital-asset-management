@@ -33,8 +33,8 @@ trait ActionRequest
         $this->user = Admin::find(Auth::id());
 
         $whereCondition = [
-            'event_type'  => $eventType,
-            'admin_id'    => Auth::id(),
+            'event_type' => $eventType,
+            'admin_id' => Auth::id(),
         ];
 
         if (! empty($options)) {
@@ -44,7 +44,7 @@ trait ActionRequest
         $request = ActionRequestModel::firstOrNew($whereCondition);
 
         $request->fill([
-            'status'   => 'pending',
+            'status' => 'pending',
             'admin_id' => Auth::id(),
         ])->save();
 
@@ -59,9 +59,9 @@ trait ActionRequest
     public function completed(string $eventType, int $userId, array $options = []): self
     {
         $whereCondition = [
-            'event_type'  => $eventType,
-            'status'      => 'pending',
-            'admin_id'    => $userId,
+            'event_type' => $eventType,
+            'status' => 'pending',
+            'admin_id' => $userId,
         ];
 
         if (! empty($options)) {
@@ -80,9 +80,9 @@ trait ActionRequest
     public function failed(string $eventType, int $userId, ?string $error = null, array $options = []): self
     {
         $whereCondition = [
-            'event_type'  => $eventType,
-            'status'      => 'pending',
-            'admin_id'    => $userId,
+            'event_type' => $eventType,
+            'status' => 'pending',
+            'admin_id' => $userId,
         ];
 
         if (! empty($options)) {
@@ -92,8 +92,8 @@ trait ActionRequest
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
         $request->update([
-            'status'         => 'failed',
-            'error_message'  => $error,
+            'status' => 'failed',
+            'error_message' => $error,
         ]);
 
         $this->actionRequest = $request;

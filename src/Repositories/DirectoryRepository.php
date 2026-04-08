@@ -200,9 +200,9 @@ class DirectoryRepository extends Repository
 
         if (! $directory->isWritable($directoryPath)) {
             throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                'type'       => 'directory',
+                'type' => 'directory',
                 'actionType' => $actionType,
-                'path'       => $directoryPath,
+                'path' => $directoryPath,
             ]));
         }
 

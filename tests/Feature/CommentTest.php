@@ -16,10 +16,10 @@ it('should return a comment by id', function () {
     $response = $this->getJson(route('admin.dam.asset.comments.index', $comment->id));
     $response->assertOk();
     $response->assertJson([
-        'id'           => $comment->id,
-        'admin_id'     => $comment->admin_id,
-        'parent_id'    => $comment->parent_id,
-        'comments'     => $comment->comments,
+        'id' => $comment->id,
+        'admin_id' => $comment->admin_id,
+        'parent_id' => $comment->parent_id,
+        'comments' => $comment->comments,
         'dam_asset_id' => $asset->id,
     ]);
 });
@@ -28,7 +28,7 @@ it('should create a new comment', function () {
     $asset = Asset::factory()->create();
 
     $payload = [
-        'comments'  => 'This is a test comment',
+        'comments' => 'This is a test comment',
         'parent_id' => null,
     ];
 
@@ -39,9 +39,9 @@ it('should create a new comment', function () {
     ]);
 
     $this->assertDatabaseHas('dam_asset_comments', [
-        'comments'     => 'This is a test comment',
+        'comments' => 'This is a test comment',
         'dam_asset_id' => $asset->id,
-        'admin_id'     => auth()->id(),
+        'admin_id' => auth()->id(),
     ]);
 });
 

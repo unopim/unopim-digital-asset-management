@@ -57,6 +57,9 @@ jobs:
           cp -r dam-package/src unopim/packages/Webkul/DAM/src
           cp -r dam-package/tests unopim/packages/Webkul/DAM/tests
           cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
+          if [ -d dam-package/publishable ]; then
+            cp -r dam-package/publishable unopim/packages/Webkul/DAM/publishable
+          fi
 
       - name: Patch composer.json for DAM
         working-directory: unopim
@@ -185,6 +188,9 @@ jobs:
           cp -r dam-package/src unopim/packages/Webkul/DAM/src
           cp -r dam-package/tests unopim/packages/Webkul/DAM/tests
           cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
+          if [ -d dam-package/publishable ]; then
+            cp -r dam-package/publishable unopim/packages/Webkul/DAM/publishable
+          fi
 
       - name: Patch composer.json for DAM
         working-directory: unopim

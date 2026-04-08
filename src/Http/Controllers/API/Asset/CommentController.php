@@ -36,7 +36,7 @@ class CommentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $comment,
+            'data' => $comment,
         ], 200);
     }
 
@@ -64,13 +64,13 @@ class CommentController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.asset.comments.updated-success'),
-                'data'    => $comment,
+                'data' => $comment,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.comments.update-failed'),
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -102,7 +102,7 @@ class CommentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -115,21 +115,21 @@ class CommentController extends Controller
     public function createComment(Request $request)
     {
         $messages = [
-            'comments.required'     => trans('dam::app.admin.validation.comment.required'),
+            'comments.required' => trans('dam::app.admin.validation.comment.required'),
             'dam_asset_id.required' => trans('dam::app.admin.validation.asset.required'),
         ];
 
         $this->validate($request, [
-            'comments'     => 'required|min:2|max:1000',
+            'comments' => 'required|min:2|max:1000',
             'dam_asset_id' => 'required|integer|exists:dam_assets,id',
-            'parent_id'    => 'nullable|exists:comments,id',
+            'parent_id' => 'nullable|exists:comments,id',
         ], $messages);
 
         try {
             $comment = $this->assetCommentRepository->create([
-                'comments'     => $request->input('comments'),
-                'parent_id'    => $request->input('parent_id') === 'null' ? null : $request->input('parent_id'),
-                'admin_id'     => Auth::id(),
+                'comments' => $request->input('comments'),
+                'parent_id' => $request->input('parent_id') === 'null' ? null : $request->input('parent_id'),
+                'admin_id' => Auth::id(),
                 'dam_asset_id' => $request->input('dam_asset_id'),
             ]);
 
@@ -140,7 +140,7 @@ class CommentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => trans('dam::app.admin.dam.asset.comments.create.create-failure'),
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('dam_assets', function (Blueprint $table) {
-            $table->string('path')->collation('utf8mb4_bin')->change();
+        $driver = Schema::getConnection()->getDriverName();
+
+        Schema::table('dam_assets', function (Blueprint $table) use ($driver) {
+            if ($driver === 'pgsql') {
+                $table->string('path')->collation('C')->change();
+            } else {
+                $table->string('path')->collation('utf8mb4_bin')->change();
+            }
         });
     }
 
@@ -21,8 +27,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dam_assets', function (Blueprint $table) {
-            $table->string('path')->collation('utf8mb4_unicode_ci')->change();
+        $driver = Schema::getConnection()->getDriverName();
+
+        Schema::table('dam_assets', function (Blueprint $table) use ($driver) {
+            if ($driver === 'pgsql') {
+                $table->string('path')->collation('und-x-icu')->change();
+            } else {
+                $table->string('path')->collation('utf8mb4_unicode_ci')->change();
+            }
         });
     }
 };

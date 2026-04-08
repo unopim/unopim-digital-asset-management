@@ -60,10 +60,10 @@ class AssetResourceMappingRepository extends Repository
             }
 
             $mapping = $this->create([
-                'type'          => $isCategory ? self::CATEGORY_TYPE_MAPPING : self::PRODUCT_TYPE_MAPPING,
-                'dam_asset_id'  => $assetId,
-                'category_id'   => $isCategory ? $identifier : null,
-                'product_id'    => $isCategory ? null : $identifier,
+                'type' => $isCategory ? self::CATEGORY_TYPE_MAPPING : self::PRODUCT_TYPE_MAPPING,
+                'dam_asset_id' => $assetId,
+                'category_id' => $isCategory ? $identifier : null,
+                'product_id' => $isCategory ? null : $identifier,
                 'related_field' => $relatedField,
             ]);
 

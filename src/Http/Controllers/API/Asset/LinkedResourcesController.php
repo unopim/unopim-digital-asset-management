@@ -25,7 +25,7 @@ class LinkedResourcesController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.linked-resources.found-success'),
-            'data'    => $resource,
+            'data' => $resource,
         ], 200);
     }
 }
