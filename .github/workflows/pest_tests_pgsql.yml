@@ -66,6 +66,7 @@ jobs:
             \$json = json_decode(file_get_contents('composer.json'), true);
             \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
             \$json['require']['unopim/dam'] = '*@dev';
+            \$json['autoload-dev']['psr-4']['Webkul\\\\DAM\\\\Tests\\\\'] = 'packages/Webkul/DAM/tests/';
             file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
           "
 
@@ -194,6 +195,7 @@ jobs:
             \$json = json_decode(file_get_contents('composer.json'), true);
             \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
             \$json['require']['unopim/dam'] = '*@dev';
+            \$json['autoload-dev']['psr-4']['Webkul\\\\DAM\\\\Tests\\\\'] = 'packages/Webkul/DAM/tests/';
             file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
           "
 
