@@ -70,10 +70,6 @@ class AssetHelper
 
     /**
      * Check if given extension or mime type is forbidden for upload
-     *
-     * @param string|null $extension
-     * @param string|null $mimeType
-     * @return bool
      */
     public static function isForbiddenFile(?string $extension, ?string $mimeType): bool
     {

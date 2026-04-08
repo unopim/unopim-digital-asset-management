@@ -77,12 +77,12 @@ it('should create new directory', function () {
     Storage::disk('private')->makeDirectory('assets/New');
 
     $directory = Directory::factory()->create([
-        'name'      => 'New',
+        'name' => 'New',
         'parent_id' => null,
     ]);
 
     $data = [
-        'name'      => 'Root Child',
+        'name' => 'Root Child',
         'parent_id' => $directory->id,
     ];
 
@@ -91,13 +91,13 @@ it('should create new directory', function () {
     $response->assertOk();
     $response->assertJson([
         'data' => [
-            'name'      => 'Root Child',
+            'name' => 'Root Child',
             'parent_id' => $directory->id,
         ],
     ]);
 
     $this->assertDatabaseHas('dam_directories', [
-        'name'      => 'Root Child',
+        'name' => 'Root Child',
         'parent_id' => $directory->id,
     ]);
 });
@@ -109,7 +109,7 @@ it('updates a directory name and dispatches RenameDirectoryJob', function () {
     ]);
 
     $updateData = [
-        'id'   => $directory->id,
+        'id' => $directory->id,
         'name' => 'New Name',
     ];
 
@@ -118,14 +118,14 @@ it('updates a directory name and dispatches RenameDirectoryJob', function () {
     $response->assertOk();
     $response->assertJson([
         'message' => trans('dam::app.admin.dam.index.directory.updated-success'),
-        'data'    => [
-            'id'   => $directory->id,
+        'data' => [
+            'id' => $directory->id,
             'name' => 'New Name',
         ],
     ]);
 
     $this->assertDatabaseHas('dam_directories', [
-        'id'   => $directory->id,
+        'id' => $directory->id,
         'name' => 'New Name',
     ]);
 });
@@ -134,7 +134,7 @@ it('should delete an existing directory', function () {
     Bus::fake();
 
     $directory = Directory::factory()->create([
-        'name'      => 'New',
+        'name' => 'New',
         'parent_id' => null,
     ]);
 

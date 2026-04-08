@@ -8,9 +8,9 @@ use Webkul\HistoryControl\Interfaces\HistoryPresenterInterface;
 class AssetProperty implements HistoryPresenterInterface
 {
     protected static $historyFieldNames = [
-        'name'     => 'Property Name',
-        'type'     => 'Property Type',
-        'value'    => 'Property Value',
+        'name' => 'Property Name',
+        'type' => 'Property Type',
+        'value' => 'Property Value',
         'language' => 'Property Language',
     ];
 
@@ -27,8 +27,8 @@ class AssetProperty implements HistoryPresenterInterface
         return [
             $fieldName => [
                 'name' => static::$historyFieldNames[$fieldName],
-                'old'  => $oldValues ?: '',
-                'new'  => $newValues ?: '',
+                'old' => $oldValues ?: '',
+                'new' => $newValues ?: '',
             ],
         ];
     }

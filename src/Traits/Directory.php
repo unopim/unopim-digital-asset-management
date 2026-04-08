@@ -104,7 +104,7 @@ trait Directory
 
             return [
                 'success' => true,
-                'data'    => $image->exif(),
+                'data' => $image->exif(),
             ];
         } catch (\Exception $e) {
 

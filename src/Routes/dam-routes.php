@@ -14,7 +14,7 @@ use Webkul\DAM\Http\Controllers\FileController;
 
 Route::group([
     'middleware' => ['admin', 'dam'],
-    'prefix'     => config('app.admin_url').'/dam',
+    'prefix' => config('app.admin_url').'/dam',
 ], function () {
     Route::controller(DAMController::class)->prefix('')->group(function () {
         Route::get('', 'index')->name('admin.dam.index');
