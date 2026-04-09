@@ -130,7 +130,7 @@ jobs:
 
       - name: Install Composer dependencies
         working-directory: unopim
-        run: composer update --no-interaction --prefer-dist --optimize-autoloader --no-progress
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
       - name: Setting Environment
         working-directory: unopim
