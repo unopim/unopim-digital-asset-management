@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Название файла',
                     'tags'           => 'Теги',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Путь',
                     'size'           => 'Размер',
                 ],
-
                 'directory' => [
-                    'title'        => 'Директория',
-                    'create'       => [
+                    'title'  => 'Директория',
+                    'create' => [
                         'title'    => 'Создать директорию',
                         'name'     => 'Название',
                         'save-btn' => 'Сохранить директорию',
                     ],
-
                     'rename' => [
                         'title' => 'Переименовать директорию',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Переименовать актив',
                             'save-btn' => 'Сохранить актив',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Удалить',
                         'rename'                    => 'Переименовать',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Добавить директорию',
                         'upload-files'              => 'Загрузить файлы',
                         'copy-directory-structured' => 'Копировать структуру директории',
+                        'get-by-id'                 => 'Получить по идентификатору',
+                        'comment'                   => 'Комментарий',
                     ],
-
+                    'linked-resources'                          => 'Связанные ресурсы',
                     'not-found'                                 => 'Директория не найдена',
                     'created-success'                           => 'Директория успешно создана',
                     'updated-success'                           => 'Директория успешно обновлена',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'Не удалось создать zip файл.',
                     'not-allowed'                               => 'Загрузка скриптовых файлов не разрешена.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Этот инструмент поможет вам организовать, хранить и управлять всеми вашими медиа-активами в одном месте',
                 'root'        => 'Корень',
                 'upload'      => 'Загрузить',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Свойства актива',
                         'create-btn' => 'Создать свойство',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Название',
                             'type'     => 'Тип',
                             'language' => 'Язык',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Редактировать',
                             'delete'   => 'Удалить',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Создать свойство',
                             'name'     => 'Название',
                             'type'     => 'Тип',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Свойство актива успешно обновлено',
                         'not-found'      => 'Свойство не найдено',
                         'found-success'  => 'Свойство успешно найдено',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Загрузить снова',
                         'delete'          => 'Удалить',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Пользовательская загрузка',
                         'format'             => 'Формат',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Высота (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Скачать',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,12 +186,10 @@ return [
                             'original' => 'Оригинал',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Тег уже существует',
                     'image-source-not-readable' => 'Источник изображения не читаем',
                     'failed-to-read'            => 'Не удалось прочитать метаданные изображения :exception',
                     'file-re-upload-success'    => 'Файлы успешно загружены повторно.',
-
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -224,7 +212,6 @@ return [
                         'create-success' => 'Теги успешно добавлены',
                         'create-failure' => 'Не удалось создать теги',
                     ],
-
                     'no-comments'    => 'Теги ещё не добавлены',
                     'found-success'  => 'Тег успешно найден',
                     'not-found'      => 'Теги не найдены',
@@ -295,12 +282,10 @@ return [
             'download-zip'     => 'Скачать Zip',
             'asset-assign'     => 'Назначить актив',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'Поле :attribute обязательно для заполнения.',
             ],
-
             'comment' => [
                 'required' => 'Сообщение комментария обязательно.',
             ],
@@ -319,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Это действие не авторизовано.',
         ],

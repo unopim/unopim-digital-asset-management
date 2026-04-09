@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Nombre del archivo',
                     'tags'           => 'Etiquetas',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Ruta',
                     'size'           => 'Tamaño',
                 ],
-
                 'directory' => [
-                    'title'        => 'Directorio',
-                    'create'       => [
+                    'title'  => 'Directorio',
+                    'create' => [
                         'title'    => 'Crear Directorio',
                         'name'     => 'Nombre',
                         'save-btn' => 'Guardar Directorio',
                     ],
-
                     'rename' => [
                         'title' => 'Renombrar Directorio',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Renombrar Activo',
                             'save-btn' => 'Guardar Activo',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Eliminar',
                         'rename'                    => 'Renombrar',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Añadir Directorio',
                         'upload-files'              => 'Subir Archivos',
                         'copy-directory-structured' => 'Copiar Estructura de Directorio',
+                        'get-by-id'                 => 'Obtener por identificación',
+                        'comment'                   => 'Comentario',
                     ],
-
+                    'linked-resources'                          => 'Recursos Vinculados',
                     'not-found'                                 => 'No se encontró el directorio',
                     'created-success'                           => 'Directorio creado con éxito',
                     'updated-success'                           => 'Directorio actualizado con éxito',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'No se pudo crear el archivo zip.',
                     'not-allowed'                               => 'No se permite la carga de archivos de script.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Esta herramienta te ayudará a organizar, almacenar y gestionar todos tus activos multimedia en un solo lugar',
                 'root'        => 'Raíz',
                 'upload'      => 'Subir',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Propiedades del Activo',
                         'create-btn' => 'Crear Propiedad',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Nombre',
                             'type'     => 'Tipo',
                             'language' => 'Idioma',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Editar',
                             'delete'   => 'Eliminar',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Crear Propiedad',
                             'name'     => 'Nombre',
                             'type'     => 'Tipo',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Propiedad del Activo actualizada con éxito',
                         'not-found'      => 'Propiedad no encontrada',
                         'found-success'  => 'Propiedad encontrada con éxito',
-
                     ],
                 ],
                 'comments' => [
@@ -150,7 +142,6 @@ return [
                     'update-failed'   => 'Error al actualizar el comentario',
                     'delete-success'  => 'Comentario del Activo eliminado con éxito',
                     'delete-failed'   => 'Error al eliminar el comentario del Activo',
-
                 ],
                 'edit' => [
                     'title'              => 'Editar Activo',
@@ -179,7 +170,6 @@ return [
                         're_upload'       => 'Subir de nuevo',
                         'delete'          => 'Eliminar',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Descarga Personalizada',
                         'format'             => 'Formato',
@@ -188,8 +178,7 @@ return [
                         'height'             => 'Altura (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Descargar',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -197,7 +186,6 @@ return [
                             'original' => 'Original',
                         ],
                     ],
-
                     'tag-already-exists'        => 'La etiqueta ya existe',
                     'image-source-not-readable' => 'Fuente de la imagen no legible',
                     'failed-to-read'            => 'No se pudo leer los metadatos de la imagen :exception',
@@ -224,7 +212,6 @@ return [
                         'create-success' => 'Las etiquetas se han añadido con éxito',
                         'create-failure' => 'Error al crear las etiquetas',
                     ],
-
                     'no-comments'    => 'Aún no hay etiquetas',
                     'found-success'  => 'Etiqueta encontrada con éxito',
                     'not-found'      => 'Etiqueta no encontrada',
@@ -255,7 +242,6 @@ return [
                     'file-forbidden-type'                 => 'El archivo tiene un tipo o extensión prohibida.',
                 ],
             ],
-
         ],
         'catalog' => [
             'attributes' => [
@@ -296,12 +282,10 @@ return [
             'download-zip'     => 'Descargar ZIP',
             'asset-assign'     => 'Asignar activo',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'El campo :attribute es obligatorio.',
             ],
-
             'comment' => [
                 'required' => 'El mensaje del comentario es obligatorio.',
             ],
@@ -320,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Esta acción no está autorizada.',
         ],

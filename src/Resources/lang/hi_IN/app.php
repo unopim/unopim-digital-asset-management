@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'फाइल का नाम',
                     'tags'           => 'टैग',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'पथ',
                     'size'           => 'आकार',
                 ],
-
                 'directory' => [
-                    'title'        => 'निर्देशिका',
-                    'create'       => [
+                    'title'  => 'निर्देशिका',
+                    'create' => [
                         'title'    => 'निर्देशिका बनाएँ',
                         'name'     => 'नाम',
                         'save-btn' => 'निर्देशिका सहेजें',
                     ],
-
                     'rename' => [
                         'title' => 'निर्देशिका का नाम बदलें',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'संपत्ति का नाम बदलें',
                             'save-btn' => 'संपत्ति सहेजें',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'हटाएँ',
                         'rename'                    => 'नाम बदलें',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'निर्देशिका जोड़ें',
                         'upload-files'              => 'फाइलें अपलोड करें',
                         'copy-directory-structured' => 'निर्देशिका संरचना कॉपी करें',
+                        'get-by-id'                 => 'ID द्वारा प्राप्त करें',
+                        'comment'                   => 'टिप्पणी',
                     ],
-
+                    'linked-resources'                          => 'लिंक की गई संसाधन',
                     'not-found'                                 => 'कोई निर्देशिका नहीं मिली',
                     'created-success'                           => 'निर्देशिका सफलतापूर्वक बनाई गई',
                     'updated-success'                           => 'निर्देशिका सफलतापूर्वक अपडेट की गई',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'ज़िप फ़ाइल बनाने में विफल',
                     'not-allowed'                               => 'स्क्रिप्ट फाइलें अपलोड करना अनुमति नहीं है।',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'यह उपकरण आपको सभी मीडिया संपत्तियों को एक स्थान पर व्यवस्थित, संग्रहित और प्रबंधित करने में मदद करेगा',
                 'root'        => 'मूल',
                 'upload'      => 'अपलोड करें',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'संपत्ति गुण',
                         'create-btn' => 'गुणवत्ता बनाएँ',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'नाम',
                             'type'     => 'प्रकार',
                             'language' => 'भाषा',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'संपादित करें',
                             'delete'   => 'हटाएँ',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'गुणवत्ता बनाएँ',
                             'name'     => 'नाम',
                             'type'     => 'प्रकार',
@@ -177,7 +170,6 @@ return [
                         're_upload'       => 'फिर से अपलोड करें',
                         'delete'          => 'हटाएं',
                     ],
-
                     'custom-download' => [
                         'title'              => 'कस्टम डाउनलोड',
                         'format'             => 'फॉर्मेट',
@@ -186,8 +178,7 @@ return [
                         'height'             => 'ऊंचाई (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'डाउनलोड करें',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -195,12 +186,10 @@ return [
                             'original' => 'मूल',
                         ],
                     ],
-
                     'tag-already-exists'        => 'टैग पहले से मौजूद है',
                     'image-source-not-readable' => 'चित्र स्रोत पढ़ा नहीं जा सका',
                     'failed-to-read'            => 'चित्र मेटाडेटा पढ़ने में विफल :exception',
                     'file-re-upload-success'    => 'फाइलें सफलतापूर्वक फिर से अपलोड की गईं।',
-
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -223,7 +212,6 @@ return [
                         'create-success' => 'टैग सफलतापूर्वक जोड़े गए',
                         'create-failure' => 'टैग जोड़ने में विफल',
                     ],
-
                     'no-comments'    => 'अभी तक कोई टैग नहीं हैं',
                     'found-success'  => 'टैग सफलतापूर्वक मिला',
                     'not-found'      => 'टैग नहीं मिला',
@@ -255,7 +243,6 @@ return [
                 ],
             ],
         ],
-
         'catalog' => [
             'attributes' => [
                 'type' => [
@@ -268,7 +255,6 @@ return [
                 ],
             ],
         ],
-
         'acl' => [
             'menu'             => 'DAM',
             'asset'            => 'संपत्ति',
@@ -296,12 +282,10 @@ return [
             'download-zip'     => 'ज़िप डाउनलोड करें',
             'asset-assign'     => 'संपत्ति सौंपें',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => ':attribute फ़ील्ड आवश्यक है।',
             ],
-
             'comment' => [
                 'required' => 'टिप्पणी संदेश आवश्यक है।',
             ],
@@ -318,10 +302,8 @@ return [
                 'language' => [
                     'not-found' => 'चयनित भाषा नहीं मिली या वर्तमान में अक्षम है।',
                 ],
-
             ],
         ],
-
         'errors' => [
             '401' => 'यह क्रिया अस्वीकृत है।',
         ],

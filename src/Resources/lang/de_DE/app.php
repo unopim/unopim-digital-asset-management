@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Dateiname',
                     'tags'           => 'Tags',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Pfad',
                     'size'           => 'Größe',
                 ],
-
                 'directory' => [
-                    'title'        => 'Verzeichnis',
-                    'create'       => [
+                    'title'  => 'Verzeichnis',
+                    'create' => [
                         'title'    => 'Verzeichnis erstellen',
                         'name'     => 'Name',
                         'save-btn' => 'Verzeichnis speichern',
                     ],
-
                     'rename' => [
                         'title' => 'Verzeichnis umbenennen',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Asset umbenennen',
                             'save-btn' => 'Asset speichern',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Löschen',
                         'rename'                    => 'Umbenennen',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Verzeichnis hinzufügen',
                         'upload-files'              => 'Dateien hochladen',
                         'copy-directory-structured' => 'Verzeichnisstruktur kopieren',
+                        'get-by-id'                 => 'Nach ID suchen',
+                        'comment'                   => 'Kommentar',
                     ],
-
+                    'linked-resources'                          => 'Verlinkte Ressourcen',
                     'not-found'                                 => 'Kein Verzeichnis gefunden',
                     'created-success'                           => 'Verzeichnis erfolgreich erstellt',
                     'updated-success'                           => 'Verzeichnis erfolgreich aktualisiert',
@@ -93,10 +90,8 @@ return [
                     'failed-download-directory'                 => 'Fehler beim Erstellen der ZIP-Datei.',
                     'not-allowed'                               => 'Das Hochladen von Skriptdateien ist nicht erlaubt.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Dieses Tool hilft Ihnen, alle Ihre Medienassets an einem Ort zu organisieren, zu speichern und zu verwalten.',
-                'root'        => 'Root',
+                'root'        => 'Wurzel',
                 'upload'      => 'Hochladen',
             ],
             'asset' => [
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Asset-Eigenschaften',
                         'create-btn' => 'Eigenschaft erstellen',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Name',
                             'type'     => 'Typ',
                             'language' => 'Sprache',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Bearbeiten',
                             'delete'   => 'Löschen',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Eigenschaft erstellen',
                             'name'     => 'Name',
                             'type'     => 'Typ',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Asset-Eigenschaft erfolgreich aktualisiert',
                         'not-found'      => 'Eigenschaft nicht gefunden',
                         'found-success'  => 'Eigenschaft erfolgreich gefunden',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Erneut hochladen',
                         'delete'          => 'Löschen',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Benutzerdefinierter Download',
                         'format'             => 'Format',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Höhe (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Herunterladen',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,13 +186,11 @@ return [
                             'original' => 'Original',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Tag existiert bereits',
                     'image-source-not-readable' => 'Bildquelle nicht lesbar',
                     'failed-to-read'            => 'Metadaten des Bildes konnten nicht gelesen werden: :exception',
                     'file-re-upload-success'    => 'Dateien wurden erfolgreich erneut hochgeladen.',
                 ],
-
                 'linked-resources' => [
                     'index' => [
                         'datagrid' => [
@@ -218,7 +206,6 @@ return [
                     'found-success' => 'Ressource erfolgreich gefunden',
                     'not-found'     => 'Ressource nicht gefunden',
                 ],
-
                 'tags' => [
                     'index'  => 'Tags hinzufügen',
                     'create' => [
@@ -233,7 +220,6 @@ return [
                     'delete-success' => 'Asset-Tags erfolgreich gelöscht',
                     'delete-failed'  => 'Asset-Tags konnten nicht gelöscht werden',
                 ],
-
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
                 'delete-failed-due-to-attached-resources' => 'Asset wird verwendet. Vor dem Löschen bitte trennen',
                 'datagrid'                                => [
@@ -250,13 +236,12 @@ return [
                     'file-upload-failed'                  => 'Datei konnte nicht hochgeladen werden',
                     'invalid-file'                        => 'Ungültige Datei bereitgestellt',
                     'invalid-file-format'                 => 'Ungültiges Format',
-                    'invali-file-format-or-not-provided'  => 'Keine Datei bereitgestellt oder ungültiges Format.',
+                    'invalid-file-format-or-not-provided' => 'Keine Dateien bereitgestellt oder ungültiger Format.',
                     'download-image-failed'               => 'Fehler beim Herunterladen des Bildes von der URL',
                     'file-process-failed'                 => 'Einige Dateien konnten nicht verarbeitet werden',
                     'file-forbidden-type'                 => 'Die Datei hat einen verbotenen Typ oder eine verbotene Erweiterung.',
                 ],
             ],
-
         ],
         'catalog' => [
             'attributes' => [
@@ -297,12 +282,10 @@ return [
             'download-zip'     => 'ZIP herunterladen',
             'asset-assign'     => 'Asset zuweisen',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'Das Feld :attribute ist erforderlich.',
             ],
-
             'comment' => [
                 'required' => 'Das Kommentarfeld ist erforderlich.',
             ],

@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'إدارة الأصول الرقمية',
-
+                'title'    => 'إدارة الأصول الرقمية',
                 'datagrid' => [
                     'file-name'      => 'اسم الملف',
                     'tags'           => 'العلامات',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'المسار',
                     'size'           => 'الحجم',
                 ],
-
                 'directory' => [
-                    'title'        => 'الدليل',
-                    'create'       => [
+                    'title'  => 'الدليل',
+                    'create' => [
                         'title'    => 'إنشاء دليل',
                         'name'     => 'الاسم',
                         'save-btn' => 'حفظ الدليل',
                     ],
-
                     'rename' => [
                         'title' => 'إعادة تسمية الدليل',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'إعادة تسمية الأصل',
                             'save-btn' => 'حفظ الأصل',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'حذف',
                         'rename'                    => 'إعادة تسمية',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'إضافة دليل',
                         'upload-files'              => 'رفع الملفات',
                         'copy-directory-structured' => 'نسخ الدليل مع الهيكلية',
+                        'get-by-id'                 => 'الحصول على معرف',
+                        'comment'                   => 'تعليق',
                     ],
-
+                    'linked-resources'                          => 'الموارد المرتبطة',
                     'not-found'                                 => 'لم يتم العثور على دليل',
                     'created-success'                           => 'تم إنشاء الدليل بنجاح',
                     'updated-success'                           => 'تم تحديث الدليل بنجاح',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'فشل في إنشاء الملف المضغوط.',
                     'not-allowed'                               => 'رفع ملفات السكربت غير مسموح به.',
                 ],
-
-                'title'       => 'إدارة الأصول الرقمية',
                 'description' => 'الأداة تساعدك على تنظيم وتخزين وإدارة جميع أصولك الرقمية في مكان واحد',
                 'root'        => 'الجذر',
                 'upload'      => 'رفع',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'خصائص الأصل',
                         'create-btn' => 'إنشاء خاصية',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'الاسم',
                             'type'     => 'النوع',
                             'language' => 'اللغة',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'تعديل',
                             'delete'   => 'حذف',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'إنشاء خاصية',
                             'name'     => 'الاسم',
                             'type'     => 'النوع',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'تم تحديث خاصية الأصل بنجاح',
                         'not-found'      => 'الخاصية غير موجودة',
                         'found-success'  => 'تم العثور على الخاصية بنجاح',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'إعادة تحميل',
                         'delete'          => 'حذف',
                     ],
-
                     'custom-download' => [
                         'title'              => 'تحميل مخصص',
                         'format'             => 'الصيغة',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'الارتفاع (بكسل)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'تحميل',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,7 +186,6 @@ return [
                             'original' => 'أصلي',
                         ],
                     ],
-
                     'tag-already-exists'        => 'العلامة موجودة بالفعل',
                     'image-source-not-readable' => 'المصدر غير قابل للقراءة',
                     'failed-to-read'            => 'فشل في قراءة بيانات الصورة: :exception',
@@ -223,7 +212,6 @@ return [
                         'create-success' => 'تمت إضافة العلامات بنجاح',
                         'create-failure' => 'فشل في إنشاء العلامات',
                     ],
-
                     'no-comments'    => 'لا توجد علامات بعد',
                     'found-success'  => 'تم العثور على العلامة بنجاح',
                     'not-found'      => 'لم يتم العثور على العلامات',
@@ -254,7 +242,6 @@ return [
                     'file-forbidden-type'                 => 'الملف يحتوي على نوع أو امتداد محظور.',
                 ],
             ],
-
         ],
         'catalog' => [
             'attributes' => [
@@ -295,22 +282,18 @@ return [
             'download-zip'     => 'تحميل كملف مضغوط',
             'asset-assign'     => 'تعيين الأصل',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'حقل :attribute مطلوب.',
             ],
-
             'comment' => [
                 'required' => 'رسالة التعليق مطلوبة.',
             ],
-
             'tag' => [
                 'name' => [
                     'required' => 'حقل العلامة مطلوب.',
                 ],
             ],
-
             'property' => [
                 'name' => [
                     'required' => 'حقل الاسم مطلوب.',
@@ -321,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'هذا الإجراء غير مصرح به.',
         ],

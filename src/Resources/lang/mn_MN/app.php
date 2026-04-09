@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Файлын нэр',
                     'tags'           => 'Таг',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Зам',
                     'size'           => 'Хэмжээ',
                 ],
-
                 'directory' => [
-                    'title'        => 'Директор',
-                    'create'       => [
+                    'title'  => 'Директор',
+                    'create' => [
                         'title'    => 'Директор үүсгэх',
                         'name'     => 'Нэр',
                         'save-btn' => 'Директорыг хадгалах',
                     ],
-
                     'rename' => [
                         'title' => 'Директорыг нэрлэх',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Хэрэглэгдэхүүнийг нэрлэх',
                             'save-btn' => 'Хэрэглэгдэхүүн хадгалах',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Устгах',
                         'rename'                    => 'Нэрлэх',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Директорыг нэмэх',
                         'upload-files'              => 'Файлуудыг ачаалах',
                         'copy-directory-structured' => 'Директорыг бүтцийн дагуу хуулбарлах',
+                        'get-by-id'                 => 'Id-ээр авна уу',
+                        'comment'                   => 'Сэтгэгдэл',
                     ],
-
+                    'linked-resources'                          => 'Холбоотой нөөцүүд',
                     'not-found'                                 => 'Директор олдсонгүй',
                     'created-success'                           => 'Директор амжилттай үүсгэгдлээ',
                     'updated-success'                           => 'Директор амжилттай шинэчлэгдлээ',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'ZIP файл үүсгэхэд алдаа гарлаа.',
                     'not-allowed'                               => 'Скрипт файлуудыг ачаалуулахыг хориглоно.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Тус хэрэгсэл нь таны бүх медиаг нэг газар зохион байгуулж, хадгалахад тусална',
                 'root'        => 'Үндсэн',
                 'upload'      => 'Ачуулах',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Хэрэглэгдэхүүний шинж чанарууд',
                         'create-btn' => 'Шинж чанар үүсгэх',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Нэр',
                             'type'     => 'Төрөл',
                             'language' => 'Хэл',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Засварлах',
                             'delete'   => 'Устгах',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Шинж чанар үүсгэх',
                             'name'     => 'Нэр',
                             'type'     => 'Төрөл',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Хэрэглэгдэхүүний шинж чанар амжилттай шинэчлэгдлээ',
                         'not-found'      => 'Шинж чанар олдсонгүй',
                         'found-success'  => 'Шинж чанар амжилттай олдлоо',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Дахин Ачуулах',
                         'delete'          => 'Устгах',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Хувийн Татаж Авах',
                         'format'             => 'Формат',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Өндөр (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Татаж Авах',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,7 +186,6 @@ return [
                             'original' => 'Эх хувилбар',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Таг аль хэдийн байгаа',
                     'image-source-not-readable' => 'Зураг эх сурвалжийг уншиж чадахгүй',
                     'failed-to-read'            => 'Зурагны мета мэдээллийг уншихад алдаа гарлаа :exception',
@@ -223,7 +212,6 @@ return [
                         'create-success' => 'Таг амжилттай нэмэгдлээ',
                         'create-failure' => 'Таг үүсгэхэд алдаа гарлаа',
                     ],
-
                     'no-comments'    => 'Одоогоор Таг байхгүй',
                     'found-success'  => 'Таг амжилттай олдлоо',
                     'not-found'      => 'Таг олдсонгүй',
@@ -294,12 +282,10 @@ return [
             'download-zip'     => 'ZIP Татаж Авах',
             'asset-assign'     => 'Хэрэглэгдэхүүн Хуваарилах',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => '":attribute" талбар шаардлагатай.',
             ],
-
             'comment' => [
                 'required' => 'Сэтгэгдэл бичих мессеж шаардлагатай.',
             ],
@@ -318,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Энэ үйлдэлд эрхгүй.',
         ],

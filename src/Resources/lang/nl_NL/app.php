@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Bestandsnaam',
                     'tags'           => 'Tags',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Pad',
                     'size'           => 'Grootte',
                 ],
-
                 'directory' => [
-                    'title'        => 'Map',
-                    'create'       => [
+                    'title'  => 'Map',
+                    'create' => [
                         'title'    => 'Maak Map Aan',
                         'name'     => 'Naam',
                         'save-btn' => 'Map Opslaan',
                     ],
-
                     'rename' => [
                         'title' => 'Hernoem Map',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Hernoem Asset',
                             'save-btn' => 'Asset Opslaan',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Verwijderen',
                         'rename'                    => 'Hernoemen',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Voeg Map Toe',
                         'upload-files'              => 'Bestanden Uploaden',
                         'copy-directory-structured' => 'Mapstructuur Kopiëren',
+                        'get-by-id'                 => 'Kom langs, ID',
+                        'comment'                   => 'Opmerking',
                     ],
-
+                    'linked-resources'                          => 'Gekoppelde bronnen',
                     'not-found'                                 => 'Geen map gevonden',
                     'created-success'                           => 'Map succesvol aangemaakt',
                     'updated-success'                           => 'Map succesvol bijgewerkt',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'Mislukt om het zipbestand te maken.',
                     'not-allowed'                               => 'Het uploaden van scriptbestanden is niet toegestaan.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Deze tool helpt je om al je mediabestanden op één plaats te organiseren, op te slaan en te beheren.',
                 'root'        => 'Root',
                 'upload'      => 'Uploaden',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Asset Eigenschappen',
                         'create-btn' => 'Maak Eigenschap Aan',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Naam',
                             'type'     => 'Type',
                             'language' => 'Taal',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Bewerken',
                             'delete'   => 'Verwijderen',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Maak Eigenschap Aan',
                             'name'     => 'Naam',
                             'type'     => 'Type',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Asset Eigenschap succesvol bijgewerkt',
                         'not-found'      => 'Eigenschap niet gevonden',
                         'found-success'  => 'Eigenschap succesvol gevonden',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Opnieuw Uploaden',
                         'delete'          => 'Verwijderen',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Aangepaste Download',
                         'format'             => 'Formaat',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Hoogte (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Downloaden',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,7 +186,6 @@ return [
                             'original' => 'Origineel',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Tag bestaat al',
                     'image-source-not-readable' => 'Afbeeldingsbron niet leesbaar',
                     'failed-to-read'            => 'Het lezen van de afbeelding is mislukt :exception',
@@ -223,7 +212,6 @@ return [
                         'create-success' => 'Tags zijn succesvol toegevoegd',
                         'create-failure' => 'Tags konden niet worden aangemaakt',
                     ],
-
                     'no-comments'    => 'Nog geen Tags',
                     'found-success'  => 'Tag succesvol gevonden',
                     'not-found'      => 'Tags niet gevonden',
@@ -254,7 +242,6 @@ return [
                     'file-forbidden-type'                 => 'Bestand heeft een verboden type of extensie.',
                 ],
             ],
-
         ],
         'catalog' => [
             'attributes' => [
@@ -295,12 +282,10 @@ return [
             'download-zip'     => 'Download Zip',
             'asset-assign'     => 'Wijs Asset toe',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'Het veld :attribute is verplicht.',
             ],
-
             'comment' => [
                 'required' => 'Het bericht van de Opmerking is verplicht.',
             ],
@@ -319,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Deze actie is niet toegestaan.',
         ],

@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => '文件名',
                     'tags'           => '标签',
@@ -40,26 +39,22 @@ return [
                     'path'           => '路径',
                     'size'           => '大小',
                 ],
-
                 'directory' => [
-                    'title'        => '目录',
-                    'create'       => [
+                    'title'  => '目录',
+                    'create' => [
                         'title'    => '创建目录',
                         'name'     => '名称',
                         'save-btn' => '保存目录',
                     ],
-
                     'rename' => [
                         'title' => '重命名目录',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => '重命名资产',
                             'save-btn' => '保存资产',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => '删除',
                         'rename'                    => '重命名',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => '添加目录',
                         'upload-files'              => '上传文件',
                         'copy-directory-structured' => '复制目录结构',
+                        'get-by-id'                 => '通过 ID 获取',
+                        'comment'                   => '评论',
                     ],
-
+                    'linked-resources'                          => '链接资源',
                     'not-found'                                 => '未找到目录',
                     'created-success'                           => '目录创建成功',
                     'updated-success'                           => '目录更新成功',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => '无法创建 zip 文件。',
                     'not-allowed'                               => '不允许上传脚本文件。',
                 ],
-
-                'title'       => 'DAM',
                 'description' => '该工具可以帮助您在一个地方组织、存储和管理所有的媒体资产。',
                 'root'        => '根目录',
                 'upload'      => '上传',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => '资产属性',
                         'create-btn' => '创建属性',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => '名称',
                             'type'     => '类型',
                             'language' => '语言',
@@ -113,8 +107,7 @@ return [
                             'edit'     => '编辑',
                             'delete'   => '删除',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => '创建属性',
                             'name'     => '名称',
                             'type'     => '类型',
@@ -130,7 +123,6 @@ return [
                         'update-success' => '资产属性更新成功',
                         'not-found'      => '未找到属性',
                         'found-success'  => '属性查找成功',
-
                     ],
                 ],
                 'comments' => [
@@ -151,7 +143,6 @@ return [
                     'delete-success'  => '资产评论删除成功',
                     'delete-failed'   => '资产评论删除失败',
                 ],
-
                 'edit' => [
                     'title'              => '编辑资产',
                     'name'               => '名称',
@@ -179,7 +170,6 @@ return [
                         're_upload'       => '重新上传',
                         'delete'          => '删除',
                     ],
-
                     'custom-download' => [
                         'title'              => '自定义下载',
                         'format'             => '格式',
@@ -188,8 +178,7 @@ return [
                         'height'             => '高度（px）',
                         'height-placeholder' => '200',
                         'download-btn'       => '下载',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -197,7 +186,6 @@ return [
                             'original' => '原始',
                         ],
                     ],
-
                     'tag-already-exists'        => '标签已存在',
                     'image-source-not-readable' => '无法读取图像源',
                     'failed-to-read'            => '无法读取图像元数据 :exception',
@@ -224,7 +212,6 @@ return [
                         'create-success' => '标签已成功添加',
                         'create-failure' => '标签创建失败',
                     ],
-
                     'no-comments'    => '尚无标签',
                     'found-success'  => '标签找到成功',
                     'not-found'      => '未找到标签',
@@ -295,12 +282,10 @@ return [
             'download-zip'     => '下载 Zip',
             'asset-assign'     => '分配资产',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => '字段 :attribute 是必需的。',
             ],
-
             'comment' => [
                 'required' => '评论内容是必需的。',
             ],
@@ -319,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => '此操作未经授权。',
         ],

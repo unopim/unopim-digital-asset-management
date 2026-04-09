@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'ファイル名',
                     'tags'           => 'タグ',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'パス',
                     'size'           => 'サイズ',
                 ],
-
                 'directory' => [
-                    'title'        => 'ディレクトリ',
-                    'create'       => [
+                    'title'  => 'ディレクトリ',
+                    'create' => [
                         'title'    => 'ディレクトリを作成',
                         'name'     => '名前',
                         'save-btn' => 'ディレクトリを保存',
                     ],
-
                     'rename' => [
                         'title' => 'ディレクトリ名を変更',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'アセット名を変更',
                             'save-btn' => 'アセットを保存',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => '削除',
                         'rename'                    => '名前変更',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'ディレクトリを追加',
                         'upload-files'              => 'ファイルをアップロード',
                         'copy-directory-structured' => 'ディレクトリ構造をコピー',
+                        'get-by-id'                 => 'IDで取得',
+                        'comment'                   => 'コメント',
                     ],
-
+                    'linked-resources'                          => 'リンクされたリソース',
                     'not-found'                                 => 'ディレクトリが見つかりません',
                     'created-success'                           => 'ディレクトリが正常に作成されました',
                     'updated-success'                           => 'ディレクトリが正常に更新されました',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'ZIPファイルの作成に失敗しました。',
                     'not-allowed'                               => 'スクリプトファイルのアップロードは許可されていません。',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'このツールは、すべてのメディアアセットを一箇所で整理、保存、管理するのに役立ちます。',
                 'root'        => 'ルート',
                 'upload'      => 'アップロード',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'アセットプロパティ',
                         'create-btn' => 'プロパティ作成',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => '名前',
                             'type'     => 'タイプ',
                             'language' => '言語',
@@ -113,8 +107,7 @@ return [
                             'edit'     => '編集',
                             'delete'   => '削除',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'プロパティ作成',
                             'name'     => '名前',
                             'type'     => 'タイプ',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'アセットプロパティが正常に更新されました',
                         'not-found'      => 'プロパティが見つかりません',
                         'found-success'  => 'プロパティが正常に見つかりました',
-
                     ],
                 ],
                 'comments' => [
@@ -151,7 +143,6 @@ return [
                     'delete-success'  => 'アセットコメントが正常に削除されました',
                     'delete-failed'   => 'アセットコメントの削除に失敗しました',
                 ],
-
                 'edit' => [
                     'title'              => 'アセット編集',
                     'name'               => '名前',
@@ -179,7 +170,6 @@ return [
                         're_upload'       => '再アップロード',
                         'delete'          => '削除',
                     ],
-
                     'custom-download' => [
                         'title'              => 'カスタムダウンロード',
                         'format'             => 'フォーマット',
@@ -188,8 +178,7 @@ return [
                         'height'             => '高さ (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'ダウンロード',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -197,7 +186,6 @@ return [
                             'original' => 'オリジナル',
                         ],
                     ],
-
                     'tag-already-exists'        => 'タグは既に存在します',
                     'image-source-not-readable' => '画像ソースは読み取れません',
                     'failed-to-read'            => '画像のメタデータの読み取りに失敗しました :exception',
@@ -224,7 +212,6 @@ return [
                         'create-success' => 'タグが正常に追加されました',
                         'create-failure' => 'タグの作成に失敗しました',
                     ],
-
                     'no-comments'    => 'タグはまだありません',
                     'found-success'  => 'タグが正常に見つかりました',
                     'not-found'      => 'タグが見つかりません',
@@ -295,12 +282,10 @@ return [
             'download-zip'     => 'ZIPをダウンロード',
             'asset-assign'     => 'アセットを割り当て',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'フィールド :attribute は必須です。',
             ],
-
             'comment' => [
                 'required' => 'コメントメッセージは必須です。',
             ],
@@ -319,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'この操作は認証されていません。',
         ],

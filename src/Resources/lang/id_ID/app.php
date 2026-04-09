@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'Nama File',
                     'tags'           => 'Tag',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Path',
                     'size'           => 'Ukuran',
                 ],
-
                 'directory' => [
-                    'title'        => 'Direktori',
-                    'create'       => [
+                    'title'  => 'Direktori',
+                    'create' => [
                         'title'    => 'Buat Direktori',
                         'name'     => 'Nama',
                         'save-btn' => 'Simpan Direktori',
                     ],
-
                     'rename' => [
                         'title' => 'Ganti Nama Direktori',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Ganti Nama Aset',
                             'save-btn' => 'Simpan Aset',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Hapus',
                         'rename'                    => 'Ganti Nama',
@@ -70,8 +65,10 @@ return [
                         'add-directory'             => 'Tambah Direktori',
                         'upload-files'              => 'Unggah File',
                         'copy-directory-structured' => 'Salin Struktur Direktori',
+                        'get-by-id'                 => 'Dapatkan Berdasarkan Id',
+                        'comment'                   => 'Komentar',
                     ],
-
+                    'linked-resources'                          => 'Sumber Daya Tertaut',
                     'not-found'                                 => 'Direktori tidak ditemukan',
                     'created-success'                           => 'Direktori berhasil dibuat',
                     'updated-success'                           => 'Direktori berhasil diperbarui',
@@ -93,8 +90,6 @@ return [
                     'failed-download-directory'                 => 'Gagal membuat file zip.',
                     'not-allowed'                               => 'Unggah file skrip tidak diperbolehkan.',
                 ],
-
-                'title'       => 'DAM',
                 'description' => 'Alat ini dapat membantu Anda mengorganisir, menyimpan, dan mengelola semua aset media Anda di satu tempat',
                 'root'        => 'Root',
                 'upload'      => 'Unggah',
@@ -104,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Properti Aset',
                         'create-btn' => 'Buat Properti',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Nama',
                             'type'     => 'Tipe',
                             'language' => 'Bahasa',
@@ -113,8 +107,7 @@ return [
                             'edit'     => 'Edit',
                             'delete'   => 'Hapus',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Buat Properti',
                             'name'     => 'Nama',
                             'type'     => 'Tipe',
@@ -130,7 +123,6 @@ return [
                         'update-success' => 'Properti Aset Berhasil Diperbarui',
                         'not-found'      => 'Properti Tidak Ditemukan',
                         'found-success'  => 'Properti Berhasil Ditemukan',
-
                     ],
                 ],
                 'comments' => [
@@ -178,7 +170,6 @@ return [
                         're_upload'       => 'Unggah Ulang',
                         'delete'          => 'Hapus',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Unduh Kustom',
                         'format'             => 'Format',
@@ -187,8 +178,7 @@ return [
                         'height'             => 'Tinggi (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Unduh',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -196,12 +186,10 @@ return [
                             'original' => 'Asli',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Tag sudah ada',
                     'image-source-not-readable' => 'Sumber gambar tidak dapat dibaca',
                     'failed-to-read'            => 'Gagal membaca metadata gambar :exception',
                     'file-re-upload-success'    => 'File berhasil diunggah ulang.',
-
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -224,7 +212,6 @@ return [
                         'create-success' => 'Tag berhasil ditambahkan',
                         'create-failure' => 'Tag gagal dibuat',
                     ],
-
                     'no-comments'    => 'Belum Ada Tag',
                     'found-success'  => 'Tag Ditemukan Dengan Sukses',
                     'not-found'      => 'Tag Tidak Ditemukan',
@@ -295,12 +282,10 @@ return [
             'download-zip'     => 'Unduh Zip',
             'asset-assign'     => 'Tugaskan Aset',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'Kolom :attribute wajib diisi.',
             ],
-
             'comment' => [
                 'required' => 'Pesan Komentar wajib diisi.',
             ],
@@ -319,7 +304,6 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
             '401' => 'Aksi ini tidak sah.',
         ],
