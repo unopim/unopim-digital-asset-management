@@ -31,6 +31,11 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
+    [class^="icon-dam-"]:before,
+    [class*=" icon-dam-"]:before {
+        font-family: "UnoPim-DAM" !important;
+    }
+
     html.dark [class^="icon-dam-"],
     html.dark [class*=" icon-dam-"] {
         color: #d1d5db;
