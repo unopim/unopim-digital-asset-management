@@ -84,7 +84,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: unopim
-        run: composer update --no-interaction --prefer-dist --optimize-autoloader --no-progress
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
       - name: Add DAM test suite to phpunit.xml
         working-directory: unopim
@@ -212,7 +212,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: unopim
-        run: composer update --no-interaction --prefer-dist --optimize-autoloader --no-progress
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
       - name: Add DAM test suite to phpunit.xml
         working-directory: unopim
