@@ -2,6 +2,7 @@
 
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetComments;
+use Webkul\User\Models\Admin;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -63,4 +64,71 @@ it('should delete a comment', function () {
     $this->assertDatabaseMissing('dam_asset_comments', [
         'id' => $comment->id,
     ]);
+});
+
+it('should create a threaded reply comment', function () {
+    $asset = Asset::factory()->create();
+    $parentComment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+    ]);
+
+    $payload = [
+        'comments'  => 'This is a reply to the parent comment',
+        'parent_id' => $parentComment->id,
+    ];
+
+    $response = $this->postJson(route('admin.dam.asset.comment.store', $asset->id), $payload);
+    $response->assertOk();
+    $response->assertJson([
+        'message' => trans('dam::app.admin.dam.asset.comments.create.create-success'),
+    ]);
+
+    $this->assertDatabaseHas('dam_asset_comments', [
+        'comments'     => 'This is a reply to the parent comment',
+        'parent_id'    => $parentComment->id,
+        'dam_asset_id' => $asset->id,
+    ]);
+});
+
+it('should validate comment minimum length', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->postJson(route('admin.dam.asset.comment.store', $asset->id), [
+        'comments' => 'A',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['comments']);
+});
+
+it('should validate comment maximum length', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->postJson(route('admin.dam.asset.comment.store', $asset->id), [
+        'comments' => str_repeat('a', 1001),
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['comments']);
+});
+
+it('should validate comment is required', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->postJson(route('admin.dam.asset.comment.store', $asset->id), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['comments']);
+});
+
+it('should return user info with timezone', function () {
+    $admin = Admin::first();
+
+    $response = $this->getJson(route('admin.dam.asset.comments.get_user_info', $admin->id));
+
+    $response->assertOk()
+        ->assertJsonStructure([
+            'user' => ['name', 'status'],
+            'timezone',
+        ]);
 });

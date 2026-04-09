@@ -3,6 +3,7 @@
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Models\AssetResourceMapping;
 use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
@@ -242,6 +243,102 @@ it('should rename the file name', function () {
     Storage::disk('private')->assertExists($newPath);
 });
 
+// Upload forbidden file type
+it('should reject uploading a forbidden file type', function () {
+    Storage::fake('private');
+    Storage::disk('private')->makeDirectory('assets/New');
+
+    $directory = Directory::factory()->create([
+        'name'      => 'New',
+        'parent_id' => null,
+    ]);
+
+    $file = UploadedFile::fake()->create('malicious.php', 100, 'application/x-php');
+
+    $response = $this->postJson(route('admin.dam.assets.upload'), [
+        'files'        => [$file],
+        'directory_id' => $directory->id,
+    ]);
+
+    $response->assertStatus(500)
+        ->assertJson(['success' => false]);
+});
+
+// Show non-existent asset
+it('should return 404 when showing a non-existent asset', function () {
+    $response = $this->getJson(route('admin.dam.assets.show', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'),
+        ]);
+});
+
+// Update non-existent asset
+it('should return 404 when updating a non-existent asset', function () {
+    $response = $this->putJson(route('admin.dam.assets.update', 99999), [
+        'file_name' => 'test.png',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'),
+        ]);
+});
+
+// Delete non-existent asset
+it('should return 404 when deleting a non-existent asset', function () {
+    $response = $this->deleteJson(route('admin.dam.assets.destroy', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'),
+        ]);
+});
+
+// Prevent delete when resource mapped
+it('should prevent deletion of an asset that has linked resources', function () {
+    $asset = Asset::factory()->create();
+
+    AssetResourceMapping::create([
+        'type'          => 'product',
+        'related_field' => 'image',
+        'dam_asset_id'  => $asset->id,
+    ]);
+
+    $response = $this->deleteJson(route('admin.dam.assets.destroy', $asset->id));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+        ]);
+
+    $this->assertDatabaseHas($this->getFullTableName(Asset::class), ['id' => $asset->id]);
+});
+
+// Rename validation
+it('should validate rename requires a valid file name', function () {
+    $response = $this->postJson(route('admin.dam.assets.rename'), [
+        'id'        => 1,
+        'file_name' => '.hidden',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['file_name']);
+});
+
+// Upload validation - missing files
+it('should validate upload requires files and directory_id', function () {
+    $response = $this->postJson(route('admin.dam.assets.upload'), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['files', 'directory_id']);
+});
+
 // Move the Assets
 it('should move asset from one directory to another', function () {
     Storage::fake('private');
@@ -254,6 +351,8 @@ it('should move asset from one directory to another', function () {
 
     $fileName = 'sample-'.uniqid().'.jpg';
     $originalPath = 'assets/Root/'.$fileName;
+
+    Storage::disk('private')->put($originalPath, 'dummy content');
 
     $asset = Asset::factory()->create([
         'file_name' => $fileName,

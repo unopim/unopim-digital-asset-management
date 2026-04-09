@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Jobs\CopyDirectoryStructure;
 use Webkul\DAM\Jobs\DeleteDirectory;
+use Webkul\DAM\Jobs\MoveDirectoryStructure;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
@@ -193,4 +194,102 @@ it('dispatches copy job when directory is copyable', function () {
     ]);
 
     Bus::assertDispatched(CopyDirectoryStructure::class);
+});
+
+it('should dispatch move directory job', function () {
+    Bus::fake();
+
+    $parentDir = Directory::factory()->create(['name' => 'Parent']);
+    $childDir = Directory::factory()->create(['name' => 'Child', 'parent_id' => $parentDir->id]);
+    $targetDir = Directory::factory()->create(['name' => 'Target']);
+
+    $response = $this->post(route('admin.dam.directory.moved'), [
+        'move_item_id'  => $childDir->id,
+        'new_parent_id' => $targetDir->id,
+    ]);
+
+    $response->assertOk()
+        ->assertJson([
+            'message' => trans('dam::app.admin.dam.index.directory.moved-success'),
+        ]);
+
+    Bus::assertDispatched(MoveDirectoryStructure::class);
+});
+
+it('should not delete a non-deletable directory', function () {
+    $rootDirectory = Directory::find(1);
+
+    if (! $rootDirectory) {
+        $rootDirectory = Directory::factory()->create(['id' => 1, 'name' => 'Root']);
+    }
+
+    $response = $this->delete(route('admin.dam.directory.destroy', $rootDirectory->id));
+
+    $response->assertStatus(403)
+        ->assertJson([
+            'message' => trans('dam::app.admin.dam.index.directory.can-not-deleted'),
+        ]);
+});
+
+it('should return 404 when directory not found for children', function () {
+    $this->mock(DirectoryRepository::class, function ($mock) {
+        $mock->shouldReceive('getDirectoryTree')
+            ->with(99999)
+            ->andReturn(collect([]));
+    });
+
+    $response = $this->get(route('admin.dam.directory.children', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => trans('dam::app.admin.dam.index.directory.not-found'),
+        ]);
+});
+
+it('should return 404 when directory not found for assets', function () {
+    $this->mock(DirectoryRepository::class, function ($mock) {
+        $mock->shouldReceive('getDirectoryTree')
+            ->with(99999)
+            ->andReturn(collect([]));
+    });
+
+    $response = $this->getJson(route('admin.dam.directory.assets', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'message' => trans('dam::app.admin.dam.index.directory.not-found'),
+        ]);
+});
+
+it('should not copy a non-copyable directory', function () {
+    $rootDirectory = Directory::find(1);
+
+    if (! $rootDirectory) {
+        $rootDirectory = Directory::factory()->create(['id' => 1, 'name' => 'Root']);
+    }
+
+    $response = $this->post(route('admin.dam.directory.copy_structure'), [
+        'id' => $rootDirectory->id,
+    ]);
+
+    $response->assertStatus(403)
+        ->assertJson([
+            'message' => trans('dam::app.admin.dam.index.directory.can-not-copy'),
+        ]);
+});
+
+it('should validate directory name is required on store', function () {
+    $response = $this->postJson(route('admin.dam.directory.store'), [
+        'parent_id' => 1,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['name']);
+});
+
+it('should validate move_item_id and new_parent_id are required', function () {
+    $response = $this->postJson(route('admin.dam.directory.moved'), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['move_item_id', 'new_parent_id']);
 });
