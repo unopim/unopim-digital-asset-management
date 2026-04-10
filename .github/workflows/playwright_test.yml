@@ -179,6 +179,11 @@ jobs:
           cd unopim/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
 
+      - name: Clear login rate limiter before DAM suite
+        if: always() && steps.unopim_pw.conclusion != 'skipped'
+        working-directory: unopim
+        run: php artisan optimize:clear
+
       - name: Run DAM Playwright tests
         id: dam_pw
         if: always() && steps.unopim_pw.conclusion != 'skipped'
@@ -197,4 +202,6 @@ jobs:
             unopim/packages/Webkul/DAM/tests/e2e-pw/playwright-report
             unopim/packages/Webkul/DAM/tests/e2e-pw/test-results
             unopim/storage/logs/laravel.log
+            /tmp/server.log
+            /tmp/queue.log
           retention-days: 1
