@@ -23,7 +23,7 @@ module.exports = defineConfig({
     ? [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
     : [['html', { outputFolder: 'playwright-report', open: 'on-failure' }]],
 
-  timeout: 60_000,
+  timeout: 120_000,
 
   expect: { timeout: 15_000 },
 

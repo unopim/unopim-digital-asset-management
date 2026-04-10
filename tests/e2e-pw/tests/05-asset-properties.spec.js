@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, generateUid } = require('../utils/helpers');
+const { navigateTo, generateUid, ensureAssetExists } = require('../utils/helpers');
 
 /**
  * Helper: Navigate to the Properties tab of the first asset.
@@ -7,7 +7,7 @@ const { navigateTo, generateUid } = require('../utils/helpers');
  */
 async function navigateToPropertiesTab(page) {
   await navigateTo(page, 'dam');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(1000);
 
   // Hover over first image card and click edit
@@ -15,12 +15,12 @@ async function navigateToPropertiesTab(page) {
   await firstCard.hover();
   await page.waitForTimeout(300);
   await firstCard.locator('.icon-edit').first().click({ force: true });
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 
   // Click Properties tab
   const propsTab = page.locator('#app').getByText('Properties').first();
   await propsTab.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   // Wait for the Vue component to fully render (shimmer → real content)
   await page.waitForTimeout(3000);
   // Ensure the "Create Property" button is from the real component, not shimmer
@@ -28,6 +28,10 @@ async function navigateToPropertiesTab(page) {
 }
 
 test.describe('DAM Asset Properties', () => {
+
+  test.beforeEach(async ({ adminPage }) => {
+    await ensureAssetExists(adminPage);
+  });
 
   test('Properties tab loads and shows title', async ({ adminPage }) => {
     await navigateToPropertiesTab(adminPage);

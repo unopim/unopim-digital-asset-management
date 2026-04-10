@@ -3,31 +3,42 @@ const { navigateTo, generateUid } = require('../utils/helpers');
 
 /**
  * Helper: Right-click a directory in the tree to show context menu.
- * Root is in `.tree-container > div.flex`, subdirectories are in `.tree-container-details`.
+ * The contextmenu listener lives on the inner `.flex.cursor-pointer` row inside
+ * `.tree-container-details`, NOT on the wrapper itself. Targeting the wrapper
+ * (or dispatching contextmenu on it) silently does nothing.
  */
 async function rightClickDirectory(page, dirName) {
-  if (dirName === 'Root') {
-    // Root is the top-level element inside .tree-container
-    const root = page.locator('.tree-container > div.flex').filter({ hasText: 'Root' }).first();
-    await root.click({ button: 'right', force: true });
-  } else {
-    // Subdirectories use .tree-container-details
-    const dir = page.locator('.tree-container-details').filter({ hasText: dirName }).first();
-    await dir.click({ button: 'right', force: true });
-  }
-  await page.waitForTimeout(500);
+  const wrapper = dirName === 'Root'
+    ? page.locator('.tree-container').first()
+    : page.locator('.tree-container-details').filter({ hasText: dirName }).first();
+
+  const row = dirName === 'Root'
+    ? wrapper.locator('> div.flex').first()
+    : wrapper.locator('> .flex.cursor-pointer').first();
+
+  await row.scrollIntoViewIfNeeded();
+  await row.click({ button: 'right', force: true });
+  // Wait for the menu to actually render before the caller clicks an item.
+  await page.locator('#app').getByText('Add Directory').first()
+    .waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 }
 
 /**
  * Helper: Create a directory under Root via context menu.
+ * Reloads the page after save so Vue re-mounts the tree with the new node's
+ * contextmenu listeners attached — without this, right-clicking the new
+ * directory silently does nothing.
  */
 async function createDirectory(page, name) {
   await rightClickDirectory(page, 'Root');
   await page.getByText('Add Directory').click({ force: true });
-  await page.waitForTimeout(500);
-  await page.getByPlaceholder('Name').fill(name);
+  const nameInput = page.getByPlaceholder('Name').first();
+  await nameInput.waitFor({ state: 'visible', timeout: 10000 });
+  await nameInput.fill(name);
   await page.getByRole('button', { name: 'Save Directory' }).click();
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1500);
+  await navigateTo(page, 'dam');
+  await page.locator('#app').getByText(name).first().waitFor({ state: 'visible', timeout: 10000 });
 }
 
 /**
@@ -117,11 +128,10 @@ test.describe('DAM Directory Management', () => {
     // Right-click the created directory and rename
     await rightClickDirectory(adminPage, dirName);
     await adminPage.getByText('Rename', { exact: true }).click({ force: true });
-    await adminPage.waitForTimeout(500);
 
-    // Fill in new name in the rename modal
-    const nameInput = adminPage.getByPlaceholder('Name');
-    await nameInput.clear();
+    // Fill in new name in the rename modal — wait for modal to mount first.
+    const nameInput = adminPage.getByPlaceholder('Name').first();
+    await nameInput.waitFor({ state: 'visible', timeout: 10000 });
     await nameInput.fill(newName);
     await adminPage.getByRole('button', { name: /Save/i }).click();
     await adminPage.waitForTimeout(2000);

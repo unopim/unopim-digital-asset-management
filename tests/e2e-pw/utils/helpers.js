@@ -11,8 +11,13 @@ const ROUTES = {
 async function navigateTo(page, route) {
   const url = ROUTES[route];
   if (!url) throw new Error(`Unknown route: "${route}". Available: ${Object.keys(ROUTES).join(', ')}`);
+  // domcontentloaded — not networkidle. The DAM page has constant background
+  // traffic (queue polling, completeness updates) that prevents network idle.
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.locator('#app').waitFor({ state: 'visible', timeout: 30000 });
+  // Sentinel: the toolbar's Search input only mounts after the Vue grid component
+  // is interactive. Far cheaper than networkidle and doesn't deadlock.
+  await page.getByPlaceholder('Search').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
 }
 
 /**
@@ -86,6 +91,34 @@ function generateUid() {
   return Date.now().toString(36) + randomBytes(4).toString('hex');
 }
 
+/**
+ * Ensure at least one asset exists in the DAM grid. Uploads a seed image if empty.
+ * Required because Playwright sharding can run asset-dependent specs in a shard
+ * that doesn't include 03-asset-upload.
+ */
+async function ensureAssetExists(page) {
+  const path = require('path');
+  await navigateTo(page, 'dam');
+  await page.waitForTimeout(500);
+
+  const existing = page.locator('.image-card').first();
+  if (await existing.isVisible().catch(() => false)) return;
+
+  const fileInput = page.locator('input[type="file"][name="files[]"]');
+  await fileInput.waitFor({ state: 'attached', timeout: 15000 });
+  await fileInput.setInputFiles(path.resolve(__dirname, '../assets/floral.jpg'));
+
+  // Wait for the upload to land — either the success toast OR a card appearing.
+  await Promise.race([
+    page.locator('#app').getByText(/uploaded successfully/i).first()
+      .waitFor({ state: 'visible', timeout: 30000 }),
+    page.locator('.image-card').first().waitFor({ state: 'visible', timeout: 30000 }),
+  ]).catch(() => {});
+
+  await navigateTo(page, 'dam');
+  await page.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
+}
+
 module.exports = {
   ROUTES,
   navigateTo,
@@ -96,4 +129,5 @@ module.exports = {
   expectSuccessToast,
   clickSaveAndExpect,
   generateUid,
+  ensureAssetExists,
 };

@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid, ensureAssetExists } = require('../utils/helpers');
 
 /**
  * Helper: Navigate to the edit page of the first asset in the grid.
@@ -7,7 +7,7 @@ const { navigateTo, searchInDataGrid } = require('../utils/helpers');
  */
 async function navigateToFirstAssetEdit(page) {
   await navigateTo(page, 'dam');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(1000);
 
   // Hover over the first image card to reveal action icons
@@ -18,14 +18,18 @@ async function navigateToFirstAssetEdit(page) {
   // Click the edit icon that appears on hover
   const editIcon = firstCard.locator('.icon-edit').first();
   await editIcon.click({ force: true });
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 }
 
 test.describe('DAM Asset Edit Page', () => {
 
+  test.beforeEach(async ({ adminPage }) => {
+    await ensureAssetExists(adminPage);
+  });
+
   test('Hover on asset card reveals edit and delete icons', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(1000);
 
     const firstCard = adminPage.locator('.image-card').first();

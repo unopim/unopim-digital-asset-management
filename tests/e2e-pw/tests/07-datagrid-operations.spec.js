@@ -1,17 +1,21 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid, ensureAssetExists } = require('../utils/helpers');
 
 test.describe('DAM DataGrid Operations', () => {
 
+  test.beforeEach(async ({ adminPage }) => {
+    await ensureAssetExists(adminPage);
+  });
+
   test('Search input is functional', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
 
     const searchInput = adminPage.getByPlaceholder('Search').first();
     await searchInput.waitFor({ state: 'visible', timeout: 30000 });
     await searchInput.fill('test');
     await adminPage.keyboard.press('Enter');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(500);
 
     // Page should still be on DAM with results or empty state
@@ -20,16 +24,17 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Clear search shows all results', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
 
     // Search something
     await searchInDataGrid(adminPage, 'nonexistent_query_xyz');
 
-    // Clear search
-    const searchInput = adminPage.getByPlaceholder('Search').first();
-    await searchInput.clear();
+    // Clear search — target the visible toolbar input by name attribute
+    // (getByPlaceholder('Search').first() can match a hidden filter-panel input).
+    const searchInput = adminPage.locator('input[name="search"]:visible').first();
+    await searchInput.fill('');
     await adminPage.keyboard.press('Enter');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(500);
 
     // Results should be back to original
@@ -38,7 +43,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Filter panel opens and closes', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
 
     // Open filter
     await adminPage.getByText('Filter', { exact: true }).click();
@@ -51,7 +56,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Gallery view shows images with filenames', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(1000);
 
     // Gallery mode shows h2 headings with filenames
@@ -62,7 +67,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Select All selects all visible assets', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(1000);
 
     // Click Select All
@@ -75,7 +80,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Results count is displayed', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
 
     await expect(
       adminPage.getByText(/\d+ Results/i).first()
@@ -84,7 +89,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Pagination controls are visible', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
 
     // Per Page and page number controls
     await expect(adminPage.getByText('Per Page')).toBeVisible({ timeout: 30000 });
@@ -92,7 +97,7 @@ test.describe('DAM DataGrid Operations', () => {
 
   test('Edit icon on asset card navigates to edit page', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(1000);
 
     const firstCard = adminPage.locator('.image-card').first();
@@ -105,13 +110,13 @@ test.describe('DAM DataGrid Operations', () => {
     await firstCard.hover();
     await adminPage.waitForTimeout(300);
     await firstCard.locator('.icon-edit').first().click({ force: true });
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await expect(adminPage).toHaveURL(/admin\/dam\/assets\/edit\/\d+/);
   });
 
   test('Asset images load in gallery', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(1000);
 
     // Gallery view should have img elements

@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo } = require('../utils/helpers');
+const { navigateTo, ensureAssetExists } = require('../utils/helpers');
 
 test.describe('DAM Page Navigation & Rendering', () => {
 
@@ -30,7 +30,7 @@ test.describe('DAM Page Navigation & Rendering', () => {
   test('DAM page shows asset grid with results', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     // Wait for the datagrid to load
-    await adminPage.waitForLoadState('networkidle');
+    await adminPage.waitForLoadState('domcontentloaded');
     await expect(adminPage.getByText(/Results/)).toBeVisible({ timeout: 30000 });
   });
 
@@ -55,6 +55,7 @@ test.describe('DAM Page Navigation & Rendering', () => {
   });
 
   test('DAM page shows Select All option', async ({ adminPage }) => {
+    await ensureAssetExists(adminPage);
     await navigateTo(adminPage, 'dam');
     await expect(adminPage.getByText('Select All')).toBeVisible({ timeout: 30000 });
   });

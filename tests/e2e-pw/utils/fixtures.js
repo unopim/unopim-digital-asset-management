@@ -1,28 +1,15 @@
 const base = require('@playwright/test');
-const path = require('path');
-const fs = require('fs');
-
-const STORAGE_STATE = path.resolve(__dirname, '../.state/admin-auth.json');
 
 exports.test = base.test.extend({
   /**
    * Authenticated admin page fixture.
-   * Uses storageState from config. If session expired, logs in fresh and updates the state file.
+   * Trusts the storageState set by global-setup.js. No upfront navigation, no
+   * framenavigated handler — both caused 60s deadlocks. If storageState fails
+   * to authenticate, tests will land on /login and fail with a clear error
+   * pointing at global-setup, which is correct: re-login should happen there,
+   * not per-test.
    */
-  adminPage: async ({ page, browser }, use) => {
-    await page.goto('/admin/dam', { waitUntil: 'domcontentloaded', timeout: 60000 });
-
-    if (page.url().includes('/login')) {
-      await page.goto('/admin/login', { waitUntil: 'networkidle', timeout: 60000 });
-      const emailField = page.getByRole('textbox', { name: 'Email Address' });
-      await emailField.waitFor({ state: 'visible', timeout: 15000 });
-      await emailField.fill('admin@example.com');
-      await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
-      await page.getByRole('button', { name: 'Sign In' }).click();
-      await page.waitForURL('**/admin/dashboard**', { timeout: 60000 });
-      await page.context().storageState({ path: STORAGE_STATE });
-    }
-
+  adminPage: async ({ page }, use) => {
     await use(page);
   },
 

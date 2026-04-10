@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, generateUid } = require('../utils/helpers');
+const { navigateTo, generateUid, ensureAssetExists } = require('../utils/helpers');
 
 /**
  * Helper: Navigate to the Comments tab of the first asset.
@@ -7,7 +7,7 @@ const { navigateTo, generateUid } = require('../utils/helpers');
  */
 async function navigateToCommentsTab(page) {
   await navigateTo(page, 'dam');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(1000);
 
   // Hover over first image card and click edit
@@ -15,16 +15,20 @@ async function navigateToCommentsTab(page) {
   await firstCard.hover();
   await page.waitForTimeout(300);
   await firstCard.locator('.icon-edit').first().click({ force: true });
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
 
   // Click Comments tab
   const commentsTab = page.locator('#app').getByText('Comments').first();
   await commentsTab.click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(500);
 }
 
 test.describe('DAM Asset Comments', () => {
+
+  test.beforeEach(async ({ adminPage }) => {
+    await ensureAssetExists(adminPage);
+  });
 
   test('Comments tab loads', async ({ adminPage }) => {
     await navigateToCommentsTab(adminPage);
