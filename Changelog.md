@@ -1,14 +1,12 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## v1.1.x
-
-### v1.1.2
+## **Version 1.1.2**
 
 > Compatible with **UnoPim v2.0.0**
 
 This is the first DAM release compatible with the **UnoPim v2.0.0** line. It migrates to Intervention Image v3, declares explicit Composer constraints, hardens the PostgreSQL path, rounds out locale coverage to the full 33 languages, and ships CI/CD workflows alongside a full automated test suite.
 
-#### Features & Enhancements
+### Features & Enhancements
 
 - **UnoPim 2.0 compatibility** — Migrated internals to work against UnoPim v2.0.0 (Laravel 12, PHP 8.3+, Intervention Image v3). DAM v1.1.x no longer supports UnoPim v1.x.
 
@@ -18,7 +16,7 @@ This is the first DAM release compatible with the **UnoPim v2.0.0** line. It mig
 
 - **Full 33-locale translation coverage** — Added the 21 missing locales so DAM now ships translations for every UnoPim-supported locale: `ca_ES`, `da_DK`, `en_AU`, `en_GB`, `en_NZ`, `es_VE`, `fi_FI`, `hr_HR`, `it_IT`, `ko_KR`, `no_NO`, `pl_PL`, `pt_BR`, `pt_PT`, `ro_RO`, `sv_SE`, `tl_PH`, `tr_TR`, `uk_UA`, `vi_VN`, `zh_TW`. Existing locales were also updated with the newly introduced keys.
 
-#### Bug Fixes
+### Bug Fixes
 
 - **Asset Media Export** — Resolved issue with assets media not exporting with product exports. The `Exporter::copyMedia()` method now correctly handles asset field media using `Storage::writeStream()`/`readStream()` when the source file exists. ([6e8c7c6](https://github.com/unopim/unopim-digital-asset-management/commit/6e8c7c65f290093ef4e9ce11aa060f6557eb4d25))
 
@@ -36,17 +34,17 @@ This is the first DAM release compatible with the **UnoPim v2.0.0** line. It mig
 
 - **Incorrect DAM icons** — Replaced wrong icons used across the DAM admin panel. ([7f8be20](https://github.com/unopim/unopim-digital-asset-management/commit/7f8be20))
 
-#### PostgreSQL Compatibility
+### PostgreSQL Compatibility
 
 - **Path collation migration** — Added `update_path_collation_in_dam_assets_table` migration that applies `utf8mb4_bin` on MySQL and is safely skipped on PostgreSQL, and is fully reversible. ([6bc8658](https://github.com/unopim/unopim-digital-asset-management/commit/6bc8658))
 
 - **Directory seeder sequence fix** — Removed hardcoded IDs from `DirectoryTableSeeder` that were causing PostgreSQL sequence conflicts during installation and tests. ([107d855](https://github.com/unopim/unopim-digital-asset-management/commit/107d855), [bfa0ad8](https://github.com/unopim/unopim-digital-asset-management/commit/bfa0ad8), [37d78d5](https://github.com/unopim/unopim-digital-asset-management/commit/37d78d5))
 
-#### Installer
+### Installer
 
 - **Asset publishing on install** — Fixed `php artisan dam-package:install` so that publishable assets (build manifest, CSS, JS, fonts, SVGs) are actually copied to `public/themes/default/assets/` during installation instead of being skipped. ([ee5902a](https://github.com/unopim/unopim-digital-asset-management/commit/ee5902a))
 
-#### Tests & CI/CD
+### Tests & CI/CD
 
 - **CI/CD workflows** — Added GitHub Actions workflows for linting, Pest (MySQL and PostgreSQL matrices), Playwright E2E, and translation coverage checks, running DAM against a real UnoPim install. ([03ce34a](https://github.com/unopim/unopim-digital-asset-management/commit/03ce34a), [efbfccf](https://github.com/unopim/unopim-digital-asset-management/commit/efbfccf), [9e1ce30](https://github.com/unopim/unopim-digital-asset-management/commit/9e1ce30))
 
