@@ -1,6 +1,6 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## **Version 2.0.0** - UnoPim v2.0.0 Compatibility, AWS S3, REST API
+## **Version 2.0.0** - UnoPim v2.0.0 Compatibility
 
 > Compatible with **UnoPim v2.0.0**
 >
