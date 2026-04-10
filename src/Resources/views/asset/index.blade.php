@@ -104,7 +104,7 @@
                             for="file-upload"
                             class="secondary-button cursor-pointer"
                         >
-                            <span class="icon-dam-upload"></span>
+                            <span class="icon-dam-upload" style="color: inherit;"></span>
                             @lang('dam::app.admin.dam.index.upload')
                         </label>
                     @endif

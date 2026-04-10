@@ -374,10 +374,10 @@ class FileController
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         return match ($extension) {
-            'png' => $image->toPng(),
+            'png'  => $image->toPng(),
             'webp' => $image->toWebp(),
-            'gif' => $image->toGif(),
-            'bmp' => $image->toBmp(),
+            'gif'  => $image->toGif(),
+            'bmp'  => $image->toBmp(),
             'tiff', 'tif' => $image->toTiff(),
             'avif' => $image->toAvif(),
             'jpg', 'jpeg', 'jfif' => $image->toJpeg(),

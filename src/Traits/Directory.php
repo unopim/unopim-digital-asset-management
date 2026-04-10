@@ -101,10 +101,33 @@ trait Directory
 
             $fileContent = $storage->get($path);
             $image = (new ImageManager(new Driver))->read($fileContent);
+            // Get absolute path (IMPORTANT for exif)
+            $fullPath = $storage->path($path);
+
+            // Basic image info
+            $imageInfo = getimagesize($fullPath);
+
+            // EXIF data (only works for jpeg/tiff)
+            $exif = @exif_read_data($fullPath) ?: [];
+
+            $metadata = [
+                'FileName'      => basename($fullPath),
+                'FileDateTime'  => (int) filemtime($fullPath),
+                'FileSize'      => filesize($fullPath),
+                'FileType'      => $imageInfo[2] ?? null,
+                'MimeType'      => $imageInfo['mime'] ?? null,
+                'SectionsFound' => implode(', ', array_keys($exif)),
+                'COMPUTED'      => [
+                    'html'    => $imageInfo[3] ?? null,
+                    'Height'  => $imageInfo[1] ?? null,
+                    'Width'   => $imageInfo[0] ?? null,
+                    'IsColor' => $imageInfo['channels'] ?? null,
+                ],
+            ];
 
             return [
                 'success' => true,
-                'data' => $image->exif(),
+                'data'    => $metadata,
             ];
         } catch (\Exception $e) {
 

@@ -21,9 +21,9 @@ class CommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'admin_id' => 1,
-            'parent_id' => null,
-            'comments' => $this->faker->sentence(),
+            'admin_id'     => 1,
+            'parent_id'    => null,
+            'comments'     => $this->faker->sentence(),
             'dam_asset_id' => Asset::factory(),
         ];
     }

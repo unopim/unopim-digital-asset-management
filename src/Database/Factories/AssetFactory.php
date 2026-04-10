@@ -27,7 +27,7 @@ class AssetFactory extends Factory
             'file_size' => fake()->numberBetween(10000, 5000000),
             'mime_type' => 'image/jpg',
             'extension' => 'jpg',
-            'path' => 'assets/Root/'.$fileName,
+            'path'      => 'assets/Root/'.$fileName,
         ];
     }
 }

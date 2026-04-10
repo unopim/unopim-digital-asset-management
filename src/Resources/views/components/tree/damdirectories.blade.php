@@ -19,9 +19,9 @@
                     :class="getFileTypeIcon(item)"
                 ></i>
             </span>
-            <span 
-                class="text-sm dark:text-white"
-                :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700' : 'text-zinc-600'"
+            <span
+                class="text-sm"
+                :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ formatFileName(item.file_name) }}</span>
         </div>
     </div>
@@ -106,15 +106,15 @@
             <span>
                 <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
             </span>
-            <span 
-                class="text-sm dark:text-white"
-                :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700' : 'text-zinc-600'"
+            <span
+                class="text-sm"
+                :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
         </div>
         <div 
             v-show="isOpen" 
             v-if="isDirectory || isAssets"
-            class="flex flex flex-col pl-6"
+            class="flex flex-col pl-6"
         >
             <!-- Directories -->
             <draggable 

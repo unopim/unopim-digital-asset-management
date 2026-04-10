@@ -56,8 +56,8 @@ class Importer extends CategoryImporter
         }
 
         $data = [
-            'code' => $rowData['code'],
-            'parent' => $rowData['parent'],
+            'code'            => $rowData['code'],
+            'parent'          => $rowData['parent'],
             'additional_data' => $categoryValues,
         ];
 

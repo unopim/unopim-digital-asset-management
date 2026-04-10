@@ -51,14 +51,14 @@ class LinkedResourcesDataGrid extends DataGrid
     public function prepareColumns()
     {
         $this->addColumn([
-            'index' => 'type',
-            'label' => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-type'),
-            'type' => 'dropdown',
+            'index'      => 'type',
+            'label'      => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-type'),
+            'type'       => 'dropdown',
             'searchable' => true,
             'filterable' => true,
-            'sortable' => true,
-            'closure' => fn ($row) => ucfirst($row->type),
-            'options' => [
+            'sortable'   => true,
+            'closure'    => fn ($row) => ucfirst($row->type),
+            'options'    => [
                 'type' => 'basic',
 
                 'params' => [
@@ -76,13 +76,13 @@ class LinkedResourcesDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
-            'index' => 'resource',
-            'label' => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource'),
-            'type' => 'string',
+            'index'      => 'resource',
+            'label'      => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource'),
+            'type'       => 'string',
             'searchable' => false,
             'filterable' => false,
-            'sortable' => false,
-            'closure' => function ($row) {
+            'sortable'   => false,
+            'closure'    => function ($row) {
                 return strtolower($row->type) === 'product'
                     ? trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.product-sku').$row->product_sku
                     : trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.category code').$row->category_code;
@@ -98,10 +98,10 @@ class LinkedResourcesDataGrid extends DataGrid
     public function prepareActions()
     {
         $this->addAction([
-            'icon' => 'icon-view',
-            'title' => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-view'),
+            'icon'   => 'icon-view',
+            'title'  => trans('dam::app.admin.dam.asset.linked-resources.index.datagrid.resource-view'),
             'method' => 'GET',
-            'url' => function ($row) {
+            'url'    => function ($row) {
                 return strtolower($row->type) === 'product' ? route('admin.catalog.products.edit', $row->product_id) : route('admin.catalog.categories.edit', $row->category_id);
             },
         ]);

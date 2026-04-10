@@ -60,7 +60,7 @@ class AssetDataSource extends ApiDataSource
             'code' => [
                 [
                     'operator' => '=',
-                    'value' => $code,
+                    'value'    => $code,
                 ],
             ],
         ];
@@ -142,16 +142,16 @@ class AssetDataSource extends ApiDataSource
             : null;
 
         $responseData = [
-            'id' => $asset['id'],
-            'file_name' => $asset['file_name'],
-            'file_type' => $asset['file_type'] ?? null,
-            'file_size' => (int) ($asset['file_size'] ?? 0),
-            'mime_type' => $asset['mime_type'] ?? null,
-            'extension' => $asset['extension'] ?? null,
-            'path' => $asset['path'] ?? null,
+            'id'           => $asset['id'],
+            'file_name'    => $asset['file_name'],
+            'file_type'    => $asset['file_type'] ?? null,
+            'file_size'    => (int) ($asset['file_size'] ?? 0),
+            'mime_type'    => $asset['mime_type'] ?? null,
+            'extension'    => $asset['extension'] ?? null,
+            'path'         => $asset['path'] ?? null,
             'preview_path' => $previewPath,
-            'created_at' => $asset['created_at'] ?? null,
-            'updated_at' => $asset['updated_at'] ?? null,
+            'created_at'   => $asset['created_at'] ?? null,
+            'updated_at'   => $asset['updated_at'] ?? null,
         ];
 
         return $responseData;

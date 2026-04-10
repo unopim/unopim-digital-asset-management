@@ -5,6 +5,52 @@ namespace Webkul\DAM\Helpers;
 class AssetHelper
 {
     /**
+     * Maximum allowed asset upload size in kilobytes (50 MB).
+     */
+    public const MAX_UPLOAD_SIZE_KB = 51200;
+
+    /**
+     * Effective max upload size in KB — the lesser of the DAM cap
+     * and PHP's runtime upload_max_filesize, so the validator can never
+     * promise more than the server actually accepts.
+     */
+    public static function getMaxUploadSizeKb(): int
+    {
+        $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));
+        $postLimitKb = self::iniValueToKb((string) ini_get('post_max_size'));
+
+        $candidates = array_filter([
+            self::MAX_UPLOAD_SIZE_KB,
+            $phpLimitKb ?: null,
+            $postLimitKb ?: null,
+        ]);
+
+        return (int) min($candidates);
+    }
+
+    /**
+     * Convert a php.ini shorthand size (e.g. "50M", "1G", "2048K") to kilobytes.
+     */
+    protected static function iniValueToKb(string $value): int
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return 0;
+        }
+
+        $unit = strtolower(substr($value, -1));
+        $number = (float) $value;
+
+        return (int) match ($unit) {
+            'g'     => $number * 1024 * 1024,
+            'm'     => $number * 1024,
+            'k'     => $number,
+            default => ((float) $value) / 1024,
+        };
+    }
+
+    /**
      * fetch file type based on the mime type
      *
      * @param [type] $file
