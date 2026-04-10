@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => 'Afbeelding downloaden van URL mislukt',
                     'file-process-failed'                 => 'Sommige bestanden konden niet worden verwerkt',
                     'file-forbidden-type'                 => 'Bestand heeft een verboden type of extensie.',
+                    'file-too-large'                      => 'Het bestand is te groot. De maximaal toegestane grootte is :size.',
                 ],
             ],
         ],

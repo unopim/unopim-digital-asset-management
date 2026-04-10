@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => 'URL से चित्र डाउनलोड करने में विफल',
                     'file-process-failed'                 => 'कुछ फाइलें प्रोसेस करने में विफल',
                     'file-forbidden-type'                 => 'फाइल का प्रकार या विस्तार निषिद्ध है।',
+                    'file-too-large'                      => 'फाइल बहुत बड़ी है। अधिकतम अनुमत आकार :size है।',
                 ],
             ],
         ],

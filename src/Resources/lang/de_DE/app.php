@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => 'Fehler beim Herunterladen des Bildes von der URL',
                     'file-process-failed'                 => 'Einige Dateien konnten nicht verarbeitet werden',
                     'file-forbidden-type'                 => 'Die Datei hat einen verbotenen Typ oder eine verbotene Erweiterung.',
+                    'file-too-large'                      => 'Die Datei ist zu groß. Die maximal zulässige Größe beträgt :size.',
                 ],
             ],
         ],

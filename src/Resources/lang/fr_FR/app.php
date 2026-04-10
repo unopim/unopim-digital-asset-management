@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => 'Échec du téléchargement de l\'image depuis l\'URL',
                     'file-process-failed'                 => 'Certains fichiers n\'ont pas pu être traités',
                     'file-forbidden-type'                 => 'Le fichier a un type ou une extension interdite.',
+                    'file-too-large'                      => 'Le fichier est trop volumineux. La taille maximale autorisée est :size.',
                 ],
             ],
         ],

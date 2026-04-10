@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => 'Gagal mengunduh gambar dari URL',
                     'file-process-failed'                 => 'Beberapa file gagal diproses',
                     'file-forbidden-type'                 => 'File memiliki tipe atau ekstensi yang terlarang.',
+                    'file-too-large'                      => 'Ukuran file terlalu besar. Ukuran maksimum yang diizinkan adalah :size.',
                 ],
             ],
         ],

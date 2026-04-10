@@ -255,6 +255,7 @@ return [
                     'download-image-failed'               => 'Failed to download image from URL',
                     'file-process-failed'                 => 'Some files failed to process',
                     'file-forbidden-type'                 => 'File has forbidden type or extension.',
+                    'file-too-large'                      => 'The file is too large. Maximum allowed size is :size.',
                 ],
             ],
         ],

@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => '画像のダウンロードに失敗しました',
                     'file-process-failed'                 => '一部のファイルの処理に失敗しました',
                     'file-forbidden-type'                 => 'ファイルのタイプまたは拡張子が禁止されています。',
+                    'file-too-large'                      => 'ファイルが大きすぎます。最大許容サイズは :size です。',
                 ],
             ],
         ],

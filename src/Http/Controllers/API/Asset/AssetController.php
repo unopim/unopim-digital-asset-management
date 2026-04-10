@@ -139,6 +139,11 @@ class AssetController extends Controller
             'directory_id' => 'required|exists:dam_directories,id',
         ]);
 
+        $maxKb = AssetHelper::getMaxUploadSizeKb();
+        $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
+            'size' => $this->humanReadableSize($maxKb),
+        ]);
+
         $files = [];
 
         if ($request->has('files') && ! $request->hasFile('files')) {
@@ -149,7 +154,11 @@ class AssetController extends Controller
         } else {
             $request->validate([
                 'files'   => 'required|array',
-                'files.*' => 'file',
+                'files.*' => 'file|max:'.$maxKb,
+            ], [
+                'files.*.max'      => $sizeMessage,
+                'files.*.uploaded' => $sizeMessage,
+                'files.*.file'     => $sizeMessage,
             ]);
             $files = $request->file('files');
         }
@@ -242,9 +251,18 @@ class AssetController extends Controller
      */
     public function reUpload(Request $request)
     {
+        $maxKb = AssetHelper::getMaxUploadSizeKb();
+        $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
+            'size' => $this->humanReadableSize($maxKb),
+        ]);
+
         $request->validate([
-            'file'     => 'required|file',
+            'file'     => 'required|file|max:'.$maxKb,
             'asset_id' => 'required|exists:dam_assets,id',
+        ], [
+            'file.max'      => $sizeMessage,
+            'file.uploaded' => $sizeMessage,
+            'file.file'     => $sizeMessage,
         ]);
 
         $file = $request->file('file');
@@ -310,6 +328,22 @@ class AssetController extends Controller
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
             'file'    => $asset,
         ], 201);
+    }
+
+    /**
+     * Format a kilobyte value into a human readable string (e.g. "50 MB").
+     */
+    protected function humanReadableSize(int $kilobytes): string
+    {
+        if ($kilobytes >= 1024 * 1024) {
+            return round($kilobytes / 1024 / 1024, 2).' GB';
+        }
+
+        if ($kilobytes >= 1024) {
+            return round($kilobytes / 1024, 2).' MB';
+        }
+
+        return $kilobytes.' KB';
     }
 
     /**

@@ -240,6 +240,7 @@ return [
                     'download-image-failed'               => '无法从URL下载图像',
                     'file-process-failed'                 => '一些文件处理失败',
                     'file-forbidden-type'                 => '文件类型或扩展名不允许。',
+                    'file-too-large'                      => '文件过大。允许的最大大小为 :size。',
                 ],
             ],
         ],
