@@ -58,16 +58,9 @@ jobs:
           cp -r dam-package/src unopim/packages/Webkul/DAM/src
           cp -r dam-package/tests unopim/packages/Webkul/DAM/tests
           cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
-
-      - name: Patch composer.json for DAM
-        working-directory: unopim
-        run: |
-          php -r "
-            \$json = json_decode(file_get_contents('composer.json'), true);
-            \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
-            \$json['require']['unopim/dam'] = '*@dev';
-            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-          "
+          if [ -d dam-package/publishable ]; then
+            cp -r dam-package/publishable unopim/packages/Webkul/DAM/publishable
+          fi
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -82,16 +75,32 @@ jobs:
           key: ${{ runner.os }}-composer-dam-pgsql-${{ hashFiles('unopim/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-dam-pgsql-
 
-      - name: Install dependencies
+      - name: Install base dependencies
         working-directory: unopim
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Register DAM as a path repository and require it
+        working-directory: unopim
+        run: |
+          composer config repositories.dam '{"type":"path","url":"packages/Webkul/DAM","options":{"symlink":true}}' --json
+          composer require unopim/dam:"*@dev" --no-interaction --no-progress --prefer-dist
+
+      - name: Register DAM test namespace in root autoload-dev
+        working-directory: unopim
+        run: |
+          php -r "
+            \$json = json_decode(file_get_contents('composer.json'), true);
+            \$json['autoload-dev']['psr-4']['Webkul\\\\DAM\\\\Tests\\\\'] = 'packages/Webkul/DAM/tests/';
+            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+          "
+          composer dump-autoload --optimize
 
       - name: Add DAM test suite to phpunit.xml
         working-directory: unopim
         run: |
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
-                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php
@@ -186,16 +195,9 @@ jobs:
           cp -r dam-package/src unopim/packages/Webkul/DAM/src
           cp -r dam-package/tests unopim/packages/Webkul/DAM/tests
           cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
-
-      - name: Patch composer.json for DAM
-        working-directory: unopim
-        run: |
-          php -r "
-            \$json = json_decode(file_get_contents('composer.json'), true);
-            \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
-            \$json['require']['unopim/dam'] = '*@dev';
-            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-          "
+          if [ -d dam-package/publishable ]; then
+            cp -r dam-package/publishable unopim/packages/Webkul/DAM/publishable
+          fi
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -210,16 +212,32 @@ jobs:
           key: ${{ runner.os }}-composer-dam-pgsql-${{ hashFiles('unopim/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-dam-pgsql-
 
-      - name: Install dependencies
+      - name: Install base dependencies
         working-directory: unopim
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Register DAM as a path repository and require it
+        working-directory: unopim
+        run: |
+          composer config repositories.dam '{"type":"path","url":"packages/Webkul/DAM","options":{"symlink":true}}' --json
+          composer require unopim/dam:"*@dev" --no-interaction --no-progress --prefer-dist
+
+      - name: Register DAM test namespace in root autoload-dev
+        working-directory: unopim
+        run: |
+          php -r "
+            \$json = json_decode(file_get_contents('composer.json'), true);
+            \$json['autoload-dev']['psr-4']['Webkul\\\\DAM\\\\Tests\\\\'] = 'packages/Webkul/DAM/tests/';
+            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+          "
+          composer dump-autoload --optimize
 
       - name: Add DAM test suite to phpunit.xml
         working-directory: unopim
         run: |
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
-                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php

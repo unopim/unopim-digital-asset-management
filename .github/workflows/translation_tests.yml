@@ -40,16 +40,9 @@ jobs:
           mkdir -p unopim/packages/Webkul/DAM
           cp -r dam-package/src unopim/packages/Webkul/DAM/src
           cp dam-package/composer.json unopim/packages/Webkul/DAM/composer.json
-
-      - name: Patch composer.json for DAM
-        working-directory: unopim
-        run: |
-          php -r "
-            \$json = json_decode(file_get_contents('composer.json'), true);
-            \$json['repositories'][] = ['type' => 'path', 'url' => 'packages/Webkul/DAM'];
-            \$json['require']['unopim/dam'] = '*@dev';
-            file_put_contents('composer.json', json_encode(\$json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-          "
+          if [ -d dam-package/publishable ]; then
+            cp -r dam-package/publishable unopim/packages/Webkul/DAM/publishable
+          fi
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -64,9 +57,15 @@ jobs:
           key: ${{ runner.os }}-composer-dam-${{ hashFiles('unopim/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-dam-
 
-      - name: Install dependencies
+      - name: Install base dependencies
         working-directory: unopim
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Register DAM as a path repository and require it
+        working-directory: unopim
+        run: |
+          composer config repositories.dam '{"type":"path","url":"packages/Webkul/DAM","options":{"symlink":true}}' --json
+          composer require unopim/dam:"*@dev" --no-interaction --no-progress --prefer-dist
 
       - name: Prepare environment
         working-directory: unopim
