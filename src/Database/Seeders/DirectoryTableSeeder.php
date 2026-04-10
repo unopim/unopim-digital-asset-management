@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Webkul\Core\Helpers\Database\DatabaseSequenceHelper;
 use Webkul\DAM\Models\Directory;
 
 /*
@@ -38,6 +39,8 @@ class DirectoryTableSeeder extends Seeder
                 'updated_at' => $now,
             ],
         ]);
+
+        DatabaseSequenceHelper::fixSequence('dam_directories');
 
         $newDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, 'Root');
         $disk = Directory::getAssetDisk();
