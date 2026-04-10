@@ -19,15 +19,33 @@ class DamInstaller extends Command
     {
         $this->info('Installing Unopim DAM...');
 
-        if ($this->confirm('Would you like to run the migrations now?', true)) {
-            $this->call('migrate');
-            $this->call('db:seed', ['--class' => 'Webkul\DAM\Database\Seeders\DirectoryTableSeeder']);
-        }
+        $this->runMigrations();
 
-        $this->call('vendor:publish', [
-            '--tag' => 'dam-config',
+        $this->publishAssets([
+            'dam-config',
+            'dam-defaults',
         ]);
 
         $this->info('Unopim DAM package installed successfully!');
+    }
+
+    protected function runMigrations(): void
+    {
+        if (!$this->confirm('Would you like to run the migrations now?', true)) {
+            return;
+        }
+
+        $this->call('migrate');
+        $this->call('db:seed', [
+            '--class' => 'Webkul\DAM\Database\Seeders\DirectoryTableSeeder',
+        ]);
+    }
+
+
+    protected function publishAssets(array $tags): void
+    {
+        foreach ($tags as $tag) {
+            $this->call('vendor:publish', ['--tag' => $tag]);
+        }
     }
 }

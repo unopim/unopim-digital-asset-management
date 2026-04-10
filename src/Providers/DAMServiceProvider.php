@@ -60,7 +60,7 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../Resources/assets/images' => storage_path('app/public/dam'),
-        ]);
+        ], 'dam-defaults');
 
         $this->publishes([
             __DIR__.'/../../publishable' => public_path('themes'),
