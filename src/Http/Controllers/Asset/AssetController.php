@@ -89,40 +89,6 @@ class AssetController extends Controller
     }
 
     /**
-     * Get metadata for a given file
-     */
-    public function getMetadata(string $path, string $disk)
-    {
-        try {
-            $storage = Storage::disk($disk);
-
-            if (! $storage->exists($path)) {
-                throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
-            }
-
-            $fileContent = $storage->get($path);
-            $image = (new ImageManager(new Driver))->read($fileContent);
-
-            $data = [
-                'Width'     => $image->width(),
-                'Height'    => $image->height(),
-            ];
-
-            return [
-                'success' => true,
-                'data'    => $data,
-            ];
-        } catch (\Exception $e) {
-            report($e);
-
-            return [
-                'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.edit.failed-to-read', ['exception' => $e->getMessage()]),
-            ];
-        }
-    }
-
-    /**
      * to upload the asset
      *
      * @return void|JsonResponse

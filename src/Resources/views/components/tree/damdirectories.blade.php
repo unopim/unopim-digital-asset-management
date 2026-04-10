@@ -114,7 +114,7 @@
         <div 
             v-show="isOpen" 
             v-if="isDirectory || isAssets"
-            class="flex flex flex-col pl-6"
+            class="flex flex-col pl-6"
         >
             <!-- Directories -->
             <draggable 

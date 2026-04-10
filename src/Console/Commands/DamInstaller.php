@@ -31,7 +31,7 @@ class DamInstaller extends Command
 
     protected function runMigrations(): void
     {
-        if (!$this->confirm('Would you like to run the migrations now?', true)) {
+        if (! $this->confirm('Would you like to run the migrations now?', true)) {
             return;
         }
 
@@ -40,7 +40,6 @@ class DamInstaller extends Command
             '--class' => 'Webkul\DAM\Database\Seeders\DirectoryTableSeeder',
         ]);
     }
-
 
     protected function publishAssets(array $tags): void
     {
