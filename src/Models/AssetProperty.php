@@ -51,9 +51,9 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
     public static function getPresenters(): array
     {
         return [
-            'name' => AssetPropertyPresenter::class,
-            'type' => AssetPropertyPresenter::class,
-            'value' => AssetPropertyPresenter::class,
+            'name'     => AssetPropertyPresenter::class,
+            'type'     => AssetPropertyPresenter::class,
+            'value'    => AssetPropertyPresenter::class,
             'language' => AssetPropertyPresenter::class,
         ];
     }

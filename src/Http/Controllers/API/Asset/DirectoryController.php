@@ -27,7 +27,7 @@ class DirectoryController
         return new JsonResponse([
             'success' => true,
             'message' => trans('dam::app.admin.dam.index.directory.fetch-all-success'),
-            'data' => $directories,
+            'data'    => $directories,
         ]);
     }
 
@@ -42,20 +42,20 @@ class DirectoryController
 
         try {
             $newDirectory = $this->directoryRepository->create([
-                'name' => $request->input('name'),
+                'name'      => $request->input('name'),
                 'parent_id' => $parentDirectoryId,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
-                'data' => $newDirectory,
+                'data'    => $newDirectory,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -77,7 +77,7 @@ class DirectoryController
 
         return response()->json([
             'success' => true,
-            'data' => $directory,
+            'data'    => $directory,
         ], 200);
     }
 
@@ -107,13 +107,13 @@ class DirectoryController
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.index.directory.updated-success'),
-                'data' => $directory,
+                'data'    => $directory,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.index.directory.update-failed'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -149,7 +149,7 @@ class DirectoryController
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
-                'data' => $parentDirectory,
+                'data'    => $parentDirectory,
             ], 202);
         } catch (\Exception $e) {
             return response()->json([

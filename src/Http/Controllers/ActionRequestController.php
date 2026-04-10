@@ -16,11 +16,11 @@ class ActionRequestController
         try {
             $request = ActionRequest::findOneWhere([
                 'event_type' => $eventType,
-                'admin_id' => Auth::id(),
+                'admin_id'   => Auth::id(),
             ]);
 
             return new JsonResponse([
-                'status' => $request?->status,
+                'status'  => $request?->status,
                 'message' => $request?->error_message,
             ]);
         } catch (\Exception $e) {

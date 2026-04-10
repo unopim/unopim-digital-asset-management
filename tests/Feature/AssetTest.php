@@ -42,9 +42,9 @@ it('should update the asset details successfully', function () {
     $asset = Asset::factory()->create();
 
     $updateData = [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => 'updated-name.png',
-        'tags' => ['tag1', 'tag2'],
+        'tags'      => ['tag1', 'tag2'],
     ];
 
     $this->put(route('admin.dam.assets.update', $asset->id), $updateData)
@@ -55,7 +55,7 @@ it('should update the asset details successfully', function () {
         ]);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => 'updated-name.png',
     ]);
 });
@@ -66,14 +66,14 @@ it('should upload the asset file to the specified directory', function () {
     Storage::disk('private')->makeDirectory('assets/New');
 
     $directory = Directory::factory()->create([
-        'name' => 'New',
+        'name'      => 'New',
         'parent_id' => null,
     ]);
 
     $fileName = 'sample-'.uniqid().'.png';
     $file = UploadedFile::fake()->image($fileName, 600, 600)->size(23);
     $uploadData = [
-        'files' => [$file],
+        'files'        => [$file],
         'directory_id' => $directory->id,
     ];
     $response = $this->postJson(route('admin.dam.assets.upload'), $uploadData);
@@ -91,7 +91,7 @@ it('should upload the asset file to the specified directory', function () {
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
         'file_name' => $uploadedFileName,
-        'path' => $uploadedPath,
+        'path'      => $uploadedPath,
     ]);
 });
 
@@ -105,7 +105,7 @@ it('should re-upload the asset file to the specified directory and update the as
     $initialFilePath = 'assets/Root/'.$originalFileName;
     $asset = Asset::factory()->create([
         'file_name' => $originalFileName,
-        'path' => $initialFilePath,
+        'path'      => $initialFilePath,
     ]);
 
     $asset->directories()->attach($directory->id);
@@ -115,7 +115,7 @@ it('should re-upload the asset file to the specified directory and update the as
     $newFile = UploadedFile::fake()->image('sample.png', 600, 600)->size(23);
 
     $response = $this->postJson(route('admin.dam.assets.re_upload'), [
-        'file' => $newFile,
+        'file'     => $newFile,
         'asset_id' => $asset->id,
     ]);
 
@@ -134,9 +134,9 @@ it('should re-upload the asset file to the specified directory and update the as
     Storage::disk('private')->assertExists($expectedNewPath);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => $newFileName,
-        'path' => $expectedNewPath,
+        'path'      => $expectedNewPath,
     ]);
 });
 
@@ -174,7 +174,7 @@ it('should allow downloading the asset file', function () {
 
     $asset = Asset::factory()->create([
         'file_name' => $fileName,
-        'path' => $filePath,
+        'path'      => $filePath,
     ]);
 
     $response = $this->get(route('admin.dam.assets.download', $asset->id));
@@ -193,7 +193,7 @@ it('should allow custom downloading of the asset', function () {
     Storage::disk($assetDisk)->putFileAs('assets/Root', $file, $fileName);
 
     $asset = Asset::factory()->create([
-        'path' => 'assets/Root/'.$fileName,
+        'path'      => 'assets/Root/'.$fileName,
         'file_name' => $fileName,
     ]);
 
@@ -218,11 +218,11 @@ it('should rename the file name', function () {
 
     $file = Asset::factory()->create([
         'file_name' => $originalName,
-        'path' => $originalPath,
+        'path'      => $originalPath,
     ]);
 
     $response = $this->postJson(route('admin.dam.assets.rename'), [
-        'id' => $file->id,
+        'id'        => $file->id,
         'file_name' => $newName,
     ]);
 
@@ -233,9 +233,9 @@ it('should rename the file name', function () {
     ]);
 
     $this->assertDatabaseHas('dam_assets', [
-        'id' => $file->id,
+        'id'        => $file->id,
         'file_name' => $newName,
-        'path' => $newPath,
+        'path'      => $newPath,
     ]);
 
     Storage::disk('private')->assertMissing($originalPath);
@@ -356,13 +356,13 @@ it('should move asset from one directory to another', function () {
 
     $asset = Asset::factory()->create([
         'file_name' => $fileName,
-        'path' => $originalPath,
+        'path'      => $originalPath,
     ]);
 
     $asset->directories()->sync([$rootDir->id]);
 
     $response = $this->post(route('admin.dam.assets.moved'), [
-        'move_item_id' => $asset->id,
+        'move_item_id'  => $asset->id,
         'new_parent_id' => $newDirectory->id,
     ]);
 

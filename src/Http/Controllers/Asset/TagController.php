@@ -24,7 +24,7 @@ class TagController extends Controller
     protected function addOrUpdateTag(Request $request)
     {
         $request->validate([
-            'tag' => 'required|max:100',
+            'tag'      => 'required|max:100',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -55,7 +55,7 @@ class TagController extends Controller
             if (in_array($assetTag->id, $existingAssetTagIds)) {
                 return response()->json([
                     'success' => false,
-                    'file' => $asset,
+                    'file'    => $asset,
                     'message' => trans('dam::app.admin.dam.asset.edit.tag-already-exists'),
                 ], 404);
             }
@@ -69,12 +69,12 @@ class TagController extends Controller
         Event::dispatch('core.model.proxy.sync.tag', [
             'old_values' => $oldTags,
             'new_values' => $asset->refresh()->tags->pluck('name')->toArray(),
-            'model' => $asset,
+            'model'      => $asset,
         ]);
 
         return response()->json([
             'success' => true,
-            'file' => $asset,
+            'file'    => $asset,
             'message' => trans('Tag attached successfully'),
         ], 201);
     }
@@ -85,7 +85,7 @@ class TagController extends Controller
     protected function removeTag(Request $request)
     {
         $request->validate([
-            'tag' => 'required',
+            'tag'      => 'required',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -116,13 +116,13 @@ class TagController extends Controller
             Event::dispatch('core.model.proxy.sync.tag', [
                 'old_values' => $oldTags,
                 'new_values' => $asset->refresh()->tags->pluck('name')->toArray(),
-                'model' => $asset,
+                'model'      => $asset,
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'file' => $asset,
+            'file'    => $asset,
             'message' => trans('Tag removed from asset successfully'),
         ], 201);
     }

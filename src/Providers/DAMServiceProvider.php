@@ -24,13 +24,13 @@ class DAMServiceProvider extends ServiceProvider
      * @var array
      */
     public $bindings = [
-        Exporter::class => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
-        ProductAttributeValuesNormalizer::class => ProductValuesNormalizer::class,
+        Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
+        ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
-        Importer::class => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
+        Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
         \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
-        Attribute::class => \Webkul\DAM\Models\Attribute::class,
-        AttributeTranslation::class => \Webkul\DAM\Models\AttributeTranslation::class,
+        Attribute::class                                                => \Webkul\DAM\Models\Attribute::class,
+        AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
     ];
 
     /**

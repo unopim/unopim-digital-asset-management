@@ -81,13 +81,13 @@ class DirectoryController
 
         try {
             $newDirectory = $this->directoryRepository->create([
-                'name' => $request->input('name'),
+                'name'      => $request->input('name'),
                 'parent_id' => $parentDirectoryId,
             ]);
 
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
-                'data' => $newDirectory,
+                'data'    => $newDirectory,
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -124,7 +124,7 @@ class DirectoryController
 
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.updated-success'),
-                'data' => $directory,
+                'data'    => $directory,
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -161,7 +161,7 @@ class DirectoryController
 
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
-                'data' => $parentDirectory,
+                'data'    => $parentDirectory,
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
@@ -183,7 +183,7 @@ class DirectoryController
 
         return new JsonResponse([
             'message' => 'Folder copy successfully.',
-            'data' => null,
+            'data'    => null,
         ]);
     }
 
@@ -233,7 +233,7 @@ class DirectoryController
     public function moved(Request $request): JsonResponse
     {
         $request->validate([
-            'move_item_id' => 'required|integer',
+            'move_item_id'  => 'required|integer',
             'new_parent_id' => 'required|integer',
         ]);
 
