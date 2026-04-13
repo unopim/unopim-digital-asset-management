@@ -630,17 +630,29 @@ class AssetController extends Controller
             ], 500);
         }
 
+        $oldAssetFullPath = $asset->path;
+
         $asset->directories()->sync($request->input('new_parent_id'));
         $newDirectory = $asset->directories()->first();
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newDirectory->generatePath());
         $uniqueFileName = $this->generateUniqueFileName($directoryPath, $asset->file_name);
         $newPath = sprintf('%s/%s', $newDirectory->generatePath(), $uniqueFileName);
+        $newAssetFullPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
         $asset->update([
-            'path'      => sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath),
+            'path'      => $newAssetFullPath,
             'file_name' => $uniqueFileName,
         ]);
 
-        $this->directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
+        $disk = Directory::getAssetDisk();
+        Storage::disk($disk)->makeDirectory($directoryPath);
+
+        if (
+            $oldAssetFullPath
+            && $oldAssetFullPath !== $newAssetFullPath
+            && Storage::disk($disk)->exists($oldAssetFullPath)
+        ) {
+            Storage::disk($disk)->move($oldAssetFullPath, $newAssetFullPath);
+        }
 
         return new JsonResponse([
             'data'    => $asset,
