@@ -131,9 +131,19 @@ test.describe('DAM Asset Upload', () => {
   test('Filter button opens filter panel', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
+    // Give Vue time to mount the drawer toggle's @click handler before clicking.
+    await adminPage.waitForTimeout(1000);
 
-    await adminPage.getByText('Filter', { exact: true }).click();
-    await expect(adminPage.getByText('Apply Filters')).toBeVisible({ timeout: 10000 });
+    // Click the toolbar's Filter button. Target the icon-filter span specifically
+    // (its parent div has the drawer toggle handler) — the bare "Filter" text can
+    // race with translation/render and miss the click handler entirely.
+    const filterToggle = adminPage.locator('span.icon-filter').first();
+    await filterToggle.waitFor({ state: 'visible', timeout: 30000 });
+    await filterToggle.click();
+
+    await expect(
+      adminPage.locator('#app').getByText('Apply Filters')
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('Per Page dropdown works', async ({ adminPage }) => {
