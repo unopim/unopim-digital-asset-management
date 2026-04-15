@@ -45,7 +45,7 @@ class TagController extends Controller
             ], 404);
         }
 
-        $assetTag = $this->assetTagRepository->where('name', $newTag)->first();
+        $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
         $oldTags = $asset->tags->pluck('name')->toArray();
 
@@ -106,7 +106,7 @@ class TagController extends Controller
             ], 404);
         }
 
-        $assetTag = $this->assetTagRepository->where('name', $newTag)->first();
+        $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
         $oldTags = $asset->tags->pluck('name')->toArray();
 
