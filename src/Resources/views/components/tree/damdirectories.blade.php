@@ -303,8 +303,8 @@
                         <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
                     </span>
                     <span 
-                        class="text-sm text-nowrap overflow-hidden text-ellipsis dark:text-white"
-                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700' : 'text-zinc-600'"
+                        class="text-sm text-nowrap overflow-hidden text-ellipsis"
+                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
                     >
                         @{{ formattedItems[0].name }}
                     </span>
@@ -1061,11 +1061,16 @@
                     removed
                 } = event;
 
+                if (this.isLoading) {
+                    this.loadDirectories();
+                    return;
+                }
+
                 if (!this.dragStart) {
                     this.loadDirectories();
                     return;
                 }
-                
+
                 this.dragStart = false;
                 
                 let moved = added || removed;
@@ -1123,6 +1128,9 @@
             },
 
             addedItems(item, moveTodirectoryId, type = 'directory') {
+                this.isLoading = true;
+                this.actionStatus = 'pending';
+
                 this.$axios.post(type == 'directory' ? "{{ route('admin.dam.directory.moved') }}" : "{{ route('admin.dam.assets.moved') }}", {
                         new_parent_id: moveTodirectoryId,
                         move_item_id: item.id,
@@ -1132,10 +1140,20 @@
                             type: 'success',
                             message: response.data.message
                         });
-                        this.loadDirectories();
+
+                        if (type == 'directory') {
+                            setTimeout(() => {
+                                this.checkActionStatus('move_directory_structure');
+                            }, 1000);
+                        } else {
+                            this.isLoading = false;
+                            this.actionStatus = null;
+                            this.loadDirectories();
+                        }
                     })
                     .catch(error => {
                         this.isLoading = false;
+                        this.actionStatus = null;
                         this.$emitter.emit('add-flash', {
                             type: 'error',
                             message: error.response.data.message
@@ -1257,6 +1275,7 @@
                     }, 1000);
 
                     this.isLoading = false;
+                    this.actionStatus = null;
 
                     this.$emitter.emit('add-flash', {
                         type: 'success',
@@ -1297,7 +1316,11 @@
             },
 
             goForNextAction(action) {
-                if (action == 'delete_directory' || action == 'copy_directory_structure') {
+                if (
+                    action == 'delete_directory'
+                    || action == 'copy_directory_structure'
+                    || action == 'move_directory_structure'
+                ) {
                     this.loadDirectories();
                 }
             }
