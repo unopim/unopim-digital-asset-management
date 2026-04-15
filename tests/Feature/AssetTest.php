@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetResourceMapping;
@@ -343,6 +344,36 @@ it('should validate upload requires files and directory_id', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['files', 'directory_id']);
+});
+
+// Mass Update Asset
+it('should mass update assets and dispatch update events', function () {
+    Event::fake();
+
+    $assetIds = Asset::factory()->createMany(2)->pluck('id')->toArray();
+
+    $this->postJson(route('admin.dam.assets.mass_update'), [
+        'indices' => $assetIds,
+        'value'   => 'enabled',
+    ])
+        ->assertOk()
+        ->assertJsonFragment(['message' => trans('dam::app.admin.dam.asset.datagrid.mass-update-success')]);
+
+    foreach ($assetIds as $id) {
+        Event::assertDispatched('dam.asset.update.before', fn ($event, $payload) => $payload === $id);
+        Event::assertDispatched('dam.asset.update.after', fn ($event, $payload) => $payload === $id);
+    }
+});
+
+// Linked Resources DataGrid
+it('should return linked resources datagrid as json', function () {
+    Asset::factory()->create();
+
+    $response = $this->withHeaders(['X-Requested-With' => 'XMLHttpRequest'])
+        ->get(route('admin.dam.asset.linked_resources.index'));
+
+    $response->assertOk();
+    expect($response->json())->toBeArray();
 });
 
 // Move the Assets

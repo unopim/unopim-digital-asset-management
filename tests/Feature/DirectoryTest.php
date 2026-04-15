@@ -298,3 +298,13 @@ it('should validate move_item_id and new_parent_id are required', function () {
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['move_item_id', 'new_parent_id']);
 });
+
+it('should respond successfully to legacy directory copy endpoint', function () {
+    $response = $this->postJson(route('admin.dam.directory.copy'), [
+        'id'        => 1,
+        'parent_id' => 1,
+    ]);
+
+    $response->assertOk()
+        ->assertJson(['message' => 'Folder copy successfully.', 'data' => null]);
+});

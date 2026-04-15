@@ -121,6 +121,15 @@ it('should validate comment is required', function () {
         ->assertJsonValidationErrors(['comments']);
 });
 
+it('should validate name and value when updating a comment', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->putJson(route('admin.dam.asset.comment.update', $asset->id), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['name', 'value']);
+});
+
 it('should return user info with timezone', function () {
     $admin = Admin::first();
 
