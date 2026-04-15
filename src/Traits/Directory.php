@@ -106,7 +106,8 @@ trait Directory
             file_put_contents($tempFile, $storage->get($path));
 
             $imageInfo = @getimagesize($tempFile) ?: [];
-            $exif = @exif_read_data($tempFile) ?: [];
+
+            $exif = function_exists('exif_read_data') ? (@exif_read_data($tempFile) ?: []) : [];
 
             $metadata = [
                 'FileName'      => basename($path),
