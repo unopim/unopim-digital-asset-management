@@ -135,12 +135,19 @@ test.describe('DAM Asset Upload', () => {
     const filterToggle = adminPage.locator('span.icon-filter').first();
     await filterToggle.waitFor({ state: 'visible', timeout: 30000 });
 
+    // Dismiss any lingering modal overlay that may block clicks in CI
+    const overlay = adminPage.locator('div.fixed.inset-0.bg-gray-500');
+    if (await overlay.isVisible().catch(() => false)) {
+      await adminPage.keyboard.press('Escape');
+      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    }
+
     // Vue binds the drawer's @click="open" handler after hydration; a click
     // that lands before that window hits the span but never opens the drawer.
     // Retry the click until the drawer header actually renders.
     const drawerHeader = adminPage.locator('#app').getByText('Apply Filters');
     await expect(async () => {
-      await filterToggle.click();
+      await filterToggle.click({ timeout: 5000 });
       await expect(drawerHeader).toBeVisible({ timeout: 2000 });
     }).toPass({ timeout: 30000 });
   });
