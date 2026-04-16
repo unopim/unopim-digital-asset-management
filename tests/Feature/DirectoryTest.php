@@ -74,8 +74,9 @@ it('returns assets of the directory when directory exists (many-to-many)', funct
 
 it('should create new directory', function () {
 
-    Storage::fake('private');
-    Storage::disk('private')->makeDirectory('assets/New');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+    Storage::disk($disk)->makeDirectory('assets/New');
 
     $directory = Directory::factory()->create([
         'name'      => 'New',
@@ -104,6 +105,10 @@ it('should create new directory', function () {
 });
 
 it('updates a directory name and dispatches RenameDirectoryJob', function () {
+
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+    Storage::disk($disk)->makeDirectory('assets');
 
     $directory = Directory::factory()->create([
         'name' => 'Old Name',
@@ -292,4 +297,14 @@ it('should validate move_item_id and new_parent_id are required', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['move_item_id', 'new_parent_id']);
+});
+
+it('should respond successfully to legacy directory copy endpoint', function () {
+    $response = $this->postJson(route('admin.dam.directory.copy'), [
+        'id'        => 1,
+        'parent_id' => 1,
+    ]);
+
+    $response->assertOk()
+        ->assertJson(['message' => 'Folder copy successfully.', 'data' => null]);
 });

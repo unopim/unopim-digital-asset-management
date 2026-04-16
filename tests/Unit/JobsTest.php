@@ -50,7 +50,8 @@ it('delete directory job is queueable', function () {
 });
 
 it('delete directory job deletes directory and its assets', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $parent = Directory::factory()->create(['name' => 'Parent']);
     $directory = Directory::factory()->create(['name' => 'ToDelete', 'parent_id' => $parent->id]);
@@ -61,8 +62,8 @@ it('delete directory job deletes directory and its assets', function () {
     ]);
     $directory->assets()->attach($asset->id);
 
-    Storage::disk('private')->put('assets/Parent/ToDelete/test.jpg', 'content');
-    Storage::disk('private')->makeDirectory('assets/Parent/ToDelete');
+    Storage::disk($disk)->put('assets/Parent/ToDelete/test.jpg', 'content');
+    Storage::disk($disk)->makeDirectory('assets/Parent/ToDelete');
 
     $directoryId = $directory->id;
 
@@ -97,7 +98,7 @@ it('rename directory job is queueable', function () {
 });
 
 it('rename directory job updates asset paths', function () {
-    Storage::fake('private');
+    Storage::fake(Directory::getAssetDisk());
 
     $parent = Directory::factory()->create(['name' => 'Root']);
     $directory = Directory::factory()->create(['name' => 'NewName', 'parent_id' => $parent->id]);
@@ -141,12 +142,13 @@ it('copy directory structure job is queueable', function () {
 });
 
 it('copy directory structure creates a new directory with copy suffix', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $parent = Directory::factory()->create(['name' => 'Root']);
     $directory = Directory::factory()->create(['name' => 'Original', 'parent_id' => $parent->id]);
 
-    Storage::disk('private')->makeDirectory('assets/Root/Original');
+    Storage::disk($disk)->makeDirectory('assets/Root/Original');
 
     createPendingActionRequest('copy_directory_structure');
 
@@ -173,14 +175,15 @@ it('dispatches move directory structure job', function () {
 });
 
 it('move directory structure job changes parent', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $root = Directory::factory()->create(['name' => 'Root']);
     $source = Directory::factory()->create(['name' => 'Source', 'parent_id' => $root->id]);
     $target = Directory::factory()->create(['name' => 'Target', 'parent_id' => $root->id]);
 
-    Storage::disk('private')->makeDirectory('assets/Root/Source');
-    Storage::disk('private')->makeDirectory('assets/Root/Target');
+    Storage::disk($disk)->makeDirectory('assets/Root/Source');
+    Storage::disk($disk)->makeDirectory('assets/Root/Target');
 
     createPendingActionRequest('move_directory_structure');
 
@@ -192,7 +195,8 @@ it('move directory structure job changes parent', function () {
 });
 
 it('move directory structure job updates asset paths', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $root = Directory::factory()->create(['name' => 'Root']);
     $source = Directory::factory()->create(['name' => 'Source', 'parent_id' => $root->id]);
@@ -204,9 +208,9 @@ it('move directory structure job updates asset paths', function () {
     ]);
     $source->assets()->attach($asset->id);
 
-    Storage::disk('private')->makeDirectory('assets/Root/Source');
-    Storage::disk('private')->makeDirectory('assets/Root/Target');
-    Storage::disk('private')->put('assets/Root/Source/file.jpg', 'content');
+    Storage::disk($disk)->makeDirectory('assets/Root/Source');
+    Storage::disk($disk)->makeDirectory('assets/Root/Target');
+    Storage::disk($disk)->put('assets/Root/Source/file.jpg', 'content');
 
     createPendingActionRequest('move_directory_structure');
 

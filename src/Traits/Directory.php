@@ -3,8 +3,6 @@
 namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 
@@ -92,6 +90,8 @@ trait Directory
 
     public function getMetadata(string $path, string $disk)
     {
+        $tempFile = null;
+
         try {
             $storage = Storage::disk($disk);
 
@@ -99,23 +99,22 @@ trait Directory
                 throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
-            $fileContent = $storage->get($path);
-            $image = (new ImageManager(new Driver))->read($fileContent);
-            // Get absolute path (IMPORTANT for exif)
-            $fullPath = $storage->path($path);
+            // getimagesize / exif_read_data require a real local filesystem
+            // path. On non-local drivers (e.g. S3) Storage::path() returns only
+            // the object key, so we materialize the object into a temp file.
+            $tempFile = tempnam(sys_get_temp_dir(), 'dam_meta_');
+            file_put_contents($tempFile, $storage->get($path));
 
-            // Basic image info
-            $imageInfo = getimagesize($fullPath);
+            $imageInfo = @getimagesize($tempFile) ?: [];
 
-            // EXIF data (only works for jpeg/tiff)
-            $exif = @exif_read_data($fullPath) ?: [];
+            $exif = function_exists('exif_read_data') ? (@exif_read_data($tempFile) ?: []) : [];
 
             $metadata = [
-                'FileName'      => basename($fullPath),
-                'FileDateTime'  => (int) filemtime($fullPath),
-                'FileSize'      => filesize($fullPath),
+                'FileName'      => basename($path),
+                'FileDateTime'  => (int) ($storage->lastModified($path) ?? @filemtime($tempFile)),
+                'FileSize'      => (int) ($storage->size($path) ?? @filesize($tempFile)),
                 'FileType'      => $imageInfo[2] ?? null,
-                'MimeType'      => $imageInfo['mime'] ?? null,
+                'MimeType'      => $imageInfo['mime'] ?? ($storage->mimeType($path) ?: null),
                 'SectionsFound' => implode(', ', array_keys($exif)),
                 'COMPUTED'      => [
                     'html'    => $imageInfo[3] ?? null,
@@ -130,13 +129,16 @@ trait Directory
                 'data'    => $metadata,
             ];
         } catch (\Exception $e) {
-
             report($e);
 
             return [
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.edit.failed-to-read', ['exception' => $e->getMessage()]),
             ];
+        } finally {
+            if ($tempFile && file_exists($tempFile)) {
+                @unlink($tempFile);
+            }
         }
     }
 }

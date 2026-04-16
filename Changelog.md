@@ -1,5 +1,28 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 2.0.1 - Bug Fix Release
+Compatible with UnoPim v2.0.0
+
+### Fixed
+
+- S3 — Single asset move
+Fixed an issue where moving a single asset on S3 orphaned the object.
+
+- S3 — Directory rename
+Fixed directory move by relocating files individually (S3 doesn't support directory operations).
+
+- S3 — Asset metadata
+Fixed metadata extraction by using temporary local copies and storage-level values.
+
+- Missing EXIF extension
+Prevented fatal errors when EXIF extension is not installed.
+
+- PostgreSQL — SQL compatibility
+Fixed MySQL-specific queries causing errors on PostgreSQL.
+
+- Dark mode — Root Category label
+Fixed text visibility in dark mode.
+
 ## **Version 2.0.0** - UnoPim v2.0.0 Compatibility
 
 > Compatible with **UnoPim v2.0.0**

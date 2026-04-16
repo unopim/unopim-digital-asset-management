@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 use Webkul\DAM\Repositories\DirectoryRepository;
@@ -91,8 +93,42 @@ class MoveDirectoryStructure
     public function moveAssets(ModelDirectory $directory): void
     {
         $path = $directory->generatePath();
+        $disk = ModelDirectory::getAssetDisk();
+        // On object stores like S3 there are no real directories, so the
+        // folder-level rename performed later is a no-op and assets would be
+        // orphaned. Move each file individually for those drivers.
+        $movePerFile = $disk === ModelDirectory::ASSETS_DISK_AWS;
+
         foreach ($directory->assets()->get() as $asset) {
-            $asset->update(['path' => sprintf('%s/%s/%s', ModelDirectory::ASSETS_DIRECTORY, $path, $asset->file_name)]);
+            $oldAssetPath = $asset->path;
+            $newAssetPath = sprintf('%s/%s/%s', ModelDirectory::ASSETS_DIRECTORY, $path, $asset->file_name);
+
+            if (
+                $movePerFile
+                && $oldAssetPath
+                && $oldAssetPath !== $newAssetPath
+            ) {
+                try {
+                    if (
+                        Storage::disk($disk)->exists($oldAssetPath)
+                        && ! Storage::disk($disk)->exists($newAssetPath)
+                    ) {
+                        Storage::disk($disk)->move($oldAssetPath, $newAssetPath);
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('DAM: failed to move asset file on storage', [
+                        'asset_id' => $asset->id,
+                        'from'     => $oldAssetPath,
+                        'to'       => $newAssetPath,
+                        'disk'     => $disk,
+                        'error'    => $e->getMessage(),
+                    ]);
+
+                    throw $e;
+                }
+            }
+
+            $asset->update(['path' => $newAssetPath]);
         }
     }
 }
