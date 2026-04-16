@@ -27,8 +27,7 @@ return [
         ],
         'dam' => [
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'File Name',
                     'tags'           => 'Tags',
@@ -40,26 +39,22 @@ return [
                     'path'           => 'Path',
                     'size'           => 'Size',
                 ],
-
                 'directory' => [
-                    'title'        => 'Directory',
-                    'create'       => [
+                    'title'  => 'Directory',
+                    'create' => [
                         'title'    => 'Create Directory',
                         'name'     => 'Name',
                         'save-btn' => 'Save Directory',
                     ],
-
                     'rename' => [
                         'title' => 'Rename Directory',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Rename Asset',
                             'save-btn' => 'Save Asset',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Delete',
                         'rename'                    => 'Rename',
@@ -73,7 +68,6 @@ return [
                         'get-by-id'                 => 'Get By Id',
                         'comment'                   => 'Comment',
                     ],
-
                     'linked-resources'                          => 'Linked Resources',
                     'not-found'                                 => 'No directory found',
                     'created-success'                           => 'Directory created successfully',
@@ -82,23 +76,21 @@ return [
                     'fetch-all-success'                         => 'Directories fetched successfully',
                     'can-not-deleted'                           => 'Directory cannot be deleted as it is Root Directory.',
                     'deleting-in-progress'                      => 'Directory deleting in-progress',
-                    'can-not-copy'                              => 'Directory cannot be copy as it is Root Directory.',
-                    'coping-in-progress'                        => 'Directory structure coping in-progress.',
+                    'can-not-copy'                              => 'Directory cannot be copied as it is Root Directory.',
+                    'coping-in-progress'                        => 'Directory structure copying in-progress.',
                     'asset-not-found'                           => 'No asset found',
                     'asset-renamed-success'                     => 'Asset renamed successfully',
                     'asset-moved-success'                       => 'Asset moved successfully',
                     'asset-name-already-exist'                  => 'The new name already exists with another asset named :asset_name',
                     'asset-name-conflict-in-the-same-directory' => 'The asset name conflicts with an existing file in the same directory.',
                     'old-file-not-found'                        => 'The file requested at the path :old_path was not found.',
-                    'image-name-is-the-same'                    => 'This name is already exist. Please enter a different one.',
-                    'not-writable'                              => 'You are not allowed to :actionType a :type in this location ":path".',
+                    'image-name-is-the-same'                    => 'This name is already in use. Please enter a different one.',
+                    'not-writable'                              => 'You are not allowed to :actionType a :type in this location":path".',
                     'empty-directory'                           => 'This directory is empty.',
                     'failed-download-directory'                 => 'Failed to create the zip file.',
                     'not-allowed'                               => 'Uploading script files is not allowed.',
                 ],
-
-                'title'       => 'DAM',
-                'description' => 'Tool can help you organise, store, and manage all your media asset in one place',
+                'description' => 'Tool can help you organise, store, and manage all your media assets in one place',
                 'root'        => 'Root',
                 'upload'      => 'Upload',
             ],
@@ -107,8 +99,7 @@ return [
                     'index' => [
                         'title'      => 'Asset Properties',
                         'create-btn' => 'Create Property',
-
-                        'datagrid'      => [
+                        'datagrid'   => [
                             'name'     => 'Name',
                             'type'     => 'Type',
                             'language' => 'Language',
@@ -116,8 +107,7 @@ return [
                             'edit'     => 'Edit',
                             'delete'   => 'Delete',
                         ],
-
-                        'create'     => [
+                        'create' => [
                             'title'    => 'Create Property',
                             'name'     => 'Name',
                             'type'     => 'Type',
@@ -180,7 +170,6 @@ return [
                         're_upload'       => 'Re-Upload',
                         'delete'          => 'Delete',
                     ],
-
                     'custom-download' => [
                         'title'              => 'Custom Download',
                         'format'             => 'Format',
@@ -189,8 +178,7 @@ return [
                         'height'             => 'Height (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Download',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -198,12 +186,10 @@ return [
                             'original' => 'Original',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Tag already exists',
                     'image-source-not-readable' => 'Image source not readable',
                     'failed-to-read'            => 'Failed to read image metadata :exception',
-                    'file-re-upload-success'    => 'Files Re-Uploaded Successfully.',
-
+                    'file-re-upload-success'    => 'Files Re-Uploaded Successfully',
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -223,10 +209,9 @@ return [
                 'tags' => [
                     'index'  => 'Add tags',
                     'create' => [
-                        'create-success' => 'Tags has been successfully added',
+                        'create-success' => 'Tags have been successfully added',
                         'create-failure' => 'Tags failed to create',
                     ],
-
                     'no-comments'    => 'No Tags Yet',
                     'found-success'  => 'Tag Found Successfully',
                     'not-found'      => 'Tags Not Found',
@@ -245,13 +230,13 @@ return [
                     'edit-success'                        => 'File Uploaded Successfully',
                     'show-success'                        => 'File Found Successfully',
                     'update-success'                      => 'File Updated Successfully',
-                    'not-found-to-update'                 => 'File does not Exits',
-                    'not-found-to-destroy'                => 'File does not Exits',
-                    'files-upload-failed'                 => 'Files failed to upload.',
+                    'not-found-to-update'                 => 'File does not exist',
+                    'not-found-to-destroy'                => 'File does not exist',
+                    'files-upload-failed'                 => 'Files failed to upload',
                     'file-upload-failed'                  => 'File failed to upload',
                     'invalid-file'                        => 'Invalid File Provided',
                     'invalid-file-format'                 => 'Invalid Format',
-                    'invalid-file-format-or-not-provided' => 'No files provided or invalid format.',
+                    'invalid-file-format-or-not-provided' => 'No files provided or invalid format',
                     'download-image-failed'               => 'Failed to download image from URL',
                     'file-process-failed'                 => 'Some files failed to process',
                     'file-forbidden-type'                 => 'File has forbidden type or extension.',
@@ -298,12 +283,10 @@ return [
             'download-zip'     => 'Download Zip',
             'asset-assign'     => 'Assign Asset',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'The :attribute field is required.',
             ],
-
             'comment' => [
                 'required' => 'The Comment message is required.',
             ],
@@ -322,9 +305,8 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
-            '401' => 'This action is unauthorized.',
+            '401' => 'This action is unauthorised.',
         ],
     ],
 ];
