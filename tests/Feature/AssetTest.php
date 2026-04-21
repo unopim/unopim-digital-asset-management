@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Models\AssetResourceMapping;
 use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
     $this->loginAsAdmin();
+    Storage::fake(Directory::getAssetDisk());
 });
 
 // Index Page for DAM Asset
@@ -41,9 +44,9 @@ it('should update the asset details successfully', function () {
     $asset = Asset::factory()->create();
 
     $updateData = [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => 'updated-name.png',
-        'tags' => ['tag1', 'tag2'],
+        'tags'      => ['tag1', 'tag2'],
     ];
 
     $this->put(route('admin.dam.assets.update', $asset->id), $updateData)
@@ -54,25 +57,26 @@ it('should update the asset details successfully', function () {
         ]);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => 'updated-name.png',
     ]);
 });
 
 // Upload Asset File
 it('should upload the asset file to the specified directory', function () {
-    Storage::fake('private');
-    Storage::disk('private')->makeDirectory('assets/New');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+    Storage::disk($disk)->makeDirectory('assets/New');
 
     $directory = Directory::factory()->create([
-        'name' => 'New',
+        'name'      => 'New',
         'parent_id' => null,
     ]);
 
     $fileName = 'sample-'.uniqid().'.png';
     $file = UploadedFile::fake()->image($fileName, 600, 600)->size(23);
     $uploadData = [
-        'files' => [$file],
+        'files'        => [$file],
         'directory_id' => $directory->id,
     ];
     $response = $this->postJson(route('admin.dam.assets.upload'), $uploadData);
@@ -86,17 +90,18 @@ it('should upload the asset file to the specified directory', function () {
     $uploadedFileName = $response->json('files.0.file_name');
     $uploadedPath = $response->json('files.0.path');
 
-    Storage::disk('private')->assertExists($uploadedPath);
+    Storage::disk($disk)->assertExists($uploadedPath);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
         'file_name' => $uploadedFileName,
-        'path' => $uploadedPath,
+        'path'      => $uploadedPath,
     ]);
 });
 
 // Re-Upload Asset File
 it('should re-upload the asset file to the specified directory and update the asset record', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $directory = Directory::factory()->create(['name' => 'Root']);
 
@@ -104,17 +109,17 @@ it('should re-upload the asset file to the specified directory and update the as
     $initialFilePath = 'assets/Root/'.$originalFileName;
     $asset = Asset::factory()->create([
         'file_name' => $originalFileName,
-        'path' => $initialFilePath,
+        'path'      => $initialFilePath,
     ]);
 
     $asset->directories()->attach($directory->id);
 
-    Storage::disk('private')->put($initialFilePath, 'dummy content');
+    Storage::disk($disk)->put($initialFilePath, 'dummy content');
 
     $newFile = UploadedFile::fake()->image('sample.png', 600, 600)->size(23);
 
     $response = $this->postJson(route('admin.dam.assets.re_upload'), [
-        'file' => $newFile,
+        'file'     => $newFile,
         'asset_id' => $asset->id,
     ]);
 
@@ -125,17 +130,17 @@ it('should re-upload the asset file to the specified directory and update the as
         ])
         ->assertJsonPath('file.id', $asset->id);
 
-    Storage::disk('private')->assertMissing($initialFilePath);
+    Storage::disk($disk)->assertMissing($initialFilePath);
 
     $newFileName = $response->json('file.file_name');
     $expectedNewPath = 'assets/Root/'.$newFileName;
 
-    Storage::disk('private')->assertExists($expectedNewPath);
+    Storage::disk($disk)->assertExists($expectedNewPath);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), [
-        'id' => $asset->id,
+        'id'        => $asset->id,
         'file_name' => $newFileName,
-        'path' => $expectedNewPath,
+        'path'      => $expectedNewPath,
     ]);
 });
 
@@ -165,15 +170,16 @@ it('should mass delete the asset successfully', function () {
 
 // Download the Asset
 it('should allow downloading the asset file', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $fileName = 'sample-'.uniqid().'.pdf';
     $filePath = 'assets/Root/'.$fileName;
-    Storage::disk('private')->put($filePath, 'dummy content');
+    Storage::disk($disk)->put($filePath, 'dummy content');
 
     $asset = Asset::factory()->create([
         'file_name' => $fileName,
-        'path' => $filePath,
+        'path'      => $filePath,
     ]);
 
     $response = $this->get(route('admin.dam.assets.download', $asset->id));
@@ -192,7 +198,7 @@ it('should allow custom downloading of the asset', function () {
     Storage::disk($assetDisk)->putFileAs('assets/Root', $file, $fileName);
 
     $asset = Asset::factory()->create([
-        'path' => 'assets/Root/'.$fileName,
+        'path'      => 'assets/Root/'.$fileName,
         'file_name' => $fileName,
     ]);
 
@@ -204,7 +210,8 @@ it('should allow custom downloading of the asset', function () {
 
 // Rename File
 it('should rename the file name', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
     $originalName = 'original-name-'.uniqid().'.pdf';
     $newName = 'renamed-file-'.uniqid().'.pdf';
@@ -213,15 +220,15 @@ it('should rename the file name', function () {
     $originalPath = $directory.$originalName;
     $newPath = $directory.$newName;
 
-    Storage::disk('private')->put($originalPath, 'dummy content');
+    Storage::disk($disk)->put($originalPath, 'dummy content');
 
     $file = Asset::factory()->create([
         'file_name' => $originalName,
-        'path' => $originalPath,
+        'path'      => $originalPath,
     ]);
 
     $response = $this->postJson(route('admin.dam.assets.rename'), [
-        'id' => $file->id,
+        'id'        => $file->id,
         'file_name' => $newName,
     ]);
 
@@ -232,22 +239,150 @@ it('should rename the file name', function () {
     ]);
 
     $this->assertDatabaseHas('dam_assets', [
-        'id' => $file->id,
+        'id'        => $file->id,
         'file_name' => $newName,
-        'path' => $newPath,
+        'path'      => $newPath,
     ]);
 
-    Storage::disk('private')->assertMissing($originalPath);
+    Storage::disk($disk)->assertMissing($originalPath);
 
-    Storage::disk('private')->assertExists($newPath);
+    Storage::disk($disk)->assertExists($newPath);
+});
+
+// Upload forbidden file type
+it('should reject uploading a forbidden file type', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+    Storage::disk($disk)->makeDirectory('assets/New');
+
+    $directory = Directory::factory()->create([
+        'name'      => 'New',
+        'parent_id' => null,
+    ]);
+
+    $file = UploadedFile::fake()->create('malicious.php', 100, 'application/x-php');
+
+    $response = $this->postJson(route('admin.dam.assets.upload'), [
+        'files'        => [$file],
+        'directory_id' => $directory->id,
+    ]);
+
+    $response->assertStatus(500)
+        ->assertJson(['success' => false]);
+});
+
+// Show non-existent asset
+it('should return 404 when showing a non-existent asset', function () {
+    $response = $this->getJson(route('admin.dam.assets.show', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'),
+        ]);
+});
+
+// Update non-existent asset
+it('should return 404 when updating a non-existent asset', function () {
+    $response = $this->putJson(route('admin.dam.assets.update', 99999), [
+        'file_name' => 'test.png',
+    ]);
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'),
+        ]);
+});
+
+// Delete non-existent asset
+it('should return 404 when deleting a non-existent asset', function () {
+    $response = $this->deleteJson(route('admin.dam.assets.destroy', 99999));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'),
+        ]);
+});
+
+// Prevent delete when resource mapped
+it('should prevent deletion of an asset that has linked resources', function () {
+    $asset = Asset::factory()->create();
+
+    AssetResourceMapping::create([
+        'type'          => 'product',
+        'related_field' => 'image',
+        'dam_asset_id'  => $asset->id,
+    ]);
+
+    $response = $this->deleteJson(route('admin.dam.assets.destroy', $asset->id));
+
+    $response->assertStatus(404)
+        ->assertJson([
+            'success' => false,
+            'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+        ]);
+
+    $this->assertDatabaseHas($this->getFullTableName(Asset::class), ['id' => $asset->id]);
+});
+
+// Rename validation
+it('should validate rename requires a valid file name', function () {
+    $response = $this->postJson(route('admin.dam.assets.rename'), [
+        'id'        => 1,
+        'file_name' => '.hidden',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['file_name']);
+});
+
+// Upload validation - missing files
+it('should validate upload requires files and directory_id', function () {
+    $response = $this->postJson(route('admin.dam.assets.upload'), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['files', 'directory_id']);
+});
+
+// Mass Update Asset
+it('should mass update assets and dispatch update events', function () {
+    Event::fake();
+
+    $assetIds = Asset::factory()->createMany(2)->pluck('id')->toArray();
+
+    $this->postJson(route('admin.dam.assets.mass_update'), [
+        'indices' => $assetIds,
+        'value'   => 'enabled',
+    ])
+        ->assertOk()
+        ->assertJsonFragment(['message' => trans('dam::app.admin.dam.asset.datagrid.mass-update-success')]);
+
+    foreach ($assetIds as $id) {
+        Event::assertDispatched('dam.asset.update.before', fn ($event, $payload) => $payload === $id);
+        Event::assertDispatched('dam.asset.update.after', fn ($event, $payload) => $payload === $id);
+    }
+});
+
+// Linked Resources DataGrid
+it('should return linked resources datagrid as json', function () {
+    Asset::factory()->create();
+
+    $response = $this->withHeaders(['X-Requested-With' => 'XMLHttpRequest'])
+        ->get(route('admin.dam.asset.linked_resources.index'));
+
+    $response->assertOk();
+    expect($response->json())->toBeArray();
 });
 
 // Move the Assets
 it('should move asset from one directory to another', function () {
-    Storage::fake('private');
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
 
-    Storage::disk('private')->makeDirectory('assets/Root');
-    Storage::disk('private')->makeDirectory('assets/Root/Screenshots');
+    Storage::disk($disk)->makeDirectory('assets/Root');
+    Storage::disk($disk)->makeDirectory('assets/Root/Screenshots');
 
     $rootDir = Directory::factory()->create(['name' => 'Root']);
     $newDirectory = Directory::factory()->create(['name' => 'Screenshots', 'parent_id' => $rootDir->id]);
@@ -255,15 +390,17 @@ it('should move asset from one directory to another', function () {
     $fileName = 'sample-'.uniqid().'.jpg';
     $originalPath = 'assets/Root/'.$fileName;
 
+    Storage::disk($disk)->put($originalPath, 'dummy content');
+
     $asset = Asset::factory()->create([
         'file_name' => $fileName,
-        'path' => $originalPath,
+        'path'      => $originalPath,
     ]);
 
     $asset->directories()->sync([$rootDir->id]);
 
     $response = $this->post(route('admin.dam.assets.moved'), [
-        'move_item_id' => $asset->id,
+        'move_item_id'  => $asset->id,
         'new_parent_id' => $newDirectory->id,
     ]);
 
@@ -276,7 +413,7 @@ it('should move asset from one directory to another', function () {
     $expectedPath = 'assets/Root/Screenshots/'.$fileName;
     $this->assertEquals($expectedPath, $updatedAsset->path);
 
-    Storage::disk('private')->assertExists($expectedPath);
+    Storage::disk($disk)->assertExists($expectedPath);
 
-    Storage::disk('private')->assertMissing($originalPath);
+    Storage::disk($disk)->assertMissing($originalPath);
 });

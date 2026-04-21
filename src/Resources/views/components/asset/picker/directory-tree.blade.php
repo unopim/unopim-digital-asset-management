@@ -36,7 +36,7 @@
                     </span>
                     <span 
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
-                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400' : 'text-zinc-600 dark:text-gray-300'"
+                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-gray-300'"
                     >
                         @{{ formattedItems[0].name }}
                     </span>
@@ -195,7 +195,7 @@
                 </span>
                 <span 
                     class="text-sm flex items-center gap-1"
-                    :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400' : 'text-zinc-600 dark:text-gray-300'"
+                    :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-gray-300'"
                 >
                     <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white"></i>
 
@@ -292,7 +292,7 @@
                 </span>
                 <span 
                     class="text-sm"
-                    :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400' : 'text-zinc-600 dark:text-gray-300'"
+                    :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-gray-300'"
                 >
                     @{{ item.file_name }}
                 </span>

@@ -21,10 +21,10 @@ class PropertyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->words(2, true),
-            'type' => 'Text',
-            'value' => $this->faker->sentence(),
-            'language' => 'English',
+            'name'         => $this->faker->words(2, true),
+            'type'         => 'Text',
+            'value'        => $this->faker->sentence(),
+            'language'     => 'English',
             'dam_asset_id' => Asset::factory(),
         ];
     }

@@ -40,7 +40,7 @@ class PropertyController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.properties.index.found-success'),
-            'data' => $property,
+            'data'    => $property,
         ], 200);
     }
 
@@ -51,14 +51,14 @@ class PropertyController extends Controller
     {
         $messages = [
             'name.required' => trans('dam::app.admin.validation.property.name.required'),
-            'name.unique' => trans('dam::app.admin.validation.property.name.unique'),
+            'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
         ];
 
         $this->validate(request(), [
-            'type' => 'required',
+            'type'     => 'required',
             'language' => 'required',
-            'value' => 'required|max:1000',
-            'name' => [
+            'value'    => 'required|max:1000',
+            'name'     => [
                 'required',
                 'min:3',
                 'max:100',
@@ -81,16 +81,16 @@ class PropertyController extends Controller
         }
 
         $property = $this->assetPropertyRepository->create([
-            'name' => request('name'),
-            'type' => request('type'),
-            'language' => $locale->id,
-            'value' => request('value'),
+            'name'         => request('name'),
+            'type'         => request('type'),
+            'language'     => $locale->id,
+            'value'        => request('value'),
             'dam_asset_id' => $id,
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.properties.index.create-success'),
+            'success'  => true,
+            'message'  => trans('dam::app.admin.dam.asset.properties.index.create-success'),
             'property' => $property,
         ], 200);
     }
@@ -110,7 +110,7 @@ class PropertyController extends Controller
         }
 
         $this->validate($request, [
-            'name' => 'required|min:3|max:100|unique:dam_asset_properties,name,'.$id.',id,dam_asset_id,'.$property->dam_asset_id,
+            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,'.$id.',id,dam_asset_id,'.$property->dam_asset_id,
             'value' => 'required',
         ]);
 
@@ -118,15 +118,15 @@ class PropertyController extends Controller
             $updatedProperty = $this->assetPropertyRepository->update($request->only(['name', 'value']), $id);
 
             return response()->json([
-                'success' => true,
-                'message' => trans('dam::app.admin.dam.asset.properties.index.update-success'),
+                'success'  => true,
+                'message'  => trans('dam::app.admin.dam.asset.properties.index.update-success'),
                 'property' => $updatedProperty,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.update-failure'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
@@ -156,7 +156,7 @@ class PropertyController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.properties.index.delete-failed'),
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

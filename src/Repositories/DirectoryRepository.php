@@ -140,7 +140,17 @@ class DirectoryRepository extends Repository
             }
 
             $oldDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
-            $disk = Directory::getAssetDisk();
+
+            // On object stores like S3 there are no real directories; asset
+            // files are moved individually by the caller (see
+            // MoveDirectoryStructure::moveAssets), so just clean up the old
+            // prefix if anything is left and ensure the new one exists.
+            if ($disk === Directory::ASSETS_DISK_AWS) {
+                Storage::disk($disk)->deleteDirectory($oldDirectory);
+                Storage::disk($disk)->makeDirectory($newDirectory);
+
+                return;
+            }
 
             // Check if a directory exists
             if (Storage::disk($disk)->exists($oldDirectory)) {
@@ -200,9 +210,9 @@ class DirectoryRepository extends Repository
 
         if (! $directory->isWritable($directoryPath)) {
             throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                'type' => 'directory',
+                'type'       => 'directory',
                 'actionType' => $actionType,
-                'path' => $directoryPath,
+                'path'       => $directoryPath,
             ]));
         }
 

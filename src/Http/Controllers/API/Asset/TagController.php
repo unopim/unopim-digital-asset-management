@@ -32,7 +32,7 @@ class TagController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.tags.found-success'),
-            'data' => $tags,
+            'data'    => $tags,
         ], 200);
     }
 
@@ -42,7 +42,7 @@ class TagController extends Controller
     protected function addTag(Request $request)
     {
         $request->validate([
-            'tag' => 'required|max:100',
+            'tag'      => 'required|max:100',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -59,7 +59,7 @@ class TagController extends Controller
             ], 404);
         }
 
-        $assetTag = $this->assetTagRepository->where('name', $newTag)->first();
+        $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
         $oldTags = $asset->tags->pluck('name')->toArray();
 
@@ -69,7 +69,7 @@ class TagController extends Controller
             if (in_array($assetTag->id, $existingAssetTagIds)) {
                 return response()->json([
                     'success' => false,
-                    'file' => $asset,
+                    'file'    => $asset,
                     'message' => trans('dam::app.admin.dam.asset.edit.tag-already-exists'),
                 ], 404);
             }
@@ -83,13 +83,13 @@ class TagController extends Controller
         Event::dispatch('core.model.proxy.sync.tag', [
             'old_values' => $oldTags,
             'new_values' => $asset->refresh()->tags->pluck('name')->toArray(),
-            'model' => $asset,
+            'model'      => $asset,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.tags.create.create-success'),
-            'file' => $asset,
+            'file'    => $asset,
         ], 201);
     }
 
@@ -99,7 +99,7 @@ class TagController extends Controller
     protected function removeTag(Request $request)
     {
         $request->validate([
-            'tag' => 'required',
+            'tag'      => 'required',
             'asset_id' => 'required|exists:dam_assets,id',
         ]);
 
@@ -116,7 +116,7 @@ class TagController extends Controller
             ], 404);
         }
 
-        $assetTag = $this->assetTagRepository->where('name', $newTag)->first();
+        $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
         $oldTags = $asset->tags->pluck('name')->toArray();
 
@@ -126,7 +126,7 @@ class TagController extends Controller
             Event::dispatch('core.model.proxy.sync.tag', [
                 'old_values' => $oldTags,
                 'new_values' => $asset->refresh()->tags->pluck('name')->toArray(),
-                'model' => $asset,
+                'model'      => $asset,
             ]);
 
             return response()->json([

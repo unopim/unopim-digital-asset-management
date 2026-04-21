@@ -89,50 +89,25 @@ class AssetController extends Controller
     }
 
     /**
-     * Get metadata for a given file
-     */
-    public function getMetadata(string $path, string $disk)
-    {
-        try {
-            $storage = Storage::disk($disk);
-
-            if (! $storage->exists($path)) {
-                throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
-            }
-
-            $fileContent = $storage->get($path);
-            $image = (new ImageManager(new Driver))->read($fileContent);
-
-            $data = [
-                'Width' => $image->width(),
-                'Height' => $image->height(),
-            ];
-
-            return [
-                'success' => true,
-                'data' => $data,
-            ];
-        } catch (\Exception $e) {
-            report($e);
-
-            return [
-                'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.edit.failed-to-read', ['exception' => $e->getMessage()]),
-            ];
-        }
-    }
-
-    /**
      * to upload the asset
      *
      * @return void|JsonResponse
      */
     public function upload(Request $request)
     {
+        $maxKb = AssetHelper::getMaxUploadSizeKb();
+        $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
+            'size' => $this->humanReadableSize($maxKb),
+        ]);
+
         $request->validate([
-            'files' => 'required|array',
-            'files.*' => 'file',
+            'files'        => 'required|array',
+            'files.*'      => 'file|max:'.$maxKb,
             'directory_id' => 'required|exists:dam_directories,id',
+        ], [
+            'files.*.max'      => $sizeMessage,
+            'files.*.uploaded' => $sizeMessage,
+            'files.*.file'     => $sizeMessage,
         ]);
 
         $files = $request->file('files');
@@ -160,9 +135,9 @@ class AssetController extends Controller
 
                     if (! $directory->isWritable($directoryPath)) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                            'type' => 'file',
+                            'type'       => 'file',
                             'actionType' => 'create',
-                            'path' => $directoryPath,
+                            'path'       => $directoryPath,
                         ]));
                     }
 
@@ -181,7 +156,7 @@ class AssetController extends Controller
                         'file_size' => $file->getSize(),
                         'mime_type' => $file->getMimeType(),
                         'extension' => $file->getClientOriginalExtension(),
-                        'path' => $filePath,
+                        'path'      => $filePath,
                     ]);
                     $assetIds[] = $asset->id;
                     array_push($uploadFiles, $asset);
@@ -194,7 +169,7 @@ class AssetController extends Controller
 
             return response()->json([
                 'success' => true,
-                'files' => $uploadFiles,
+                'files'   => $uploadFiles,
                 'message' => count($files) > 1 ? trans('dam::app.admin.dam.asset.datagrid.files-upload-success') : trans('dam::app.admin.dam.asset.datagrid.file-upload-success'),
             ], 201);
         } catch (\Exception $e) {
@@ -212,10 +187,18 @@ class AssetController extends Controller
      */
     public function reUpload(Request $request)
     {
+        $maxKb = AssetHelper::getMaxUploadSizeKb();
+        $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
+            'size' => $this->humanReadableSize($maxKb),
+        ]);
+
         $request->validate([
-            'file' => 'required',
-            'file.*' => 'file',
+            'file'     => 'required|file|max:'.$maxKb,
             'asset_id' => 'required|exists:dam_assets,id',
+        ], [
+            'file.max'      => $sizeMessage,
+            'file.uploaded' => $sizeMessage,
+            'file.file'     => $sizeMessage,
         ]);
 
         $file = $request->file('file');
@@ -251,9 +234,9 @@ class AssetController extends Controller
 
             if (! $directory->isWritable($directoryPath)) {
                 throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                    'type' => 'file',
+                    'type'       => 'file',
                     'actionType' => 'create',
-                    'path' => $directoryPath,
+                    'path'       => $directoryPath,
                 ]));
             }
 
@@ -270,13 +253,13 @@ class AssetController extends Controller
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'extension' => $file->getClientOriginalExtension(),
-                'path' => $filePath,
+                'path'      => $filePath,
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'file' => $asset,
+            'file'    => $asset,
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
         ], 201);
     }
@@ -300,7 +283,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'asset' => $asset,
+            'asset'   => $asset,
         ]);
     }
 
@@ -327,7 +310,7 @@ class AssetController extends Controller
             'file_size' => 'integer',
             'mime_type' => 'string',
             'extension' => 'string',
-            'path' => 'string',
+            'path'      => 'string',
         ]);
 
         $asset->update($request->only(['file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'path']));
@@ -335,7 +318,7 @@ class AssetController extends Controller
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'),
-            'asset' => $asset,
+            'asset'   => $asset,
         ]);
     }
 
@@ -370,9 +353,9 @@ class AssetController extends Controller
         if (! $fileDeleted) {
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.not-writable', [
-                    'type' => 'file',
+                    'type'       => 'file',
                     'actionType' => 'delete',
-                    'path' => $asset->path,
+                    'path'       => $asset->path,
                 ]),
             ], 500);
         }
@@ -409,9 +392,9 @@ class AssetController extends Controller
 
                     if (! $fileDeleted) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                            'type' => 'file',
+                            'type'       => 'file',
                             'actionType' => 'rename',
-                            'path' => $asset->path,
+                            'path'       => $asset->path,
                         ]));
                     }
 
@@ -553,7 +536,7 @@ class AssetController extends Controller
     {
         $request->validate([
             'file_name' => 'required|string|max:255|regex:/^(?!\.)[\w .-]+$/',
-            'id' => 'required|exists:dam_assets,id',
+            'id'        => 'required|exists:dam_assets,id',
         ]);
 
         $id = $request->input('id');
@@ -591,19 +574,19 @@ class AssetController extends Controller
 
                     if (! $fileRenamed) {
                         throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                            'type' => 'file',
+                            'type'       => 'file',
                             'actionType' => 'rename',
-                            'path' => $newPath,
+                            'path'       => $newPath,
                         ]));
                     }
 
                     $asset->update([
                         'file_name' => $name,
-                        'path' => $newPath,
+                        'path'      => $newPath,
                     ]);
 
                     return new JsonResponse([
-                        'data' => $asset,
+                        'data'    => $asset,
                         'message' => trans('dam::app.admin.dam.index.directory.asset-renamed-success'),
                     ]);
                 } else {
@@ -640,29 +623,57 @@ class AssetController extends Controller
         if (! $directory->isWritable($directoryPath)) {
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.not-writable', [
-                    'type' => 'file',
+                    'type'       => 'file',
                     'actionType' => 'move',
-                    'path' => $directoryPath,
+                    'path'       => $directoryPath,
                 ]),
             ], 500);
         }
+
+        $oldAssetFullPath = $asset->path;
 
         $asset->directories()->sync($request->input('new_parent_id'));
         $newDirectory = $asset->directories()->first();
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newDirectory->generatePath());
         $uniqueFileName = $this->generateUniqueFileName($directoryPath, $asset->file_name);
         $newPath = sprintf('%s/%s', $newDirectory->generatePath(), $uniqueFileName);
+        $newAssetFullPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath);
         $asset->update([
-            'path' => sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newPath),
+            'path'      => $newAssetFullPath,
             'file_name' => $uniqueFileName,
         ]);
 
-        $this->directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
+        $disk = Directory::getAssetDisk();
+        Storage::disk($disk)->makeDirectory($directoryPath);
+
+        if (
+            $oldAssetFullPath
+            && $oldAssetFullPath !== $newAssetFullPath
+            && Storage::disk($disk)->exists($oldAssetFullPath)
+        ) {
+            Storage::disk($disk)->move($oldAssetFullPath, $newAssetFullPath);
+        }
 
         return new JsonResponse([
-            'data' => $asset,
+            'data'    => $asset,
             'message' => trans('dam::app.admin.dam.index.directory.asset-moved-success'),
         ]);
+    }
+
+    /**
+     * Format a kilobyte value into a human readable string (e.g. "50 MB").
+     */
+    protected function humanReadableSize(int $kilobytes): string
+    {
+        if ($kilobytes >= 1024 * 1024) {
+            return round($kilobytes / 1024 / 1024, 2).' GB';
+        }
+
+        if ($kilobytes >= 1024) {
+            return round($kilobytes / 1024, 2).' MB';
+        }
+
+        return $kilobytes.' KB';
     }
 
     /**

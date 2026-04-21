@@ -46,14 +46,14 @@ class PropertyController extends Controller
     {
         $messages = [
             'name.required' => trans('dam::app.admin.validation.property.name.required'),
-            'name.unique' => trans('dam::app.admin.validation.property.name.unique'),
+            'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
         ];
 
         $this->validate(request(), [
-            'type' => 'required',
+            'type'     => 'required',
             'language' => 'required',
-            'value' => 'required|max:1000',
-            'name' => [
+            'value'    => 'required|max:1000',
+            'name'     => [
                 'required',
                 'min:3',
                 'max:100',
@@ -100,7 +100,7 @@ class PropertyController extends Controller
         $id = request('id');
 
         $this->validate(request(), [
-            'name' => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
+            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
             'value' => 'required',
         ]);
 

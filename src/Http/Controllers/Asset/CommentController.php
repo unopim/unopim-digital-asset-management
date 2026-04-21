@@ -43,7 +43,7 @@ class CommentController extends Controller
 
         return new JsonResponse([
             'user' => [
-                'name' => $user->name,
+                'name'   => $user->name,
                 'status' => (bool) $user->status,
             ],
             'timezone' => $timezone,
@@ -67,7 +67,7 @@ class CommentController extends Controller
             'comments',
             'parent_id',
         ]), [
-            'admin_id' => Auth::id(),
+            'admin_id'     => Auth::id(),
             'dam_asset_id' => $id,
         ]));
 
@@ -86,7 +86,7 @@ class CommentController extends Controller
         $id = request('id');
 
         $this->validate(request(), [
-            'name' => 'required|min:3|max:13|unique:dam_asset_comments,name,'.$id,
+            'name'  => 'required|min:3|max:13|unique:dam_asset_comments,name,'.$id,
             'value' => 'required',
         ]);
 

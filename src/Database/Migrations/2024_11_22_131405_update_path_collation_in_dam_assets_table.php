@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,14 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $driver = Schema::getConnection()->getDriverName();
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
 
-        Schema::table('dam_assets', function (Blueprint $table) use ($driver) {
-            if ($driver === 'pgsql') {
-                $table->string('path')->collation('C')->change();
-            } else {
-                $table->string('path')->collation('utf8mb4_bin')->change();
-            }
+        Schema::table('dam_assets', function (Blueprint $table) {
+            $table->string('path')->collation('utf8mb4_bin')->change();
         });
     }
 
@@ -27,14 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $driver = Schema::getConnection()->getDriverName();
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
 
-        Schema::table('dam_assets', function (Blueprint $table) use ($driver) {
-            if ($driver === 'pgsql') {
-                $table->string('path')->collation('und-x-icu')->change();
-            } else {
-                $table->string('path')->collation('utf8mb4_unicode_ci')->change();
-            }
+        Schema::table('dam_assets', function (Blueprint $table) {
+            $table->string('path')->collation('utf8mb4_unicode_ci')->change();
         });
     }
 };

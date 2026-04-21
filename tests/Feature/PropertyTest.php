@@ -18,9 +18,9 @@ it('should create a new property', function () {
     $asset = Asset::factory()->create();
 
     $data = [
-        'name' => 'Text',
-        'type' => 'Text',
-        'value' => 'Testing',
+        'name'     => 'Text',
+        'type'     => 'Text',
+        'value'    => 'Testing',
         'language' => 'English',
     ];
 
@@ -40,7 +40,7 @@ it('should update the Property', function () {
     $property = AssetProperty::factory()->create();
 
     $data = [
-        'name' => 'Text',
+        'name'  => 'Text',
         'value' => 'Testing',
     ];
 
