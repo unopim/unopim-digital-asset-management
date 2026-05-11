@@ -449,8 +449,8 @@ return [
         ],
         'permissions' => [
             'title'            => 'DAM Directory Permissions',
-            'subtitle'         => 'Choose a role and tick the directories that role is allowed to view in DAM. Roles with permission type "all" bypass this list.',
-            'subtitle-view'    => 'Choose a role to view which directories that role is allowed to access in DAM. Roles with permission type "all" bypass this list.',
+            'tab-subtitle'     => '此角色可以存取的目錄。',
+            'no-actions'       => '僅檢視。請開啟您有權限存取的子資料夾。',
             'role-label'       => 'Role',
             'role-placeholder' => 'Select a role',
             'directories'      => 'Visible directories',

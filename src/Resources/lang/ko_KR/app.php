@@ -449,8 +449,8 @@ return [
         ],
         'permissions' => [
             'title'            => 'DAM Directory Permissions',
-            'subtitle'         => 'Choose a role and tick the directories that role is allowed to view in DAM. Roles with permission type "all" bypass this list.',
-            'subtitle-view'    => 'Choose a role to view which directories that role is allowed to access in DAM. Roles with permission type "all" bypass this list.',
+            'tab-subtitle'     => '이 역할이 접근할 수 있는 디렉터리.',
+            'no-actions'       => '보기 전용. 접근 권한이 있는 하위 폴더를 여세요.',
             'role-label'       => 'Role',
             'role-placeholder' => 'Select a role',
             'directories'      => 'Visible directories',

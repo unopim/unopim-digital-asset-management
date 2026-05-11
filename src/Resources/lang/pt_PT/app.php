@@ -449,8 +449,8 @@ return [
         ],
         'permissions' => [
             'title'            => 'DAM Directory Permissions',
-            'subtitle'         => 'Choose a role and tick the directories that role is allowed to view in DAM. Roles with permission type "all" bypass this list.',
-            'subtitle-view'    => 'Choose a role to view which directories that role is allowed to access in DAM. Roles with permission type "all" bypass this list.',
+            'tab-subtitle'     => 'Diretórios a que este papel pode aceder.',
+            'no-actions'       => 'Apenas visualização. Abra uma subpasta a que tenha acesso.',
             'role-label'       => 'Role',
             'role-placeholder' => 'Select a role',
             'directories'      => 'Visible directories',
