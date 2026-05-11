@@ -9,13 +9,6 @@ if (! function_exists('dam_can_view_dir')) {
     }
 }
 
-if (! function_exists('dam_can_manage_acl')) {
-    function dam_can_manage_acl(): bool
-    {
-        return app(DirectoryPermissionService::class)->canManageAcl();
-    }
-}
-
 if (! function_exists('dam_viewable_directory_ids')) {
     function dam_viewable_directory_ids(): array
     {

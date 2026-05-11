@@ -181,20 +181,5 @@ return [
         'name'  => 'dam::app.admin.acl.asset-assign',
         'route' => 'admin.dam.asset_picker.get_assets',
         'sort'  => 3,
-    ], [
-        'key'   => 'dam.directory_permissions',
-        'name'  => 'dam::app.admin.acl.directory-permissions',
-        'route' => 'admin.dam.directory_permissions.index',
-        'sort'  => 16,
-    ], [
-        'key'   => 'dam.directory_permissions.index',
-        'name'  => 'dam::app.admin.acl.view',
-        'route' => 'admin.dam.directory_permissions.index',
-        'sort'  => 1,
-    ], [
-        'key'   => 'dam.directory_permissions.update',
-        'name'  => 'dam::app.admin.acl.update',
-        'route' => 'admin.dam.directory_permissions.update',
-        'sort'  => 2,
     ],
 ];

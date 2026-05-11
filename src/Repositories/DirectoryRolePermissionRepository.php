@@ -54,19 +54,4 @@ class DirectoryRolePermissionRepository
             DB::table($this->table)->insert($rows);
         });
     }
-
-    /**
-     * Roles available for grant assignment. Excludes 'all' roles which bypass dir ACL.
-     *
-     * @return array<int, array{id:int,name:string}>
-     */
-    public function listAssignableRoles(): array
-    {
-        return DB::table('roles')
-            ->where('permission_type', 'custom')
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn ($row) => ['id' => (int) $row->id, 'name' => $row->name])
-            ->all();
-    }
 }

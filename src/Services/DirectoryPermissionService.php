@@ -38,50 +38,6 @@ class DirectoryPermissionService
     }
 
     /**
-     * Whether the current admin can VIEW the directory permission manager page.
-     * 'all' role bypasses; otherwise the dam.directory_permissions ACL key gates it.
-     * Anonymous (no admin guard) is denied — only logged-in admins manage grants.
-     */
-    public function canManageAcl(): bool
-    {
-        $admin = $this->currentAdmin();
-
-        if (! $admin) {
-            return false;
-        }
-
-        if (optional($admin->role)->permission_type === 'all') {
-            return true;
-        }
-
-        return $admin->hasPermission('dam.directory_permissions');
-    }
-
-    /**
-     * Whether the current admin can UPDATE directory permission grants — strictly
-     * the `dam.directory_permissions.update` leaf key (or `all` role bypass).
-     *
-     * Distinct from `canManageAcl()` so admins with only the parent / `.index`
-     * key see the manager page in read-only mode (Save button hidden + tree
-     * locked). Used by the update controller method and the view to decide
-     * whether to render write affordances.
-     */
-    public function canUpdateAcl(): bool
-    {
-        $admin = $this->currentAdmin();
-
-        if (! $admin) {
-            return false;
-        }
-
-        if (optional($admin->role)->permission_type === 'all') {
-            return true;
-        }
-
-        return $admin->hasPermission('dam.directory_permissions.update');
-    }
-
-    /**
      * Resolve all directory ids the current admin is allowed to view.
      * Memoised per request. Returns every directory id when the request bypasses
      * the filter (anonymous, API guard, or `permission_type = 'all'`).

@@ -30,15 +30,6 @@
                                         <p class="text-xl text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
                                             @lang('dam::app.admin.dam.index.title')
                                         </p>
-                                        @if (bouncer()->hasPermission('dam.directory_permissions'))
-                                            <a
-                                                href="{{ route('admin.dam.directory_permissions.index') }}"
-                                                class="text-sm text-violet-700 dark:text-violet-400 hover:underline whitespace-nowrap !leading-normal"
-                                                title="@lang('dam::app.admin.permissions.title')"
-                                            >
-                                                @lang('dam::app.admin.permissions.title')
-                                            </a>
-                                        @endif
                                     </div>
                                     <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300">
                                         @lang('dam::app.admin.dam.index.description')
