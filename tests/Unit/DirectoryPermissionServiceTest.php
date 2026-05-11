@@ -16,7 +16,6 @@ it('bypasses filtering when no admin is authenticated (API/CLI/anon)', function 
     // No admin guard ⇒ bypass: filter is a no-op so API/CLI/anonymous code paths
     // (which never go through the admin web guard) are unaffected.
     expect($this->service->bypass())->toBeTrue();
-    expect($this->service->canManageAcl())->toBeFalse();
 });
 
 it('returns true for every directory when role permission_type is all', function () {
@@ -78,38 +77,6 @@ it('memoises viewableIds within the same request', function () {
     )->count();
 
     expect($count)->toBe(1);
-});
-
-it('canManageAcl is true for roles with the ACL key and false otherwise', function () {
-    $withKey = Role::factory()->create([
-        'permission_type' => 'custom',
-        'permissions'     => ['dam.directory_permissions'],
-    ]);
-    $withoutKey = Role::factory()->create([
-        'permission_type' => 'custom',
-        'permissions'     => ['dashboard'],
-    ]);
-
-    $allowed = Admin::factory()->create(['role_id' => $withKey->id]);
-    $this->actingAs($allowed, 'admin');
-    $this->service->flush();
-    expect($this->service->canManageAcl())->toBeTrue();
-
-    auth('admin')->logout();
-
-    $denied = Admin::factory()->create(['role_id' => $withoutKey->id]);
-    $this->actingAs($denied, 'admin');
-    $this->service->flush();
-    expect($this->service->canManageAcl())->toBeFalse();
-});
-
-it('canManageAcl is true for permission_type=all even without the ACL key', function () {
-    $allRole = Role::factory()->create(['permission_type' => 'all']);
-    $admin = Admin::factory()->create(['role_id' => $allRole->id]);
-    $this->actingAs($admin, 'admin');
-    $this->service->flush();
-
-    expect($this->service->canManageAcl())->toBeTrue();
 });
 
 it('exposes ancestors of granted directories as viewable but not accessible', function () {

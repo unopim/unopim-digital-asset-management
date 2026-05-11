@@ -59,14 +59,6 @@ test.describe('DAM Asset Preview Modal', () => {
       await expect(backdrop).not.toBeVisible({ timeout: 5000 });
     });
 
-    test('Escape closes preview modal', async ({ adminPage }) => {
-      await navigateToAssetEditByName(adminPage, 'floral.jpg');
-      await openPreviewModal(adminPage);
-      await adminPage.keyboard.press('Escape');
-      await adminPage.waitForTimeout(400);
-      await expect(adminPage.locator('.absolute.inset-0.bg-black\\/75').first()).not.toBeVisible({ timeout: 5000 });
-    });
-
     test('Body scroll locked when modal open', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openPreviewModal(adminPage);

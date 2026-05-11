@@ -1,7 +1,7 @@
 const ROUTES = {
   dam:             '/admin/dam',
   damAssets:       '/admin/dam/assets',
-  damPermissions:  '/admin/dam/permissions',
+  rolesIndex:      '/admin/settings/roles',
 };
 
 /**

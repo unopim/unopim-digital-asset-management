@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid, generateUid } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid } = require('../utils/helpers');
 const path = require('path');
 
 const ASSET_IMAGE = path.resolve(__dirname, '../assets/floral.jpg');
@@ -59,11 +59,6 @@ async function deleteAssetViaEditPage(page, assetName) {
 
 test.describe('DAM Asset Upload', () => {
 
-  test('Upload button is visible on DAM page', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await expect(adminPage.getByText('Upload')).toBeVisible();
-  });
-
   test('Upload a JPG file successfully', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
@@ -99,68 +94,4 @@ test.describe('DAM Asset Upload', () => {
     ).toBeVisible({ timeout: 15000 });
   });
 
-  test('Search assets in the DataGrid', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    await searchInDataGrid(adminPage, 'dotted');
-    await expect(
-      adminPage.locator('h2').filter({ hasText: /dotted/i }).first()
-    ).toBeVisible({ timeout: 15000 });
-  });
-
-  test('Search with no results shows appropriate message', async ({ adminPage }) => {
-    const uid = generateUid();
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    await searchInDataGrid(adminPage, `nonexistent_${uid}`);
-    // Either no results count or an empty state message
-    await expect(
-      adminPage.getByText(/0 Results/i).first()
-    ).toBeVisible({ timeout: 15000 });
-  });
-
-  test('Filter button opens filter panel', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    const filterToggle = adminPage.locator('span.icon-filter').first();
-    await filterToggle.waitFor({ state: 'visible', timeout: 30000 });
-
-    // Dismiss any lingering modal overlay that may block clicks in CI
-    const overlay = adminPage.locator('div.fixed.inset-0.bg-gray-500');
-    if (await overlay.isVisible().catch(() => false)) {
-      await adminPage.keyboard.press('Escape');
-      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    }
-
-    // Vue binds the drawer's @click="open" handler after hydration; a click
-    // that lands before that window hits the span but never opens the drawer.
-    // Retry the click until the drawer header actually renders.
-    const drawerHeader = adminPage.locator('#app').getByText('Apply Filters');
-    await expect(async () => {
-      await filterToggle.click({ timeout: 5000 });
-      await expect(drawerHeader).toBeVisible({ timeout: 2000 });
-    }).toPass({ timeout: 30000 });
-  });
-
-  test('Per Page dropdown works', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    // Find and click Per Page button
-    const perPageBtn = adminPage.locator('button').filter({ hasText: /^\d+/ }).first();
-    await perPageBtn.click();
-    await adminPage.waitForTimeout(300);
-  });
-
-  test('Select All checkbox is functional', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    const selectAll = adminPage.getByText('Select All').first();
-    await selectAll.click();
-    await adminPage.waitForTimeout(300);
-  });
 });

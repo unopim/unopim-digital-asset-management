@@ -53,6 +53,12 @@ module.exports = async function globalSetup(config) {
     throw new Error(`global-setup: GET /admin/dam after login → ${dam.status()} ${dam.url()}`);
   }
 
+  // Seed a custom-permission role so the role-edit DAM Permissions tab has a
+  // target role to attach grants to. The tab's v-if hides it for
+  // permission_type='all' roles (super-admin) which is the only role shipped
+  // by default, so without this seed the tab is never rendered in e2e runs.
+  await ensureCustomRole(ctx);
+
   await ctx.storageState({ path: STORAGE_PATH });
   await ctx.dispose();
 
@@ -73,6 +79,31 @@ module.exports = async function globalSetup(config) {
   // Seed test assets (floral.jpg + mp4/wav/pdf) via real Chromium so they exist for every spec.
   await seedAssets(baseURL);
 };
+
+async function ensureCustomRole(ctx) {
+  try {
+    const createPage = await ctx.get('/admin/settings/roles/create');
+    if (! createPage.ok()) return;
+
+    const html = await createPage.text();
+    const tokenMatch = html.match(/name="_token"\s+value="([^"]+)"/);
+    if (! tokenMatch) return;
+
+    // Duplicate name on re-runs returns a redirect-back with a validation
+    // error; harmless since the prior row still satisfies the DAM permissions
+    // tab requirement of having at least one custom role to edit.
+    await ctx.post('/admin/settings/roles/create', {
+      form: {
+        _token:          tokenMatch[1],
+        name:            'DAM E2E Custom Role',
+        description:     'Seeded by Playwright global-setup so the DAM directory permission manager has an assignable role.',
+        permission_type: 'custom',
+      },
+    });
+  } catch (err) {
+    console.warn(`global-setup: ensureCustomRole failed — ${err.message}`);
+  }
+}
 
 async function seedAssets(baseURL) {
   const { ensureAssetOfTypeExists } = require('./utils/helpers');

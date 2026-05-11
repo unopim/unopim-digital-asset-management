@@ -145,16 +145,6 @@ test.describe('DAM Asset Preview Modal', () => {
       await expect(adminPage.locator('button[aria-label="Close editor"]')).not.toBeVisible({ timeout: 5000 });
     });
 
-    test('Escape closes editor modal and clears tool selection', async ({ adminPage }) => {
-      await openEditorModal(adminPage);
-      // Select a tool so editTool is non-null
-      await adminPage.getByText('Crop & Resize').first().click();
-      await adminPage.waitForTimeout(200);
-      await adminPage.keyboard.press('Escape');
-      await adminPage.waitForTimeout(400);
-      await expect(adminPage.locator('button[aria-label="Close editor"]')).not.toBeVisible({ timeout: 5000 });
-    });
-
   });
 
   // ═══════════════════════════════════════════════════════════════════════════

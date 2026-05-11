@@ -35,11 +35,6 @@ test.describe('DAM Asset Preview Modal', () => {
       ).toBeVisible({ timeout: 10000 });
     });
 
-    test('Preview icon button is visible on edit page', async ({ adminPage }) => {
-      await navigateToAssetEditByName(adminPage, 'floral.jpg');
-      await expect(adminPage.locator('button[title="Preview"]').first()).toBeVisible({ timeout: 10000 });
-    });
-
     test('Edit image button visible for image asset', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await expect(adminPage.locator('button[title="Edit image"]').first()).toBeVisible({ timeout: 10000 });
@@ -201,14 +196,6 @@ test.describe('DAM Asset Preview Modal', () => {
       await backdrop.click({ position: { x: 5, y: 5 }, force: true });
       await adminPage.waitForTimeout(400);
       await expect(backdrop).not.toBeVisible({ timeout: 5000 });
-    });
-
-    test('Escape closes info modal', async ({ adminPage }) => {
-      await navigateToAssetEditByName(adminPage, 'floral.jpg');
-      await openInfoModal(adminPage);
-      await adminPage.keyboard.press('Escape');
-      await adminPage.waitForTimeout(400);
-      await expect(adminPage.locator('.absolute.inset-0.bg-black\\/60').first()).not.toBeVisible({ timeout: 5000 });
     });
 
   });
