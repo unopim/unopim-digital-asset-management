@@ -190,8 +190,23 @@
                 </template>
             </draggable>
 
+            <!-- Asset loading placeholder — reserves height so the assets
+                 draggable can mount fully populated after fetch, avoiding the
+                 FLIP-animation jerk from Sortable's `animation: 200`. -->
+            <div
+                v-if="assetsLoading && ! assetsLoaded"
+                class="flex flex-col gap-1 py-1"
+                aria-hidden="true"
+            >
+                <div
+                    v-for="n in Math.min((item.assets_count || 1), 3)"
+                    :key="`asset-skel-${n}`"
+                    class="h-5 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
+                ></div>
+            </div>
             <!-- Asset -->
             <draggable
+                v-if="assetsLoaded"
                 id="assets-items"
                 ghost-class="draggable-ghost"
                 handle=".tree-container-assets-details"
