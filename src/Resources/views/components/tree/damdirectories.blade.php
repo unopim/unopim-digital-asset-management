@@ -1,12 +1,242 @@
-<v-tree-view
-    :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
-    :accessible-ids='@json(dam_accessible_dir_ids())'
-    :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
->
-    <x-admin::shimmer.tree />
-</v-tree-view>
+<div class="flex flex-col gap-2">
+    <v-directory-search></v-directory-search>
+
+    <v-tree-view
+        :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
+        :accessible-ids='@json(dam_accessible_dir_ids())'
+        :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
+    >
+        <x-admin::shimmer.tree />
+    </v-tree-view>
+</div>
 
 @pushOnce('scripts')
+<!-- directory search template -->
+<script type="text/x-template" id="v-directory-search-template">
+    <div class="relative">
+        <div class="flex items-center gap-2 border border-gray-200 dark:border-cherry-700 rounded-md px-2 py-1 bg-white dark:bg-cherry-800">
+            <i
+                v-if="!isLoading"
+                class="icon-search text-zinc-500 dark:text-slate-300 text-lg"
+            ></i>
+            <svg
+                v-else
+                class="animate-spin h-4 w-4 text-violet-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <input
+                ref="searchInput"
+                v-model="query"
+                type="text"
+                class="flex-1 bg-transparent text-sm text-zinc-700 dark:text-white placeholder:text-zinc-400 outline-none"
+                :placeholder="placeholder"
+                @keydown.esc="clearAndClose"
+                @focus="maybeReopen"
+            />
+        </div>
+
+        <div
+            v-if="isOpen"
+            ref="dropdown"
+            class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-cherry-800 border border-gray-200 dark:border-cherry-700 rounded-md shadow-lg max-h-80 overflow-y-auto"
+            @scroll.passive="onScroll"
+        >
+            <div
+                v-if="errorMessage"
+                class="px-3 py-2 text-sm text-red-600 dark:text-red-400"
+                v-text="errorMessage"
+            ></div>
+            <div
+                v-else-if="annotatedResults.length === 0 && !isLoading"
+                class="px-3 py-2 text-sm text-zinc-500 dark:text-slate-400"
+                v-text="noMatchesLabel"
+            ></div>
+            <div
+                v-if="annotatedResults.length > 0"
+                class="sticky top-0 px-3 py-1 text-xs text-zinc-500 dark:text-slate-300 bg-gray-50 dark:bg-cherry-700 border-b border-gray-200 dark:border-cherry-600"
+                v-text="countLabel"
+            ></div>
+            <div
+                v-for="(result, idx) in annotatedResults"
+                :key="result.id"
+                class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-cherry-700"
+                :class="idx > 0 ? 'border-t border-gray-100 dark:border-cherry-700' : ''"
+                @mousedown.prevent="selectResult(result)"
+            >
+                <div class="text-sm font-semibold text-zinc-700 dark:text-white">
+                    @{{ result.display_name }}
+                </div>
+                <div class="text-xs text-zinc-500 dark:text-slate-400">
+                    @{{ result.breadcrumb }}
+                </div>
+            </div>
+            <div
+                v-if="isLoadingMore"
+                class="px-3 py-2 text-xs text-center text-zinc-500 dark:text-slate-400"
+            >
+                <svg class="inline-block animate-spin h-4 w-4 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="module">
+    app.component('v-directory-search', {
+        template: '#v-directory-search-template',
+        data() {
+            return {
+                query: '',
+                results: [],
+                total: 0,
+                limit: 20,
+                offset: 0,
+                isLoading: false,
+                isLoadingMore: false,
+                isOpen: false,
+                errorMessage: '',
+                placeholder: "@lang('dam::app.admin.dam.index.directory.search.placeholder')",
+                noMatchesLabel: "@lang('dam::app.admin.dam.index.directory.search.no-matches')",
+                errorLabel: "@lang('dam::app.admin.dam.index.directory.search.error')",
+                countCappedTpl: "@lang('dam::app.admin.dam.index.directory.search.count')",
+                countTotalTpl: "@lang('dam::app.admin.dam.index.directory.search.count-total')",
+                debounceTimer: null,
+            };
+        },
+        computed: {
+            annotatedResults() {
+                const breadcrumbs = this.results.map(r => (r.path_names || []).join(' › '));
+                const counts = breadcrumbs.reduce((acc, b) => {
+                    acc[b] = (acc[b] || 0) + 1;
+                    return acc;
+                }, {});
+
+                return this.results.map((r, i) => ({
+                    id: r.id,
+                    parent_id: r.parent_id,
+                    display_name: counts[breadcrumbs[i]] > 1 ? `${r.name} (#${r.id})` : r.name,
+                    breadcrumb: breadcrumbs[i],
+                }));
+            },
+            countLabel() {
+                return this.countCappedTpl
+                    .replace(':shown', this.results.length)
+                    .replace(':total', this.total);
+            },
+        },
+        watch: {
+            query(value) {
+                clearTimeout(this.debounceTimer);
+                this.errorMessage = '';
+
+                const trimmed = (value || '').trim();
+                if (trimmed.length < 2) {
+                    this.results = [];
+                    this.total = 0;
+                    this.offset = 0;
+                    this.isOpen = false;
+                    this.isLoading = false;
+                    this.isLoadingMore = false;
+                    return;
+                }
+
+                this.debounceTimer = setTimeout(() => this.fetchResults(trimmed), 300);
+            },
+        },
+        mounted() {
+            document.addEventListener('mousedown', this.handleOutsideClick);
+        },
+        beforeUnmount() {
+            document.removeEventListener('mousedown', this.handleOutsideClick);
+        },
+        methods: {
+            handleOutsideClick(event) {
+                if (! this.$el.contains(event.target)) {
+                    this.isOpen = false;
+                }
+            },
+            maybeReopen() {
+                if (this.results.length > 0 || this.errorMessage) {
+                    this.isOpen = true;
+                }
+            },
+            fetchResults(q) {
+                this.isLoading = true;
+                this.offset = 0;
+                this.$axios
+                    .get("{{ route('admin.dam.directory.search') }}", { params: { q, offset: 0 } })
+                    .then((response) => {
+                        this.results = response.data.data || [];
+                        this.total = response.data.meta?.total ?? this.results.length;
+                        this.limit = response.data.meta?.limit ?? 20;
+                        this.offset = this.results.length;
+                        this.isLoading = false;
+                        this.isOpen = true;
+                    })
+                    .catch(() => {
+                        this.results = [];
+                        this.total = 0;
+                        this.offset = 0;
+                        this.errorMessage = this.errorLabel;
+                        this.isLoading = false;
+                        this.isOpen = true;
+                    });
+            },
+            fetchMore() {
+                if (this.isLoading || this.isLoadingMore) return;
+                if (this.results.length >= this.total) return;
+                const q = (this.query || '').trim();
+                if (q.length < 2) return;
+
+                this.isLoadingMore = true;
+                this.$axios
+                    .get("{{ route('admin.dam.directory.search') }}", { params: { q, offset: this.offset } })
+                    .then((response) => {
+                        const next = response.data.data || [];
+                        this.results = this.results.concat(next);
+                        this.offset = this.results.length;
+                        this.total = response.data.meta?.total ?? this.total;
+                        this.isLoadingMore = false;
+                    })
+                    .catch(() => {
+                        this.isLoadingMore = false;
+                        this.errorMessage = this.errorLabel;
+                    });
+            },
+            onScroll(event) {
+                const el = event.target;
+                if (! el) return;
+                const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+                if (distanceFromBottom < 40) {
+                    this.fetchMore();
+                }
+            },
+            selectResult(result) {
+                this.$emitter.emit('dam:reveal-directory', { id: result.id });
+                this.query = '';
+                this.results = [];
+                this.total = 0;
+                this.offset = 0;
+                this.isOpen = false;
+                this.errorMessage = '';
+            },
+            clearAndClose() {
+                this.query = '';
+                this.results = [];
+                this.total = 0;
+                this.offset = 0;
+                this.isOpen = false;
+                this.errorMessage = '';
+            },
+        },
+    });
+</script>
 <!-- asset name template -->
 <script type="text/x-template" id="v-asset-item-template">
     <div
@@ -106,6 +336,7 @@
             class="flex items-center gap-1 w-full pl-1 pt-1 text-nowrap"
             :class="isBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
             :aria-disabled="isBusy"
+            :data-dir-id="item.id"
             @click.stop="isBusy ? null : toggle(item)"
             @contextmenu.prevent.stop="isBusy ? null : showContextMenu($event, item)"
             @dragenter.prevent="isBusy ? null : onDragEnter()"
@@ -190,23 +421,8 @@
                 </template>
             </draggable>
 
-            <!-- Asset loading placeholder — reserves height so the assets
-                 draggable can mount fully populated after fetch, avoiding the
-                 FLIP-animation jerk from Sortable's `animation: 200`. -->
-            <div
-                v-if="assetsLoading && ! assetsLoaded"
-                class="flex flex-col gap-1 py-1"
-                aria-hidden="true"
-            >
-                <div
-                    v-for="n in Math.min((item.assets_count || 1), 3)"
-                    :key="`asset-skel-${n}`"
-                    class="h-5 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"
-                ></div>
-            </div>
             <!-- Asset -->
             <draggable
-                v-if="assetsLoaded"
                 id="assets-items"
                 ghost-class="draggable-ghost"
                 handle=".tree-container-assets-details"
@@ -532,13 +748,15 @@
                 </div>
             </div>
             <div
-                class="tree-container text-nowrap overflow-hidden text-ellipsis"
+                class="tree-container text-nowrap overflow-auto"
+                style="max-height: calc(100vh - 360px);"
                 :class="treeBusy ? 'cursor-not-allowed' : ''"
             >
                 <div
                     class="flex items-center gap-1 w-full p-1 text-nowrap"
                     :class="treeBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
                     :aria-disabled="treeBusy"
+                    :data-dir-id="formattedItems[0].id"
                     @click.stop="treeBusy ? null : resetFilters(formattedItems[0])"
                     @contextmenu.prevent.stop="treeBusy ? null : showContextMenu($event, formattedItems[0])"
                 >
@@ -1004,6 +1222,8 @@
                 this.gridBusy = !! busy;
             });
 
+            this.$emitter.on('dam:reveal-directory', ({ id }) => this.revealDirectory(id));
+
             this.loadDirectories();
         },
 
@@ -1094,6 +1314,59 @@
             closeContextMenu() {
                 this.showContextMenuFlag = false;
                 document.removeEventListener('click', this.closeContextMenu);
+            },
+
+            // Find the path from root to the directory with the given id within
+            // the locally-loaded `formattedItems`. Returns an array of nodes
+            // top-down (root first, target last) or null if not found.
+            findPathToDirectory(id) {
+                const root = this.formattedItems && this.formattedItems[0];
+                if (! root) return null;
+
+                const stack = [[root, [root]]];
+                while (stack.length) {
+                    const [node, path] = stack.pop();
+                    if (Number(node.id) === Number(id)) {
+                        return path;
+                    }
+                    for (const child of (node.children || [])) {
+                        stack.push([child, [...path, child]]);
+                    }
+                }
+                return null;
+            },
+
+            // Expand all ancestors of the target dir, scroll the target row into
+            // view, and fire setFilters() so the grid loads its assets.
+            async revealDirectory(id) {
+                const path = this.findPathToDirectory(id);
+                if (! path) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                    });
+                    return;
+                }
+
+                // Expand every ancestor (all but the last node).
+                for (let i = 0; i < path.length - 1; i++) {
+                    this.$emitter.emit('current-item-expanded', path[i]);
+                }
+
+                await this.$nextTick();
+
+                // Wait one more tick so newly-expanded subtrees mount their rows
+                // before we try to scroll to the target.
+                await this.$nextTick();
+
+                const target = path[path.length - 1];
+                const el = this.$refs.treeContainer
+                    && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
+                if (el && typeof el.scrollIntoView === 'function') {
+                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+
+                this.setFilters(target);
             },
 
             setFilters(item, type = "directory") {
