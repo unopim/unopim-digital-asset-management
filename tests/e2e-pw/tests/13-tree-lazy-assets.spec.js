@@ -2,8 +2,16 @@ const { test, expect } = require('../utils/fixtures');
 const { navigateTo, generateUid } = require('../utils/helpers');
 const path = require('path');
 
+// DAM_TREE_SHOW_ASSETS gates the in-tree asset listing. The assertions below
+// that look for `.tree-container-assets-details` / fetched
+// `/directory-assets/{id}` are valid only when the toggle is ON. CI default is
+// OFF — those tests are skipped there. Spec 18 covers default-OFF behavior.
+const SHOW_ASSETS_ON = ['1', 'true', 'yes', 'on']
+  .includes(String(process.env.DAM_TREE_SHOW_ASSETS ?? '').toLowerCase());
+const REQUIRES_SHOW_ASSETS_ON = 'requires DAM_TREE_SHOW_ASSETS=true';
+
 /**
- * Plan C — lazy-load assets per directory on expand.
+ * Lazy-load assets per directory on expand.
  *
  * Behavior under test:
  *   1. Initial DAM tree render returns directories only (no asset eager-load).
@@ -76,7 +84,7 @@ async function uploadIntoSelectedDirectory(page, filePath) {
   await page.waitForTimeout(800);
 }
 
-test.describe('DAM Tree — Lazy Asset Load (Plan C)', () => {
+test.describe('DAM Tree — Lazy Asset Load', () => {
 
   test('initial tree render does NOT include nested-directory asset nodes', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
@@ -94,6 +102,7 @@ test.describe('DAM Tree — Lazy Asset Load (Plan C)', () => {
   });
 
   test('expanding a child directory fires a GET to directory-assets endpoint', async ({ adminPage }) => {
+    test.skip(! SHOW_ASSETS_ON, REQUIRES_SHOW_ASSETS_ON);
     test.setTimeout(60000);
     const uid = generateUid();
     const dirName = `lazy_fire_${uid}`;
@@ -133,6 +142,7 @@ test.describe('DAM Tree — Lazy Asset Load (Plan C)', () => {
   });
 
   test('expanded directory renders asset rows', async ({ adminPage }) => {
+    test.skip(! SHOW_ASSETS_ON, REQUIRES_SHOW_ASSETS_ON);
     test.setTimeout(60000);
     const uid = generateUid();
     const dirName = `lazy_${uid}`;
@@ -198,6 +208,7 @@ test.describe('DAM Tree — Lazy Asset Load (Plan C)', () => {
   });
 
   test('asset upload into open directory invalidates cache and shows asset', async ({ adminPage }) => {
+    test.skip(! SHOW_ASSETS_ON, REQUIRES_SHOW_ASSETS_ON);
     test.setTimeout(60000);
     const uid = generateUid();
     const dirName = `upload_cache_${uid}`;
@@ -233,6 +244,7 @@ test.describe('DAM Tree — Lazy Asset Load (Plan C)', () => {
   // *drop-zone wiring* — that both source and target directories mount the
   // asset draggable wrapper after expand, which is the prerequisite for drag.
   test('drop zones mount on both source and target after expand', async ({ adminPage }) => {
+    test.skip(! SHOW_ASSETS_ON, REQUIRES_SHOW_ASSETS_ON);
     test.setTimeout(90000);
     const uid = generateUid();
     const srcName = `dz_src_${uid}`;
