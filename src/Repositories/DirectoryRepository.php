@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Repositories;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Core\Eloquent\Repository;
 use Webkul\DAM\Models\Directory;
@@ -239,7 +240,11 @@ class DirectoryRepository extends Repository
         // `withCount('assets')` adds an `assets_count` column without loading
         // the actual asset rows. The tree uses this to render the expand
         // chevron on directories that have assets but no child directories.
-        return $query->get()->toTree();
+        $rollup = $this->getAssetCountsRollup();
+
+        return $query->get()
+            ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
+            ->toTree();
     }
 
     /**
@@ -250,7 +255,48 @@ class DirectoryRepository extends Repository
      */
     public function getFullDirectoryTreeOnly()
     {
-        return $this->model->withCount('assets')->get()->toTree();
+        $rollup = $this->getAssetCountsRollup();
+
+        return $this->model->withCount('assets')
+            ->get()
+            ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
+            ->toTree();
+    }
+
+    /**
+     * Recursive asset-count rollup per directory using the nested-set
+     * `_lft`/`_rgt` columns. Returns `[directory_id => total]` where total
+     * counts distinct assets attached anywhere in the subtree rooted at
+     * the directory (own + every descendant).
+     *
+     * Single query, portable across MySQL + PostgreSQL — no driver-specific
+     * syntax, no raw table names, prefix-aware via the query builder.
+     *
+     * @return array<int, int>
+     */
+    public function getAssetCountsRollup(): array
+    {
+        // Raw SQL because Laravel's query builder prefixes table aliases too
+        // (e.g. `as d` → `prefix_d`) which then mismatches alias references
+        // in subsequent column expressions on Postgres. Composing the SQL
+        // ourselves with `DB::getTablePrefix()` keeps the joins portable
+        // across MySQL + Postgres and works with any prefix configuration.
+        $prefix = DB::getTablePrefix();
+
+        $rows = DB::select("
+            SELECT ancestor.id AS id, COUNT(DISTINCT ad.asset_id) AS total
+            FROM {$prefix}dam_directories AS ancestor
+            LEFT JOIN {$prefix}dam_directories AS descendant
+                ON descendant._lft >= ancestor._lft
+                AND descendant._rgt <= ancestor._rgt
+            LEFT JOIN {$prefix}dam_asset_directory AS ad
+                ON ad.directory_id = descendant.id
+            GROUP BY ancestor.id
+        ");
+
+        return collect($rows)
+            ->mapWithKeys(fn ($row) => [(int) $row->id => (int) $row->total])
+            ->all();
     }
 
     /**
