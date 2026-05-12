@@ -744,7 +744,8 @@
                                                 message: response.data.message
                                             });
                                             this.$emitter.emit('delete-assets', {
-                                                actionType: 'mass-action'
+                                                actionType: 'mass-action',
+                                                count: selectedCount,
                                             });
                                             this.get();
                                         })
@@ -770,6 +771,13 @@
                                                 type: 'success',
                                                 message: response.data.message
                                             });
+
+                                            if ('delete' === actionType) {
+                                                this.$emitter.emit('delete-assets', {
+                                                    actionType: 'mass-action',
+                                                    count: selectedCount,
+                                                });
+                                            }
 
                                             this.get();
                                         })

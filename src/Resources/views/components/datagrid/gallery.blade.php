@@ -169,7 +169,8 @@
                                         message: 'successfully deleted'
                                     });
                                     this.$emitter.emit('delete-assets', {
-                                        actionType: 'single-action'
+                                        actionType: 'single-action',
+                                        count: 1,
                                     });
                                     this.$parent.get();
                                 })

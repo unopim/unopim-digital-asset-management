@@ -1206,12 +1206,20 @@
 
         mounted() {
             this.$emitter.on('uploaded-assets', (data) => {
+                const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
+                if (uploadedCount > 0 && this.selectedItem) {
+                    this.adjustAncestorCounts(this.selectedItem.id, uploadedCount);
+                }
                 this.setAssets(data);
             });
 
-            this.$emitter.on('delete-assets', () => {
+            this.$emitter.on('delete-assets', (payload = {}) => {
                 // Mass-delete from grid — tree structure unchanged, refresh
                 // asset caches without reloading the whole directory tree.
+                const deletedCount = Number(payload.count || 0);
+                if (deletedCount > 0 && this.selectedItem) {
+                    this.adjustAncestorCounts(this.selectedItem.id, -deletedCount);
+                }
                 this.invalidateAllAssetCaches();
             });
 
@@ -1829,6 +1837,33 @@
                 // refresh root's own list.
                 this.$emitter.emit('invalidate-dir-assets', null);
                 this.loadRootAssets();
+            },
+
+            // Walk from root to `dirId` in `formattedItems` and apply `delta`
+            // to every node's `assets_total_count` (the recursive rollup chip).
+            // Client-side bookkeeping so the count stays accurate after upload
+            // / delete without a tree refetch. Drifts only if a second admin
+            // mutates concurrently — reconciles on next page load.
+            adjustAncestorCounts(dirId, delta) {
+                if (! delta || ! this.formattedItems || ! this.formattedItems[0]) return;
+
+                const path = [];
+                const find = (node) => {
+                    path.push(node);
+                    if (Number(node.id) === Number(dirId)) return true;
+                    for (const child of (node.children || [])) {
+                        if (find(child)) return true;
+                    }
+                    path.pop();
+                    return false;
+                };
+
+                if (! find(this.formattedItems[0])) return;
+
+                for (const node of path) {
+                    const current = Number(node.assets_total_count || 0);
+                    node.assets_total_count = Math.max(0, current + delta);
+                }
             },
 
             loadDirectories() {
