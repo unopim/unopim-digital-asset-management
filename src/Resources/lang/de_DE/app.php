@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Verzeichnis umbenennen',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Verzeichnisse suchen...',
+                        'no-matches'      => 'Keine Treffer',
+                        'error'           => 'Suche fehlgeschlagen — bitte erneut versuchen',
+                        'not-found-flash' => 'Verzeichnis nicht mehr verfügbar',
+                        'count'           => ':shown von :total Treffer',
+                        'count-total'     => ':total Treffer',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Asset umbenennen',

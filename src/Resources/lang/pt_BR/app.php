@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Renomear Diretório',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Pesquisar diretórios...',
+                        'no-matches'      => 'Sem resultados',
+                        'error'           => 'Falha na pesquisa — tente novamente',
+                        'not-found-flash' => 'Diretório não está mais acessível',
+                        'count'           => ':shown de :total correspondências',
+                        'count-total'     => ':total correspondências',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Renomear Ativo',

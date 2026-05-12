@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Omdøb mappe',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Søg i mapper...',
+                        'no-matches'      => 'Ingen resultater',
+                        'error'           => 'Søgning mislykkedes — prøv igen',
+                        'not-found-flash' => 'Mappen er ikke længere tilgængelig',
+                        'count'           => ':shown af :total match',
+                        'count-total'     => ':total match',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Omdøb aktiv',

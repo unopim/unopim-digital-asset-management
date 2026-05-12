@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Rinomina Directory',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Cerca directory...',
+                        'no-matches'      => 'Nessun risultato',
+                        'error'           => 'Ricerca non riuscita — riprova',
+                        'not-found-flash' => 'Directory non più accessibile',
+                        'count'           => ':shown di :total corrispondenze',
+                        'count-total'     => ':total corrispondenze',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Rinomina Asset',

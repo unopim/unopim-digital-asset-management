@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Rename Directory',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Search directories...',
+                        'no-matches'      => 'No matches',
+                        'error'           => 'Search failed — try again',
+                        'not-found-flash' => 'Directory no longer accessible',
+                        'count'           => ':shown of :total matches',
+                        'count-total'     => ':total matches',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Rename Asset',

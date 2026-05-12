@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Redenumește Directorul',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Caută directoare...',
+                        'no-matches'      => 'Niciun rezultat',
+                        'error'           => 'Căutarea a eșuat — încearcă din nou',
+                        'not-found-flash' => 'Directorul nu mai este accesibil',
+                        'count'           => ':shown din :total potriviri',
+                        'count-total'     => ':total potriviri',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Redenumește Activul',

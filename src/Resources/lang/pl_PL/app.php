@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Zmień nazwę katalogu',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Szukaj katalogów...',
+                        'no-matches'      => 'Brak wyników',
+                        'error'           => 'Wyszukiwanie nie powiodło się — spróbuj ponownie',
+                        'not-found-flash' => 'Katalog nie jest już dostępny',
+                        'count'           => ':shown z :total dopasowań',
+                        'count-total'     => ':total dopasowań',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Zmień nazwę zasobu',

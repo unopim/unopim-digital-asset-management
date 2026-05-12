@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => '디렉터리 이름 바꾸기',
                     ],
+                    'search' => [
+                        'placeholder'     => '디렉터리 검색...',
+                        'no-matches'      => '일치하는 항목 없음',
+                        'error'           => '검색 실패 — 다시 시도하세요',
+                        'not-found-flash' => '디렉터리에 더 이상 접근할 수 없습니다',
+                        'count'           => ':total개 중 :shown개 일치',
+                        'count-total'     => '일치 :total개',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => '자산 이름 바꾸기',

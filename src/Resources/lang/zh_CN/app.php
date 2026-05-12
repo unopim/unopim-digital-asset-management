@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => '重命名目录',
                     ],
+                    'search' => [
+                        'placeholder'     => '搜索目录...',
+                        'no-matches'      => '无匹配项',
+                        'error'           => '搜索失败 — 请重试',
+                        'not-found-flash' => '目录已无法访问',
+                        'count'           => ':total 中的 :shown 个匹配',
+                        'count-total'     => ':total 个匹配',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => '重命名资产',

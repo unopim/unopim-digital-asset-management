@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Renommer le Répertoire',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Rechercher des répertoires...',
+                        'no-matches'      => 'Aucun résultat',
+                        'error'           => 'Échec de la recherche — veuillez réessayer',
+                        'not-found-flash' => 'Répertoire plus accessible',
+                        'count'           => ':shown sur :total correspondances',
+                        'count-total'     => ':total correspondances',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Renommer l\'Actif',

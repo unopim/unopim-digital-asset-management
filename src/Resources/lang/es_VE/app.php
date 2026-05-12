@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Cambiar nombre del directorio',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Buscar directorios...',
+                        'no-matches'      => 'Sin coincidencias',
+                        'error'           => 'Error en la búsqueda — inténtalo de nuevo',
+                        'not-found-flash' => 'El directorio ya no es accesible',
+                        'count'           => ':shown de :total coincidencias',
+                        'count-total'     => ':total coincidencias',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Cambiar nombre del activo',

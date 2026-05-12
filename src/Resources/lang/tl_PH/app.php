@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Palitan ang Pangalan ng Direktoryo',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Maghanap ng mga direktoryo...',
+                        'no-matches'      => 'Walang nahanap',
+                        'error'           => 'Nabigo ang paghahanap — subukan muli',
+                        'not-found-flash' => 'Hindi na maa-access ang direktoryo',
+                        'count'           => ':shown sa :total tugma',
+                        'count-total'     => ':total tugma',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Palitan ang Pangalan ng Asset',

@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Byt namn på katalog',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Sök kataloger...',
+                        'no-matches'      => 'Inga träffar',
+                        'error'           => 'Sökning misslyckades — försök igen',
+                        'not-found-flash' => 'Katalogen är inte längre tillgänglig',
+                        'count'           => ':shown av :total träffar',
+                        'count-total'     => ':total träffar',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Byt namn på tillgång',

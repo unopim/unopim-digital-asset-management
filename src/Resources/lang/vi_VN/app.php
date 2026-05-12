@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Đổi tên thư mục',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Tìm kiếm thư mục...',
+                        'no-matches'      => 'Không có kết quả',
+                        'error'           => 'Tìm kiếm thất bại — hãy thử lại',
+                        'not-found-flash' => 'Thư mục không còn truy cập được',
+                        'count'           => ':shown trên :total kết quả khớp',
+                        'count-total'     => ':total kết quả khớp',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Đổi tên tài sản',

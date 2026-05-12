@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'निर्देशिका का नाम बदलें',
                     ],
+                    'search' => [
+                        'placeholder'     => 'निर्देशिकाएँ खोजें...',
+                        'no-matches'      => 'कोई परिणाम नहीं',
+                        'error'           => 'खोज विफल — पुनः प्रयास करें',
+                        'not-found-flash' => 'निर्देशिका अब उपलब्ध नहीं है',
+                        'count'           => ':total में से :shown मिलान',
+                        'count-total'     => ':total मिलान',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'संपत्ति का नाम बदलें',

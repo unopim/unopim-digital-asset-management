@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Dizini yeniden adlandır',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Dizinlerde ara...',
+                        'no-matches'      => 'Eşleşme yok',
+                        'error'           => 'Arama başarısız — tekrar deneyin',
+                        'not-found-flash' => 'Dizine artık erişilemiyor',
+                        'count'           => ':total eşleşmeden :shown',
+                        'count-total'     => ':total eşleşme',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Varlığı yeniden adlandır',

@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Preimenuj direktorij',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Pretraži direktorije...',
+                        'no-matches'      => 'Nema rezultata',
+                        'error'           => 'Pretraživanje neuspjelo — pokušajte ponovno',
+                        'not-found-flash' => 'Direktorij više nije dostupan',
+                        'count'           => ':shown od :total podudaranja',
+                        'count-total'     => ':total podudaranja',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Preimenuj resurs',

@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'ディレクトリ名を変更',
                     ],
+                    'search' => [
+                        'placeholder'     => 'ディレクトリを検索...',
+                        'no-matches'      => '一致するものがありません',
+                        'error'           => '検索に失敗しました — 再試行してください',
+                        'not-found-flash' => 'ディレクトリにアクセスできません',
+                        'count'           => ':total件中 :shown件のヒット',
+                        'count-total'     => ':total件のヒット',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'アセット名を変更',

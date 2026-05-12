@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => '重新命名目錄',
                     ],
+                    'search' => [
+                        'placeholder'     => '搜尋目錄...',
+                        'no-matches'      => '無相符項目',
+                        'error'           => '搜尋失敗 — 請再試一次',
+                        'not-found-flash' => '目錄已無法存取',
+                        'count'           => ':total 中的 :shown 個匹配',
+                        'count-total'     => ':total 個匹配',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => '重新命名資產',

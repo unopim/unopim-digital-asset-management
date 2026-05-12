@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Gi mappen nytt navn',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Søk i mapper...',
+                        'no-matches'      => 'Ingen treff',
+                        'error'           => 'Søket mislyktes — prøv igjen',
+                        'not-found-flash' => 'Mappen er ikke lenger tilgjengelig',
+                        'count'           => ':shown av :total treff',
+                        'count-total'     => ':total treff',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Gi ressursen nytt navn',

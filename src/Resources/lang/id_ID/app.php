@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Ganti Nama Direktori',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Cari direktori...',
+                        'no-matches'      => 'Tidak ada hasil',
+                        'error'           => 'Pencarian gagal — coba lagi',
+                        'not-found-flash' => 'Direktori tidak lagi tersedia',
+                        'count'           => ':shown dari :total kecocokan',
+                        'count-total'     => ':total kecocokan',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Ganti Nama Aset',

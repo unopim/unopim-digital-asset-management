@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Hernoem Map',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Mappen zoeken...',
+                        'no-matches'      => 'Geen resultaten',
+                        'error'           => 'Zoeken mislukt — probeer opnieuw',
+                        'not-found-flash' => 'Map niet langer toegankelijk',
+                        'count'           => ':shown van :total overeenkomsten',
+                        'count-total'     => ':total overeenkomsten',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Hernoem Asset',

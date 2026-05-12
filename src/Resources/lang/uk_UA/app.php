@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Перейменувати каталог',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Пошук каталогів...',
+                        'no-matches'      => 'Збігів не знайдено',
+                        'error'           => 'Помилка пошуку — спробуйте ще раз',
+                        'not-found-flash' => 'Каталог більше недоступний',
+                        'count'           => ':shown з :total збігів',
+                        'count-total'     => ':total збігів',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Перейменувати актив',

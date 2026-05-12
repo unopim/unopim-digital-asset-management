@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'إعادة تسمية الدليل',
                     ],
+                    'search' => [
+                        'placeholder'     => 'ابحث في الأدلة...',
+                        'no-matches'      => 'لا توجد نتائج',
+                        'error'           => 'فشل البحث — حاول مرة أخرى',
+                        'not-found-flash' => 'لم يعد الدليل متاحًا',
+                        'count'           => ':shown من :total تطابق',
+                        'count-total'     => ':total تطابق',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'إعادة تسمية الأصل',

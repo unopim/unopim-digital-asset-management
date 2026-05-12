@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Canviar el nom del Directori',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Cerca directoris...',
+                        'no-matches'      => 'Sense coincidències',
+                        'error'           => 'Cerca fallida — torna-ho a provar',
+                        'not-found-flash' => 'El directori ja no és accessible',
+                        'count'           => ':shown de :total coincidències',
+                        'count-total'     => ':total coincidències',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Canviar el nom de l\'Actiu',

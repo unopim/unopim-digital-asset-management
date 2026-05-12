@@ -57,6 +57,14 @@ return [
                     'rename' => [
                         'title' => 'Nimeä hakemisto uudelleen',
                     ],
+                    'search' => [
+                        'placeholder'     => 'Hae hakemistoista...',
+                        'no-matches'      => 'Ei osumia',
+                        'error'           => 'Haku epäonnistui — yritä uudelleen',
+                        'not-found-flash' => 'Hakemisto ei ole enää käytettävissä',
+                        'count'           => ':shown / :total osumaa',
+                        'count-total'     => ':total osumaa',
+                    ],
                     'asset' => [
                         'rename' => [
                             'title'    => 'Nimeä resurssi uudelleen',
