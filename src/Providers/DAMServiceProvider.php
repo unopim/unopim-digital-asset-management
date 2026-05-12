@@ -104,6 +104,8 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/api-acl.php', 'api-acl');
 
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/dam.php', 'dam');
+
         $this->mergeConfigFrom(
             __DIR__.'/../Config/unopim-vite.php',
             'unopim-vite.viters'
