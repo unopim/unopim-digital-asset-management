@@ -329,11 +329,6 @@ class DirectoryRepository extends Repository
 
     /**
      * Total ACL-filtered match count for a directory search query.
-     *
-     * Mirrors search()'s WHERE clause without applying the result limit so
-     * callers can render "showing N of M" hints when the result set exceeds
-     * the cap. Uses Eloquent ->count() which emits driver-correct SQL on
-     * both MySQL and Postgres.
      */
     public function searchCount(string $query): int
     {
@@ -342,10 +337,6 @@ class DirectoryRepository extends Repository
         return $builder === null ? 0 : $builder->count();
     }
 
-    /**
-     * Shared query builder for search() and searchCount(). Returns null when
-     * the query is too short to run.
-     */
     protected function buildSearchQuery(string $query)
     {
         $query = trim($query);
