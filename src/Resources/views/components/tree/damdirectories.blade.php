@@ -1,6 +1,7 @@
 <v-tree-view
     :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
     :accessible-ids='@json(dam_accessible_dir_ids())'
+    :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
 >
     <x-admin::shimmer.tree />
 </v-tree-view>
@@ -102,7 +103,7 @@
 <script type="text/x-template" id="v-item-template">
     <div class="tree-container-details">
         <div
-            class="flex gap-1 w-full pl-1 pt-1 text-nowrap"
+            class="flex items-center gap-1 w-full pl-1 pt-1 text-nowrap"
             :class="isBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
             :aria-disabled="isBusy"
             @click.stop="isBusy ? null : toggle(item)"
@@ -145,6 +146,10 @@
                 class="text-sm"
                 :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
+            <span
+                class="text-xs text-gray-500 dark:text-slate-400 ms-1 select-none"
+                data-asset-total-count
+            >(@{{ item?.assets_total_count ?? 0 }})</span>
         </div>
         <div
             v-show="isOpen"
@@ -256,6 +261,7 @@
 <script type="module">
     app.component('v-tree-item', {
         template: "#v-item-template",
+        inject: ['damTreeShowAssets'],
         props: {
             item: Object,
             selectedItem: Object,
@@ -337,6 +343,10 @@
             },
 
             isAssets: function() {
+                // DAM_TREE_SHOW_ASSETS off → suppress the asset section
+                // entirely regardless of count hints from the backend.
+                if (! this.damTreeShowAssets) return false;
+
                 // True when the directory actually has assets to render:
                 //   - lazy fetch resolved with at least one asset, or
                 //   - backend hint `assets_count > 0`.
@@ -411,6 +421,15 @@
             },
 
             loadDirectoryAssets() {
+                // Skip the network round-trip when the tree is configured
+                // not to render assets — the server returns [] anyway, but
+                // suppressing the request avoids unnecessary traffic on
+                // installs with large folder counts.
+                if (! this.damTreeShowAssets) {
+                    this.assetsLoaded = true;
+                    return;
+                }
+
                 if (this.assetsLoading) {
                     this.assetsStale = true;
                     return;
@@ -502,7 +521,7 @@
                 :class="treeBusy ? 'cursor-not-allowed' : ''"
             >
                 <div
-                    class="flex gap-1 w-full p-1 text-nowrap"
+                    class="flex items-center gap-1 w-full p-1 text-nowrap"
                     :class="treeBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
                     :aria-disabled="treeBusy"
                     @click.stop="treeBusy ? null : resetFilters(formattedItems[0])"
@@ -511,12 +530,14 @@
                     <span>
                         <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
                     </span>
-                    <span 
+                    <span
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
-                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
-                    >
-                        @{{ formattedItems[0].name }}
-                    </span>
+                        :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
+                    >@{{ formattedItems[0].name }}</span>
+                    <span
+                        class="text-xs text-gray-500 dark:text-slate-400 ms-1 select-none"
+                        data-asset-total-count
+                    >(@{{ formattedItems[0].assets_total_count ?? 0 }})</span>
                 </div>
                 <draggable 
                     id="root-tree-groups"
@@ -907,6 +928,19 @@
                 type: Array,
                 default: () => [],
             },
+            showAssets: {
+                type: Boolean,
+                default: false,
+            },
+        },
+        provide() {
+            // DAM_TREE_SHOW_ASSETS env toggle surfaced to descendants. When
+            // false (default), the tree skips lazy-fetching assets and hides
+            // the asset section under each folder. Static per page load, so
+            // non-reactive inject is fine.
+            return {
+                damTreeShowAssets: this.showAssets,
+            };
         },
         data() {
             return {

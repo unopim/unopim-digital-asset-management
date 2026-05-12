@@ -73,6 +73,15 @@ class DirectoryController
      */
     public function directoryAssets(int $id): JsonResponse
     {
+        // DAM_TREE_SHOW_ASSETS env gates the in-tree asset listing. Default
+        // off — frontend still uses the right-hand grid for asset browsing
+        // on directories with large asset counts.
+        if (! config('dam.tree.show_assets')) {
+            return new JsonResponse([
+                'data' => [],
+            ]);
+        }
+
         // Asset listing: strict access (ancestors via expansion don't count).
         if (! $this->permissionService->canAccess($id)) {
             return new JsonResponse([
