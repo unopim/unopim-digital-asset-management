@@ -43,6 +43,7 @@ test.describe('DAM Tree — DAM_TREE_SHOW_ASSETS default behavior', () => {
     await adminPage.waitForLoadState('domcontentloaded');
 
     const dirRows = adminPage.locator('.tree-container-details, .tree-container');
+    await dirRows.first().waitFor({ state: 'visible', timeout: 15000 });
     const count = await dirRows.count();
     expect(count).toBeGreaterThan(0);
   });

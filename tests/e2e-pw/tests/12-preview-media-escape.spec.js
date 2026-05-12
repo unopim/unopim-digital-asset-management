@@ -6,11 +6,20 @@ const ASSETS = path.resolve(__dirname, '../assets');
 
 // Navigate to the edit page of the first asset whose filename contains `ext`.
 // Extension-based search (e.g. '.mp4') matches 'sample(1).mp4', 'sample(5).mp4', etc.
+//
+// Picks the card whose v-for wrapper contains an `<h2>` matching `ext` — not
+// `.image-card.first()`, which can grab the topmost card when the search
+// filter hasn't applied yet and silently route the test to the wrong asset.
 async function navigateToFirstAssetWithExt(page, ext) {
   await navigateTo(page, 'dam');
   await searchInDataGrid(page, ext);
-  const card = page.locator('.image-card').first();
-  await card.waitFor({ state: 'visible', timeout: 20000 });
+  await page.locator('h2').filter({ hasText: ext }).first()
+    .waitFor({ state: 'visible', timeout: 20000 });
+  const cardWrapper = page.locator('div:has(> .image-card)')
+    .filter({ hasText: ext })
+    .first();
+  await cardWrapper.waitFor({ state: 'visible', timeout: 20000 });
+  const card = cardWrapper.locator('.image-card').first();
   await card.hover({ force: true });
   await page.waitForTimeout(300);
   await card.locator('.icon-edit').first().click({ force: true });

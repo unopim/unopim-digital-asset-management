@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid, primeUploadDirectory } = require('../utils/helpers');
 const path = require('path');
 
 const ASSET_IMAGE = path.resolve(__dirname, '../assets/floral.jpg');
@@ -7,11 +7,36 @@ const ASSET_PNG = path.resolve(__dirname, '../assets/dotted.png');
 
 /**
  * Helper: Upload a file via the hidden file input on the DAM page.
+ *
+ * Waits for the directory tree GET to settle before triggering the upload —
+ * `v-dam-upload` only learns the current directory through the tree's
+ * `current-directory` emit, which fires inside that GET's `.then`. If the
+ * file input fires first the POST goes out with no `directory_id` and the
+ * server returns 422, so the new asset never lands in the grid.
+ *
+ * After the upload POST returns, waits for the datagrid refresh GET so the
+ * new asset's `<h2>` is in the DOM before the caller asserts on it.
  */
 async function uploadFile(page, filePath) {
+  await primeUploadDirectory(page);
+
+  const uploadResponse = page.waitForResponse(
+    (res) => /\/admin\/dam\/assets\/upload$/.test(res.url())
+      && res.request().method() === 'POST',
+    { timeout: 60000 }
+  ).catch(() => {});
+
   const fileInput = page.locator('input[type="file"][name="files[]"]');
   await fileInput.setInputFiles(filePath);
-  await page.waitForTimeout(2000);
+  await uploadResponse;
+
+  await page.waitForResponse(
+    (res) => /\/admin\/dam\/assets(\?|$)/.test(res.url())
+      && res.request().method() === 'GET',
+    { timeout: 30000 }
+  ).catch(() => {});
+
+  await page.waitForTimeout(300);
 }
 
 /**

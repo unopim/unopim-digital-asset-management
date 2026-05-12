@@ -34,14 +34,28 @@ async function navigateTo(page, route) {
 
 /**
  * Search in a DataGrid using the search input.
+ *
+ * Waits for the datagrid AJAX response triggered by Enter so the grid
+ * actually reflects the filter before callers inspect it. Polling with a
+ * fixed sleep races on slower CI shards and leaves stale pre-filter cards
+ * visible — every helper that asserts on `.image-card.first()` ends up
+ * inspecting the wrong asset.
  */
 async function searchInDataGrid(page, text, placeholder = 'Search') {
   const searchInput = page.getByPlaceholder(placeholder).first();
   await searchInput.waitFor({ state: 'visible', timeout: 30000 });
   await searchInput.fill(text);
+
+  const responsePromise = page.waitForResponse(
+    (res) => /\/admin\/dam\/assets(\?|$)/.test(res.url())
+      && res.request().method() === 'GET',
+    { timeout: 15000 }
+  ).catch(() => {});
+
   await page.keyboard.press('Enter');
+  await responsePromise;
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(300);
 }
 
 /**
@@ -104,6 +118,21 @@ function generateUid() {
 }
 
 /**
+ * Force the DAM directory tree to broadcast `current-directory` before
+ * touching the upload widget. The tree fires that emit lazily — on a fresh
+ * page, the file input is already in the DOM (canUploadHere=true via
+ * aclBypass) but `v-dam-upload.currentDirectory` is still null, so the
+ * upload POST goes out with no `directory_id` and the server returns 422.
+ * Clicking the root row makes the emit deterministic.
+ */
+async function primeUploadDirectory(page) {
+  const rootRow = page.locator('[data-dir-id]').first();
+  await rootRow.waitFor({ state: 'visible', timeout: 30000 });
+  await rootRow.click({ force: true });
+  await page.waitForTimeout(200);
+}
+
+/**
  * Ensure at least one asset exists in the DAM grid. Uploads a seed image if empty.
  * Required because Playwright sharding can run asset-dependent specs in a shard
  * that doesn't include 03-asset-upload.
@@ -115,6 +144,8 @@ async function ensureAssetExists(page) {
 
   const existing = page.locator('.image-card').first();
   if (await existing.isVisible().catch(() => false)) return;
+
+  await primeUploadDirectory(page);
 
   const fileInput = page.locator('input[type="file"][name="files[]"]');
   await fileInput.waitFor({ state: 'attached', timeout: 15000 });
@@ -134,21 +165,28 @@ async function ensureAssetExists(page) {
 /**
  * Ensure an asset with the given filename exists in DAM. Uploads filePath if missing.
  * Searches by searchName (no extension matching needed, just a substring).
+ *
+ * Existence is checked by matching the grid heading text, not just by any
+ * `.image-card` being visible — a stale pre-filter render leaves an unrelated
+ * card on screen and would otherwise skip the upload.
  */
 async function ensureAssetOfTypeExists(page, filePath, searchName) {
   await navigateTo(page, 'dam');
   await page.waitForTimeout(500);
 
   await searchInDataGrid(page, searchName);
-  await page.waitForTimeout(500);
 
-  const exists = await page.locator('.image-card').first().isVisible({ timeout: 3000 }).catch(() => false);
+  const exists = await page.locator('h2').filter({ hasText: searchName }).first()
+    .isVisible({ timeout: 3000 })
+    .catch(() => false);
 
   // Navigate fresh to clear the search filter regardless of result
   await navigateTo(page, 'dam');
   await page.waitForTimeout(300);
 
   if (exists) return;
+
+  await primeUploadDirectory(page);
 
   const fileInput = page.locator('input[type="file"][name="files[]"]');
   await fileInput.waitFor({ state: 'attached', timeout: 15000 });
@@ -157,7 +195,8 @@ async function ensureAssetOfTypeExists(page, filePath, searchName) {
   await Promise.race([
     page.locator('#app').getByText(/uploaded successfully/i).first()
       .waitFor({ state: 'visible', timeout: 30000 }),
-    page.locator('.image-card').first().waitFor({ state: 'visible', timeout: 30000 }),
+    page.locator('h2').filter({ hasText: searchName }).first()
+      .waitFor({ state: 'visible', timeout: 30000 }),
   ]).catch(() => {});
 
   await navigateTo(page, 'dam');
@@ -165,13 +204,28 @@ async function ensureAssetOfTypeExists(page, filePath, searchName) {
 
 /**
  * Search for an asset by name in the DAM grid and navigate to its edit page.
+ *
+ * Verifies the grid actually rendered a matching `<h2>` before clicking the
+ * first `.image-card`. Without that check, a stale pre-filter render sends
+ * callers to whichever asset happens to be first in the grid, not the one
+ * they searched for.
  */
 async function navigateToAssetEditByName(page, searchName) {
   await navigateTo(page, 'dam');
   await searchInDataGrid(page, searchName);
 
-  const card = page.locator('.image-card').first();
-  await card.waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('h2').filter({ hasText: searchName }).first()
+    .waitFor({ state: 'visible', timeout: 15000 });
+
+  // Click the .image-card whose v-for wrapper also contains the matching h2.
+  // Picking .image-card.first() blindly catches the topmost card when the
+  // search filter hasn't applied yet — sending callers to the wrong asset's
+  // edit page.
+  const cardWrapper = page.locator('div:has(> .image-card)')
+    .filter({ hasText: searchName })
+    .first();
+  await cardWrapper.waitFor({ state: 'visible', timeout: 15000 });
+  const card = cardWrapper.locator('.image-card').first();
   await card.hover({ force: true });
   await page.waitForTimeout(300);
   await card.locator('.icon-edit').first().click({ force: true });
@@ -180,6 +234,7 @@ async function navigateToAssetEditByName(page, searchName) {
 }
 
 module.exports = {
+  primeUploadDirectory,
   ROUTES,
   navigateTo,
   searchInDataGrid,
