@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Repositories;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Core\Eloquent\Repository;
@@ -297,6 +298,90 @@ class DirectoryRepository extends Repository
         return collect($rows)
             ->mapWithKeys(fn ($row) => [(int) $row->id => (int) $row->total])
             ->all();
+    }
+
+    /**
+     * Substring directory search filtered by ACL visibility.
+     *
+     * @return Collection
+     */
+    public function search(string $query, int $limit = 20, int $offset = 0)
+    {
+        $builder = $this->buildSearchQuery($query);
+
+        if ($builder === null) {
+            return collect();
+        }
+
+        $matches = $builder
+            ->orderBy('name')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit($limit)
+            ->get(['id', 'name', 'parent_id', '_lft', '_rgt']);
+
+        return $matches->map(function ($directory) {
+            $directory->path_names = $this->resolveAncestorPathNames($directory);
+
+            return $directory;
+        })->values();
+    }
+
+    /**
+     * Total ACL-filtered match count for a directory search query.
+     *
+     * Mirrors search()'s WHERE clause without applying the result limit so
+     * callers can render "showing N of M" hints when the result set exceeds
+     * the cap. Uses Eloquent ->count() which emits driver-correct SQL on
+     * both MySQL and Postgres.
+     */
+    public function searchCount(string $query): int
+    {
+        $builder = $this->buildSearchQuery($query);
+
+        return $builder === null ? 0 : $builder->count();
+    }
+
+    /**
+     * Shared query builder for search() and searchCount(). Returns null when
+     * the query is too short to run.
+     */
+    protected function buildSearchQuery(string $query)
+    {
+        $query = trim($query);
+
+        if (mb_strlen($query) < 2) {
+            return null;
+        }
+
+        $service = app(DirectoryPermissionService::class);
+
+        $builder = $this->model->newQuery()
+            ->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($query).'%']);
+
+        if (! $service->bypass()) {
+            $builder->whereIn('id', $service->viewableIds());
+        }
+
+        return $builder;
+    }
+
+    /**
+     * Resolve top-down ancestor name chain (Root, ..., target) for a directory
+     * using the nested-set _lft/_rgt columns.
+     */
+    protected function resolveAncestorPathNames($directory): array
+    {
+        $ancestors = $this->model->newQuery()
+            ->where('_lft', '<', $directory->_lft)
+            ->where('_rgt', '>', $directory->_rgt)
+            ->orderBy('_lft')
+            ->pluck('name')
+            ->all();
+
+        $ancestors[] = $directory->name;
+
+        return $ancestors;
     }
 
     /**

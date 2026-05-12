@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
+use Webkul\DAM\Http\Requests\DirectorySearchRequest;
 use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
@@ -41,6 +42,33 @@ class DirectoryController
 
         return new JsonResponse([
             'data' => $directories,
+        ]);
+    }
+
+    /**
+     * Substring search across ACL-visible directories.
+     */
+    public function search(DirectorySearchRequest $request): JsonResponse
+    {
+        $q = $request->validated('q');
+        $limit = 20;
+        $offset = (int) ($request->validated('offset') ?? 0);
+
+        $results = $this->directoryRepository->search($q, $limit, $offset);
+        $total = $this->directoryRepository->searchCount($q);
+
+        return new JsonResponse([
+            'data' => $results->map(fn ($directory) => [
+                'id'         => $directory->id,
+                'name'       => $directory->name,
+                'parent_id'  => $directory->parent_id,
+                'path_names' => $directory->path_names,
+            ])->values(),
+            'meta' => [
+                'total'  => $total,
+                'limit'  => $limit,
+                'offset' => $offset,
+            ],
         ]);
     }
 
