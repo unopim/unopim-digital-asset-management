@@ -22,7 +22,6 @@ Route::group([
         Route::put('/{id}', 'update')->name('admin.api.dam.assets.update');
         Route::post('', 'upload')->name('admin.api.dam.assets.upload');
         Route::delete('/{id}', 'destroy')->name('admin.api.dam.assets.destroy');
-        Route::get('/signUrlDownload/{id}', 'signedUrl')->name('admin.api.dam.assets.private.download');
         Route::get('/download/{id}', 'download')->name('admin.api.dam.assets.download');
     });
 

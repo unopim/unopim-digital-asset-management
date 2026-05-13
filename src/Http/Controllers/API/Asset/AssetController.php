@@ -226,6 +226,8 @@ class AssetController extends Controller
                     'meta_data' => json_encode($metaData),
                 ]);
 
+                $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
+
                 $assetIds[] = $asset->id;
                 $uploadFiles[] = $asset;
             } catch (\Exception $e) {
@@ -321,6 +323,16 @@ class AssetController extends Controller
             $localFilePath = $file->getRealPath();
             $metaData = $this->metadataExtractionService->extractMetadata($localFilePath, disk: 'local', originalFileName: $originalName);
 
+            if (str_starts_with($mimeType ?? '', 'audio/') && $localFilePath && file_exists($localFilePath)) {
+                $coverData = $this->metadataExtractionService->extractCoverArtData($localFilePath);
+                if ($coverData) {
+                    $coverPath = $this->metadataExtractionService->storeCoverArt($coverData, $asset->id, $disk);
+                    if ($coverPath) {
+                        $metaData = array_merge($metaData, ['cover_art_path' => $coverPath]);
+                    }
+                }
+            }
+
             $filePath = $this->fileStorer->store(
                 path: $directoryPath,
                 file: $file,
@@ -344,6 +356,34 @@ class AssetController extends Controller
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
             'file'    => $asset,
         ], 201);
+    }
+
+    /**
+     * For audio assets, extract embedded cover art and attach its storage path
+     * to the asset's meta_data. No-op for non-audio mime types or when no
+     * embedded artwork is found.
+     */
+    private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
+    {
+        if (! str_starts_with($mimeType ?? '', 'audio/')) {
+            return;
+        }
+
+        if (! $localFilePath || ! file_exists($localFilePath)) {
+            return;
+        }
+
+        $coverData = $this->metadataExtractionService->extractCoverArtData($localFilePath);
+        if (! $coverData) {
+            return;
+        }
+
+        $coverPath = $this->metadataExtractionService->storeCoverArt($coverData, $asset->id, $disk);
+        if (! $coverPath) {
+            return;
+        }
+
+        $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
     }
 
     /**
@@ -583,19 +623,21 @@ class AssetController extends Controller
             ], 404);
         }
 
-        if ($disk === 'private') {
-            $downloadUrl = URL::temporarySignedRoute(
-                'admin.api.dam.assets.private.download',
-                now()->addMinutes(10),
-                ['id' => $asset->id]
-            );
-        } else {
+        $fileName = $asset->file_name ?? basename($asset->path);
+
+        if (config('filesystems.default') === 's3') {
             $downloadUrl = Storage::disk($disk)->temporaryUrl(
                 $asset->path,
                 now()->addMinutes(10),
                 [
-                    'ResponseContentDisposition' => 'attachment; filename="'.($asset->file_name ?? basename($asset->path)).'"',
+                    'ResponseContentDisposition' => 'attachment; filename="'.$fileName.'"',
                 ]
+            );
+        } else {
+            $downloadUrl = URL::temporarySignedRoute(
+                'admin.api.dam.assets.private.download',
+                now()->addMinutes(10),
+                ['id' => $asset->id]
             );
         }
 
