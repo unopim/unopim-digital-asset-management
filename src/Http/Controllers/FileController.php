@@ -213,7 +213,48 @@ class FileController
                 ->header('Content-Type', 'image/svg+xml');
         }
 
+        if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
+            $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+
+            if ($assetUrl !== null) {
+                return redirect()->away($assetUrl);
+            }
+        }
+
         return $this->getDefaultThumbnailImage($path);
+    }
+
+    /**
+     * Whether the current request looks like a top-level browser navigation
+     * (new tab / address bar) rather than an <img>/<video> resource fetch.
+     */
+    private function isBrowserNavigation(): bool
+    {
+        $accept = (string) request()->header('Accept', '');
+
+        return str_contains($accept, 'text/html');
+    }
+
+    /**
+     * Resolve a URL the browser can navigate to for the underlying asset.
+     *
+     * S3 disks return their (public or presigned) object URL directly.
+     * Private/local disks fall back to the auth-checked fetch route so the
+     * file can still be streamed without exposing it publicly.
+     */
+    private function resolveAssetOpenUrl(string $disk, string $path): ?string
+    {
+        if (config('filesystems.default') === 's3') {
+            try {
+                $url = Storage::disk($disk)->url($path);
+
+                return ! empty($url) ? $url : null;
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
+
+        return route('admin.dam.file.fetch', ['path' => $path]);
     }
 
     /**
