@@ -83,7 +83,14 @@ it('should serve a default thumbnail when the file is not an image', function ()
     Storage::fake('public');
     Storage::disk('public')->put('dam/grid/file.svg', '<svg/>');
 
-    $response = $this->call('GET', route('admin.dam.file.thumbnail'), ['path' => $path]);
+    $response = $this->call(
+        'GET',
+        route('admin.dam.file.thumbnail'),
+        ['path' => $path],
+        [],
+        [],
+        ['HTTP_ACCEPT' => 'image/*']
+    );
 
     $response->assertOk();
 });
