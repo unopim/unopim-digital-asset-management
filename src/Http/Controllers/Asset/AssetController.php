@@ -801,17 +801,29 @@ class AssetController extends Controller
 
         // Svg Image Download
         if ($asset->extension === 'svg' && $format) {
-            $svgContent = Storage::disk($disk)->get($asset->path);
+            if (! extension_loaded('imagick')) {
+                return Storage::disk($disk)->download($asset->path, $asset->file_name);
+            }
 
-            $imagick = new \Imagick;
-            $imagick->readImageBlob($svgContent);
-            $imagick->setImageFormat($format);
+            try {
+                $svgContent = Storage::disk($disk)->get($asset->path);
 
-            $fileName = pathinfo($asset->file_name, PATHINFO_FILENAME).'.'.$format;
-            $tempFilePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.$fileName;
-            $imagick->writeImage($tempFilePath);
+                $imagick = new \Imagick;
+                $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
+                $imagick->readImageBlob($svgContent, 'image.svg');
+                $imagick->setImageFormat($format);
 
-            return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+                $fileName = pathinfo($asset->file_name, PATHINFO_FILENAME).'.'.$format;
+                $tempFilePath = tempnam(sys_get_temp_dir(), 'svg_').'.'.$format;
+                $imagick->writeImage($tempFilePath);
+                $imagick->clear();
+
+                return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
+            } catch (\ImagickException $e) {
+                \Log::warning('SVG conversion failed', ['asset_id' => $asset->id, 'error' => $e->getMessage()]);
+
+                return Storage::disk($disk)->download($asset->path, $asset->file_name);
+            }
         }
 
         // Image Download
