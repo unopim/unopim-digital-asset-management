@@ -565,6 +565,8 @@ it('moves a single asset from one directory to another (drag-move)', function ()
 });
 
 it('after drag-move, source directory.assets no longer lists the asset', function () {
+    config()->set('dam.tree.show_assets', true);
+
     [$src, $dst, $asset] = seedAssetMove();
 
     $this->postJson(route('admin.dam.assets.moved'), [
@@ -579,6 +581,8 @@ it('after drag-move, source directory.assets no longer lists the asset', functio
 });
 
 it('after drag-move, target directory.assets includes the asset', function () {
+    config()->set('dam.tree.show_assets', true);
+
     [$src, $dst, $asset] = seedAssetMove();
 
     $this->postJson(route('admin.dam.assets.moved'), [

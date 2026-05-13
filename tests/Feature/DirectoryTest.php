@@ -54,6 +54,8 @@ it('should return the children directory data when directory exists', function (
 });
 
 it('returns assets of the directory when directory exists (many-to-many)', function () {
+    config()->set('dam.tree.show_assets', true);
+
     $directory = Directory::factory()->create();
     $assets = Asset::factory()->count(3)->create();
 
@@ -246,6 +248,8 @@ it('should return 404 when directory not found for children', function () {
 });
 
 it('should return 404 when directory not found for assets', function () {
+    config()->set('dam.tree.show_assets', true);
+
     $response = $this->getJson(route('admin.dam.directory.assets', 99999));
 
     $response->assertStatus(404)
@@ -336,6 +340,8 @@ it('directory.index with with_assets=1 eager-loads assets (picker path preserved
 });
 
 it('directory.assets/{id} returns only that directory\'s assets', function () {
+    config()->set('dam.tree.show_assets', true);
+
     $dirA = Directory::factory()->create();
     $dirB = Directory::factory()->create();
 
