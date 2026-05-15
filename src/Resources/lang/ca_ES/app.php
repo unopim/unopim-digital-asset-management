@@ -17,8 +17,6 @@ return [
                 'field' => [
                     'add-asset'     => 'Afegir Actiu',
                     'assign-assets' => 'Assignar Actius',
-                    'assign'        => 'Assignar',
-                    'preview-asset' => 'Previsualitzar Actiu',
                     'preview'       => 'Previsualitzar',
                     'remove'        => 'Eliminar',
                     'download'      => 'Descarregar',
@@ -26,6 +24,16 @@ return [
             ],
         ],
         'dam' => [
+            'file' => [
+                'deleted'   => 'Fitxer eliminat',
+                'not-found' => 'Fitxer no trobat',
+            ],
+
+            'image-edit' => [
+                'cannot-decode'  => 'No es pot descodificar la imatge',
+                'preview-failed' => 'Error de previsualització',
+            ],
+
             'index' => [
                 'title'    => 'DAM',
                 'datagrid' => [
@@ -37,7 +45,6 @@ return [
                     'updated-at'     => 'Actualitzat el',
                     'extension'      => 'Extensió',
                     'path'           => 'Ruta',
-                    'size'           => 'Mida',
                 ],
                 'mass-action' => [
                     'deleting'   => 'S\'estan eliminant :count actius…',
@@ -145,7 +152,6 @@ return [
                     ],
                 ],
                 'comments' => [
-                    'index'  => 'Afegir Comentari',
                     'create' => [
                         'create-success' => 'El comentari s\'ha afegit correctament',
                         'create-failure' => 'No s\'ha pogut crear el comentari',
@@ -172,7 +178,6 @@ return [
                     'next'                  => 'Següent',
                     'name'                  => 'Nom',
                     'value'                 => 'Valor',
-                    'back-btn'              => 'Enrere',
                     'save-btn'              => 'Desar',
                     'file-name'             => 'Nom del fitxer',
                     'file-info'             => 'Informació del fitxer',
@@ -184,12 +189,9 @@ return [
                     'updated-at'            => 'Actualitzat',
                     'embedded_meta_info'    => 'Informació Meta Incrustada',
                     'no-metadata-available' => 'No hi ha metadades disponibles',
-                    'custom_meta_info'      => 'Informació Meta Personalitzada',
                     'tags'                  => 'Etiquetes',
                     'select-tags'           => 'Escollir o Crear una Etiqueta',
-                    'tag'                   => 'Etiqueta',
                     'directory-path'        => 'Ruta del Directori',
-                    'add_tags'              => 'Afegir Etiquetes',
                     'tab'                   => [
                         'preview'          => 'Vista prèvia',
                         'properties'       => 'Propietats',
@@ -206,7 +208,6 @@ return [
                         'cancel'              => 'Cancel·lar',
                         're-upload-cancelled' => 'Càrrega cancel·lada.',
                         'delete'              => 'Eliminar',
-                        'preview'             => 'Vista prèvia',
                     ],
                     'preview-modal' => [
                         'not-available' => 'La vista prèvia no està disponible per a aquest tipus de fitxer.',
@@ -268,9 +269,6 @@ return [
                         'title'                    => 'Editor d\'imatges',
                         'tools'                    => 'Eines',
                         'close'                    => 'Tancar l\'editor',
-                        'ai-badge'                 => 'IA',
-                        'bg-remove'                => 'Eliminació del fons',
-                        'bg-remove-sub'            => 'Impulsat per IA',
                         'crop'                     => 'Retallar i redimensionar',
                         'crop-sub'                 => 'Retallar o escalar la imatge',
                         'adjust'                   => 'Brillantor i contrast',
@@ -292,7 +290,6 @@ return [
                         'flip'                     => 'Invertir',
                         'horizontal'               => 'Horitzontal',
                         'vertical'                 => 'Vertical',
-                        'ai-settings'              => 'Configuració IA',
                         'platform'                 => 'Plataforma',
                         'platform-loading'         => 'Carregant…',
                         'no-platforms'             => 'Cap plataforma',
@@ -324,13 +321,11 @@ return [
                         'model'                    => 'Model',
                         'no-models'                => 'Cap model',
                         'prompt'                   => 'Indicació',
-                        'prompt-placeholder'       => 'Descriu què cal eliminar o com processar la imatge…',
                         'apply'                    => 'Aplicar',
                         'applying'                 => 'Aplicant…',
                         'error-platforms'          => 'No s\'han pogut carregar les plataformes d\'IA.',
                         'error-select-color'       => 'Seleccioneu un color de fons.',
                         'error-operation'          => 'L\'operació ha fallat. Torneu-ho a provar.',
-                        'error-network'            => 'Error de xarxa. Torneu-ho a provar.',
                         'success-updated'          => 'Imatge actualitzada correctament.',
                         'success-adjusted'         => 'Imatge ajustada correctament.',
                         'success-transformed'      => 'Imatge transformada correctament.',
@@ -349,7 +344,6 @@ return [
                         'bg-upload-hint'           => 'Feu clic per carregar una imatge de fons',
                         'bg-upload-change'         => 'Feu clic per canviar',
                         'bg-ai-prompt-placeholder' => 'Descriviu el fons que voleu…',
-                        'bg-ai-hint'               => 'La IA generarà un fons usant la plataforma predeterminada.',
                         'sharpen'                  => 'Enfocament',
                         'blur'                     => 'Desenfocament',
                         'filters'                  => 'Filtres',
@@ -377,7 +371,6 @@ return [
                     'not-found'     => 'Recurs no trobat',
                 ],
                 'tags' => [
-                    'index'  => 'Afegir etiquetes',
                     'create' => [
                         'create-success' => 'Les etiquetes s\'han afegit correctament',
                         'create-failure' => 'No s\'han pogut crear les etiquetes',
@@ -405,7 +398,6 @@ return [
                     'files-upload-failed'                 => 'No s\'han pogut pujar els fitxers.',
                     'file-upload-failed'                  => 'No s\'ha pogut pujar el fitxer',
                     'invalid-file'                        => 'Fitxer no vàlid proporcionat',
-                    'invalid-file-format'                 => 'Format no vàlid',
                     'invalid-file-format-or-not-provided' => 'No s\'han proporcionat fitxers o el format no és vàlid.',
                     'download-image-failed'               => 'No s\'ha pogut descarregar la imatge des de l\'URL',
                     'file-process-failed'                 => 'Alguns fitxers no s\'han pogut processar',
@@ -459,16 +451,7 @@ return [
             'title'            => 'DAM Directory Permissions',
             'tab-subtitle'     => 'Directoris als quals aquest rol pot accedir.',
             'no-actions'       => 'Només visualització. Obre una subcarpeta a la qual tinguis accés.',
-            'role-label'       => 'Role',
-            'role-placeholder' => 'Select a role',
-            'directories'      => 'Visible directories',
-            'no-roles'         => 'No custom roles available. Only roles with permission type "custom" can be restricted to specific directories.',
-            'save'             => 'Save Permissions',
-            'saved'            => 'Directory permissions updated.',
-            'unauthorized'     => 'You are not allowed to manage DAM directory permissions.',
-            'back-btn'         => 'Back to DAM',
-            'granted-count'    => 'Granted directories',
-            'no-grants'        => 'No directories are granted to your role yet.',
+            'unauthorized'     => 'No teniu permís per accedir a aquest directori.',
         ],
         'validation' => [
             'asset' => [
@@ -476,11 +459,6 @@ return [
             ],
             'comment' => [
                 'required' => 'El missatge del comentari és obligatori.',
-            ],
-            'tag' => [
-                'name' => [
-                    'required' => 'El camp Etiqueta és obligatori.',
-                ],
             ],
             'property' => [
                 'name' => [
