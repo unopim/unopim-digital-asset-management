@@ -21,10 +21,8 @@ class DirectoryPermissionService
     /**
      * True when directory ACL filtering should be skipped for the current request.
      *
-     * The filter ONLY engages for an authenticated `admin` web-guarded user whose
-     * role has `permission_type = 'custom'`. Anything else — anonymous, API-token
-     * (admin-api), or `permission_type = 'all'` super-admin — bypasses the filter
-     * so that API consumers and superadmins keep seeing the full DAM unchanged.
+     * Skipped for: anonymous requests and admins whose role has `permission_type != 'custom'`.
+     * Enforced for: any authenticated admin (web or API) whose role is `permission_type = 'custom'`.
      */
     public function bypass(): bool
     {
@@ -40,7 +38,7 @@ class DirectoryPermissionService
     /**
      * Resolve all directory ids the current admin is allowed to view.
      * Memoised per request. Returns every directory id when the request bypasses
-     * the filter (anonymous, API guard, or `permission_type = 'all'`).
+     * the filter (anonymous requests or admins with `permission_type = 'all'`).
      *
      * Granting a deep directory (e.g. Root/Audio and Video/Audio) implicitly
      * exposes its ancestors so the tree can render the path down to it.
@@ -146,14 +144,17 @@ class DirectoryPermissionService
         $this->cachedForAdminId = null;
     }
 
+    /**
+     * Resolve the authenticated Admin for the current request.
+     * Checks the web `admin` guard first, then the Passport `api` guard,
+     * so both web sessions and API tokens resolve to the same Admin model
+     * and go through identical directory permission filtering.
+     */
     protected function currentAdmin()
     {
-        // Defensive: in unit tests the Auth facade is sometimes partially mocked
-        // (only `check()` expected). Calling `guard()` on such a mock raises
-        // BadMethodCallException — treat it as "no admin" so the service
-        // bypasses cleanly instead of breaking unrelated tests.
         try {
-            return auth()->guard('admin')->user();
+            return auth()->guard('admin')->user()
+                ?? auth()->guard('api')->user();
         } catch (\BadMethodCallException) {
             return null;
         }

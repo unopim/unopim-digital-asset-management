@@ -20,11 +20,14 @@ use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 
 class AssetController extends Controller
 {
+    use AssetAccessControl;
     use DirectoryTrait;
 
     /**
@@ -46,11 +49,7 @@ class AssetController extends Controller
      */
     public function index(): JsonResponse
     {
-        try {
-            return app(AssetDataSource::class)->toJson();
-        } catch (\Exception $e) {
-            return $this->storeExceptionLog($e);
-        }
+        return app(AssetDataSource::class)->toJson();
     }
 
     /**
@@ -169,6 +168,15 @@ class AssetController extends Controller
         }
 
         $directoryId = $request->get('directory_id');
+
+        $service = app(DirectoryPermissionService::class);
+        if (! $service->canAccess((int) $directoryId)) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->find($directoryId);
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
@@ -288,6 +296,8 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset($assetId);
 
         $directoryId = $asset->directories()->first()->id ?? null;
         $directory = $this->directoryRepository->find($directoryId);
@@ -417,6 +427,8 @@ class AssetController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset($id);
+
         $asset->previewPath = AssetHelper::getPreviewUrl(
             $asset->path,
             $asset->file_size
@@ -462,12 +474,15 @@ class AssetController extends Controller
     {
         $asset = $this->assetRepository->find($id);
         $disk = Directory::getAssetDisk();
+
         if (! $asset) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset($id);
 
         $asset->previewPath = AssetHelper::getPreviewUrl(
             $asset->path,
@@ -519,6 +534,8 @@ class AssetController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset((int) $id);
+
         $request->validate([
             'file_name' => 'string',
             'file_type' => 'string',
@@ -568,6 +585,8 @@ class AssetController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset((int) $id);
+
         if ($asset->resources()->get()->count()) {
             return response()->json([
                 'success' => false,
@@ -613,13 +632,15 @@ class AssetController extends Controller
 
     public function download(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         $asset = Asset::find($id);
         $disk = Directory::getAssetDisk();
 
         if (! $asset || ! Storage::disk($disk)->exists($asset->path)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Asset not found or file does not exist.',
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-or-no-file'),
             ], 404);
         }
 
@@ -643,7 +664,7 @@ class AssetController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Asset found. You can download the file from the provided link.',
+            'message' => trans('dam::app.admin.dam.asset.datagrid.download-link-ready'),
             'data'    => [
                 'download_url' => $downloadUrl,
             ],

@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class TagController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -39,7 +42,7 @@ class TagController extends Controller
     /**
      * To add the asset tag
      */
-    protected function addTag(Request $request)
+    public function addTag(Request $request)
     {
         $request->validate([
             'tag'      => 'required|max:100',
@@ -49,6 +52,8 @@ class TagController extends Controller
         $newTag = $request->get('tag');
 
         $assetId = $request->get('asset_id');
+
+        $this->damAuthorizeAsset((int) $assetId);
 
         $asset = $this->assetRepository->find($assetId);
 
@@ -96,7 +101,7 @@ class TagController extends Controller
     /**
      * To remove the asset tag
      */
-    protected function removeTag(Request $request)
+    public function removeTag(Request $request)
     {
         $request->validate([
             'tag'      => 'required',
@@ -106,6 +111,8 @@ class TagController extends Controller
         $newTag = $request->get('tag');
 
         $assetId = $request->get('asset_id');
+
+        $this->damAuthorizeAsset((int) $assetId);
 
         $asset = $this->assetRepository->find($assetId);
 

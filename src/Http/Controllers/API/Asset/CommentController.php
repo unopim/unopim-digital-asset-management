@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetCommentsRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class CommentController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -26,13 +29,15 @@ class CommentController extends Controller
     {
 
         $comment = $this->assetCommentRepository->find($id);
-        // $comment = $this->assetCommentRepository->where('dam_asset_id', $id)->get();
+
         if (! $comment) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.comments.not-found'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset($comment->dam_asset_id);
 
         return response()->json([
             'success' => true,
@@ -47,16 +52,18 @@ class CommentController extends Controller
      */
     public function update(int $id)
     {
+        $comment = $this->assetCommentRepository->find($id);
+
+        if (! $comment) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.not-found'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset($comment->dam_asset_id);
+
         try {
-            $comment = $this->assetCommentRepository->find($id);
-
-            if (! $comment) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('dam::app.admin.dam.asset.comments.not-found'),
-                ], 404);
-            }
-
             $comment = $this->assetCommentRepository->update(request()->only([
                 'comments',
             ]), $id);
@@ -82,16 +89,18 @@ class CommentController extends Controller
      */
     public function delete(int $id)
     {
+        $comment = $this->assetCommentRepository->find($id);
+
+        if (! $comment) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.not-found'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset($comment->dam_asset_id);
+
         try {
-            $comment = $this->assetCommentRepository->find($id);
-
-            if (! $comment) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('dam::app.admin.dam.asset.comments.not-found'),
-                ], 404);
-            }
-
             $comment = $this->assetCommentRepository->delete($id);
 
             return response()->json([
@@ -122,8 +131,10 @@ class CommentController extends Controller
         $this->validate($request, [
             'comments'     => 'required|min:2|max:1000',
             'dam_asset_id' => 'required|integer|exists:dam_assets,id',
-            'parent_id'    => 'nullable|exists:comments,id',
+            'parent_id'    => 'nullable|integer|exists:dam_asset_comments,id',
         ], $messages);
+
+        $this->damAuthorizeAsset((int) $request->input('dam_asset_id'));
 
         try {
             $comment = $this->assetCommentRepository->create([

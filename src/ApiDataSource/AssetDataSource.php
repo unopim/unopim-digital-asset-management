@@ -7,6 +7,7 @@ use Webkul\AdminApi\ApiDataSource;
 use Webkul\DAM\Database\Eloquent\Builder;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetDataSource extends ApiDataSource
 {
@@ -34,6 +35,36 @@ class AssetDataSource extends ApiDataSource
     public function prepareApiQueryBuilder()
     {
         return $this->assetRepository->queryBuilder();
+    }
+
+    /**
+     * Inject directory permission scope into every query.
+     * Called inside the scopeQuery closure in ApiDataSource::processRequestedFilters,
+     * so $queryBuilder is the underlying Eloquent builder — mutations apply in place.
+     */
+    public function setDefaultFilters($queryBuilder)
+    {
+        $service = app(DirectoryPermissionService::class);
+
+        if ($service->bypass()) {
+            return $queryBuilder;
+        }
+
+        $allowedIds = $service->directlyGrantedIds();
+
+        if (empty($allowedIds)) {
+            $queryBuilder->whereRaw('1 = 0');
+
+            return $queryBuilder;
+        }
+
+        $queryBuilder->whereIn('id', function ($sub) use ($allowedIds) {
+            $sub->select('asset_id')
+                ->from('dam_asset_directory')
+                ->whereIn('directory_id', $allowedIds);
+        });
+
+        return $queryBuilder;
     }
 
     /**

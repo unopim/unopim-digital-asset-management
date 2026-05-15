@@ -116,3 +116,21 @@ it('exposes ancestors of granted directories as viewable but not accessible', fu
     expect($this->service->canAccess($av->id))->toBeFalse();
     expect($this->service->canAccess($root->id))->toBeFalse();
 });
+
+it('does not bypass for an api-guard user with a custom role', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'api');
+    $this->service->flush();
+
+    expect($this->service->bypass())->toBeFalse();
+});
+
+it('bypasses for an api-guard user with permission_type all', function () {
+    $role = Role::factory()->create(['permission_type' => 'all']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'api');
+    $this->service->flush();
+
+    expect($this->service->bypass())->toBeTrue();
+});

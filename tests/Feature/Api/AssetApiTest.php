@@ -1,11 +1,15 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
@@ -301,6 +305,140 @@ it('extracts and stores audio cover art when reuploading audio via the api', fun
 
     expect($asset->meta_data)->toHaveKey('cover_art_path')
         ->and($asset->meta_data['cover_art_path'])->toBe('covers/'.$asset->id.'.jpg');
+});
+
+it('only lists assets from granted directories for a custom-role api user', function () {
+    // granted directory + asset
+    $grantedDir = Directory::factory()->create();
+    $grantedAsset = Asset::factory()->create();
+    $grantedAsset->directories()->attach($grantedDir->id);
+
+    // denied directory + asset
+    $deniedDir = Directory::factory()->create();
+    $deniedAsset = Asset::factory()->create();
+    $deniedAsset->directories()->attach($deniedDir->id);
+
+    // Get a custom-role user — use getAuthenticationHeaders() then override the admin's role
+    $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => ['dam.assets.index']]);
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $grantedDir->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+    $headers = $this->getAuthenticationHeaders();
+    // The admin created by getAuthenticationHeaders() is the latest Admin
+    $admin = Admin::latest('id')->first();
+    $admin->update(['role_id' => $role->id]);
+    app(DirectoryPermissionService::class)->flush();
+
+    $response = $this->withHeaders($headers)
+        ->getJson(route('admin.api.dam.assets.index'));
+
+    $response->assertOk();
+    $ids = collect($response->json('data'))->pluck('id')->toArray();
+    expect($ids)->toContain($grantedAsset->id);
+    expect($ids)->not->toContain($deniedAsset->id);
+});
+
+// ---------------------------------------------------------------------------
+// Helper — custom-role user granted only to a specific directory
+// ---------------------------------------------------------------------------
+
+function makeCustomAssetApiHeaders(Directory $grantedDir): array
+{
+    $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $grantedDir->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+    $headers = test()->getAuthenticationHeaders();
+    Admin::latest('id')->first()->update(['role_id' => $role->id]);
+    app(DirectoryPermissionService::class)->flush();
+
+    return $headers;
+}
+
+// ---------------------------------------------------------------------------
+// Directory-permission gate tests (Task 4)
+// ---------------------------------------------------------------------------
+
+it('returns 403 when showing an asset in a denied directory via api', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->getJson(route('admin.api.dam.assets.show', $asset->id))
+        ->assertStatus(403);
+});
+
+it('returns 403 when editing an asset in a denied directory via api', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->putJson(route('admin.api.dam.assets.edit', $asset->id))
+        ->assertStatus(403);
+});
+
+it('returns 403 when updating an asset in a denied directory via api', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->putJson(route('admin.api.dam.assets.update', $asset->id), ['file_name' => 'x.png'])
+        ->assertStatus(403);
+});
+
+it('returns 403 when destroying an asset in a denied directory via api', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->deleteJson(route('admin.api.dam.assets.destroy', $asset->id))
+        ->assertStatus(403);
+});
+
+it('returns 403 when downloading an asset in a denied directory via api', function () {
+    Storage::fake(Directory::getAssetDisk());
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create(['path' => 'assets/test.jpg']);
+    $asset->directories()->attach($denied->id);
+    Storage::disk(Directory::getAssetDisk())->put('assets/test.jpg', 'content');
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->getJson(route('admin.api.dam.assets.download', $asset->id))
+        ->assertStatus(403);
+});
+
+it('returns 403 when uploading to a denied directory via api', function () {
+    Storage::fake(Directory::getAssetDisk());
+    $denied = Directory::factory()->create();
+    $granted = Directory::factory()->create();
+    $headers = makeCustomAssetApiHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->postJson(route('admin.api.dam.assets.upload'), [
+            'directory_id' => $denied->id,
+            'files'        => [UploadedFile::fake()->image('test.jpg')],
+        ])
+        ->assertStatus(403);
 });
 
 it('skips cover art on reupload when the new file is not audio', function () {
