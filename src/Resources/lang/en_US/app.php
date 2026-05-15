@@ -17,6 +17,8 @@ return [
                 'field' => [
                     'add-asset'     => 'Add Asset',
                     'assign-assets' => 'Assign Assets',
+                    'assign'        => 'Assign',
+                    'preview-asset' => 'Preview Asset',
                     'preview'       => 'Preview',
                     'remove'        => 'Remove',
                     'download'      => 'Download',
@@ -24,16 +26,6 @@ return [
             ],
         ],
         'dam' => [
-            'file' => [
-                'deleted'   => 'File deleted',
-                'not-found' => 'File not found',
-            ],
-
-            'image-edit' => [
-                'cannot-decode'  => 'Cannot decode image',
-                'preview-failed' => 'Preview failed',
-            ],
-
             'index' => [
                 'title' => 'DAM',
 
@@ -46,6 +38,7 @@ return [
                     'updated-at'     => 'Updated At',
                     'extension'      => 'Extension',
                     'path'           => 'Path',
+                    'size'           => 'Size',
                 ],
 
                 'mass-action' => [
@@ -121,8 +114,6 @@ return [
                     'empty-directory'                           => 'This directory is empty.',
                     'failed-download-directory'                 => 'Failed to create the zip file.',
                     'not-allowed'                               => 'Uploading script files is not allowed.',
-                    'copy-success'                              => 'Folder copied successfully.',
-                    'name-unique'                               => 'The directory name must be unique within the same parent directory.',
                 ],
 
                 'title'            => 'DAM',
@@ -167,6 +158,7 @@ return [
                     ],
                 ],
                 'comments' => [
+                    'index'  => 'Add Comment',
                     'create' => [
                         'create-success' => 'Comment has been successfully added',
                         'create-failure' => 'Comment failed to create',
@@ -186,7 +178,6 @@ return [
                     'update-failed'        => 'Comment failed to update',
                     'delete-success'       => 'Asset Comment Deleted Successfully',
                     'delete-failed'        => 'Asset Comment failed to delete',
-                    'deleted-user'         => 'Deleted user',
                 ],
                 'edit' => [
                     'title'                 => 'Edit Asset',
@@ -194,6 +185,7 @@ return [
                     'next'                  => 'Next',
                     'name'                  => 'Name',
                     'value'                 => 'Value',
+                    'back-btn'              => 'Back',
                     'save-btn'              => 'Save',
                     'file-name'             => 'File Name',
                     'file-info'             => 'File Information',
@@ -205,9 +197,12 @@ return [
                     'updated-at'            => 'Updated',
                     'embedded_meta_info'    => 'Embedded Meta Info',
                     'no-metadata-available' => 'No metadata available',
+                    'custom_meta_info'      => 'Custom Meta Info',
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Choose or Create a Tag',
+                    'tag'                   => 'Tag',
                     'directory-path'        => 'Directory Path',
+                    'add_tags'              => 'Add Tags',
                     'tab'                   => [
                         'preview'          => 'Preview',
                         'properties'       => 'Properties',
@@ -224,6 +219,7 @@ return [
                         'cancel'              => 'Cancel',
                         're-upload-cancelled' => 'Re-upload cancelled.',
                         'delete'              => 'Delete',
+                        'preview'             => 'Preview',
                     ],
 
                     'preview-modal' => [
@@ -287,8 +283,12 @@ return [
                     'image-processing-failed'   => 'Image processing failed: :message',
 
                     'image-editor' => [
+                        'title'                      => 'Image Editor',
                         'tools'                      => 'Tools',
                         'close'                      => 'Close editor',
+                        'ai-badge'                   => 'AI',
+                        'bg-remove'                  => 'Background Remover',
+                        'bg-remove-sub'              => 'AI-powered',
                         'crop'                       => 'Crop & Resize',
                         'crop-sub'                   => 'Trim or scale image',
                         'adjust'                     => 'Brightness & Contrast',
@@ -310,6 +310,7 @@ return [
                         'flip'                       => 'Flip',
                         'horizontal'                 => 'Horizontal',
                         'vertical'                   => 'Vertical',
+                        'ai-settings'                => 'AI Settings',
                         'platform'                   => 'Platform',
                         'platform-loading'           => 'Loading…',
                         'no-platforms'               => 'No platforms',
@@ -341,14 +342,17 @@ return [
                         'model'                      => 'Model',
                         'no-models'                  => 'No models',
                         'prompt'                     => 'Prompt',
+                        'prompt-placeholder'         => 'Describe what to remove or how to process the image…',
                         'apply'                      => 'Apply',
                         'applying'                   => 'Applying…',
                         'error-platforms'            => 'Failed to load AI platforms.',
                         'error-select-color'         => 'Please select a background color.',
                         'error-operation'            => 'Operation failed. Please try again.',
+                        'error-network'              => 'Network error. Please try again.',
                         'success-updated'            => 'Image updated successfully.',
                         'success-adjusted'           => 'Image adjusted successfully.',
                         'success-transformed'        => 'Image transformed successfully.',
+                        'success-ai'                 => 'AI image generation applied successfully.',
                         'error-no-ai-image'          => 'AI returned no image.',
                         'error-provide-dims'         => 'Provide at least a crop region or output dimensions.',
                         'edit-bg'                    => 'Edit Background',
@@ -363,6 +367,7 @@ return [
                         'bg-upload-hint'             => 'Click to upload a background image',
                         'bg-upload-change'           => 'Click to change',
                         'bg-ai-prompt-placeholder'   => 'Describe the background you want…',
+                        'bg-ai-hint'                 => 'AI will generate a background using the default configured platform.',
                         'sharpen'                    => 'Sharpen',
                         'blur'                       => 'Blur',
                         'filters'                    => 'Filters',
@@ -390,13 +395,19 @@ return [
                     'not-found'     => 'Resource Not Found',
                 ],
                 'tags' => [
+                    'index'  => 'Add tags',
                     'create' => [
                         'create-success' => 'Tags has been successfully added',
+                        'create-failure' => 'Tags failed to create',
                     ],
 
+                    'no-comments'    => 'No Tags Yet',
                     'found-success'  => 'Tag Found Successfully',
                     'not-found'      => 'Tags Not Found',
+                    'update-success' => 'Tags updated Successfully',
+                    'update-failed'  => 'Tags failed to update',
                     'delete-success' => 'Asset Tags Removed Successfully',
+                    'delete-failed'  => 'Asset Tags failed to delete',
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
                 'delete-failed-due-to-attached-resources' => 'Asset in use. Unlink before deleting',
@@ -413,13 +424,13 @@ return [
                     'files-upload-failed'                 => 'Files failed to upload.',
                     'file-upload-failed'                  => 'File failed to upload',
                     'invalid-file'                        => 'Invalid File Provided',
+                    'invalid-file-format'                 => 'Invalid Format',
                     'invalid-file-format-or-not-provided' => 'No files provided or invalid format.',
+                    'download-image-failed'               => 'Failed to download image from URL',
                     'file-process-failed'                 => 'Some files failed to process',
                     'file-forbidden-type'                 => 'File has forbidden type or extension.',
                     'file-too-large'                      => 'The file is too large. Maximum allowed size is :size.',
                     'storage-upload-failed'               => 'Failed to upload ":name" to storage. Check disk credentials and permissions.',
-                    'not-found-or-no-file'                => 'Asset not found or file does not exist.',
-                    'download-link-ready'                 => 'Asset found. You can download the file from the provided link.',
                 ],
             ],
         ],
@@ -465,10 +476,19 @@ return [
         ],
 
         'permissions' => [
-            'title'        => 'DAM Directory Permissions',
-            'tab-subtitle' => 'Directories this role can access.',
-            'no-actions'   => 'View only. Open a subfolder you have access to.',
-            'unauthorized' => 'You do not have permission to access this directory.',
+            'title'            => 'DAM Directory Permissions',
+            'tab-subtitle'     => 'Directories this role can access.',
+            'no-actions'       => 'View only. Open a subfolder you have access to.',
+            'role-label'       => 'Role',
+            'role-placeholder' => 'Select a role',
+            'directories'      => 'Visible directories',
+            'no-roles'         => 'No custom roles available. Only roles with permission type "custom" can be restricted to specific directories.',
+            'save'             => 'Save Permissions',
+            'saved'            => 'Directory permissions updated.',
+            'unauthorized'     => 'You are not allowed to manage DAM directory permissions.',
+            'back-btn'         => 'Back to DAM',
+            'granted-count'    => 'Granted directories',
+            'no-grants'        => 'No directories are granted to your role yet.',
         ],
 
         'validation' => [
@@ -478,6 +498,11 @@ return [
 
             'comment' => [
                 'required' => 'The Comment message is required.',
+            ],
+            'tag' => [
+                'name' => [
+                    'required' => 'The Tag field is required.',
+                ],
             ],
             'property' => [
                 'name' => [

@@ -264,7 +264,7 @@ class DirectoryController
         // $newDirectory = $this->directoryRepository->copy($copyId, $parentDirectoryId);
 
         return new JsonResponse([
-            'message' => trans('dam::app.admin.dam.index.directory.copy-success'),
+            'message' => 'Folder copy successfully.',
             'data'    => null,
         ]);
     }

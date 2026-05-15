@@ -17,6 +17,8 @@ return [
                 'field' => [
                     'add-asset'     => 'Aggiungi Asset',
                     'assign-assets' => 'Assegna Asset',
+                    'assign'        => 'Assegna',
+                    'preview-asset' => 'Anteprima Asset',
                     'preview'       => 'Anteprima',
                     'remove'        => 'Rimuovi',
                     'download'      => 'Scarica',
@@ -24,16 +26,6 @@ return [
             ],
         ],
         'dam' => [
-            'file' => [
-                'deleted'   => 'File eliminato',
-                'not-found' => 'File non trovato',
-            ],
-
-            'image-edit' => [
-                'cannot-decode'  => 'Impossibile decodificare l\'immagine',
-                'preview-failed' => 'Anteprima non riuscita',
-            ],
-
             'index' => [
                 'title'    => 'DAM',
                 'datagrid' => [
@@ -45,6 +37,7 @@ return [
                     'updated-at'     => 'Aggiornato il',
                     'extension'      => 'Estensione',
                     'path'           => 'Percorso',
+                    'size'           => 'Dimensione',
                 ],
                 'mass-action' => [
                     'deleting'   => 'Eliminazione di :count risorse…',
@@ -112,8 +105,6 @@ return [
                     'empty-directory'                           => 'Questa directory è vuota.',
                     'failed-download-directory'                 => 'Impossibile creare il file zip.',
                     'not-allowed'                               => 'Il caricamento di file di script non è consentito.',
-                    'copy-success'                              => 'Cartella copiata con successo.',
-                    'name-unique'                               => 'Il nome della directory deve essere univoco all\'interno della stessa directory padre.',
                 ],
                 'description'      => 'Lo strumento può aiutarti a organizzare, archiviare e gestire tutti i tuoi asset multimediali in un unico luogo',
                 'root'             => 'Radice',
@@ -154,8 +145,10 @@ return [
                     ],
                 ],
                 'comments' => [
+                    'index'  => 'Aggiungi Commento',
                     'create' => [
                         'create-success' => 'Il commento è stato aggiunto con successo',
+                        'create-failure' => 'Creazione del commento non riuscita',
                     ],
                     'post-comment'    => 'Pubblica Commento',
                     'post-reply'      => 'Pubblica Risposta',
@@ -179,6 +172,7 @@ return [
                     'next'                  => 'Successivo',
                     'name'                  => 'Nome',
                     'value'                 => 'Valore',
+                    'back-btn'              => 'Indietro',
                     'save-btn'              => 'Salva',
                     'file-name'             => 'Nome file',
                     'file-info'             => 'Informazioni sul file',
@@ -190,9 +184,12 @@ return [
                     'updated-at'            => 'Aggiornato',
                     'embedded_meta_info'    => 'Informazioni Meta Incorporate',
                     'no-metadata-available' => 'Nessun metadato disponibile',
+                    'custom_meta_info'      => 'Informazioni Meta Personalizzate',
                     'tags'                  => 'Tag',
                     'select-tags'           => 'Scegli o Crea un Tag',
+                    'tag'                   => 'Tag',
                     'directory-path'        => 'Percorso della Directory',
+                    'add_tags'              => 'Aggiungi Tag',
                     'tab'                   => [
                         'preview'          => 'Anteprima',
                         'properties'       => 'Proprietà',
@@ -209,6 +206,7 @@ return [
                         'cancel'              => 'Annulla',
                         're-upload-cancelled' => 'Ricaricamento annullato.',
                         'delete'              => 'Elimina',
+                        'preview'             => 'Anteprima',
                     ],
                     'preview-modal' => [
                         'not-available' => 'Anteprima non disponibile per questo tipo di file.',
@@ -267,8 +265,12 @@ return [
                     'file-re-upload-success'    => 'File ricaricati con successo.',
                     'image-processing-failed'   => 'Elaborazione dell\'immagine non riuscita: :message',
                     'image-editor'              => [
+                        'title'                    => 'Editor immagini',
                         'tools'                    => 'Strumenti',
                         'close'                    => 'Chiudi editor',
+                        'ai-badge'                 => 'IA',
+                        'bg-remove'                => 'Rimozione sfondo',
+                        'bg-remove-sub'            => 'Basato su IA',
                         'crop'                     => 'Ritaglia e ridimensiona',
                         'crop-sub'                 => 'Ritaglia o ridimensiona l\'immagine',
                         'adjust'                   => 'Luminosità e contrasto',
@@ -290,6 +292,7 @@ return [
                         'flip'                     => 'Capovolgi',
                         'horizontal'               => 'Orizzontale',
                         'vertical'                 => 'Verticale',
+                        'ai-settings'              => 'Impostazioni IA',
                         'platform'                 => 'Piattaforma',
                         'platform-loading'         => 'Caricamento…',
                         'no-platforms'             => 'Nessuna piattaforma',
@@ -327,9 +330,11 @@ return [
                         'error-platforms'          => 'Impossibile caricare le piattaforme IA.',
                         'error-select-color'       => 'Selezionare un colore di sfondo.',
                         'error-operation'          => 'Operazione non riuscita. Riprova.',
+                        'error-network'            => 'Errore di rete. Riprova.',
                         'success-updated'          => 'Immagine aggiornata con successo.',
                         'success-adjusted'         => 'Immagine regolata con successo.',
                         'success-transformed'      => 'Immagine trasformata con successo.',
+                        'success-ai'               => 'Generazione immagine IA applicata con successo.',
                         'error-no-ai-image'        => 'L\'IA non ha restituito alcuna immagine.',
                         'error-provide-dims'       => 'Fornire almeno una regione di ritaglio o le dimensioni di output.',
                         'edit-bg'                  => 'Modifica sfondo',
@@ -372,11 +377,16 @@ return [
                     'not-found'     => 'Risorsa non trovata',
                 ],
                 'tags' => [
+                    'index'  => 'Aggiungi tag',
                     'create' => [
                         'create-success' => 'I tag sono stati aggiunti con successo',
+                        'create-failure' => 'Creazione dei tag non riuscita',
                     ],
+                    'no-comments'    => 'Ancora nessun tag',
                     'found-success'  => 'Tag trovato con successo',
                     'not-found'      => 'Tag non trovati',
+                    'update-success' => 'Tag aggiornati con successo',
+                    'update-failed'  => 'Aggiornamento dei tag non riuscito',
                     'delete-success' => 'Tag dell\'Asset rimossi con successo',
                     'delete-failed'  => 'Eliminazione dei tag dell\'Asset non riuscita',
                 ],
@@ -395,14 +405,13 @@ return [
                     'files-upload-failed'                 => 'Caricamento dei file non riuscito.',
                     'file-upload-failed'                  => 'Caricamento del file non riuscito',
                     'invalid-file'                        => 'File non valido fornito',
+                    'invalid-file-format'                 => 'Formato non valido',
                     'invalid-file-format-or-not-provided' => 'Nessun file fornito o formato non valido.',
                     'download-image-failed'               => 'Impossibile scaricare l\'immagine dall\'URL',
                     'file-process-failed'                 => 'Elaborazione di alcuni file non riuscita',
                     'file-forbidden-type'                 => 'Il file ha un tipo o un\'estensione non consentita.',
                     'file-too-large'                      => 'Il file è troppo grande. La dimensione massima consentita è :size.',
                     'storage-upload-failed'               => 'Caricamento di ":name" nello spazio di archiviazione non riuscito. Controllare le credenziali e i permessi del disco.',
-                    'not-found-or-no-file'                => 'Risorsa non trovata o il file non esiste.',
-                    'download-link-ready'                 => 'Risorsa trovata. È possibile scaricare il file dal link fornito.',
                 ],
             ],
         ],
@@ -450,7 +459,16 @@ return [
             'title'            => 'DAM Directory Permissions',
             'tab-subtitle'     => 'Directory a cui questo ruolo può accedere.',
             'no-actions'       => 'Solo visualizzazione. Apri una sottocartella a cui hai accesso.',
-            'unauthorized'     => 'Non hai il permesso di accedere a questa directory.',
+            'role-label'       => 'Role',
+            'role-placeholder' => 'Select a role',
+            'directories'      => 'Visible directories',
+            'no-roles'         => 'No custom roles available. Only roles with permission type "custom" can be restricted to specific directories.',
+            'save'             => 'Save Permissions',
+            'saved'            => 'Directory permissions updated.',
+            'unauthorized'     => 'You are not allowed to manage DAM directory permissions.',
+            'back-btn'         => 'Back to DAM',
+            'granted-count'    => 'Granted directories',
+            'no-grants'        => 'No directories are granted to your role yet.',
         ],
         'validation' => [
             'asset' => [
@@ -458,6 +476,11 @@ return [
             ],
             'comment' => [
                 'required' => 'Il messaggio del commento è obbligatorio.',
+            ],
+            'tag' => [
+                'name' => [
+                    'required' => 'Il campo Tag è obbligatorio.',
+                ],
             ],
             'property' => [
                 'name' => [
