@@ -317,7 +317,7 @@ class ImageEditController
             $gd = @imagecreatefromstring($imageData);
 
             if (! $gd) {
-                return response()->json(['error' => 'Cannot decode image'], 422);
+                return response()->json(['error' => trans('dam::app.admin.dam.image-edit.cannot-decode')], 422);
             }
 
             $origW = imagesx($gd);
@@ -361,7 +361,7 @@ class ImageEditController
             }
             \Log::error('bgPreview failed', ['asset_id' => $id, 'error' => $e->getMessage()]);
 
-            return response()->json(['error' => 'Preview failed'], 422);
+            return response()->json(['error' => trans('dam::app.admin.dam.image-edit.preview-failed')], 422);
         }
     }
 

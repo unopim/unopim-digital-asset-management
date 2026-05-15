@@ -48,7 +48,7 @@ class CommentController extends Controller
             return new JsonResponse([
                 'user' => [
                     'id'        => $id,
-                    'name'      => 'Deleted user',
+                    'name'      => trans('dam::app.admin.dam.asset.comments.deleted-user'),
                     'image'     => null,
                     'image_url' => null,
                     'status'    => false,
