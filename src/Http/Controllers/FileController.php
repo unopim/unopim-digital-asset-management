@@ -108,9 +108,9 @@ class FileController
         if (Storage::disk($disk)->exists($request->path)) {
             Storage::disk($disk)->delete($request->path);
 
-            return response()->json(['status' => 'File deleted']);
+            return response()->json(['status' => trans('dam::app.admin.dam.file.deleted')]);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -135,7 +135,7 @@ class FileController
 
             return response()->json(['new_path' => $newPath]);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -156,7 +156,7 @@ class FileController
 
             return response(Storage::disk($disk)->get($path), 200)->header('Content-Type', $mimeType);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -172,7 +172,7 @@ class FileController
     {
         $disk = Directory::getAssetDisk();
         if (! Auth::check()) {
-            return abort(403, 'Unauthorized');
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
 
         $path = urldecode(request()->path);
@@ -180,6 +180,14 @@ class FileController
 
         $asset = Asset::where('path', $path)->first();
         if ($asset && $asset->file_type === 'audio') {
+            if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
+                $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+
+                if ($assetUrl !== null) {
+                    return redirect()->away($assetUrl);
+                }
+            }
+
             $coverPath = $asset->meta_data['cover_art_path'] ?? null;
             if ($coverPath && Storage::disk($disk)->exists($coverPath)) {
                 return $this->getFileResponse($coverPath);
@@ -244,9 +252,13 @@ class FileController
      */
     private function resolveAssetOpenUrl(string $disk, string $path): ?string
     {
-        if (config('filesystems.default') === 's3') {
+        if ($disk === Directory::ASSETS_DISK_AWS) {
             try {
-                $url = Storage::disk($disk)->url($path);
+                $visibility = Storage::disk($disk)->getVisibility($path);
+
+                $url = $visibility === 'public'
+                    ? Storage::disk($disk)->url($path)
+                    : Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(10));
 
                 return ! empty($url) ? $url : null;
             } catch (\Throwable $e) {
@@ -358,7 +370,7 @@ class FileController
         $disk = Directory::getAssetDisk();
 
         if (! Auth::check()) {
-            return abort(403, 'Unauthorized');
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
 
         $path = urldecode(request()->path);
@@ -436,7 +448,7 @@ class FileController
                 ->header('Content-Type', $mimeType);
         }
 
-        return response()->json(['error' => trans('Placeholder not found')], 404);
+        return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
     }
 
     /**
@@ -446,7 +458,7 @@ class FileController
     public function coverArt(int $assetId)
     {
         if (! Auth::check()) {
-            return abort(403, 'Unauthorized');
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
 
         $disk = Directory::getAssetDisk();
