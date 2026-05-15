@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -89,4 +91,68 @@ it('returns 0 for directories with no assets in their subtree', function () {
     $rollup = $this->repository->getAssetCountsRollup();
 
     expect($rollup[$solo->id] ?? null)->toBe(0);
+});
+
+// ---------------------------------------------------------------------------
+// Permission-filtered rollup (role-based counts)
+// ---------------------------------------------------------------------------
+
+it('restricts rollup to only allowed directory ids when passed', function () {
+    [$root, $parent, $leafA, $leafB] = seedRollupFixture();
+
+    // Simulate: role is granted only leafA — sibling leafB and parent must not contribute.
+    $rollup = $this->repository->getAssetCountsRollup([$leafA->id]);
+
+    // ancestor dirs show sum of only the allowed subtree entries
+    expect($rollup[$root->id])->toBe(2);   // only leafA's 2 assets
+    expect($rollup[$parent->id])->toBe(2); // only leafA's 2 assets
+    expect($rollup[$leafA->id])->toBe(2);  // leafA's own 2 assets
+    expect($rollup[$leafB->id])->toBe(0);  // no assets — not in allowed list
+});
+
+it('returns zero counts for all directories when allowed list is empty', function () {
+    [$root, $parent, $leafA, $leafB] = seedRollupFixture();
+
+    $rollup = $this->repository->getAssetCountsRollup([]);
+
+    expect($rollup[$root->id] ?? 0)->toBe(0);
+    expect($rollup[$parent->id] ?? 0)->toBe(0);
+    expect($rollup[$leafA->id] ?? 0)->toBe(0);
+});
+
+it('getDirectoryTreeOnly uses role-granted ids for asset counts when ACL is active', function () {
+    [$root, $parent, $leafA, $leafB] = seedRollupFixture();
+
+    // Create a custom-role admin granted only to leafA.
+    $admin = $this->loginWithPermissions('custom', []);
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $leafA->id,
+        'role_id'      => $admin->role_id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+    app(DirectoryPermissionService::class)->flush();
+
+    $tree = $this->repository->getDirectoryTreeOnly();
+
+    // Flatten tree to a map of id => node.
+    $byId = [];
+    $collect = function ($nodes) use (&$collect, &$byId) {
+        foreach ($nodes as $node) {
+            $byId[$node->id] = $node;
+            if (! empty($node->children)) {
+                $collect($node->children);
+            }
+        }
+    };
+    $collect($tree);
+
+    // root and parent are visible (ancestors of leafA) but their rollup count
+    // must only include leafA's 2 assets, not the parent's own 1 asset.
+    expect((int) $byId[$root->id]->assets_total_count)->toBe(2);
+    expect((int) $byId[$parent->id]->assets_total_count)->toBe(2);
+    expect((int) $byId[$leafA->id]->assets_total_count)->toBe(2);
+
+    // leafB is not visible (not an ancestor or grant of leafA).
+    expect(isset($byId[$leafB->id]))->toBeFalse();
 });

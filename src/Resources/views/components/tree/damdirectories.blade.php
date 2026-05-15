@@ -1,5 +1,6 @@
 <div class="flex flex-col gap-2">
     <x-dam::tree.search />
+    <x-dam::tree.asset-count-badge />
 
     <v-tree-view
         :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
@@ -151,10 +152,7 @@
                 class="text-sm"
                 :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
-            <span
-                class="text-xs text-gray-500 dark:text-slate-400 ms-1 select-none"
-                data-asset-total-count
-            >(@{{ item?.assets_total_count ?? 0 }})</span>
+            <v-asset-count-badge :count="item?.assets_total_count ?? 0" />
         </div>
         <div
             v-show="isOpen"
@@ -541,12 +539,9 @@
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
                     >@{{ formattedItems[0].name }}</span>
-                    <span
-                        class="text-xs text-gray-500 dark:text-slate-400 ms-1 select-none"
-                        data-asset-total-count
-                    >(@{{ formattedItems[0].assets_total_count ?? 0 }})</span>
+                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? 0" />
                 </div>
-                <draggable 
+                <draggable
                     id="root-tree-groups"
                     ghost-class="draggable-ghost"
                     handle=".icon-dam-folder"

@@ -1,4 +1,4 @@
-
+<x-dam::tree.asset-count-badge />
 
 <!-- Panel -->
 <div class="p-4 bg-white dark:bg-cherry-900 rounded box-shadow w-[360px]">
@@ -48,6 +48,7 @@
                     >
                         @{{ formattedItems[0].name }}
                     </span>
+                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? 0" />
                 </div>
                 <div v-for="(asset, index) in formattedItems[0].children">
                     <div class="flex parent-tree-container ml-6">
@@ -262,6 +263,7 @@
 
                     @{{ item.name }}
                 </span>
+                <v-asset-count-badge :count="item.assets_total_count ?? 0" />
             </div>
             <div
                 v-show="isOpen"

@@ -219,7 +219,13 @@ class DirectoryRepository extends Repository
             $query->whereIn('id', $allowedIds);
         }
 
-        return $query->get()->toTree();
+        $rollup = $applyFilter
+            ? $this->getAssetCountsRollup($service->directlyGrantedIds())
+            : $this->getAssetCountsRollup();
+
+        return $query->get()
+            ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
+            ->toTree();
     }
 
     /**
@@ -234,6 +240,13 @@ class DirectoryRepository extends Repository
         $service = app(DirectoryPermissionService::class);
         $query = $this->model->withCount('assets');
 
+        // When ACL is active, restrict the rollup to only the directly-granted
+        // directories so ancestor nodes don't inflate their counts with assets
+        // from sibling subtrees the user cannot access.
+        $rollup = $service->bypass()
+            ? $this->getAssetCountsRollup()
+            : $this->getAssetCountsRollup($service->directlyGrantedIds());
+
         if (! $service->bypass()) {
             $query->whereIn('id', $service->viewableIds());
         }
@@ -241,8 +254,6 @@ class DirectoryRepository extends Repository
         // `withCount('assets')` adds an `assets_count` column without loading
         // the actual asset rows. The tree uses this to render the expand
         // chevron on directories that have assets but no child directories.
-        $rollup = $this->getAssetCountsRollup();
-
         return $query->get()
             ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
             ->toTree();
@@ -270,12 +281,18 @@ class DirectoryRepository extends Repository
      * counts distinct assets attached anywhere in the subtree rooted at
      * the directory (own + every descendant).
      *
+     * When `$allowedDirectoryIds` is provided, only descendants whose id is in
+     * that list contribute to the count. Pass `directlyGrantedIds()` here when
+     * rendering a permission-filtered tree so ancestor nodes only reflect assets
+     * from directories the current role has been explicitly granted.
+     *
      * Single query, portable across MySQL + PostgreSQL — no driver-specific
      * syntax, no raw table names, prefix-aware via the query builder.
      *
+     * @param  array<int>|null  $allowedDirectoryIds  null = count all descendants
      * @return array<int, int>
      */
-    public function getAssetCountsRollup(): array
+    public function getAssetCountsRollup(?array $allowedDirectoryIds = null): array
     {
         // Raw SQL because Laravel's query builder prefixes table aliases too
         // (e.g. `as d` → `prefix_d`) which then mismatches alias references
@@ -284,16 +301,35 @@ class DirectoryRepository extends Repository
         // across MySQL + Postgres and works with any prefix configuration.
         $prefix = DB::getTablePrefix();
 
+        if ($allowedDirectoryIds !== null && empty($allowedDirectoryIds)) {
+            // Role has no grants at all — every directory gets a zero count.
+            $rows = DB::select("SELECT id FROM {$prefix}dam_directories");
+
+            return collect($rows)
+                ->mapWithKeys(fn ($row) => [(int) $row->id => 0])
+                ->all();
+        }
+
+        $descendantFilter = '';
+        $bindings = [];
+
+        if ($allowedDirectoryIds !== null) {
+            $placeholders = implode(',', array_fill(0, count($allowedDirectoryIds), '?'));
+            $descendantFilter = "AND descendant.id IN ({$placeholders})";
+            $bindings = $allowedDirectoryIds;
+        }
+
         $rows = DB::select("
             SELECT ancestor.id AS id, COUNT(DISTINCT ad.asset_id) AS total
             FROM {$prefix}dam_directories AS ancestor
             LEFT JOIN {$prefix}dam_directories AS descendant
                 ON descendant._lft >= ancestor._lft
                 AND descendant._rgt <= ancestor._rgt
+                {$descendantFilter}
             LEFT JOIN {$prefix}dam_asset_directory AS ad
                 ON ad.directory_id = descendant.id
             GROUP BY ancestor.id
-        ");
+        ", $bindings);
 
         return collect($rows)
             ->mapWithKeys(fn ($row) => [(int) $row->id => (int) $row->total])
