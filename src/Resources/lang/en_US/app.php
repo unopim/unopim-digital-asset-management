@@ -98,7 +98,12 @@ return [
                         'add-directory'             => 'Add Directory',
                         'upload-files'              => 'Upload Files',
                         'copy-directory-structured' => 'Copy Directory Structured',
+                        'get-by-id'                 => 'Get By Id',
+                        'comment'                   => 'Comment',
+
                     ],
+
+                    'linked-resources'                          => 'Linked Resources',
 
                     'not-found'                                 => 'No directory found',
                     'created-success'                           => 'Directory created successfully',
@@ -213,7 +218,11 @@ return [
                     'select-tags'           => 'Choose or Create a Tag',
                     'directory-path'        => 'Directory Path',
                     'tab'                   => [
-                        'comments' => 'Comments',
+                        'preview'          => 'Preview',
+                        'properties'       => 'Properties',
+                        'comments'         => 'Comments',
+                        'linked_resources' => 'Linked Resources',
+                        'history'          => 'History',
                     ],
                     'button' => [
                         'download'            => 'Download',
@@ -425,6 +434,47 @@ return [
                 ],
             ],
         ],
+        'catalog' => [
+            'attributes' => [
+                'type' => [
+                    'asset' => 'Asset',
+                ],
+            ],
+            'category-fields' => [
+                'type' => [
+                    'asset' => 'Asset',
+                ],
+            ],
+        ],
+
+        'acl' => [
+            'menu'                  => 'DAM',
+            'asset'                 => 'Asset',
+            'property'              => 'Property',
+            'comment'               => 'Comment',
+            'linked_resources'      => 'Linked Resources',
+            'directory'             => 'Directory',
+            'tag'                   => 'Tag',
+            'create'                => 'Create',
+            'edit'                  => 'Edit',
+            'update'                => 'Update',
+            'delete'                => 'Delete',
+            'list'                  => 'List',
+            'view'                  => 'View',
+            'upload'                => 'Upload',
+            're_upload'             => 'Re-Upload',
+            'mass_update'           => 'Mass Update',
+            'mass_delete'           => 'Mass Delete',
+            'download'              => 'Download',
+            'custom_download'       => 'Custom Download',
+            'rename'                => 'Rename',
+            'move'                  => 'Move',
+            'copy'                  => 'Copy',
+            'copy-structure'        => 'Copy Directory Structure',
+            'download-zip'          => 'Download Zip',
+            'asset-assign'          => 'Assign Asset',
+        ],
+
         'permissions' => [
             'title'        => 'DAM Directory Permissions',
             'tab-subtitle' => 'Directories this role can access.',
