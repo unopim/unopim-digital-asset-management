@@ -299,7 +299,9 @@
                  :disabled="isLocked"
                  :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                  @click="goToPreviousAsset('{{ route('admin.dam.assets.edit', $asset->previousAssetId) }}{{ $queryString }}')">
-                    <span class="text-2xl">&larr;</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
                 </button>
             @endif
             @if($asset->nextAssetId)
@@ -307,8 +309,9 @@
                     :disabled="isLocked"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                     @click="goToNextAsset('{{ route('admin.dam.assets.edit', $asset->nextAssetId) }}{{ $queryString }}')">
-
-                    <span class="text-2xl">&rarr;</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
                 </button>
             @endif
 
@@ -341,6 +344,7 @@
                 @endif
             @endif
                 
+            <div class="hidden">
             <x-admin::form
                 v-slot="{ meta, errors, handleSubmit }"
                 as="div"
@@ -520,6 +524,7 @@
                     </x-admin::modal>
                 </form>
             </x-admin::form>
+            </div>
 
         </script>
 
@@ -656,6 +661,7 @@
                     <span>@lang('dam::app.admin.dam.asset.edit.button.rename')</span>
                 </button>
             @endif
+            <div class="hidden">
             <!-- Asset Rename -->
             <x-admin::form
                 v-slot="{ meta, errors, handleSubmit }"
@@ -747,6 +753,7 @@
                     </x-admin::modal>
                 </form>
             </x-admin::form>
+            </div>
 
         </script>
 

@@ -95,7 +95,7 @@
                     <div class="flex justify-between">
                         <span class="text-base text-gray-600 dark:text-gray-300 font-bold">{{ $label ?? '' }}</span>
 
-                        <div class="flex gap-2 ">
+                        <div class="flex gap-2 items-center">
                             {{ $buttonOne }}
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
