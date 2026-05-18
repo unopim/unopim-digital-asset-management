@@ -180,11 +180,16 @@ class FileController
 
         $asset = Asset::where('path', $path)->first();
         if ($asset && $asset->file_type === 'audio') {
-            if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
-                $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+            if ($this->isBrowserNavigation()) {
+                $canRedirect = $disk !== Directory::ASSETS_DISK_AWS
+                    || Storage::disk($disk)->exists($path);
 
-                if ($assetUrl !== null) {
-                    return redirect()->away($assetUrl);
+                if ($canRedirect) {
+                    $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+
+                    if ($assetUrl !== null) {
+                        return redirect()->away($assetUrl);
+                    }
                 }
             }
 
