@@ -298,7 +298,7 @@ it('should respond successfully to legacy directory copy endpoint', function () 
     ]);
 
     $response->assertOk()
-        ->assertJson(['message' => 'Folder copy successfully.', 'data' => null]);
+        ->assertJson(['message' => trans('dam::app.admin.dam.index.directory.copy-success'), 'data' => null]);
 });
 
 // ── Lazy assets endpoint (tree) ──────────────────────────────────────────

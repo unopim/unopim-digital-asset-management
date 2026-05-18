@@ -36,7 +36,7 @@ it('should return the asset detail page', function () {
 
     $this->get(route('admin.dam.assets.show', $asset->id))
         ->assertOk()
-        ->assertSeeText($asset->name ?? $asset->file_name);
+        ->assertJsonPath('asset.file_name', $asset->file_name);
 });
 
 // Update the Asset

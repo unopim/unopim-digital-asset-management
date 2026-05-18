@@ -26,14 +26,14 @@ it('should delete an existing file from private storage', function () {
 
     $response = $this->deleteJson(route('admin.dam.file.delete'), ['path' => $path]);
 
-    $response->assertOk()->assertJson(['status' => 'File deleted']);
+    $response->assertOk()->assertJson(['status' => trans('dam::app.admin.dam.file.deleted')]);
     Storage::disk($disk)->assertMissing($path);
 });
 
 it('should return 404 when deleting a non-existent file', function () {
     $response = $this->deleteJson(route('admin.dam.file.delete'), ['path' => 'no/such/file.png']);
 
-    $response->assertStatus(404)->assertJson(['error' => 'File not found']);
+    $response->assertStatus(404)->assertJson(['error' => trans('dam::app.admin.dam.file.not-found')]);
 });
 
 it('should update the file by replacing existing content', function () {
@@ -55,7 +55,7 @@ it('should return 404 when updating a non-existent file', function () {
 
     $response = $this->call('PUT', route('admin.dam.file.update'), ['path' => 'missing/path.png'], [], ['file' => $newFile]);
 
-    $response->assertStatus(404)->assertJson(['error' => 'File not found']);
+    $response->assertStatus(404)->assertJson(['error' => trans('dam::app.admin.dam.file.not-found')]);
 });
 
 it('should fetch an existing file with the correct mime type', function () {
@@ -72,7 +72,7 @@ it('should fetch an existing file with the correct mime type', function () {
 it('should return 404 when fetching a non-existent file', function () {
     $response = $this->getJson(route('admin.dam.file.fetch', ['path' => 'assets/none.png']));
 
-    $response->assertStatus(404)->assertJson(['error' => 'File not found']);
+    $response->assertStatus(404)->assertJson(['error' => trans('dam::app.admin.dam.file.not-found')]);
 });
 
 it('should serve a default thumbnail when the file is not an image', function () {
