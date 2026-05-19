@@ -127,6 +127,16 @@ return [
         'route' => 'admin.dam.asset.comment.store',
         'sort'  => 2,
     ], [
+        'key'   => 'dam.asset.comment.update',
+        'name'  => 'dam::app.admin.acl.edit',
+        'route' => 'admin.dam.asset.comment.update',
+        'sort'  => 3,
+    ], [
+        'key'   => 'dam.asset.comment.delete',
+        'name'  => 'dam::app.admin.acl.delete',
+        'route' => 'admin.dam.asset.comment.delete',
+        'sort'  => 4,
+    ], [
         'key'   => 'dam.asset.linked_resources',
         'name'  => 'dam::app.admin.acl.linked_resources',
         'route' => 'admin.dam.asset.linked_resources.index',

@@ -105,6 +105,10 @@ class CommentController extends Controller
      */
     public function commentUpdate(): JsonResponse
     {
+        if (! bouncer()->hasPermission('dam.asset.comment.update')) {
+            return new JsonResponse(['message' => trans('dam::app.admin.errors.401')], 401);
+        }
+
         $this->validate(request(), [
             'id'       => 'required|integer|exists:dam_asset_comments,id',
             'comments' => 'required|min:2|max:1000',
@@ -135,6 +139,10 @@ class CommentController extends Controller
      */
     public function commentDelete(): JsonResponse
     {
+        if (! bouncer()->hasPermission('dam.asset.comment.delete')) {
+            return new JsonResponse(['message' => trans('dam::app.admin.errors.401')], 401);
+        }
+
         $id = request('id');
         $comment = $this->assetCommentRepository->find($id);
 
