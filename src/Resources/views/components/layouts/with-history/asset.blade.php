@@ -65,7 +65,7 @@
     <body class="h-full dark:bg-cherry-800">
         {!! view_render_event('unopim.admin.layout.body.before') !!}
 
-        <div id="app" class="h-full">
+        <div id="app" class="h-screen flex flex-col">
             <!-- Flash Message Blade Component -->
             <x-admin::flash-group />
 
@@ -81,21 +81,24 @@
             <x-admin::layouts.header />
 
             <div
-                class="flex gap-4 group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
+                class="flex gap-4 flex-1 min-h-0 overflow-hidden group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
                 ref="appLayout"
             >
                 <!-- Page Sidebar Blade Component -->
                 <x-admin::layouts.sidebar />
                 
                                 
-                <div class="flex-1 max-w-full px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 ltr:pl-[286px] rtl:pr-[286px] max-lg:!px-4 transition-all duration-300 group-[.sidebar-collapsed]/container:ltr:pl-[85px] group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
+                <div class="flex-1 max-w-full overflow-y-auto px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 ltr:pl-[286px] rtl:pr-[286px] max-lg:!px-4 transition-all duration-300 group-[.sidebar-collapsed]/container:ltr:pl-[85px] group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
                     {!! view_render_event('unopim.admin.layouts.tabs.before') !!}
 
                     
-                    <div class="flex justify-between">
-                        <span class="text-base text-gray-600 dark:text-gray-300 font-bold">{{ $label ?? '' }}</span>
+                    <div class="flex flex-wrap justify-between gap-2 items-center">
+                        <span class="text-base text-gray-600 dark:text-gray-300 font-bold min-w-0 break-all">{{ $label ?? '' }}</span>
 
-                        <div class="flex gap-2 items-center">
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <a href="{{ route('admin.dam.index') }}" class="transparent-button">
+                                @lang('dam::app.admin.dam.asset.edit.back')
+                            </a>
                             {{ $buttonOne }}
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
@@ -138,15 +141,21 @@
                             
                         @endphp
 
-                        <div class="flex gap-4 mb-4 pt-2 border-b-2 max-sm:hidden dark:border-gray-800">
+                        <div class="flex flex-wrap gap-4 my-4 border-b-2 max-sm:hidden dark:border-gray-800 items-center">
                             @foreach ($items as $key => $item)
-                                <a href="{{ $item['url'] }}">
+                                <a href="{{ $item['url'] }}" class="self-stretch flex items-end">
                                     <div class="{{  $item['code'] === $activeTab ? "-mb-px border-violet-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
                                         <span class="text-xl {{ $item['icon'] }}"></span>
                                         @lang($item['name'])
                                     </div>
                                 </a>
                             @endforeach
+
+                            @isset($navButtons)
+                            <div class="ml-auto flex gap-2 items-center">
+                                {{ $navButtons }}
+                            </div>
+                            @endisset
                         </div>
 
                     </div>
