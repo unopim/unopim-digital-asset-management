@@ -27,6 +27,8 @@
                             <v-comment-panel
                                 :comment="comment"
                                 :current-admin-id="currentAdminId"
+                                :can-edit="canEditComment"
+                                :can-delete="canDeleteComment"
                                 @updated="onCommentUpdated(comment, $event)"
                                 @deleted="onCommentDeleted(index)" />
 
@@ -37,6 +39,8 @@
                                 <v-comment-panel
                                     :comment="subComment"
                                     :current-admin-id="currentAdminId"
+                                    :can-edit="canEditComment"
+                                    :can-delete="canDeleteComment"
                                     @updated="onReplyUpdated(comment, subIndex, $event)"
                                     @deleted="onReplyDeleted(comment, subIndex)" />
                             </div>
@@ -156,14 +160,16 @@
                         @{{ displayDate(comment.updated_at) }}
                     </span>
 
-                    <div v-if="isOwner && !isEditing" class="ml-auto flex gap-3 text-xs">
+                    <div v-if="!isEditing && isOwner && (canEdit || canDelete)" class="ml-auto flex gap-3 text-xs">
                         <button
+                            v-if="canEdit"
                             type="button"
                             class="text-violet-600 dark:text-violet-400 hover:underline"
                             @click="startEdit">
                             @lang('dam::app.admin.dam.asset.comments.edit-btn')
                         </button>
                         <button
+                            v-if="canDelete"
                             type="button"
                             class="text-red-600 dark:text-red-400 hover:underline"
                             @click="confirmDelete">
@@ -212,6 +218,8 @@
 
     <script type="module">
         const currentAdminId = @json(auth()->guard('admin')->id());
+        const canEditComment = @json(bouncer()->hasPermission('dam.asset.comment.update'));
+        const canDeleteComment = @json(bouncer()->hasPermission('dam.asset.comment.delete'));
         const updateUrl = "{{ route('admin.dam.asset.comment.update', $id) }}";
         const deleteUrl = "{{ route('admin.dam.asset.comment.delete', $id) }}";
 
@@ -223,6 +231,8 @@
                     comments: @json($asset->comments),
                     openReplies: {},
                     currentAdminId,
+                    canEditComment,
+                    canDeleteComment,
                 }
             },
 
@@ -372,7 +382,15 @@
                 currentAdminId: {
                     type: Number,
                     default: null,
-                }
+                },
+                canEdit: {
+                    type: Boolean,
+                    default: false,
+                },
+                canDelete: {
+                    type: Boolean,
+                    default: false,
+                },
             },
 
             emits: ['updated', 'deleted'],
