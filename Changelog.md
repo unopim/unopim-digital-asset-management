@@ -1,5 +1,178 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 2.2.0 - Features & Enhancements
+
+### Features & Enhancements
+
+- **Role-based DAM directory permissions** — Admin roles can be granted
+  access to specific directories via a new directory-grants tab on the role
+  create and edit pages. Every DAM endpoint, the directory tree, and the
+  asset datagrid honour the grants. Super-admin and API guard retain full access.
+
+- **Directory permissions enforced on all REST API endpoints** — API requests
+  authenticated via Passport now go through the same role-based directory ACL
+  as web sessions. `DirectoryPermissionService` resolves the API guard user so
+  `bypass()`, `canView()`, `canAccess()`, and `directlyGrantedIds()` all work
+  for token-authenticated calls. The asset listing is filtered to directories
+  granted to the caller's role. Individual asset, directory, comment, tag, and
+  property endpoints return 403 when the target asset or directory falls outside
+  the caller's grants.
+
+- **Directory search** — Substring search input above the directory tree
+  returns ACL-visible directories matching the query. Each result shows the
+  directory name plus its full ancestor breadcrumb so identically-named
+  folders at different levels are distinguishable. Clicking a result expands
+  the tree to that directory, scrolls it into view, highlights it, and loads
+  its assets. Infinite scroll with a sticky `X of Y matches` counter and a 300 ms
+  debounce. The same search and reveal flow is available in the asset picker
+  modal.
+
+- **Scrollable directory tree** — Tree container scrolls horizontally on
+  deep paths and vertically on long lists, on both the main DAM page and the
+  asset picker modal, so the page / modal no longer grows unbounded with
+  large libraries.
+
+- **Directory filter — server-side descendant expansion** — The asset
+  datagrid's `directory_id` filter expands a single selected directory id to
+  its full descendant set server-side, so the client only sends one id.
+  Previously the tree serialised every descendant id into the URL, which
+  blew Apache's `LimitRequestLine` on installs with hundreds of directories.
+
+- **Asset preview modal** — New overlay opens images, videos, audio, and
+  documents with file metadata, dark-mode styling, and per-media-type
+  controls.
+
+- **Custom video and audio players** — Native browser controls replaced with
+  custom controls in the preview modal. Video adds play/pause, scrub, volume,
+  and a context-menu block to discourage right-click downloads. Audio gets a
+  custom seek bar and a redesigned modal layout with disc-spin animation.
+
+- **Embedded audio cover art** — Cover art embedded in audio files (ID3) is
+  now extracted and used as the asset thumbnail and preview-modal background.
+
+- **Image editor** — Expanded with a crop drag overlay using natural canvas
+  dimensions, adjust / filter / transform controls in an accordion tools
+  panel, a background editor with color / file-upload / AI fill
+  modes, and image filter presets (sepia, grayscale, etc.). Dark-mode icon
+  tinting applied throughout. Translated into every shipped locale.
+
+- **Image editor ACL gating** — Every `ImageEditController` endpoint (resize,
+  adjust, filters, transform, background color/upload/AI, normal-bg) now
+  routes through the `AssetAccessControl` trait so role-restricted admins
+  cannot edit assets they lack permission for.
+
+- **Download as ZIP** — Non-archive assets can now be downloaded as a ZIP
+  container alongside the existing single-file download path.
+
+- **Lazy in-tree asset listing** — Asset rows under each directory in the
+  tree are hidden by default. Set `DAM_TREE_SHOW_ASSETS=true` in `.env` to
+  enable (defaults to `false`); the new `config/dam.php` exposes it as
+  `dam.tree.show_assets`. Applies to both the main DAM tree and the asset
+  picker. When disabled, the tree renders folder nodes only, cutting payload
+  and DOM size for large libraries. When enabled, assets lazy-load on
+  directory expand and refresh per-folder after upload / move / delete.
+
+- **Per-directory asset count** — Each directory row in the tree shows a
+  recursive total asset count.
+
+- **Tree-busy interaction lock** — The upload button, asset datagrid, and
+  asset edit toolbar lock during in-flight tree mutations (move, delete,
+  copy) and during ongoing uploads, preventing conflicting actions. A
+  full-screen progress overlay accompanies tree moves and datagrid mass
+  actions.
+
+- **Asset action spinners** — Rename and delete actions on assets now show
+  inline spinners while the request is in flight.
+
+- **Upload — size limits and cancel support** — Lifted hard upload size
+  limits from the Vue uploader, surfaced server-side limits in error
+  messages, and added a cancel button to abort large in-flight uploads.
+  Multi-file batches now complete faster.
+
+- **Same-name upload — overwrite + cache** — Uploading an asset with a name
+  that already exists in the target directory now overwrites the existing
+  file (instead of erroring or duplicating). Thumbnail / metadata caches
+  are cleared on asset delete so stale data is not served after the file
+  is gone.
+
+- **Storage failure surfacing** — Storage write failures now bubble to the
+  user instead of returning a half-written asset.
+
+- **Local asset streaming** — Local-disk asset streaming switched to
+  `response()->file()` so the browser can range-request large media files
+  without buffering the full payload in PHP.
+
+- **S3 — picker thumbnails and downloads** — Asset picker thumbnails and
+  download endpoints now redirect to the S3 URL when the asset lives on S3,
+  removing the proxying overhead.
+
+- **S3 — audio cover art migration** — The `dam:move-to-s3` command now
+  migrates extracted audio cover-art images alongside their parent audio
+  assets.
+
+- **Translation hardening** — Preview-modal strings, video player controls,
+  download-as-ZIP labels, image-processing error, image editor / background
+  editor / filter labels, and rename-modal copy are now routed through
+  `trans()` with proper translations shipped for all 33 locales.
+
+- **Asset card thumbnail sizing** — Gallery thumbnails render at a larger
+  max-height, making images legible without opening the preview modal.
+
+- **Gallery datagrid mass-action markup** — Mass-action buttons sit inline
+  with the selection counter instead of wrapping on narrow viewports.
+
+### Fixed
+
+- Asset picker thumbnails
+  Picker thumbnails now always go through the central thumbnail route, so
+  signed S3 URLs and disk-aware streaming behave like the main DAM grid.
+
+- Directory tree context menu — duplicate dark class
+  Removed a duplicate `dark:text-white` class on the context menu and added a
+  view-only placeholder for ancestors the admin can see but not act on.
+
+- Asset grid — locked rows during upload
+  Asset grid row interactions are blocked while an upload is in flight, so a
+  user can't open or edit a mid-upload asset and end up referencing a stale
+  file id.
+
+- Picker — filter-applied indicator counted directory selection
+  The picker toolbar's "filters applied" indicator now ignores the implicit
+  `directory_id` and `directory_asset_id` filters set by clicking the tree.
+
+## Version 2.1.0 - Features & Enhancements
+
+### Features & Enhancements
+
+- **Directory tree performance** — Asset eager-loading is skipped by default in the
+  directory tree; the asset picker opts in via `with_assets=1`, reducing the initial
+  payload for large libraries.
+
+- **Per-directory busy spinners** — Move, delete, and copy operations now show a spinner
+  only on the affected tree node instead of a full-screen overlay, giving precise visual
+  feedback without blocking the rest of the UI.
+
+- **Upload progress indicator** — Upload and re-upload buttons are disabled and display a
+  spinner while a transfer is in progress, preventing duplicate submissions.
+
+- **Persistent asset metadata** — Extracted metadata is stored in a new `meta_data` column
+  on `dam_assets` and surfaced in a dedicated Metadata tab in the asset editor, with a
+  new API endpoint for programmatic access.
+
+- **AWS S3 — URL resolution from disk** — Asset URLs for S3-hosted files are now resolved
+  from the configured disk using visibility-aware logic (public URL vs. temporary signed
+  URL), replacing the previous hard-coded path concatenation.
+
+### Fixed
+
+- Directory tree flicker on upload
+Removed premature local-state push of uploaded assets that caused duplicate entries in
+the tree. The tree now rebuilds exclusively from the server response.
+
+- meta_data double-encoding
+Fixed a regression where the `meta_data` JSON field was serialised twice on asset store,
+producing a string-wrapped JSON value instead of a plain object.
+
 ## Version 2.0.2 - Bug Fix
 
 ### Fixed

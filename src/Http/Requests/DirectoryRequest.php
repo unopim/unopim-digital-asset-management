@@ -29,7 +29,7 @@ class DirectoryRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.unique' => 'The directory name must be unique within the same parent directory.',
+            'name.unique' => trans('dam::app.admin.dam.index.directory.name-unique'),
         ];
     }
 }

@@ -9,13 +9,17 @@ use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
 class DirectoryController
 {
     use ActionRequestTrait;
 
-    public function __construct(protected DirectoryRepository $directoryRepository) {}
+    public function __construct(
+        protected DirectoryRepository $directoryRepository,
+        protected DirectoryPermissionService $permissionService,
+    ) {}
 
     /**
      * Get all the directory.
@@ -33,12 +37,17 @@ class DirectoryController
 
     /**
      * Store a newly created directory.
-     *
-     * @return JsonResponse
      */
-    public function store(DirectoryRequest $request)
+    public function store(DirectoryRequest $request): JsonResponse
     {
         $parentDirectoryId = $request->input('parent_id', 1);
+
+        if (! $this->permissionService->canAccess((int) $parentDirectoryId)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
 
         try {
             $newDirectory = $this->directoryRepository->create([
@@ -67,6 +76,13 @@ class DirectoryController
      */
     public function getDirectory(int $id): JsonResponse
     {
+        if (! $this->permissionService->canView($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->getDirectoryTree($id);
         if (! $directory) {
             return response()->json([
@@ -86,6 +102,13 @@ class DirectoryController
      */
     public function update(DirectoryRequest $request, int $id): JsonResponse
     {
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         try {
             $directory = $this->directoryRepository->find($id);
 
@@ -123,6 +146,13 @@ class DirectoryController
      */
     public function destroy(int $id): JsonResponse
     {
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->find($id);
 
         if (! $directory) {

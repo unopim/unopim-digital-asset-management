@@ -36,7 +36,13 @@ test.describe('DAM Page Navigation & Rendering', () => {
 
   test('DAM sidebar link is visible', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await expect(adminPage.getByRole('link', { name: /DAM/ })).toBeVisible();
+    // Sidebar entry's accessible name is "<icon-glyph> DAM" because the
+    // menu icon font character contributes to text content. Anchoring on
+    // "DAM" at the end of the name isolates it from the sibling
+    // "DAM Directory Permissions" sub-link.
+    await expect(
+      adminPage.getByRole('link', { name: /DAM$/ })
+    ).toBeVisible();
   });
 
   test('DAM page shows search input', async ({ adminPage }) => {

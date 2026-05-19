@@ -166,7 +166,7 @@
 
                 <!-- Drawer Content -->
                 <x-slot:content class="!p-5">
-                    <x-admin::datagrid.filters />
+                    <x-dam::datagrid.filters />
                         <div
                             class="primary-button block text-center"
                             @click="runFilters()"

@@ -2,6 +2,7 @@
 
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Repositories\DirectoryRepository;
 
 it('can create a directory using factory', function () {
     $directory = Directory::factory()->create();
@@ -107,4 +108,79 @@ it('has the correct ASSETS_DIRECTORY constant', function () {
 
 it('has the correct NON_DELETABLE_DRECTORIES constant', function () {
     expect(Directory::NON_DELETABLE_DRECTORIES)->toBe([1]);
+});
+
+// ── generatePath ──────────────────────────────────────────────────────────
+
+it('returns directory name as path for a root-level directory', function () {
+    $dir = Directory::create(['name' => 'Media']);
+
+    expect($dir->generatePath())->toBe('Media');
+});
+
+it('returns slash-joined ancestor names for a nested directory', function () {
+    $root = Directory::create(['name' => 'Assets']);
+    $child = Directory::create(['name' => 'Images', 'parent_id' => $root->id]);
+
+    // Rebuild tree so NodeTrait _lft/_rgt are accurate
+    Directory::fixTree();
+
+    $child->refresh();
+
+    expect($child->generatePath())->toBe('Assets/Images');
+});
+
+it('returns full path for a three-level directory hierarchy', function () {
+    $root = Directory::create(['name' => 'Root']);
+    $mid = Directory::create(['name' => 'Sub', 'parent_id' => $root->id]);
+    $leaf = Directory::create(['name' => 'Deep', 'parent_id' => $mid->id]);
+
+    Directory::fixTree();
+
+    $leaf->refresh();
+
+    expect($leaf->generatePath())->toBe('Root/Sub/Deep');
+});
+
+// ── privateSupport ────────────────────────────────────────────────────────
+
+it('returns true for a writable local disk path', function () {
+    Storage::fake('private');
+
+    $dir = new Directory;
+    // Fake disk base dir is writable; empty string resolves to its root
+    expect($dir->privateSupport('', 'private'))->toBeTrue();
+});
+
+it('returns false when the disk throws an exception', function () {
+    $dir = new Directory;
+    // Non-configured disk name → Storage::disk() will throw
+    expect($dir->privateSupport('any/path', 'disk_that_does_not_exist_xyz'))->toBeFalse();
+});
+
+// ── DirectoryRepository: tree asset-load behavior ────────────────────────
+
+it('getDirectoryTreeOnly returns directories without assets relation loaded', function () {
+    $dir = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $dir->assets()->attach($asset->id);
+
+    $tree = app(DirectoryRepository::class)->getDirectoryTreeOnly();
+
+    expect($tree)->not->toBeEmpty();
+    foreach ($tree as $node) {
+        expect($node->relationLoaded('assets'))->toBeFalse();
+    }
+});
+
+it('getDirectoryTree eager-loads assets relation', function () {
+    $dir = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $dir->assets()->attach($asset->id);
+
+    $tree = app(DirectoryRepository::class)->getDirectoryTree();
+
+    $node = collect($tree)->firstWhere('id', $dir->id);
+    expect($node)->not->toBeNull();
+    expect($node->relationLoaded('assets'))->toBeTrue();
 });

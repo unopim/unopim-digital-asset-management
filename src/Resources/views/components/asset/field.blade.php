@@ -172,6 +172,15 @@
                 <img
                     :src="asset.url"
                     class="w-full h-full object-cover object-top"
+                    v-if="!imgLoadError"
+                    v-on:error="imgLoadError = true"
+                />
+                <img
+                    v-if="imgLoadError"
+                    :src="typePlaceholder"
+                    :data-href="asset.url"
+                    class="absolute inset-0 w-full h-full object-cover object-top cursor-pointer"
+                    @click="window.location.href = asset.url"
                 />
                 <div class="flex flex-col justify-between invisible w-full p-3 bg-white dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
                     <!-- Actions -->
@@ -370,6 +379,24 @@
             template: '#v-asset-field-item-template',
 
             props: ['index', 'asset', 'name', 'width', 'height'],
+
+            data() {
+                return {
+                    imgLoadError: false,
+                };
+            },
+
+            computed: {
+                typePlaceholder() {
+                    const placeholders = {
+                        video:    `{{ asset('storage/dam/grid/video.svg') }}`,
+                        audio:    `{{ asset('storage/dam/grid/audio.svg') }}`,
+                        document: `{{ asset('storage/dam/grid/file.svg') }}`,
+                    };
+
+                    return placeholders[this.asset.file_type] ?? `{{ asset('storage/dam/grid/unspecified.svg') }}`;
+                },
+            },
 
             methods: {
                 remove() {

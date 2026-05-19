@@ -103,7 +103,8 @@
                         </div>
                     </div> 
 
-                    <div class="tabs">    
+                    <v-asset-lock-zone>
+                    <div class="tabs">
                         @php
                             
                             /**
@@ -146,8 +147,8 @@
                                     </div>
                                 </a>
                             @endforeach
-                        </div>    
-                        
+                        </div>
+
                     </div>
 
                     @if ($activeTab === 'history')
@@ -171,9 +172,13 @@
                     @elseif ($activeTab === 'comments')    
                         {{$comments}}
                     
-                    @elseif ($activeTab === 'linked-resources')    
+                    @elseif ($activeTab === 'linked-resources')
                         {{$linked_resources}}
+
+                    @elseif ($activeTab === 'meta-data')
+                        {{$meta_data}}
                     @endif
+                    </v-asset-lock-zone>
 
                     {!! view_render_event('unopim.admin.layouts.tabs.after') !!}
                 </div>
@@ -183,6 +188,43 @@
         </div>
 
         {!! view_render_event('unopim.admin.layout.body.after') !!}
+
+        @pushOnce('scripts')
+            <script
+                type="text/x-template"
+                id="v-asset-lock-zone-template"
+            >
+                <div
+                    :class="{ 'cursor-not-allowed': isLocked }"
+                    :aria-busy="isLocked"
+                >
+                    <div :class="{ 'opacity-60 pointer-events-none': isLocked }">
+                        <slot></slot>
+                    </div>
+                </div>
+            </script>
+
+            <script type="module">
+                app.component('v-asset-lock-zone', {
+                    template: '#v-asset-lock-zone-template',
+                    data() {
+                        return {
+                            isLocked: false,
+                            onLockChange: null,
+                        };
+                    },
+                    mounted() {
+                        this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                        this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                    },
+                    unmounted() {
+                        if (this.onLockChange) {
+                            this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                        }
+                    },
+                });
+            </script>
+        @endPushOnce
 
         @stack('scripts')
 

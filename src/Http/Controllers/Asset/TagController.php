@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class TagController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -44,6 +47,8 @@ class TagController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
             ], 404);
         }
+
+        $this->damAuthorizeAsset((int) $assetId);
 
         $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
@@ -105,6 +110,8 @@ class TagController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
             ], 404);
         }
+
+        $this->damAuthorizeAsset((int) $assetId);
 
         $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 

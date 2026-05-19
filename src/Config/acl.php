@@ -52,6 +52,11 @@ return [
         'route' => 'admin.dam.assets.download',
         'sort'  => 8,
     ], [
+        'key'   => 'dam.asset.download_compressed',
+        'name'  => 'dam::app.admin.acl.download-zip',
+        'route' => 'admin.dam.assets.download_compressed',
+        'sort'  => 9,
+    ], [
         'key'   => 'dam.asset.rename',
         'name'  => 'dam::app.admin.acl.rename',
         'route' => 'admin.dam.assets.rename',

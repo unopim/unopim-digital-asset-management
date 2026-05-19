@@ -147,6 +147,8 @@ class MoveDamAssetsToS3 extends Command
         } else {
             $logs[] = "File not Found for asset Path {$asset->path}: $filePath";
         }
+
+        $this->migrateCoverArt($asset, $delete, $logs, false);
     }
 
     /**
@@ -171,5 +173,67 @@ class MoveDamAssetsToS3 extends Command
         } else {
             $logs[] = "File not Found for asset Path {$asset->path}: $filePath";
         }
+
+        $this->migrateCoverArt($asset, $delete, $logs, true);
+    }
+
+    /**
+     * Move embedded audio cover art (stored at `covers/{id}.{ext}` on the asset's
+     * disk) from private to S3 alongside the asset itself. The path is recorded
+     * on the asset's `meta_data` JSON column under `cover_art_path` when the
+     * asset is uploaded; non-audio assets typically have no entry and are
+     * skipped silently.
+     */
+    protected function migrateCoverArt($asset, bool $delete, array &$logs, bool $skipIfExists): void
+    {
+        $coverPath = $this->extractCoverArtPath($asset);
+        if (! $coverPath) {
+            return;
+        }
+
+        if (! Storage::disk('private')->exists($coverPath)) {
+            $logs[] = "Cover art not found for asset ID {$asset->id}: $coverPath";
+
+            return;
+        }
+
+        if ($skipIfExists && Storage::disk('s3')->exists($coverPath)) {
+            $logs[] = "Cover art for asset ID {$asset->id} already exists on S3. Skipped.";
+
+            return;
+        }
+
+        Storage::disk('s3')->put($coverPath, Storage::disk('private')->get($coverPath));
+
+        if ($delete) {
+            Storage::disk('private')->delete($coverPath);
+        }
+
+        $logs[] = "Moved cover art for asset ID {$asset->id} to s3";
+    }
+
+    /**
+     * Pull `meta_data->cover_art_path` off a raw DB row. `meta_data` is stored
+     * as JSON; on some drivers DB::table() returns it already decoded, on
+     * others it stays a string — handle both.
+     */
+    protected function extractCoverArtPath($asset): ?string
+    {
+        $meta = $asset->meta_data ?? null;
+        if (! $meta) {
+            return null;
+        }
+
+        if (is_string($meta)) {
+            $meta = json_decode($meta, true);
+        }
+
+        if (! is_array($meta)) {
+            return null;
+        }
+
+        $path = $meta['cover_art_path'] ?? null;
+
+        return is_string($path) && $path !== '' ? $path : null;
     }
 }

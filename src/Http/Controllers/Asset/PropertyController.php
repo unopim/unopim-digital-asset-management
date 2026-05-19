@@ -11,9 +11,12 @@ use Webkul\Core\Filesystem\FileStorer;
 use Webkul\DAM\DataGrids\Asset\AssetPropertyDataGrid;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class PropertyController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -30,6 +33,8 @@ class PropertyController extends Controller
      */
     public function properties(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         if (request()->ajax()) {
             return app(AssetPropertyDataGrid::class)->toJson();
         }
@@ -44,6 +49,8 @@ class PropertyController extends Controller
      */
     public function propertiesCreate(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         $messages = [
             'name.required' => trans('dam::app.admin.validation.property.name.required'),
             'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
@@ -86,6 +93,8 @@ class PropertyController extends Controller
     {
         $property = $this->assetPropertyRepository->findOrFail($id);
 
+        $this->damAuthorizeAsset((int) $property->dam_asset_id);
+
         return new JsonResponse($property);
     }
 
@@ -98,6 +107,8 @@ class PropertyController extends Controller
     public function propertiesUpdate()
     {
         $id = request('id');
+        $property = $this->assetPropertyRepository->findOrFail($id);
+        $this->damAuthorizeAsset((int) $property->dam_asset_id);
 
         $this->validate(request(), [
             'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
@@ -123,6 +134,10 @@ class PropertyController extends Controller
     public function propertiesDestroy()
     {
         $id = request('id');
+        $property = $this->assetPropertyRepository->find($id);
+        if ($property) {
+            $this->damAuthorizeAsset((int) $property->dam_asset_id);
+        }
         try {
             $this->assetPropertyRepository->delete($id);
 

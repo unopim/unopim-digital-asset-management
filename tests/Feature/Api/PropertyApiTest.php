@@ -1,8 +1,13 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Webkul\Core\Models\Locale;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetProperty;
+use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\User\Models\Admin;
+use Webkul\User\Models\Role;
 
 beforeEach(function () {
     $this->headers = $this->getAuthenticationHeaders();
@@ -114,4 +119,58 @@ it('returns 404 when deleting a non-existent property via api', function () {
     $this->withHeaders($this->headers)
         ->deleteJson(route('admin.api.dam.property.delete', 999999))
         ->assertStatus(404);
+});
+
+// ---------------------------------------------------------------------------
+// Helper — custom-role user granted only to a specific directory
+// ---------------------------------------------------------------------------
+
+function makePropCustomHeaders(Directory $grantedDir): array
+{
+    $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $grantedDir->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+    $headers = test()->getAuthenticationHeaders();
+    Admin::latest('id')->first()->update(['role_id' => $role->id]);
+    app(DirectoryPermissionService::class)->flush();
+
+    return $headers;
+}
+
+// ---------------------------------------------------------------------------
+// Directory-permission gate tests (Task 7)
+// ---------------------------------------------------------------------------
+
+it('returns 403 when adding a property to an asset in a denied directory', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $granted = Directory::factory()->create();
+    $headers = makePropCustomHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->postJson(route('admin.api.dam.property.add', $asset->id), [
+            'name'     => 'color',
+            'type'     => 'text',
+            'language' => 'en',
+            'value'    => 'red',
+        ])
+        ->assertStatus(403);
+});
+
+it('returns 403 when fetching a property whose asset is in a denied directory', function () {
+    $denied = Directory::factory()->create();
+    $asset = Asset::factory()->create();
+    $asset->directories()->attach($denied->id);
+    $property = AssetProperty::factory()->create(['dam_asset_id' => $asset->id]);
+    $granted = Directory::factory()->create();
+    $headers = makePropCustomHeaders($granted);
+
+    $this->withHeaders($headers)
+        ->getJson(route('admin.api.dam.property.get', $property->id))
+        ->assertStatus(403);
 });
