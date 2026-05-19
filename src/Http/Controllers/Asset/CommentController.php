@@ -7,10 +7,13 @@ use Illuminate\Support\Facades\Auth;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetCommentsRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\User\Repositories\AdminRepository;
 
 class CommentController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -25,6 +28,8 @@ class CommentController extends Controller
      */
     public function comments($id)
     {
+        $this->damAuthorizeAsset((int) $id);
+
         $property = $this->assetCommentRepository->findOrFail($id);
 
         return new JsonResponse($property);
@@ -37,16 +42,30 @@ class CommentController extends Controller
      */
     public function getUserInfo($id): JsonResponse
     {
-        $user = $this->adminRepository->findOrFail($id);
+        $user = $this->adminRepository->find($id);
 
-        $timezone = ['id' => $user?->timezone, 'label' => $user?->timezone];
+        if (! $user) {
+            return new JsonResponse([
+                'user' => [
+                    'id'        => $id,
+                    'name'      => trans('dam::app.admin.dam.asset.comments.deleted-user'),
+                    'image'     => null,
+                    'image_url' => null,
+                    'status'    => false,
+                ],
+                'timezone' => null,
+            ]);
+        }
 
         return new JsonResponse([
             'user' => [
-                'name'   => $user->name,
-                'status' => (bool) $user->status,
+                'id'        => $user->id,
+                'name'      => $user->name,
+                'image'     => $user->image,
+                'image_url' => $user->image_url,
+                'status'    => (bool) $user->status,
             ],
-            'timezone' => $timezone,
+            'timezone' => ['id' => $user?->timezone, 'label' => $user?->timezone],
         ]);
     }
 
@@ -55,6 +74,8 @@ class CommentController extends Controller
      */
     public function commentCreate($id)
     {
+        $this->damAuthorizeAsset((int) $id);
+
         $messages = [
             'comments.required' => trans('dam::app.admin.validation.comment.required'),
         ];
@@ -63,7 +84,7 @@ class CommentController extends Controller
             'comments' => 'required|min:2|max:1000',
         ], $messages);
 
-        $this->assetCommentRepository->create(array_merge(request()->only([
+        $comment = $this->assetCommentRepository->create(array_merge(request()->only([
             'comments',
             'parent_id',
         ]), [
@@ -71,55 +92,78 @@ class CommentController extends Controller
             'dam_asset_id' => $id,
         ]));
 
+        $comment->load('admin');
+
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.comments.create.create-success'),
+            'comment' => $comment,
         ]);
     }
 
     /**
      * update the comment message.
-     *
-     * @return void
      */
-    public function commentUpdate()
+    public function commentUpdate(): JsonResponse
     {
-        $id = request('id');
-
         $this->validate(request(), [
-            'name'  => 'required|min:3|max:13|unique:dam_asset_comments,name,'.$id,
-            'value' => 'required',
+            'id'       => 'required|integer|exists:dam_asset_comments,id',
+            'comments' => 'required|min:2|max:1000',
         ]);
 
-        $this->assetCommentRepository->update(request()->only([
-            'value',
-        ]), $id);
+        $id = request('id');
+        $comment = $this->assetCommentRepository->findOrFail($id);
+
+        $this->damAuthorizeAsset((int) $comment->dam_asset_id);
+
+        if ($comment->admin_id !== Auth::id()) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.asset.comments.update-failed'),
+            ], 403);
+        }
+
+        $this->assetCommentRepository->update(['comments' => request('comments')], $id);
+        $comment->refresh()->load('admin');
 
         return new JsonResponse([
-            'message' => trans('dam::app.admin.dam.comments.index.update-success'),
+            'message' => trans('dam::app.admin.dam.asset.comments.updated-success'),
+            'comment' => $comment,
         ]);
     }
 
     /**
      * Delete the comment thread
-     *
-     * @return void
      */
-    public function commentDelete()
+    public function commentDelete(): JsonResponse
     {
         $id = request('id');
+        $comment = $this->assetCommentRepository->find($id);
+
+        if (! $comment) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset((int) $comment->dam_asset_id);
+
+        if ($comment->admin_id !== Auth::id()) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
+            ], 403);
+        }
 
         try {
             $this->assetCommentRepository->delete($id);
 
             return new JsonResponse([
-                'message' => trans('dam::app.admin.dam.comments.index.delete-success'),
-            ], 200);
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-success'),
+            ]);
         } catch (\Exception $e) {
             report($e);
-        }
 
-        return new JsonResponse([
-            'message' => trans('dam::app.admin.dam.comments.index.delete-failed'),
-        ], 500);
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
+            ], 500);
+        }
     }
 }

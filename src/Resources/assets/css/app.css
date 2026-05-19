@@ -41,6 +41,11 @@
         color: #d1d5db;
     }
 
+    html.dark .secondary-button [class^="icon-dam-"],
+    html.dark .secondary-button [class*=" icon-dam-"] {
+        color: #a78bfa;
+    }
+
     .icon-dam-tags:before {
         content: "\e911";
     }

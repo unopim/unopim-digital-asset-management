@@ -50,6 +50,7 @@ it('should delete a comment', function () {
     $asset = Asset::factory()->create();
     $comment = AssetComments::factory()->create([
         'dam_asset_id' => $asset->id,
+        'admin_id'     => auth()->id(),
     ]);
 
     $payload = ['id' => $comment->id];
@@ -58,10 +59,29 @@ it('should delete a comment', function () {
 
     $response->assertOk();
     $response->assertJson([
-        'message' => trans('dam::app.admin.dam.comments.index.delete-success'),
+        'message' => trans('dam::app.admin.dam.asset.comments.delete-success'),
     ]);
 
     $this->assertDatabaseMissing('dam_asset_comments', [
+        'id' => $comment->id,
+    ]);
+});
+
+it('should reject delete by non-owner', function () {
+    $asset = Asset::factory()->create();
+    $otherAdmin = Admin::factory()->create();
+    $comment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+        'admin_id'     => $otherAdmin->id,
+    ]);
+
+    $response = $this->deleteJson(route('admin.dam.asset.comment.delete', $asset->id), [
+        'id' => $comment->id,
+    ]);
+
+    $response->assertStatus(403);
+
+    $this->assertDatabaseHas('dam_asset_comments', [
         'id' => $comment->id,
     ]);
 });
@@ -121,13 +141,59 @@ it('should validate comment is required', function () {
         ->assertJsonValidationErrors(['comments']);
 });
 
-it('should validate name and value when updating a comment', function () {
+it('should validate id and comments when updating a comment', function () {
     $asset = Asset::factory()->create();
 
     $response = $this->putJson(route('admin.dam.asset.comment.update', $asset->id), []);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['name', 'value']);
+        ->assertJsonValidationErrors(['id', 'comments']);
+});
+
+it('should update own comment', function () {
+    $asset = Asset::factory()->create();
+    $comment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+        'admin_id'     => auth()->id(),
+        'comments'     => 'original text',
+    ]);
+
+    $response = $this->putJson(route('admin.dam.asset.comment.update', $asset->id), [
+        'id'       => $comment->id,
+        'comments' => 'updated text',
+    ]);
+
+    $response->assertOk();
+    $response->assertJson([
+        'message' => trans('dam::app.admin.dam.asset.comments.updated-success'),
+    ]);
+
+    $this->assertDatabaseHas('dam_asset_comments', [
+        'id'       => $comment->id,
+        'comments' => 'updated text',
+    ]);
+});
+
+it('should reject update by non-owner', function () {
+    $asset = Asset::factory()->create();
+    $otherAdmin = Admin::factory()->create();
+    $comment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+        'admin_id'     => $otherAdmin->id,
+        'comments'     => 'original text',
+    ]);
+
+    $response = $this->putJson(route('admin.dam.asset.comment.update', $asset->id), [
+        'id'       => $comment->id,
+        'comments' => 'attempted hijack',
+    ]);
+
+    $response->assertStatus(403);
+
+    $this->assertDatabaseHas('dam_asset_comments', [
+        'id'       => $comment->id,
+        'comments' => 'original text',
+    ]);
 });
 
 it('should return user info with timezone', function () {
@@ -137,7 +203,7 @@ it('should return user info with timezone', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'user' => ['name', 'status'],
+            'user' => ['name', 'image', 'image_url', 'status'],
             'timezone',
         ]);
 });

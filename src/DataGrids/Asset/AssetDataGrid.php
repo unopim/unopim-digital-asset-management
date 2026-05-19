@@ -5,6 +5,8 @@ namespace Webkul\DAM\DataGrids\Asset;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\FileController;
+use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataGrid\DataGrid;
 use Webkul\DataGrid\Enums\ColumnTypeEnum;
 
@@ -69,6 +71,21 @@ class AssetDataGrid extends DataGrid
             'directory_asset_id' => 'dam_asset_directory.asset_id',
             'directory_id'       => 'dam_directories.id',
         ];
+
+        $service = app(DirectoryPermissionService::class);
+
+        if (! $service->bypass()) {
+            // Strict: only assets in directly-granted dirs. Ancestor dirs
+            // visible in the tree (via canView expansion) must not leak their
+            // assets here.
+            $allowedIds = $service->directlyGrantedIds();
+
+            if (empty($allowedIds)) {
+                $queryBuilder->whereRaw('1 = 0');
+            } else {
+                $queryBuilder->whereIn('dam_directories.id', $allowedIds);
+            }
+        }
 
         return $queryBuilder;
     }
@@ -188,7 +205,27 @@ class AssetDataGrid extends DataGrid
             } else {
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
 
-                if (in_array($requestedColumn, ['directory_id', 'directory_asset_id'])) {
+                if ($requestedColumn === 'directory_id') {
+                    // Expand to descendants server-side; frontend sends only the selected id.
+                    $expandedIds = collect();
+                    foreach ($requestedValues as $rootId) {
+                        $expandedIds->push((int) $rootId);
+                        $expandedIds = $expandedIds->merge(
+                            Directory::descendantsOf($rootId)->pluck('id')
+                        );
+                    }
+                    $expandedIds = $expandedIds->unique()->values()->all();
+
+                    if (empty($expandedIds)) {
+                        $this->queryBuilder->whereRaw('1 = 0');
+                    } else {
+                        $this->queryBuilder->whereIn($this->customFilterColumns[$requestedColumn], $expandedIds);
+                    }
+
+                    continue;
+                }
+
+                if ($requestedColumn === 'directory_asset_id') {
                     $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedColumn, $requestedValues) {
                         foreach ($requestedValues as $value) {
                             $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $value);

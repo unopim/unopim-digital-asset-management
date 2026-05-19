@@ -192,7 +192,7 @@
 
                     this.isLoading = true;
 
-                    this.$refs['filterDrawer'].close();
+                    this.$refs['filterDrawer']?.close();
 
                     this.$axios
                         .get(this.src, {

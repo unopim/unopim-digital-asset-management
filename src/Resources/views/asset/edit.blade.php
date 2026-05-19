@@ -41,6 +41,13 @@
             ],
         ];
 
+        $items[] = [
+            'url' => '?meta-data',
+            'code' => 'meta-data',
+            'name' => 'dam::app.admin.dam.asset.edit.embedded_meta_info',
+            'icon' => 'icon-manage-column',
+        ];
+
         if (bouncer()->hasPermission('dam.asset.property')) {
             $items[] = [
                 'url' => '?properties',
@@ -103,6 +110,10 @@
         @endif
     </x-slot:linked_resources>
 
+    <x-slot:meta_data>
+        @include('dam::asset.meta-data.index', ['asset' => $asset])
+    </x-slot:meta_data>
+
     {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
 
     @pushOnce('scripts')
@@ -122,40 +133,11 @@
                     <div class="flex gap-2.5 mt-3.5 w-full">
 
                         <!-- Left sub Component -->
-                        <div class="flex flex-col flex-1 gap-2 overflow-auto bg-white dark:bg-cherry-900 rounded-lg box-shadow  
-                            @if($asset->file_type === 'audio')
-                                items-center justify-center
-                            @endif
-                        ">
+                        <div class="flex flex-col flex-1 gap-2 overflow-auto bg-white dark:bg-cherry-900 rounded-lg box-shadow items-center justify-start p-8">
                             {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
-                            
-                                @if ($asset->extension == 'pdf')
-                                    <div id="iframe-container">
-                                        <iframe 
-                                            src="{{ $asset->previewPath }}" 
-                                            width="100%" 
-                                            height="800"
-                                            onerror="document.getElementById('iframe-container').innerHTML = '<p>Unable to load content. Please check your network connection or resource availability.</p>';"
-                                        >
-                                        </iframe>
-                                    </div>
-                                @elseif (in_array($asset->file_type, ['audio']))
-                                    <audio controls="" autoplay="" name="media">
-                                        <source src="{{ $asset->previewPath }}"  type="audio/{{ $asset->extension }}">
-                                        Your browser does not support the audio element.
-                                    </audio>
-                                @elseif (in_array($asset->file_type, ['video', 'audio']))
-                                    <video controls="" autoplay="" name="media" width="100%">
-                                        <source src="{{ $asset->previewPath }}" type="video/{{ $asset->extension }}">
-                                        Your browser does not support the video element.
-                                    </video>
-                                     
-                                @else
-                                    <img
-                                        src="{{ $asset->previewPath }}"
-                                        alt="{{ $asset->file_name }}"
-                                    />
-                                @endif
+
+                            <v-asset-preview-modal></v-asset-preview-modal>
+
                             {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
                         </div>
 
@@ -220,73 +202,6 @@
                             </x-admin::accordion>
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.after', ['asset' => $asset]) !!}
-
-                            <!-- Embedded MetaInfo -->
-                            @if ($asset->embeddedMetaInfo)
-                                {!! view_render_event('unopim.dam.asset.edit.card.accordian.embedded_meta_info.before', ['asset' => $asset]) !!}
-
-                                <x-admin::accordion>
-                                    <x-slot:header>
-                                        <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
-                                            @lang('dam::app.admin.dam.asset.edit.embedded_meta_info')
-                                        </p>
-                                    </x-slot>
-        
-                                    <x-slot:content class="overflow-x-auto max-w-full !px-0 !pb-0">
-                                        <x-admin::table class="w-full text-sm text-left min-w-[400px]">
-                                            <x-admin::table.thead class="text-sm font-medium dark:bg-gray-800">
-                                                    <x-admin::table.thead.tr>
-                                                        <x-admin::table.th>
-                                                            @lang('dam::app.admin.dam.asset.edit.name')
-                                                        </x-admin::table.th>
-
-                                                        <x-admin::table.th>
-                                                            @lang('dam::app.admin.dam.asset.edit.value')
-                                                        </x-admin::table.th>
-                                                    </x-admin::table.thead.tr>
-                                            </x-admin::table.thead>
-                                            @foreach ($asset->embeddedMetaInfo as $metaInfoName => $metaInfoValue)
-                                                <x-admin::table.thead.tr
-                                                    class="hover:bg-violet-50 hover:bg-opacity-50 dark:hover:bg-cherry-800"
-                                                > 
-                                                    <x-admin::table.td>
-                                                        <p
-                                                            class="dark:text-white" 
-                                                        >
-                                                        {{$metaInfoName}}
-                                                        </p>
-
-                                                    </x-admin::table.td>
-
-                                                    <x-admin::table.td>
-                                                        <p class="dark:text-white">
-                                                            @if (is_array($metaInfoValue))
-                                                                <!-- You can add logic to display the array content if needed -->
-                                                                @foreach ($metaInfoValue as $label => $value)
-                                                                    <tr
-                                                                        class="hover:bg-violet-50 hover:bg-opacity-50 dark:hover:bg-cherry-800"
-                                                                    > 
-                                                                        <x-admin::table.td>{{ $label }}</x-admin::table.td>
-                                                                        <x-admin::table.td>{{ $value }}</x-admin::table.td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            @else
-                                                                @if ('FileDateTime' == $metaInfoName)
-                                                                    {{ date('Y-m-d H:i:s', $metaInfoValue) }}
-                                                                @else
-                                                                    {{ $metaInfoValue }}
-                                                                @endif
-                                                            @endif
-                                                        </p>
-                                                    </x-admin::table.td>
-                                                </x-admin::table.thead.tr>
-                                            @endforeach                                
-                                        </x-admin::table>
-                                    </x-slot>
-                                </x-admin::accordion>
-        
-                                {!! view_render_event('unopim.dam.asset.edit.card.accordian.embedded_meta_info.after', ['asset' => $asset]) !!}
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -361,27 +276,67 @@
             });
         </script>
 
+        <!-- **** Asset Preview Modal **** -->
+        @include('dam::asset.preview-modal')
+
         <!-- **** Custom Download **** -->
         <script
             type="text/x-template"
             id="v-custom-download-template"
         >
+
+         <!-- ****  previous and next buttons **** -->
+            @php
+                $queryParams = request()->query();
+                $queryString = '';
+                if (!empty($queryParams)) {
+                    $queryString = '?' . implode('&', array_map(fn($key) => $key, array_keys($queryParams)));
+                }
+            @endphp
+
+            @if($asset->previousAssetId)
+                <button class="secondary-button" title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
+                 :disabled="isLocked"
+                 :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                 @click="goToPreviousAsset('{{ route('admin.dam.assets.edit', $asset->previousAssetId) }}{{ $queryString }}')">
+                    <span class="text-2xl">&larr;</span>
+                </button>
+            @endif
+            @if($asset->nextAssetId)
+                <button class="secondary-button"  title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
+                    :disabled="isLocked"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                    @click="goToNextAsset('{{ route('admin.dam.assets.edit', $asset->nextAssetId) }}{{ $queryString }}')">
+
+                    <span class="text-2xl">&rarr;</span>
+                </button>
+            @endif
+
             @if (bouncer()->hasPermission('dam.asset.download'))
-                
+
                 @if($asset->extension ==='svg')
-                <button class="secondary-button" @click="svgDownloadModel">
+                <button class="secondary-button"
+                    :disabled="isLocked"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                    @click="svgDownloadModel">
                     <span class="text-xl text-violet-700 icon-dam-download"></span>
-                    <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>    
+                    <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
                 </button>
                 @elseif ($asset->file_type === 'image')
-                    <button class="secondary-button" @click="customDownloadModel">
+                    <button class="secondary-button"
+                        :disabled="isLocked"
+                        :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                        @click="customDownloadModel">
                         <span class="text-xl text-violet-700 icon-dam-download"></span>
-                        <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>    
+                        <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
                     </button>
                 @else
-                    <button class="secondary-button" @click="downloadItem">
+                    <button class="secondary-button"
+                        :disabled="isLocked"
+                        :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                        @click="downloadItem">
                         <span class="text-xl text-violet-700 icon-dam-download"></span>
-                        <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>    
+                        <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>
                     </button>
                 @endif
             @endif
@@ -575,6 +530,8 @@
                     const selectedItem = @json($asset);
                     return {
                         selectedItem: selectedItem,
+                        isLocked: false,
+                        onLockChange: null,
                         supportedExtensionTypes: [{
                                 label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.original')",
                                 value: selectedItem?.extension,
@@ -598,11 +555,31 @@
                         ],
 
                         selectedItemExtension: selectedItem?.extension,
-                        selectedItemWidth: selectedItem?.embeddedMetaInfo?.Width,
-                        selectedItemHeight: selectedItem?.embeddedMetaInfo?.Height,
+                        selectedItemWidth: selectedItem?.width ?? 0,
+                        selectedItemHeight: selectedItem?.height ?? 0,
                     };
                 },
+                mounted() {
+                    this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                    this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                },
+                unmounted() {
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
+                },
                 methods: {
+
+                    goToPreviousAsset(url) {
+                        if (this.isLocked) return;
+                        window.location.href = url;
+                    },
+
+                    goToNextAsset(url) {
+                        if (this.isLocked) return;
+                        window.location.href = url;
+                    },
+
                     svgDownloadModel() {
                         this.$refs.svgCustomDownloadModal.toggle();
                     },
@@ -648,8 +625,8 @@
                             `{{ route('admin.dam.assets.custom_download', ':id') }}`.replace(':id', this.selectedItem.id) + `?format=${format}&height=${formatHeight}&width=${formatWidth}`;
 
                         this.selectedItemExtension = this.selectedItem?.extension;
-                        this.selectedItemWidth = this.selectedItem?.embeddedMetaInfo?.Width;
-                        this.selectedItemHeight = this.selectedItem?.embeddedMetaInfo?.Height;
+                        this.selectedItemWidth = this.selectedItem?.width ?? 0;
+                        this.selectedItemHeight = this.selectedItem?.height ?? 0;
 
                         this.$refs.assetCustomDownloadModal.close();
 
@@ -671,8 +648,11 @@
             id="v-rename-asset-template"
         >
             @if (bouncer()->hasPermission('dam.asset.rename'))
-                <button class="secondary-button" @click="renameItem">
-                    <span class="text-xl text-violet-700 icon-dam-rename"></span>    
+                <button class="secondary-button"
+                    :disabled="isLocked"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                    @click="renameItem">
+                    <span class="text-xl text-violet-700 icon-dam-rename"></span>
                     <span>@lang('dam::app.admin.dam.asset.edit.button.rename')</span>
                 </button>
             @endif
@@ -692,7 +672,7 @@
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
                             >
-                                @lang('Rename')
+                                @lang('dam::app.admin.dam.asset.edit.button.rename')
                             </p>
                         </x-slot>
 
@@ -709,7 +689,7 @@
                             <!-- name -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
-                                    @lang('File Name')
+                                    @lang('dam::app.admin.dam.asset.edit.file-name')
                                 </x-admin::form.control-group.label>
 
                                 <x-admin::form.control-group.control
@@ -719,8 +699,8 @@
                                     :value="old('file_name')"
                                     v-model="selectedItem.file_name"
                                     ref="fileName"
-                                    :label="trans('File Name')"
-                                    :placeholder="trans('File Name')"
+                                    :label="trans('dam::app.admin.dam.asset.edit.file-name')"
+                                    :placeholder="trans('dam::app.admin.dam.asset.edit.file-name')"
                                 />
 
                                 <x-admin::form.control-group.error control-name="file_name" />
@@ -735,8 +715,32 @@
                                 <button
                                     type="submit"
                                     class="primary-button"
+                                    :disabled="isRenaming"
+                                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isRenaming }"
                                 >
-                                    @lang('Save')
+                                    <svg
+                                        v-if="isRenaming"
+                                        class="align-center inline-block animate-spin h-4 w-4 mr-2 text-white"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        aria-hidden="true"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            class="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            stroke-width="4"
+                                        ></circle>
+                                        <path
+                                            class="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    @lang('dam::app.admin.dam.asset.edit.save-btn')
                                 </button>
                             </div>
                         </x-slot>
@@ -751,11 +755,24 @@
                 template: '#v-rename-asset-template',
                 data: function() {
                     return {
-                        selectedItem: @json($asset)
+                        selectedItem: @json($asset),
+                        isLocked: false,
+                        onLockChange: null,
+                        isRenaming: false,
                     };
+                },
+                mounted() {
+                    this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                    this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                },
+                unmounted() {
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
                 },
                 methods: {
                     renameItem() {
+                        if (this.isLocked) return;
                         this.$refs.assetRenameModal.toggle();
                     },
                     focusNameInput() {
@@ -769,6 +786,10 @@
                         resetForm,
                         setErrors
                     }) {
+                        if (this.isRenaming) return;
+
+                        this.isRenaming = true;
+
                         let formData = new FormData(this.$refs.assetRenameForm);
 
                         this.$axios.post("{{ route('admin.dam.assets.rename') }}", formData)
@@ -791,6 +812,9 @@
                                     type: 'error',
                                     message: error.response.data.message
                                 });
+                            })
+                            .finally(() => {
+                                this.isRenaming = false;
                             });
                     },
                 }
@@ -802,33 +826,78 @@
             type="text/x-template"
             id="v-reupload-asset-template"
         >      
-            @if (bouncer()->hasPermission('dam.asset.re_upload'))    
+            @if (bouncer()->hasPermission('dam.asset.re_upload'))
                 <input type="file"
                     name="file"
                     id="file-upload"
                     class="hidden"
+                    :disabled="isUploading"
                     @change="onFileChange"
                 />
                 <label
                     for="file-upload"
                     class="secondary-button cursor-pointer"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isUploading }"
+                    :aria-disabled="isUploading"
                 >
-                    <span class="text-xl text-violet-700 icon-dam-upload"></span>
-                    <span>@lang('dam::app.admin.dam.asset.edit.button.re_upload')</span>
+                    <svg
+                        v-if="isUploading"
+                        class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="#8A2BE2"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <span v-else class="text-xl text-violet-700 icon-dam-upload"></span>
+                    <span v-if="isUploading">@lang('dam::app.admin.dam.asset.edit.button.re_uploading')</span>
+                    <span v-else>@lang('dam::app.admin.dam.asset.edit.button.re_upload')</span>
                 </label>
+
+                <button
+                    v-if="isUploading"
+                    type="button"
+                    class="secondary-button"
+                    @click="cancelUpload"
+                >
+                    @lang('dam::app.admin.dam.asset.edit.button.cancel')
+                </button>
             @endif
         </script>
 
         <script type="module">
+            const reUploadFileTooLargeMsg = @js(trans('dam::app.admin.dam.asset.datagrid.file-too-large', ['size' => \Webkul\DAM\Helpers\AssetHelper::humanReadableSize(\Webkul\DAM\Helpers\AssetHelper::getMaxUploadSizeKb())]));
+            const reUploadFailedMsg = @js(trans('dam::app.admin.dam.asset.datagrid.file-upload-failed'));
+
             app.component('v-reupload-asset', {
                 template: '#v-reupload-asset-template',
                 data() {
                     return {
-                        selectedItem: @json($asset)
+                        selectedItem: @json($asset),
+                        isUploading: false,
+                        abortController: null,
                     };
                 },
                 methods: {
                     onFileChange(e) {
+                        if (this.isUploading) {
+                            e.target.value = null;
+                            return;
+                        }
+
                         const fileInput = e.target.files;
 
                         if (fileInput.length > 0) {
@@ -842,14 +911,34 @@
 
                             this.handleFileUpload(formData);
                         }
+
+                        e.target.value = null;
                     },
+
+                    cancelUpload() {
+                        if (this.abortController) {
+                            this.abortController.abort();
+                            this.abortController = null;
+                        }
+                    },
+
                     handleFileUpload(formData) {
+                        this.isUploading = true;
+                        this.abortController = new AbortController();
+                        this.$emitter.emit('dam-asset-action-locked', true);
+
                         this.$axios.post("{{ route('admin.dam.assets.re_upload') }}", formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data',
-                            }
+                            },
+                            signal: this.abortController.signal,
                         }).then((response) => {
-
+                            // Server-level errors (e.g. post_max_size exceeded) return 200 with an
+                            // HTML body instead of JSON. Detect by checking the data type.
+                            if (typeof response.data !== 'object' || response.data === null) {
+                                this.$emitter.emit('add-flash', { type: 'error', message: reUploadFileTooLargeMsg });
+                                return;
+                            }
                             location.reload();
                             this.$emitter.emit('uploaded-assets', response.data.file);
                             this.$emitter.emit('add-flash', {
@@ -858,11 +947,21 @@
                             });
 
                         }).catch((error) => {
-                            this.$emitter.emit('add-flash', {
-                                type: 'error',
-                                message: error.response.data.message
-                            });
-                            console.error('Upload failed:', error);
+                            if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED') {
+                                this.$emitter.emit('add-flash', {
+                                    type: 'warning',
+                                    message: @js(trans('dam::app.admin.dam.asset.edit.button.re-upload-cancelled')),
+                                });
+                                return;
+                            }
+                            const message = error.response?.status === 413
+                                ? reUploadFileTooLargeMsg
+                                : (error.response?.data?.message ?? reUploadFailedMsg);
+                            this.$emitter.emit('add-flash', { type: 'error', message });
+                        }).finally(() => {
+                            this.isUploading = false;
+                            this.abortController = null;
+                            this.$emitter.emit('dam-asset-action-locked', false);
                         });
                     }
                 }
@@ -875,8 +974,33 @@
             id="v-delete-asset-template"
         >
             @if (bouncer()->hasPermission('dam.asset.delete'))
-                <button class="secondary-button" @click="deleteFile"> 
-                    <span class="text-xl text-violet-700 icon-dam-delete"></span>
+                <button class="secondary-button"
+                    :disabled="isLocked || isDeleting"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked || isDeleting }"
+                    @click="deleteFile">
+                    <svg
+                        v-if="isDeleting"
+                        class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                        ></circle>
+                        <path
+                            class="opacity-75"
+                            fill="#8A2BE2"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <span v-else class="text-xl text-violet-700 icon-dam-delete"></span>
                     <span>@lang('dam::app.admin.dam.asset.edit.button.delete')</span>
                 </button>
             @endif
@@ -887,13 +1011,28 @@
                 template: '#v-delete-asset-template',
                 data() {
                     return {
-                        selectedItem: @json($asset)
+                        selectedItem: @json($asset),
+                        isLocked: false,
+                        onLockChange: null,
+                        isDeleting: false,
                     };
+                },
+                mounted() {
+                    this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                    this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                },
+                unmounted() {
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
                 },
                 methods: {
                     deleteFile() {
+                        if (this.isLocked || this.isDeleting) return;
                         this.$emitter.emit('open-delete-modal', {
                             agree: () => {
+                                this.isDeleting = true;
+
                                 this.$axios.delete(
                                         `{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', this.selectedItem.id)
                                     )
@@ -910,6 +1049,9 @@
                                             type: 'error',
                                             message: error.response.data.message
                                         });
+                                    })
+                                    .finally(() => {
+                                        this.isDeleting = false;
                                     });
                             }
                         });

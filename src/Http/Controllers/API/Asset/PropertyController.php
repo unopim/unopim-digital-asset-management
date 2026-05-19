@@ -10,9 +10,12 @@ use Webkul\Core\Filesystem\FileStorer;
 use Webkul\Core\Repositories\LocaleRepository;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class PropertyController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -37,6 +40,8 @@ class PropertyController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset($property->dam_asset_id);
+
         return response()->json([
             'success' => true,
             'message' => trans('dam::app.admin.dam.asset.properties.index.found-success'),
@@ -49,6 +54,8 @@ class PropertyController extends Controller
      */
     public function addProperty(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         $messages = [
             'name.required' => trans('dam::app.admin.validation.property.name.required'),
             'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
@@ -109,6 +116,8 @@ class PropertyController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset($property->dam_asset_id);
+
         $this->validate($request, [
             'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,'.$id.',id,dam_asset_id,'.$property->dam_asset_id,
             'value' => 'required',
@@ -144,6 +153,8 @@ class PropertyController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.properties.index.not-found'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset($property->dam_asset_id);
 
         try {
             $this->assetPropertyRepository->delete($id);

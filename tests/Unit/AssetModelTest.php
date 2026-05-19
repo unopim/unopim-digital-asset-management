@@ -24,7 +24,7 @@ it('has correct table name', function () {
 
 it('has correct fillable attributes', function () {
     $asset = new Asset;
-    expect($asset->getFillable())->toBe(['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension']);
+    expect($asset->getFillable())->toBe(['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension', 'meta_data']);
 });
 
 it('can have tags relationship', function () {

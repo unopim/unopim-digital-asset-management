@@ -2,17 +2,18 @@
 
 namespace Webkul\DAM\Helpers;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Webkul\DAM\Models\Directory;
+
 class AssetHelper
 {
     /**
-     * Maximum allowed asset upload size in kilobytes (50 MB).
-     */
-    public const MAX_UPLOAD_SIZE_KB = 51200;
-
-    /**
-     * Effective max upload size in KB — the lesser of the DAM cap
-     * and PHP's runtime upload_max_filesize, so the validator can never
-     * promise more than the server actually accepts.
+     * Effective max upload size in KB — derived entirely from PHP's runtime
+     * upload_max_filesize and post_max_size so the validator honours whatever
+     * the server is already configured to accept.
+     * Returns PHP_INT_MAX when PHP imposes no limit, so Laravel's max: rule
+     * effectively becomes a no-op and the server is the real gatekeeper.
      */
     public static function getMaxUploadSizeKb(): int
     {
@@ -20,12 +21,27 @@ class AssetHelper
         $postLimitKb = self::iniValueToKb((string) ini_get('post_max_size'));
 
         $candidates = array_filter([
-            self::MAX_UPLOAD_SIZE_KB,
             $phpLimitKb ?: null,
             $postLimitKb ?: null,
         ]);
 
-        return (int) min($candidates);
+        return $candidates ? (int) min($candidates) : PHP_INT_MAX;
+    }
+
+    /**
+     * Format a kilobyte count into a human-readable string (e.g. "512 MB", "2 GB").
+     */
+    public static function humanReadableSize(int $kilobytes): string
+    {
+        if ($kilobytes >= 1024 * 1024) {
+            return round($kilobytes / 1024 / 1024, 2).' GB';
+        }
+
+        if ($kilobytes >= 1024) {
+            return round($kilobytes / 1024, 2).' MB';
+        }
+
+        return $kilobytes.' KB';
     }
 
     /**
@@ -115,12 +131,72 @@ class AssetHelper
     }
 
     /**
+     * Resolve the most appropriate preview URL for an asset.
+     */
+    public static function getPreviewUrl(string $path, ?int $size = null): string
+    {
+        $previewUrl = route('admin.dam.file.preview', [
+            'path' => urlencode($path),
+            'size' => $size,
+        ]);
+
+        $disk = Directory::getAssetDisk();
+
+        if ($disk !== Directory::ASSETS_DISK_AWS) {
+            return $previewUrl;
+        }
+
+        $awsDisk = Storage::disk($disk);
+
+        if ($awsDisk->exists($path) && self::isSupportedMediaFile($awsDisk->mimeType($path))) {
+            try {
+                $visibility = $awsDisk->getVisibility($path);
+
+                if ($visibility === 'public') {
+                    return $awsDisk->url($path);
+                }
+
+                return $awsDisk->temporaryUrl($path, now()->addMinutes(10));
+            } catch (\Throwable $exception) {
+                return $previewUrl;
+            }
+        }
+
+        return $previewUrl;
+    }
+
+    /**
+     * Check if the MIME type corresponds to a supported media file
+     *
+     * Supported types include SVG images, PDF, video, and audio formats.
+     */
+    public static function isSupportedMediaFile($mimeType)
+    {
+        return Str::startsWith($mimeType, 'image/') ||
+            Str::startsWith($mimeType, 'application/pdf') ||
+            Str::startsWith($mimeType, 'video/') ||
+            Str::startsWith($mimeType, 'audio/');
+    }
+
+    /**
      * Check if given extension or mime type is forbidden for upload
      */
     public static function isForbiddenFile(?string $extension, ?string $mimeType): bool
     {
         $forbiddenExtensions = [
-            'php', 'js', 'py', 'sh', 'bat', 'pl', 'cgi', 'asp', 'aspx', 'jsp', 'exe', 'rb', 'jar',
+            'php',
+            'js',
+            'py',
+            'sh',
+            'bat',
+            'pl',
+            'cgi',
+            'asp',
+            'aspx',
+            'jsp',
+            'exe',
+            'rb',
+            'jar',
         ];
 
         $forbiddenMimeTypes = [

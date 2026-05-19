@@ -12,9 +12,12 @@ use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
+use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
+use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
@@ -58,6 +61,21 @@ class DAMServiceProvider extends ServiceProvider
 
         Blade::anonymousComponentPath(__DIR__.'/../Resources/views/components', 'dam');
 
+        view()->composer('dam::admin.roles.dam-permissions-tab', function ($view) {
+            $roleId = request()->route('id');
+            $role = $roleId ? Role::find($roleId) : null;
+
+            $view->with([
+                'role'          => $role,
+                'directoryTree' => app(DirectoryRepository::class)
+                    ->getFullDirectoryTreeOnly(),
+                'grantedIds'    => $role
+                    ? app(DirectoryRolePermissionRepository::class)
+                        ->getDirectoryIdsForRole($role->id)
+                    : [],
+            ]);
+        });
+
         $this->publishes([
             __DIR__.'/../Resources/assets/images' => storage_path('app/public/dam'),
         ], 'dam-defaults');
@@ -72,11 +90,21 @@ class DAMServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Load DAM-only global helper functions (dam_can_view_dir, etc.).
+        // Loaded here rather than via composer.json `autoload.files` so DAM
+        // stays self-contained without touching the root composer.json.
+        $helpers = __DIR__.'/../Http/helpers.php';
+        if (file_exists($helpers)) {
+            require_once $helpers;
+        }
+
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/acl.php', 'acl');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/api-acl.php', 'api-acl');
+
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/dam.php', 'dam');
 
         $this->mergeConfigFrom(
             __DIR__.'/../Config/unopim-vite.php',
