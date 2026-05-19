@@ -139,7 +139,13 @@ class Exporter extends BaseExporter
                 throw new \RuntimeException("Unable to read stream: {$sourcePath}");
             }
 
-            Storage::writeStream($destinationPath, $stream);
+            if ($disk === Directory::ASSETS_DISK_AWS) {
+                Storage::writeStream($destinationPath, $stream);
+            } else {
+                // Non-S3: AWSS3TrackerController looks for media at raw $sourcePath
+                // on the public disk; write there so the export archive includes it.
+                Storage::disk('public')->writeStream($sourcePath, $stream);
+            }
 
             return;
         }
