@@ -41,6 +41,7 @@
                                     @deleted="onReplyDeleted(comment, subIndex)" />
                             </div>
 
+                            @if (bouncer()->hasPermission('dam.asset.comment.store'))
                             <div class="ml-12">
                                 <button
                                     v-if="!openReplies[comment.id]"
@@ -58,6 +59,7 @@
                                     @comment-added="onReplyPosted(comment, $event)"
                                     @cancel="toggleReply(comment.id)" />
                             </div>
+                            @endif
                         </div>
                     </div>
 
