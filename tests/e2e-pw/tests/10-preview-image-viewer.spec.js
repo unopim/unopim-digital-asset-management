@@ -40,12 +40,12 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Image renders in modal content area', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      await expect(adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first()).toBeVisible({ timeout: 5000 });
+      await expect(adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Image has Vue-driven transform style attribute', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const style = await img.getAttribute('style');
       // imgTransformStyle = "translate(Xpx,Ypx) scale(Z) rotate(Ddeg)"
       expect(style).toMatch(/translate\(/);
@@ -83,7 +83,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Rotate right button changes image transform', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.locator('button[title="Rotate right (R)"]').first().click();
       await adminPage.waitForTimeout(200);
@@ -92,7 +92,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Rotate left button changes image transform', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.locator('button[title="Rotate left (L)"]').first().click();
       await adminPage.waitForTimeout(200);
@@ -124,7 +124,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Mouse wheel zooms in on scroll up', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const content = adminPage.locator('.flex-1.min-h-0.overflow-hidden').first();
+      const content = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden').first();
       const box = await content.boundingBox();
       if (!box) { test.skip(true, 'Could not get bounding box'); return; }
       await adminPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -137,7 +137,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Mouse wheel zooms out on scroll down', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const content = adminPage.locator('.flex-1.min-h-0.overflow-hidden').first();
+      const content = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden').first();
       const box = await content.boundingBox();
       if (!box) { test.skip(true, 'Could not get bounding box'); return; }
       await adminPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -154,7 +154,7 @@ test.describe('DAM Asset Preview Modal', () => {
       await adminPage.locator('button[title="Zoom in (+)"]').first().click();
       await adminPage.waitForTimeout(200);
 
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const box = await img.boundingBox();
       if (!box) { test.skip(true, 'Could not get image bounding box'); return; }
 
@@ -198,7 +198,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('r key rotates right', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.keyboard.press('r');
       await adminPage.waitForTimeout(200);
@@ -207,7 +207,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('R key (uppercase) rotates right', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.keyboard.press('R');
       await adminPage.waitForTimeout(200);
@@ -216,7 +216,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('l key rotates left', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.keyboard.press('l');
       await adminPage.waitForTimeout(200);
@@ -225,7 +225,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('L key (uppercase) rotates left', async ({ adminPage }) => {
       await openImagePreview(adminPage);
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       const before = await img.getAttribute('style');
       await adminPage.keyboard.press('L');
       await adminPage.waitForTimeout(200);

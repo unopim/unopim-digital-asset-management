@@ -89,7 +89,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Video element renders in modal', async ({ adminPage }) => {
       await openVideoPreview(adminPage);
-      await expect(adminPage.locator('.flex-1.min-h-0.overflow-hidden video').first()).toBeVisible({ timeout: 10000 });
+      await expect(adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden video').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('Speed selector buttons visible', async ({ adminPage }) => {
@@ -175,7 +175,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Fallback modal shows "not available" message', async ({ adminPage }) => {
       await openFallbackPreview(adminPage);
-      const msg = adminPage.locator('.flex-1.min-h-0.overflow-hidden').getByText(/not available|preview not/i).first();
+      const msg = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden').getByText(/not available|preview not/i).first();
       const visible = await msg.isVisible({ timeout: 5000 }).catch(() => false);
       if (!visible) {
         test.info().annotations.push({ type: 'note', description: 'PDF — iframe shown instead of not-available message' });
@@ -184,7 +184,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Fallback modal shows Download button', async ({ adminPage }) => {
       await openFallbackPreview(adminPage);
-      const downloadLink = adminPage.locator('.flex-1.min-h-0.overflow-hidden a.primary-button').first();
+      const downloadLink = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden a.primary-button').first();
       const visible = await downloadLink.isVisible({ timeout: 5000 }).catch(() => false);
       if (!visible) {
         test.info().annotations.push({ type: 'note', description: 'Might be PDF — uses iframe instead of download button' });
@@ -288,7 +288,7 @@ test.describe('DAM Asset Preview Modal', () => {
       await navigateToFirstAssetWithExt(adminPage, '.jpg');
       await openPreviewModal(adminPage);
 
-      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
       await adminPage.locator('button[title="Rotate right (R)"]').first().click();
       await adminPage.waitForTimeout(200);
 
