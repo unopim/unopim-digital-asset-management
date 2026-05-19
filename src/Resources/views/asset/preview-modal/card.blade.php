@@ -5,7 +5,7 @@
     <div class="relative" @mouseenter="infoHover = true" @mouseleave="infoHover = false">
         <button
             type="button"
-            class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-50 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             @click="isInfoOpen = true"
         >
             <span class="text-lg icon-information"></span>
@@ -28,7 +28,7 @@
     <!-- Preview -->
     <button
         type="button"
-        class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
         title="{{ trans('dam::app.admin.dam.asset.edit.preview-modal.card.preview') }}"
         @click="openPreview"
     >
@@ -39,7 +39,7 @@
     <!-- Image editor -->
     <button
         type="button"
-        class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
         title="{{ trans('dam::app.admin.dam.asset.edit.preview-modal.card.edit-image') }}"
         @click="isEditOpen = true"
     >

@@ -88,6 +88,30 @@
 
     <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
 
+    <x-slot:nav-buttons>
+        @php
+            $navQueryParams = request()->query();
+            $navQueryString = '';
+            if (! empty($navQueryParams)) {
+                $navQueryString = '?' . implode('&', array_keys($navQueryParams));
+            }
+        @endphp
+        @if ($asset->previousAssetId)
+            <a href="{{ route('admin.dam.assets.edit', $asset->previousAssetId) }}{{ $navQueryString }}"
+               class="inline-flex w-10 h-10 cursor-pointer appearance-none items-center justify-center rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+               title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
+                <span class="text-2xl" aria-hidden="true">&#8249;</span>
+            </a>
+        @endif
+        @if ($asset->nextAssetId)
+            <a href="{{ route('admin.dam.assets.edit', $asset->nextAssetId) }}{{ $navQueryString }}"
+               class="inline-flex w-10 h-10 cursor-pointer appearance-none items-center justify-center rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+               title="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
+                <span class="text-2xl" aria-hidden="true">&#8250;</span>
+            </a>
+        @endif
+    </x-slot:nav-buttons>
+
     {!! view_render_event('unopim.dam.admin.asset.edit.before') !!}
 
     <v-edit-asset></v-edit-asset>
@@ -129,11 +153,11 @@
                 method="PUT"
             >
                 <!-- body content -->
-                <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
-                    <div class="flex gap-2.5 mt-3.5 w-full">
+                <div class="flex gap-2.5 mt-3.5 flex-wrap">
+                    <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
 
                         <!-- Left sub Component -->
-                        <div class="flex flex-col flex-1 gap-2 overflow-auto bg-white dark:bg-cherry-900 rounded-lg box-shadow items-center justify-start p-8">
+                        <div class="flex flex-col flex-1 gap-2 overflow-auto bg-white dark:bg-cherry-900 rounded-lg box-shadow items-center justify-start p-2">
                             {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
 
                             <v-asset-preview-modal></v-asset-preview-modal>
@@ -142,7 +166,7 @@
                         </div>
 
                         <!-- Right sub-component -->
-                        <div class="flex flex-col gap-5 w-[360px] h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                        <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             <!-- Tags -->
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
                             
@@ -197,7 +221,7 @@
                                 </x-slot>
 
                                 <x-slot:content class="gap-4">
-                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300"> {{ $asset->getPathWithOutFileSystemRoot() }}</p>
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all"> {{ $asset->getPathWithOutFileSystemRoot() }}</p>
                                 </x-slot>
                             </x-admin::accordion>
 
@@ -285,60 +309,30 @@
             id="v-custom-download-template"
         >
 
-         <!-- ****  previous and next buttons **** -->
-            @php
-                $queryParams = request()->query();
-                $queryString = '';
-                if (!empty($queryParams)) {
-                    $queryString = '?' . implode('&', array_map(fn($key) => $key, array_keys($queryParams)));
-                }
-            @endphp
-
-            @if($asset->previousAssetId)
-                <button class="secondary-button" title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
-                 :disabled="isLocked"
-                 :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
-                 @click="goToPreviousAsset('{{ route('admin.dam.assets.edit', $asset->previousAssetId) }}{{ $queryString }}')">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            @endif
-            @if($asset->nextAssetId)
-                <button class="secondary-button"  title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
-                    :disabled="isLocked"
-                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
-                    @click="goToNextAsset('{{ route('admin.dam.assets.edit', $asset->nextAssetId) }}{{ $queryString }}')">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-            @endif
-
             @if (bouncer()->hasPermission('dam.asset.download'))
 
                 @if($asset->extension ==='svg')
-                <button class="secondary-button"
+                <button class="primary-button"
                     :disabled="isLocked"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                     @click="svgDownloadModel">
-                    <span class="text-xl text-violet-700 icon-dam-download"></span>
+                    <span class="text-xl text-gray-50 icon-dam-download"></span>
                     <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
                 </button>
                 @elseif ($asset->file_type === 'image')
-                    <button class="secondary-button"
+                    <button class="primary-button"
                         :disabled="isLocked"
                         :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                         @click="customDownloadModel">
-                        <span class="text-xl text-violet-700 icon-dam-download"></span>
+                        <span class="text-xl text-gray-50 icon-dam-download"></span>
                         <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
                     </button>
                 @else
-                    <button class="secondary-button"
+                    <button class="primary-button"
                         :disabled="isLocked"
                         :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                         @click="downloadItem">
-                        <span class="text-xl text-violet-700 icon-dam-download"></span>
+                        <span class="text-xl text-gray-50 icon-dam-download"></span>
                         <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>
                     </button>
                 @endif
@@ -575,16 +569,6 @@
                 },
                 methods: {
 
-                    goToPreviousAsset(url) {
-                        if (this.isLocked) return;
-                        window.location.href = url;
-                    },
-
-                    goToNextAsset(url) {
-                        if (this.isLocked) return;
-                        window.location.href = url;
-                    },
-
                     svgDownloadModel() {
                         this.$refs.svgCustomDownloadModal.toggle();
                     },
@@ -653,11 +637,11 @@
             id="v-rename-asset-template"
         >
             @if (bouncer()->hasPermission('dam.asset.rename'))
-                <button class="secondary-button"
+                <button class="primary-button"
                     :disabled="isLocked"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
                     @click="renameItem">
-                    <span class="text-xl text-violet-700 icon-dam-rename"></span>
+                    <span class="text-xl text-gray-50 icon-dam-rename"></span>
                     <span>@lang('dam::app.admin.dam.asset.edit.button.rename')</span>
                 </button>
             @endif
@@ -843,13 +827,13 @@
                 />
                 <label
                     for="file-upload"
-                    class="secondary-button cursor-pointer"
+                    class="primary-button cursor-pointer"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isUploading }"
                     :aria-disabled="isUploading"
                 >
                     <svg
                         v-if="isUploading"
-                        class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                        class="align-center inline-block animate-spin h-5 w-5 text-gray-50"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         aria-hidden="true"
@@ -865,11 +849,11 @@
                         ></circle>
                         <path
                             class="opacity-75"
-                            fill="#8A2BE2"
+                            fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                     </svg>
-                    <span v-else class="text-xl text-violet-700 icon-dam-upload"></span>
+                    <span v-else class="text-xl text-gray-50 icon-dam-upload"></span>
                     <span v-if="isUploading">@lang('dam::app.admin.dam.asset.edit.button.re_uploading')</span>
                     <span v-else>@lang('dam::app.admin.dam.asset.edit.button.re_upload')</span>
                 </label>
@@ -877,7 +861,7 @@
                 <button
                     v-if="isUploading"
                     type="button"
-                    class="secondary-button"
+                    class="primary-button"
                     @click="cancelUpload"
                 >
                     @lang('dam::app.admin.dam.asset.edit.button.cancel')
@@ -981,13 +965,13 @@
             id="v-delete-asset-template"
         >
             @if (bouncer()->hasPermission('dam.asset.delete'))
-                <button class="secondary-button"
+                <button class="danger-button"
                     :disabled="isLocked || isDeleting"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked || isDeleting }"
                     @click="deleteFile">
                     <svg
                         v-if="isDeleting"
-                        class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                        class="align-center inline-block animate-spin h-5 w-5 text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         aria-hidden="true"
@@ -1003,11 +987,11 @@
                         ></circle>
                         <path
                             class="opacity-75"
-                            fill="#8A2BE2"
+                            fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                     </svg>
-                    <span v-else class="text-xl text-violet-700 icon-dam-delete"></span>
+                    <span v-else class="text-xl text-gray-50 icon-dam-delete"></span>
                     <span>@lang('dam::app.admin.dam.asset.edit.button.delete')</span>
                 </button>
             @endif
