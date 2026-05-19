@@ -199,6 +199,7 @@ return [
                 ],
                 'edit' => [
                     'title'                 => 'Edit Asset',
+                    'back'                  => 'Back',
                     'previous'              => 'Previous',
                     'next'                  => 'Next',
                     'name'                  => 'Name',
