@@ -44,11 +44,11 @@ test.describe('DAM DataGrid Operations', () => {
   test('Gallery view shows images with filenames', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
-    await adminPage.waitForTimeout(1000);
 
-    // Gallery mode shows h2 headings with filenames
-    const assetHeadings = adminPage.locator('h2');
-    const count = await assetHeadings.count();
+    // Wait for at least one h2 (asset filename heading) to render — the grid
+    // populates asynchronously after the AJAX response arrives.
+    await expect(adminPage.locator('h2').first()).toBeVisible({ timeout: 30000 });
+    const count = await adminPage.locator('h2').count();
     expect(count).toBeGreaterThan(0);
   });
 

@@ -130,12 +130,19 @@ test.describe('DAM Asset Edit Page', () => {
     }
 
     const labelSpan = adminPage.locator('v-dam-asset-label span').first();
-    const initialName = await labelSpan.textContent({ timeout: 5000 });
+    // Vue mounts v-dam-asset-label after app.mount() — wait for the span to appear.
+    await labelSpan.waitFor({ state: 'visible', timeout: 30000 });
+    const initialName = await labelSpan.textContent();
 
     await nextBtn.click();
-    await adminPage.waitForTimeout(2000);
+    // Wait for the SPA navigation AJAX call to complete before reading the label.
+    await adminPage.waitForResponse(
+      (res) => /\/admin\/dam\/assets\/show\/\d+/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15000 }
+    ).catch(() => adminPage.waitForTimeout(3000));
+    await adminPage.waitForTimeout(500);
 
-    const newName = await labelSpan.textContent({ timeout: 5000 });
+    const newName = await labelSpan.textContent({ timeout: 10000 });
     expect(newName.trim()).not.toBe('');
   });
 

@@ -142,3 +142,40 @@ it('syncs grants on role create.after with the same listener semantics', functio
         DB::table('dam_directory_role')->where('role_id', $role->id)->pluck('directory_id')->all()
     )->toEqualCanonicalizing([$dir->id]);
 });
+
+it('saves all_directories true in dam_role_settings when submitted', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_all_directories'          => '1',
+        'directories'                  => [],
+    ], $role);
+
+    expect(
+        DB::table('dam_role_settings')
+            ->where('role_id', $role->id)
+            ->where('all_directories', true)
+            ->exists()
+    )->toBeTrue();
+});
+
+it('clears all_directories in dam_role_settings when unchecked', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+
+    DB::table('dam_role_settings')->insert([
+        'role_id'         => $role->id,
+        'all_directories' => true,
+        'created_at'      => now(),
+        'updated_at'      => now(),
+    ]);
+
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_all_directories'          => '0',
+        'directories'                  => [],
+    ], $role);
+
+    $setting = DB::table('dam_role_settings')->where('role_id', $role->id)->first();
+    expect((bool) $setting?->all_directories)->toBeFalse();
+});

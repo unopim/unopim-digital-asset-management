@@ -134,3 +134,30 @@ it('bypasses for an api-guard user with permission_type all', function () {
 
     expect($this->service->bypass())->toBeTrue();
 });
+
+it('bypasses for a custom role with all_directories set in dam_role_settings', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+
+    DB::table('dam_role_settings')->insert([
+        'role_id'         => $role->id,
+        'all_directories' => true,
+        'created_at'      => now(),
+        'updated_at'      => now(),
+    ]);
+
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    expect($this->service->bypass())->toBeTrue();
+});
+
+it('does not bypass for a custom role without all_directories', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    expect($this->service->bypass())->toBeFalse();
+});
