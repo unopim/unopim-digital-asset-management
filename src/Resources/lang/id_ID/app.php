@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'Izin Direktori DAM',
-            'tab-subtitle' => 'Direktori yang dapat diakses oleh peran ini.',
-            'no-actions'   => 'Hanya tampilan. Buka subfolder yang dapat Anda akses.',
-            'unauthorized' => 'Anda tidak diizinkan untuk mengelola izin direktori DAM.',
+            'title'           => 'Izin Direktori DAM',
+            'tab-subtitle'    => 'Direktori yang dapat diakses oleh peran ini.',
+            'no-actions'      => 'Hanya tampilan. Buka subfolder yang dapat Anda akses.',
+            'unauthorized'    => 'Anda tidak diizinkan untuk mengelola izin direktori DAM.',
+            'all-directories' => 'Semua Direktori — berikan akses ke setiap direktori sekarang dan di masa mendatang',
         ],
         'validation' => [
             'asset' => [

@@ -18,21 +18,35 @@ class DirectoryPermissionService
      */
     protected ?int $cachedForAdminId = null;
 
+    /** Cached bypass decision for the current request. */
+    protected ?bool $bypassCache = null;
+
     /**
      * True when directory ACL filtering should be skipped for the current request.
      *
-     * Skipped for: anonymous requests and admins whose role has `permission_type != 'custom'`.
-     * Enforced for: any authenticated admin (web or API) whose role is `permission_type = 'custom'`.
+     * Skipped for: anonymous requests, admins whose role has `permission_type != 'custom'`,
+     * and custom-role admins whose role has `all_directories = true` in dam_role_settings.
      */
     public function bypass(): bool
     {
+        if ($this->bypassCache !== null) {
+            return $this->bypassCache;
+        }
+
         $admin = $this->currentAdmin();
 
         if (! $admin) {
-            return true;
+            return $this->bypassCache = true;
         }
 
-        return optional($admin->role)->permission_type !== 'custom';
+        if (optional($admin->role)->permission_type !== 'custom') {
+            return $this->bypassCache = true;
+        }
+
+        return $this->bypassCache = DB::table('dam_role_settings')
+            ->where('role_id', $admin->role_id)
+            ->where('all_directories', true)
+            ->exists();
     }
 
     /**
@@ -142,6 +156,7 @@ class DirectoryPermissionService
     {
         $this->viewableIdsCache = null;
         $this->cachedForAdminId = null;
+        $this->bypassCache = null;
     }
 
     /**

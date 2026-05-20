@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM-Verzeichnisberechtigungen',
-            'tab-subtitle' => 'Verzeichnisse, auf die diese Rolle zugreifen kann.',
-            'no-actions'   => 'Nur Anzeige. Öffnen Sie einen Unterordner, auf den Sie Zugriff haben.',
-            'unauthorized' => 'Sie sind nicht berechtigt, DAM-Verzeichnisberechtigungen zu verwalten.',
+            'title'           => 'DAM-Verzeichnisberechtigungen',
+            'tab-subtitle'    => 'Verzeichnisse, auf die diese Rolle zugreifen kann.',
+            'no-actions'      => 'Nur Anzeige. Öffnen Sie einen Unterordner, auf den Sie Zugriff haben.',
+            'unauthorized'    => 'Sie sind nicht berechtigt, DAM-Verzeichnisberechtigungen zu verwalten.',
+            'all-directories' => 'Alle Verzeichnisse — Zugriff auf alle Verzeichnisse jetzt und zukünftig gewähren',
         ],
         'validation' => [
             'asset' => [

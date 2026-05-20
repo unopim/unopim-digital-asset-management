@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM目錄權限',
-            'tab-subtitle' => '此角色可以存取的目錄。',
-            'no-actions'   => '僅檢視。請開啟您有權限存取的子資料夾。',
-            'unauthorized' => '您無權管理DAM目錄權限。',
+            'title'           => 'DAM目錄權限',
+            'tab-subtitle'    => '此角色可以存取的目錄。',
+            'no-actions'      => '僅檢視。請開啟您有權限存取的子資料夾。',
+            'unauthorized'    => '您無權管理DAM目錄權限。',
+            'all-directories' => '所有目錄 — 授予現在和將來對所有目錄的存取權限',
         ],
         'validation' => [
             'asset' => [

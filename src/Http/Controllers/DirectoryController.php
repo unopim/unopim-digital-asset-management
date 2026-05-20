@@ -4,6 +4,7 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -14,6 +15,7 @@ use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 use ZipArchive;
@@ -25,6 +27,7 @@ class DirectoryController
     public function __construct(
         protected DirectoryRepository $directoryRepository,
         protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -155,6 +158,8 @@ class DirectoryController
                 'parent_id' => $parentDirectoryId,
             ]);
 
+            $this->autoGrantToCreator($newDirectory->id);
+
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
                 'data'    => $newDirectory,
@@ -164,6 +169,32 @@ class DirectoryController
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Grant the new directory to the creator's role for custom-permission admins.
+     * Skipped when the role already bypasses (all-permission or all-directories).
+     */
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
     }
 
     /**

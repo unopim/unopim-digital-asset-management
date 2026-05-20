@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'Mga Pahintulot sa DAM Direktoryo',
-            'tab-subtitle' => 'Mga direktoryong ma-access ng ginampanan na ito.',
-            'no-actions'   => 'Tingnan lang. Buksan ang isang subfolder na mayroon kang akses.',
-            'unauthorized' => 'Hindi ka pinahihintulutang pamahalaan ang mga pahintulot ng DAM na direktoryo.',
+            'title'           => 'Mga Pahintulot sa DAM Direktoryo',
+            'tab-subtitle'    => 'Mga direktoryong ma-access ng ginampanan na ito.',
+            'no-actions'      => 'Tingnan lang. Buksan ang isang subfolder na mayroon kang akses.',
+            'unauthorized'    => 'Hindi ka pinahihintulutang pamahalaan ang mga pahintulot ng DAM na direktoryo.',
+            'all-directories' => 'Lahat ng Direktoryo — bigyan ng access ang bawat direktoryo ngayon at sa hinaharap',
         ],
         'validation' => [
             'asset' => [

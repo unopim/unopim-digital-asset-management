@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM Directory Permissions',
-            'tab-subtitle' => 'Directories this role can access.',
-            'no-actions'   => 'View only. Open a subfolder you have access to.',
-            'unauthorized' => 'You are not allowed to manage DAM directory permissions.',
+            'title'           => 'DAM Directory Permissions',
+            'tab-subtitle'    => 'Directories this role can access.',
+            'no-actions'      => 'View only. Open a subfolder you have access to.',
+            'unauthorized'    => 'You are not allowed to manage DAM directory permissions.',
+            'all-directories' => 'All Directories — grant access to every directory now and in the future',
         ],
         'validation' => [
             'asset' => [

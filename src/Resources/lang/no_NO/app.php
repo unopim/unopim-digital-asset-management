@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM-mappetillatelser',
-            'tab-subtitle' => 'Mapper denne rollen har tilgang til.',
-            'no-actions'   => 'Kun visning. Åpne en undermappe du har tilgang til.',
-            'unauthorized' => 'Du har ikke tillatelse til å administrere DAM-mappetillatelser.',
+            'title'           => 'DAM-mappetillatelser',
+            'tab-subtitle'    => 'Mapper denne rollen har tilgang til.',
+            'no-actions'      => 'Kun visning. Åpne en undermappe du har tilgang til.',
+            'unauthorized'    => 'Du har ikke tillatelse til å administrere DAM-mappetillatelser.',
+            'all-directories' => 'Alle mapper — gi tilgang til alle mapper nå og i fremtiden',
         ],
         'validation' => [
             'asset' => [

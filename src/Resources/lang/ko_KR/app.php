@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM 디렉토리 권한',
-            'tab-subtitle' => '이 역할이 접근할 수 있는 디렉터리.',
-            'no-actions'   => '보기 전용. 접근 권한이 있는 하위 폴더를 여세요.',
-            'unauthorized' => 'DAM 디렉토리 권한을 관리할 권한이 없습니다.',
+            'title'           => 'DAM 디렉토리 권한',
+            'tab-subtitle'    => '이 역할이 접근할 수 있는 디렉터리.',
+            'no-actions'      => '보기 전용. 접근 권한이 있는 하위 폴더를 여세요.',
+            'unauthorized'    => 'DAM 디렉토리 권한을 관리할 권한이 없습니다.',
+            'all-directories' => '모든 디렉토리 — 지금 및 앞으로 모든 디렉토리에 대한 접근 권한 부여',
         ],
         'validation' => [
             'asset' => [

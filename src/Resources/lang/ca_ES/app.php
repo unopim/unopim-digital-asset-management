@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'Permisos del directori DAM',
-            'tab-subtitle' => 'Directoris als quals aquest rol pot accedir.',
-            'no-actions'   => 'Només visualització. Obre una subcarpeta a la qual tinguis accés.',
-            'unauthorized' => 'No teniu permís per gestionar els permisos del directori DAM.',
+            'title'           => 'Permisos del directori DAM',
+            'tab-subtitle'    => 'Directoris als quals aquest rol pot accedir.',
+            'no-actions'      => 'Només visualització. Obre una subcarpeta a la qual tinguis accés.',
+            'unauthorized'    => 'No teniu permís per gestionar els permisos del directori DAM.',
+            'all-directories' => 'Tots els directoris — atorgar accés a tots els directoris ara i en el futur',
         ],
         'validation' => [
             'asset' => [

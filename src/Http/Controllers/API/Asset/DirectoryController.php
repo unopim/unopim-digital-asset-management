@@ -3,12 +3,14 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
@@ -19,6 +21,7 @@ class DirectoryController
     public function __construct(
         protected DirectoryRepository $directoryRepository,
         protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -55,6 +58,8 @@ class DirectoryController
                 'parent_id' => $parentDirectoryId,
             ]);
 
+            $this->autoGrantToCreator($newDirectory->id);
+
             return response()->json([
                 'success' => true,
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
@@ -67,6 +72,28 @@ class DirectoryController
                 'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user() ?? auth()->guard('api')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
     }
 
     /**

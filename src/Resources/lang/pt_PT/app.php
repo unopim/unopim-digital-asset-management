@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'Permissões do diretório DAM',
-            'tab-subtitle' => 'Diretórios a que este papel pode aceder.',
-            'no-actions'   => 'Apenas visualização. Abra uma subpasta a que tenha acesso.',
-            'unauthorized' => 'Não está autorizado a gerir as permissões do diretório DAM.',
+            'title'           => 'Permissões do diretório DAM',
+            'tab-subtitle'    => 'Diretórios a que este papel pode aceder.',
+            'no-actions'      => 'Apenas visualização. Abra uma subpasta a que tenha acesso.',
+            'unauthorized'    => 'Não está autorizado a gerir as permissões do diretório DAM.',
+            'all-directories' => 'Todos os directórios — conceder acesso a todos os directórios agora e no futuro',
         ],
         'validation' => [
             'asset' => [

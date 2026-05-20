@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAMディレクトリ権限',
-            'tab-subtitle' => 'このロールがアクセスできるディレクトリ。',
-            'no-actions'   => '閲覧のみ。アクセスできるサブフォルダーを開いてください。',
-            'unauthorized' => 'DAMディレクトリの権限を管理する権限がありません。',
+            'title'           => 'DAMディレクトリ権限',
+            'tab-subtitle'    => 'このロールがアクセスできるディレクトリ。',
+            'no-actions'      => '閲覧のみ。アクセスできるサブフォルダーを開いてください。',
+            'unauthorized'    => 'DAMディレクトリの権限を管理する権限がありません。',
+            'all-directories' => 'すべてのディレクトリ — 現在および将来のすべてのディレクトリへのアクセスを許可',
         ],
         'validation' => [
             'asset' => [

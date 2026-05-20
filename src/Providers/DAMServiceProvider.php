@@ -4,6 +4,7 @@ namespace Webkul\DAM\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Attribute\Models\Attribute;
@@ -69,14 +70,21 @@ class DAMServiceProvider extends ServiceProvider
             $roleId = request()->route('id');
             $role = $roleId ? Role::find($roleId) : null;
 
+            $allDirectories = $role
+                ? (bool) DB::table('dam_role_settings')
+                    ->where('role_id', $role->id)
+                    ->value('all_directories')
+                : false;
+
             $view->with([
-                'role'          => $role,
-                'directoryTree' => app(DirectoryRepository::class)
+                'role'           => $role,
+                'directoryTree'  => app(DirectoryRepository::class)
                     ->getFullDirectoryTreeOnly(),
-                'grantedIds'    => $role
+                'grantedIds'     => $role
                     ? app(DirectoryRolePermissionRepository::class)
                         ->getDirectoryIdsForRole($role->id)
                     : [],
+                'allDirectories' => $allDirectories,
             ]);
         });
 

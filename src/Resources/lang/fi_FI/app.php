@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM-hakemiston käyttöoikeudet',
-            'tab-subtitle' => 'Hakemistot, joihin tällä roolilla on pääsy.',
-            'no-actions'   => 'Vain katselu. Avaa alikansio, johon sinulla on käyttöoikeus.',
-            'unauthorized' => 'Sinulla ei ole oikeutta hallita DAM-hakemiston käyttöoikeuksia.',
+            'title'           => 'DAM-hakemiston käyttöoikeudet',
+            'tab-subtitle'    => 'Hakemistot, joihin tällä roolilla on pääsy.',
+            'no-actions'      => 'Vain katselu. Avaa alikansio, johon sinulla on käyttöoikeus.',
+            'unauthorized'    => 'Sinulla ei ole oikeutta hallita DAM-hakemiston käyttöoikeuksia.',
+            'all-directories' => 'Kaikki hakemistot — myönnä pääsy kaikkiin hakemistoihin nyt ja tulevaisuudessa',
         ],
         'validation' => [
             'asset' => [

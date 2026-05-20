@@ -27,6 +27,31 @@ class DirectoryRolePermissionRepository
     }
 
     /**
+     * Add a single directory grant without replacing existing grants.
+     * No-op if the grant already exists.
+     */
+    public function addDirectoryToRole(int $roleId, int $directoryId): void
+    {
+        $exists = DB::table($this->table)
+            ->where('role_id', $roleId)
+            ->where('directory_id', $directoryId)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        $now = now();
+
+        DB::table($this->table)->insert([
+            'directory_id' => $directoryId,
+            'role_id'      => $roleId,
+            'created_at'   => $now,
+            'updated_at'   => $now,
+        ]);
+    }
+
+    /**
      * Replace the granted directories for a role.
      *
      * @param  array<int>  $directoryIds

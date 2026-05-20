@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM-mappbehörigheter',
-            'tab-subtitle' => 'Kataloger som denna roll har åtkomst till.',
-            'no-actions'   => 'Endast visning. Öppna en undermapp som du har tillgång till.',
-            'unauthorized' => 'Du har inte behörighet att hantera DAM-mappbehörigheter.',
+            'title'           => 'DAM-mappbehörigheter',
+            'tab-subtitle'    => 'Kataloger som denna roll har åtkomst till.',
+            'no-actions'      => 'Endast visning. Öppna en undermapp som du har tillgång till.',
+            'unauthorized'    => 'Du har inte behörighet att hantera DAM-mappbehörigheter.',
+            'all-directories' => 'Alla kataloger — ge åtkomst till alla kataloger nu och i framtiden',
         ],
         'validation' => [
             'asset' => [

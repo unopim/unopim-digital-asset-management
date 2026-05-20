@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
@@ -105,6 +106,13 @@ class EventServiceProvider extends ServiceProvider
                     $directoryIds = [(int) $rootId];
                 }
             }
+
+            $allDirectories = request()->boolean('dam_all_directories');
+
+            DB::table('dam_role_settings')->updateOrInsert(
+                ['role_id' => (int) $role->id],
+                ['all_directories' => $allDirectories, 'created_at' => now(), 'updated_at' => now()]
+            );
 
             app(DirectoryRolePermissionRepository::class)
                 ->syncForRole((int) $role->id, $directoryIds);

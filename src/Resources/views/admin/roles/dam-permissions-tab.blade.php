@@ -18,17 +18,35 @@
                 @lang('dam::app.admin.permissions.tab-subtitle')
             </p>
 
-            <x-admin::tree.view
-                input-type="checkbox"
-                name-field="directories"
-                value-field="id"
-                id-field="id"
-                label-field="name"
-                selection-type="individual"
-                :items="json_encode($directoryTree)"
-                :value="json_encode($grantedIds)"
-                :fallback-locale="config('app.fallback_locale')"
-            />
+            {{-- All Directories toggle --}}
+            <label class="flex items-center gap-2 cursor-pointer mb-4 select-none">
+                <input
+                    type="checkbox"
+                    id="dam-all-directories-toggle"
+                    name="dam_all_directories"
+                    value="1"
+                    class="w-4 h-4 rounded border-gray-300 text-violet-700 cursor-pointer"
+                    {{ $allDirectories ? 'checked' : '' }}
+                />
+                <span class="font-semibold text-gray-800 dark:text-white text-sm">
+                    @lang('dam::app.admin.permissions.all-directories')
+                </span>
+            </label>
+
+            {{-- Directory tree (hidden when all-directories is checked) --}}
+            <div id="dam-directory-tree-wrapper" {{ $allDirectories ? 'style=display:none' : '' }}>
+                <x-admin::tree.view
+                    input-type="checkbox"
+                    name-field="directories"
+                    value-field="id"
+                    id-field="id"
+                    label-field="name"
+                    selection-type="individual"
+                    :items="json_encode($directoryTree)"
+                    :value="json_encode($grantedIds)"
+                    :fallback-locale="config('app.fallback_locale')"
+                />
+            </div>
         </div>
     </div>
 
@@ -262,6 +280,28 @@
                 } else {
                     init();
                 }
+            })();
+
+            // All-directories toggle: show/hide the directory tree
+            (function () {
+                function syncTreeVisibility() {
+                    var toggle = document.getElementById('dam-all-directories-toggle');
+                    var tree = document.getElementById('dam-directory-tree-wrapper');
+                    if (! toggle || ! tree) return;
+                    tree.style.display = toggle.checked ? 'none' : '';
+                }
+
+                function attachToggle() {
+                    var toggle = document.getElementById('dam-all-directories-toggle');
+                    if (! toggle || toggle.dataset.damToggleAttached) return;
+                    toggle.dataset.damToggleAttached = '1';
+                    toggle.addEventListener('change', syncTreeVisibility);
+                    syncTreeVisibility();
+                }
+
+                var obs = new MutationObserver(attachToggle);
+                obs.observe(document.body, { childList: true, subtree: true });
+                attachToggle();
             })();
         </script>
     @endpush

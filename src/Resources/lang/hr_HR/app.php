@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM dozvole direktorija',
-            'tab-subtitle' => 'Direktoriji kojima ova uloga može pristupiti.',
-            'no-actions'   => 'Samo pregled. Otvorite podmapu kojoj imate pristup.',
-            'unauthorized' => 'Nije vam dopušteno upravljanje DAM dozvolama direktorija.',
+            'title'           => 'DAM dozvole direktorija',
+            'tab-subtitle'    => 'Direktoriji kojima ova uloga može pristupiti.',
+            'no-actions'      => 'Samo pregled. Otvorite podmapu kojoj imate pristup.',
+            'unauthorized'    => 'Nije vam dopušteno upravljanje DAM dozvolama direktorija.',
+            'all-directories' => 'Sve mape — dodijeliti pristup svim mapama sada i u budućnosti',
         ],
         'validation' => [
             'asset' => [

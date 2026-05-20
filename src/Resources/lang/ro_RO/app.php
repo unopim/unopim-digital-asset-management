@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'Permisiuni director DAM',
-            'tab-subtitle' => 'Directoarele la care acest rol poate accesa.',
-            'no-actions'   => 'Doar vizualizare. Deschide un subdosar la care ai acces.',
-            'unauthorized' => 'Nu aveți permisiunea de a gestiona permisiunile directorului DAM.',
+            'title'           => 'Permisiuni director DAM',
+            'tab-subtitle'    => 'Directoarele la care acest rol poate accesa.',
+            'no-actions'      => 'Doar vizualizare. Deschide un subdosar la care ai acces.',
+            'unauthorized'    => 'Nu aveți permisiunea de a gestiona permisiunile directorului DAM.',
+            'all-directories' => 'Toate directoarele — acordați acces la toate directoarele acum și în viitor',
         ],
         'validation' => [
             'asset' => [

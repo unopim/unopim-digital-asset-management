@@ -531,10 +531,11 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'        => 'DAM-maptoegangsrechten',
-            'tab-subtitle' => 'Mappen waartoe deze rol toegang heeft.',
-            'no-actions'   => 'Alleen-lezen. Open een submap waartoe je toegang hebt.',
-            'unauthorized' => 'U heeft geen toestemming om DAM-maptoegangsrechten te beheren.',
+            'title'           => 'DAM-maptoegangsrechten',
+            'tab-subtitle'    => 'Mappen waartoe deze rol toegang heeft.',
+            'no-actions'      => 'Alleen-lezen. Open een submap waartoe je toegang hebt.',
+            'unauthorized'    => 'U heeft geen toestemming om DAM-maptoegangsrechten te beheren.',
+            'all-directories' => 'Alle mappen — toegang verlenen tot alle mappen nu en in de toekomst',
         ],
         'validation' => [
             'asset' => [
