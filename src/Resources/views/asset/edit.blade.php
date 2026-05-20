@@ -218,7 +218,9 @@
                                             $options = json_encode($tags->toArray());
 
                                             $selectedOptions =  old('tags') ?? json_encode($asset->tags->pluck('id')->toArray());
-                                            
+
+                                            $tagsVueValue = 'JSON.stringify(displayTags.map(t => t.id ?? t))';
+                                            $tagsVueKey   = 'tagComponentKey';
                                         @endphp
 
                                         <x-admin::form.control-group.control
@@ -226,8 +228,8 @@
                                             id="tags"
                                             name="tags"
                                             :options="$options"
-                                            :value="JSON.stringify(displayTags.map(t => t.id ?? t))"
-                                            :key="tagComponentKey"
+                                            :value="$tagsVueValue"
+                                            :key="$tagsVueKey"
                                             :label="trans('dam::app.admin.dam.asset.edit.tags')"
                                             :placeholder="trans('dam::app.admin.dam.asset.edit.select-tags')"
                                             track-by="id"
