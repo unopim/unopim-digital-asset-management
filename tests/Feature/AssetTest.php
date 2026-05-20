@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetResourceMapping;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Models\Tag;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -37,6 +38,29 @@ it('should return the asset detail page', function () {
     $this->get(route('admin.dam.assets.show', $asset->id))
         ->assertOk()
         ->assertJsonPath('asset.file_name', $asset->file_name);
+});
+
+it('show endpoint includes tags in response', function () {
+    $asset = Asset::factory()->create();
+    $tag = Tag::create(['name' => 'sunset']);
+    $asset->tags()->attach($tag);
+
+    $this->get(route('admin.dam.assets.show', $asset->id))
+        ->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonStructure(['tags']);
+});
+
+it('edit view passes directoryAncestors to blade', function () {
+    $parent = Directory::factory()->create(['name' => 'Photography', 'parent_id' => null]);
+    $child = Directory::factory()->create(['name' => 'Landscapes', 'parent_id' => $parent->id]);
+    $asset = Asset::factory()->create();
+    $child->assets()->attach($asset);
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+    $response->assertViewHas('directoryAncestors');
+    $response->assertViewHas('fileSize');
 });
 
 // Update the Asset

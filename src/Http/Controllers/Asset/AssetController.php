@@ -128,7 +128,21 @@ class AssetController extends Controller
 
         $asset = $this->getNextAndPreviousAssets($asset, $id);
 
-        return view('dam::asset.edit', compact('asset', 'id', 'tags'));
+        $assetModel = $this->assetRepository->model();
+        $assetPosition = $assetModel::where('id', '<=', $id)->count();
+        $assetTotal = $assetModel::count();
+
+        $bytes = (int) ($asset->file_size ?? 0);
+        $fileSize = $bytes >= 1048576
+            ? number_format($bytes / 1048576, 2).' MB'
+            : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
+
+        $directory = $asset->directories()->first();
+        $directoryAncestors = $directory
+            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
+            : collect();
+
+        return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors'));
     }
 
     /**
@@ -503,19 +517,19 @@ class AssetController extends Controller
     }
 
     /**
-     * To Display the asset.
+     * To Display the asset — JSON payload for SPA navigation.
      *
      * @param [type] $id
      * @return void|JsonResponse
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $asset = Asset::find($id);
 
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'), // asset not found for show
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-show'),
             ], 404);
         }
 
@@ -526,9 +540,66 @@ class AssetController extends Controller
             ], 403);
         }
 
+        $asset->previewPath = AssetHelper::getPreviewUrl($asset->path, 1356);
+
+        $width = '';
+        $height = '';
+
+        if ($asset->file_type === 'image') {
+            $metaData = is_array($asset->meta_data) ? $asset->meta_data : [];
+            $width = $metaData['exif']['Width'] ?? $metaData['exif']['COMPUTED']['Width'] ?? '';
+            $height = $metaData['exif']['Height'] ?? $metaData['exif']['COMPUTED']['Height'] ?? '';
+        }
+
+        $mediaUrl = route('admin.dam.file.preview', ['path' => urlencode($asset->path)]);
+
+        $placeholderSvg = match ($asset->file_type) {
+            'video'    => asset('storage/dam/preview/video.svg'),
+            'audio'    => asset('storage/dam/preview/audio.svg'),
+            'document' => asset('storage/dam/preview/file.svg'),
+            default    => asset('storage/dam/preview/unspecified.svg'),
+        };
+
+        $coverArtUrl = ($asset->file_type === 'audio' && ! empty($asset->meta_data['cover_art_path']))
+            ? route('admin.dam.file.cover-art', $asset->id)
+            : null;
+
+        $typeColor = 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300';
+
+        $bytes = (int) ($asset->file_size ?? 0);
+        $fileSize = $bytes >= 1048576
+            ? number_format($bytes / 1048576, 2).' MB'
+            : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
+
+        $assetModel = $this->assetRepository->model();
+        $nextAsset = $assetModel::where('id', '>', $id)->orderBy('id', 'asc')->first();
+        $prevAsset = $assetModel::where('id', '<', $id)->orderBy('id', 'desc')->first();
+        $assetPosition = $assetModel::where('id', '<=', $id)->count();
+        $assetTotal = $assetModel::count();
+
+        $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
+
         return response()->json([
-            'success' => true,
-            'asset'   => $asset,
+            'success'               => true,
+            'asset'                 => $asset,
+            'mediaUrl'              => $mediaUrl,
+            'previewPath'           => $asset->previewPath,
+            'placeholderSvg'        => $placeholderSvg,
+            'coverArtUrl'           => $coverArtUrl,
+            'typeColor'             => $typeColor,
+            'fileSize'              => $fileSize,
+            'width'                 => $width,
+            'height'                => $height,
+            'createdAtFormatted'    => $asset->created_at?->format('d M Y, H:i'),
+            'updatedAtFormatted'    => $asset->updated_at?->format('d M Y, H:i'),
+            'downloadUrl'           => route('admin.dam.assets.download', $id),
+            'downloadCompressedUrl' => route('admin.dam.assets.download_compressed', $id),
+            'previousAssetId'       => $prevAsset?->id,
+            'nextAssetId'           => $nextAsset?->id,
+            'assetPosition'         => $assetPosition,
+            'assetTotal'            => $assetTotal,
+            'editUrl'               => route('admin.dam.assets.edit', $id),
+            'tags'                  => $tags,
         ]);
     }
 
