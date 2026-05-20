@@ -98,6 +98,10 @@ class MetadataExtractionService
      */
     private function runExiftool(string $tempPath, string $context, ?string $originalFileName = null): array
     {
+        if (! $this->exiftoolExists()) {
+            return [];
+        }
+
         $command = sprintf(
             'exiftool -j -f -q -charset iptc=utf8 %s',
             escapeshellarg($tempPath)
