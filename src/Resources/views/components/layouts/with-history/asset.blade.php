@@ -93,18 +93,45 @@
 
                     
                     <div class="flex flex-wrap justify-between gap-2 items-center">
-                        <span class="text-base text-gray-600 dark:text-gray-300 font-bold min-w-0 break-all">{{ $label ?? '' }}</span>
+                        <div class="flex flex-col min-w-0 gap-0.5">
+
+                            {{-- Breadcrumb row (optional) --}}
+                            @isset($breadcrumb)
+                            <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 flex-wrap">
+                                {{ $breadcrumb }}
+                            </div>
+                            @endisset
+
+                            {{-- Title row --}}
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <a href="{{ route('admin.dam.index') }}" class="transparent-button">
+                                    <span class="text-base leading-none">&#8592;</span>
+                                    @lang('dam::app.admin.dam.asset.edit.back')
+                                </a>
+
+                                {{-- File type icon (optional) --}}
+                                @isset($fileIcon){{ $fileIcon }}@endisset
+
+                                {{-- Reactive filename --}}
+                                <v-dam-asset-label initial-label="{{ $label ?? '' }}"></v-dam-asset-label>
+
+                                {{-- Meta chips (optional) --}}
+                                @isset($metaChips){{ $metaChips }}@endisset
+
+                                {{-- Asset counter --}}
+                                @isset($counter)
+                                {{ $counter }}
+                                @endisset
+                            </div>
+                        </div>
 
                         <div class="flex flex-wrap gap-2 items-center">
-                            <a href="{{ route('admin.dam.index') }}" class="transparent-button">
-                                @lang('dam::app.admin.dam.asset.edit.back')
-                            </a>
                             {{ $buttonOne }}
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
                             {{ $buttonFour }}
                         </div>
-                    </div> 
+                    </div>
 
                     <v-asset-lock-zone>
                     <div class="tabs">
@@ -230,6 +257,29 @@
                         if (this.onLockChange) {
                             this.$emitter.off('dam-asset-action-locked', this.onLockChange);
                         }
+                    },
+                });
+            </script>
+
+            <script type="module">
+                app.component('v-dam-asset-label', {
+                    props: {
+                        initialLabel: { type: String, default: '' },
+                    },
+                    template: `<span class="text-base text-gray-600 dark:text-gray-300 font-bold min-w-0 break-all">@{{ label }}</span>`,
+                    data() {
+                        return { label: this.initialLabel };
+                    },
+                    mounted() {
+                        this._onAssetChange = (data) => {
+                            if (data.asset?.file_name) {
+                                this.label = data.asset.file_name;
+                            }
+                        };
+                        this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                    },
+                    beforeUnmount() {
+                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
                     },
                 });
             </script>
