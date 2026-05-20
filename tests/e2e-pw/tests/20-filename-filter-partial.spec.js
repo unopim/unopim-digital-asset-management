@@ -27,17 +27,16 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     await adminPage.waitForTimeout(500);
 
     // Fill file name filter with partial name (no extension)
-    const fileNameInput = adminPage.getByLabel('File Name').first();
+    const fileNameInput = adminPage.getByPlaceholder('File Name').first();
     await fileNameInput.waitFor({ state: 'visible', timeout: 10000 });
-    await fileNameInput.fill(baseName);
 
-    // Apply filter and wait for datagrid response
     const responsePromise = adminPage.waitForResponse(
       (res) => /\/admin\/dam\/assets(\?|$)/.test(res.url()) && res.request().method() === 'GET',
       { timeout: 15000 }
     ).catch(() => {});
 
-    await adminPage.getByRole('button', { name: /apply/i }).first().click();
+    await fileNameInput.fill(baseName);
+    await fileNameInput.press('Enter');
     await responsePromise;
     await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(500);
