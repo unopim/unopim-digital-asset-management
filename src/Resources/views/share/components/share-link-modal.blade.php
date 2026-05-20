@@ -284,17 +284,19 @@
                     type: 'success',
                     message: @js(trans('dam::app.admin.dam.share.modal.copied')),
                 });
+                const fallback = () => {
+                    const tmp = document.createElement('textarea');
+                    tmp.value = url;
+                    document.body.appendChild(tmp);
+                    tmp.select();
+                    try { document.execCommand('copy'); success(); } catch (_) {}
+                    document.body.removeChild(tmp);
+                };
 
-                const promise = navigator.clipboard?.writeText?.(url);
-                if (promise && promise.then) {
-                    promise.then(success).catch(() => {
-                        const tmp = document.createElement('textarea');
-                        tmp.value = url;
-                        document.body.appendChild(tmp);
-                        tmp.select();
-                        try { document.execCommand('copy'); success(); } catch (_) {}
-                        document.body.removeChild(tmp);
-                    });
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(url).then(success).catch(fallback);
+                } else {
+                    fallback();
                 }
             },
             formatDate(value) {

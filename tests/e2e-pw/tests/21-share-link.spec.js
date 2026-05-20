@@ -31,7 +31,7 @@ async function openShareModal(page) {
   // Asset edit page renders <v-share-asset-button> in the navButtons slot
   // (top-right of the tab row, next to the History tab). It's a
   // `transparent-button` labelled "Share" with icon-dam-link.
-  const shareBtn = page.getByRole('button', { name: /^Share$/ }).first();
+  const shareBtn = page.locator('button.transparent-button').filter({ hasText: /Share/ }).first();
   await shareBtn.waitFor({ state: 'visible', timeout: 15000 });
   await shareBtn.click();
   await page.getByText('Create a new share link').waitFor({ state: 'visible', timeout: 15000 });
