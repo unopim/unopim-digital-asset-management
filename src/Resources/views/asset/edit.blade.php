@@ -86,31 +86,14 @@
 
     @endphp
 
-    <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
+    <x-slot:counter>
+        <v-dam-asset-counter
+            :initial-position="{{ $assetPosition }}"
+            :initial-total="{{ $assetTotal }}"
+        ></v-dam-asset-counter>
+    </x-slot:counter>
 
-    <x-slot:nav-buttons>
-        @php
-            $navQueryParams = request()->query();
-            $navQueryString = '';
-            if (! empty($navQueryParams)) {
-                $navQueryString = '?' . implode('&', array_keys($navQueryParams));
-            }
-        @endphp
-        @if ($asset->previousAssetId)
-            <a href="{{ route('admin.dam.assets.edit', $asset->previousAssetId) }}{{ $navQueryString }}"
-               class="inline-flex w-10 h-10 cursor-pointer appearance-none items-center justify-center rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
-               title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
-                <span class="text-2xl" aria-hidden="true">&#8249;</span>
-            </a>
-        @endif
-        @if ($asset->nextAssetId)
-            <a href="{{ route('admin.dam.assets.edit', $asset->nextAssetId) }}{{ $navQueryString }}"
-               class="inline-flex w-10 h-10 cursor-pointer appearance-none items-center justify-center rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
-               title="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
-                <span class="text-2xl" aria-hidden="true">&#8250;</span>
-            </a>
-        @endif
-    </x-slot:nav-buttons>
+    <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
 
     {!! view_render_event('unopim.dam.admin.asset.edit.before') !!}
 
@@ -157,12 +140,63 @@
                     <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
 
                         <!-- Left sub Component -->
-                        <div class="flex flex-col flex-1 gap-2 overflow-auto bg-white dark:bg-cherry-900 rounded-lg box-shadow items-center justify-start p-2">
-                            {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
+                        <div class="flex flex-col flex-1 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-0">
+                            <div class="flex items-stretch flex-1 min-h-0">
 
-                            <v-asset-preview-modal></v-asset-preview-modal>
+                                {{-- Prev arrow --}}
+                                <div class="flex items-center justify-center px-2 shrink-0">
+                                    <template v-if="prevAssetId">
+                                        <button
+                                            type="button"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
+                                            :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                            title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
+                                            aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
+                                            @click="navigateTo(prevAssetId)"
+                                        >
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                                        </button>
+                                    </template>
+                                    <template v-else>
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
+                                              aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                                        </span>
+                                    </template>
+                                </div>
 
-                            {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
+                                {{-- Preview content --}}
+                                <div class="flex flex-col flex-1 gap-2 overflow-auto items-center justify-start py-2 min-w-0">
+                                    {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
+
+                                    <v-asset-preview-modal></v-asset-preview-modal>
+
+                                    {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
+                                </div>
+
+                                {{-- Next arrow --}}
+                                <div class="flex items-center justify-center px-2 shrink-0">
+                                    <template v-if="nextAssetId">
+                                        <button
+                                            type="button"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
+                                            :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                            title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
+                                            aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
+                                            @click="navigateTo(nextAssetId)"
+                                        >
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                                        </button>
+                                    </template>
+                                    <template v-else>
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
+                                              aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                                        </span>
+                                    </template>
+                                </div>
+
+                            </div>
                         </div>
 
                         <!-- Right sub-component -->
@@ -211,21 +245,76 @@
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.after', ['asset' => $asset]) !!}
 
-                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.befor', ['asset' => $asset]) !!}
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.before', ['asset' => $asset]) !!}
 
                             <x-admin::accordion>
                                 <x-slot:header>
                                     <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
-                                        @lang('dam::app.admin.dam.asset.edit.directory-path')
+                                        @lang('dam::app.admin.dam.asset.edit.details')
                                     </p>
                                 </x-slot>
 
                                 <x-slot:content class="gap-4">
-                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all"> {{ $asset->getPathWithOutFileSystemRoot() }}</p>
+                                    @php
+                                        $bytes = (int) ($asset->file_size ?? 0);
+                                        $fileSize = $bytes >= 1048576
+                                            ? number_format($bytes / 1048576, 2) . ' MB'
+                                            : ($bytes >= 1024 ? number_format($bytes / 1024, 1) . ' KB' : ($bytes > 0 ? $bytes . ' B' : null));
+                                    @endphp
+
+                                    @if ($fileSize)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.size')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $fileSize }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($asset->file_type === 'image' && $asset->width && $asset->height)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->width }} × {{ $asset->height }} px</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($asset->extension)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.type')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ strtoupper($asset->extension) }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($asset->mime_type)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.preview-modal.mime')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">{{ $asset->mime_type }}</span>
+                                        </div>
+                                    @endif
+
+                                    @php $assetPath = $asset->getPathWithOutFileSystemRoot(); @endphp
+                                    @if ($assetPath)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.path')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">{{ $assetPath }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($asset->created_at)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.created-at')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->created_at->format('d M Y, H:i') }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if ($asset->updated_at)
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.updated-at')</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->updated_at->format('d M Y, H:i') }}</span>
+                                        </div>
+                                    @endif
                                 </x-slot>
                             </x-admin::accordion>
 
-                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.after', ['asset' => $asset]) !!}
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.after', ['asset' => $asset]) !!}
                         </div>
                     </div>
                 </div>
@@ -241,10 +330,73 @@
 
                 data: function() {
                     return {
-                        asset: @json($asset)
+                        asset:        @json($asset),
+                        prevAssetId:  @json($asset->previousAssetId),
+                        nextAssetId:  @json($asset->nextAssetId),
+                        isNavigating: false,
+                        displayFileName:  @js($asset->file_name),
+                        displayFileSize:  @js($fileSize ?? null),
+                        displayWidth:     @js($asset->width ?? ''),
+                        displayHeight:    @js($asset->height ?? ''),
+                        displayExtension: @js($asset->extension ?? ''),
+                        displayMimeType:  @js($asset->mime_type ?? ''),
+                        displayCreatedAt: @js($asset->created_at?->format('d M Y, H:i')),
+                        displayUpdatedAt: @js($asset->updated_at?->format('d M Y, H:i')),
+                        displayAssetPath: @js($asset->getPathWithOutFileSystemRoot() ?? ''),
+                        displayTags:      @json($asset->tags ?? []),
+                        tagComponentKey:  0,
                     };
                 },
+
+                mounted() {
+                    this._onAssetChange = (data) => {
+                        this.prevAssetId = data.previousAssetId;
+                        this.nextAssetId = data.nextAssetId;
+                    };
+                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                },
+
+                beforeUnmount() {
+                    if (this._onAssetChange) {
+                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                    }
+                },
+
                 methods: {
+                    async navigateTo(id) {
+                        if (!id || this.isNavigating) return;
+                        this.isNavigating = true;
+                        try {
+                            const { data } = await this.$axios.get(
+                                `{{ route('admin.dam.assets.show', ':id') }}`.replace(':id', id)
+                            );
+                            if (!data.success) return;
+                            history.pushState({ assetId: id }, '', data.editUrl);
+                            this.$emitter.emit('dam-asset-changed', data);
+                            this.asset            = data.asset;
+                            this.prevAssetId      = data.previousAssetId;
+                            this.nextAssetId      = data.nextAssetId;
+                            this.displayFileName  = data.asset.file_name;
+                            this.displayFileSize  = data.fileSize ?? null;
+                            this.displayWidth     = data.width ?? '';
+                            this.displayHeight    = data.height ?? '';
+                            this.displayExtension = data.asset.extension ?? '';
+                            this.displayMimeType  = data.asset.mime_type ?? '';
+                            this.displayCreatedAt = data.createdAtFormatted ?? '';
+                            this.displayUpdatedAt = data.updatedAtFormatted ?? '';
+                            this.displayAssetPath = data.asset.path ?? '';
+                            this.displayTags      = data.tags ?? [];
+                            this.tagComponentKey  += 1;
+                        } catch (e) {
+                            this.$emitter.emit('add-flash', {
+                                type: 'error',
+                                message: @js(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
+                            });
+                        } finally {
+                            this.isNavigating = false;
+                        }
+                    },
+
                     onTaggingChange(event) {
                         const changedValue = event.target.value;
                         if (changedValue) {
@@ -302,6 +454,35 @@
 
         <!-- **** Asset Preview Modal **** -->
         @include('dam::asset.preview-modal')
+
+        <!-- **** Asset Counter **** -->
+        <script type="module">
+            app.component('v-dam-asset-counter', {
+                props: {
+                    initialPosition: { type: Number, required: true },
+                    initialTotal:    { type: Number, required: true },
+                },
+                template: `<span class="text-sm text-gray-500 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-full px-2 py-0.5 whitespace-nowrap">@{{ position }} of @{{ total }}</span>`,
+                data() {
+                    return {
+                        position: this.initialPosition,
+                        total:    this.initialTotal,
+                    };
+                },
+                mounted() {
+                    this._onAssetChange = (data) => {
+                        this.position = data.assetPosition;
+                        this.total    = data.assetTotal;
+                    };
+                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                },
+                beforeUnmount() {
+                    if (this._onAssetChange) {
+                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                    }
+                },
+            });
+        </script>
 
         <!-- **** Custom Download **** -->
         <script
