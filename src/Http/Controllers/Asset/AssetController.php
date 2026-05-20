@@ -17,6 +17,7 @@ use Webkul\DAM\DataGrids\Asset\AssetDataGrid;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Models\AssetComments;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
@@ -601,6 +602,11 @@ class AssetController extends Controller
             'assetTotal'            => $assetTotal,
             'editUrl'               => route('admin.dam.assets.edit', $id),
             'tags'                  => $tags,
+            'badgeCounts'           => [
+                'properties'       => $asset->properties()->count(),
+                'comments'         => AssetComments::where('dam_asset_id', $asset->id)->count(),
+                'linked-resources' => $asset->resources()->count(),
+            ],
         ]);
     }
 
