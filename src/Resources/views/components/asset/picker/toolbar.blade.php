@@ -18,7 +18,7 @@
                             class="block w-full rounded-lg border dark:border-cherry-800 bg-white dark:bg-cherry-900 py-1.5 ltr:pl-3 rtl:pr-3 ltr:pr-10 rtl:pl-10 leading-6 text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400  dark:focus:border-gray-400"
                             :placeholder="available.searchPlaceholder"
                             autocomplete="off"
-                            @keyup.enter="filterPage"
+                            @input="debouncedFilterPage"
                         >
 
                         <div class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl">
@@ -86,7 +86,7 @@
 
                 <!-- Drawer Content -->
                 <x-slot:content class="!p-5">
-                    <x-admin::datagrid.filters />
+                    <x-dam::datagrid.filters />
                         <div
                             class="primary-button block text-center"
                             @click="runFilters()"
