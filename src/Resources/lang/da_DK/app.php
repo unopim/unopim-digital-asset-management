@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Vælg eller opret et tag',
                     'directory-path'        => 'Mappesti',
+                    'no-directory'          => 'Ingen mappe tildelt',
+                    'details'               => 'Detaljer',
+                    'breadcrumb-assets'     => 'Aktiver',
                     'tab'                   => [
                         'preview'          => 'Forhåndsvisning',
                         'properties'       => 'Egenskaber',

@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Nu există metadate disponibile',
                     'tags'                  => 'Etichete',
                     'select-tags'           => 'Alege sau Creează o Etichetă',
-                    'directory-path'        => 'Calea Directorului',
+                    'directory-path'        => 'Calea directorului',
+                    'no-directory'          => 'Niciun director atribuit',
+                    'details'               => 'Detalii',
+                    'breadcrumb-assets'     => 'Resurse',
                     'tab'                   => [
                         'preview'          => 'Previzualizare',
                         'properties'       => 'Proprietăți',

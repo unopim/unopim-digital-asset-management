@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'No hay metadatos disponibles',
                     'tags'                  => 'Etiquetas',
                     'select-tags'           => 'Elegir o Crear una Etiqueta',
-                    'directory-path'        => 'Ruta del Directorio',
+                    'directory-path'        => 'Ruta del directorio',
+                    'no-directory'          => 'No hay directorio asignado',
+                    'details'               => 'Detalles',
+                    'breadcrumb-assets'     => 'Activos',
                     'tab'                   => [
                         'preview'          => 'Vista previa',
                         'properties'       => 'Propiedades',

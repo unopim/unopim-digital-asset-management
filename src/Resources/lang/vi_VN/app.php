@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Thẻ',
                     'select-tags'           => 'Chọn hoặc tạo một thẻ',
                     'directory-path'        => 'Đường dẫn thư mục',
+                    'no-directory'          => 'Không có thư mục được gán',
+                    'details'               => 'Chi tiết',
+                    'breadcrumb-assets'     => 'Tài nguyên',
                     'tab'                   => [
                         'preview'          => 'Xem trước',
                         'properties'       => 'Thuộc tính',

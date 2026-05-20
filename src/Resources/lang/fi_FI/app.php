@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Tunnisteet',
                     'select-tags'           => 'Valitse tai luo tunniste',
                     'directory-path'        => 'Hakemistopolku',
+                    'no-directory'          => 'Ei hakemistoa määritetty',
+                    'details'               => 'Tiedot',
+                    'breadcrumb-assets'     => 'Resurssit',
                     'tab'                   => [
                         'preview'          => 'Esikatselu',
                         'properties'       => 'Ominaisuudet',

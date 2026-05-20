@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Tagi',
                     'select-tags'           => 'Wybierz lub utwórz tag',
                     'directory-path'        => 'Ścieżka katalogu',
+                    'no-directory'          => 'Nie przypisano katalogu',
+                    'details'               => 'Szczegóły',
+                    'breadcrumb-assets'     => 'Zasoby',
                     'tab'                   => [
                         'preview'          => 'Podgląd',
                         'properties'       => 'Właściwości',

@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Tidak ada metadata yang tersedia',
                     'tags'                  => 'Tag',
                     'select-tags'           => 'Pilih atau Buat Tag',
-                    'directory-path'        => 'Path Direktori',
+                    'directory-path'        => 'Jalur Direktori',
+                    'no-directory'          => 'Tidak ada direktori yang ditetapkan',
+                    'details'               => 'Detail',
+                    'breadcrumb-assets'     => 'Aset',
                     'tab'                   => [
                         'preview'          => 'Pratinjau',
                         'properties'       => 'Properti',

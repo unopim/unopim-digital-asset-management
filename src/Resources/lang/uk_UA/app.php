@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Теги',
                     'select-tags'           => 'Оберіть або створіть тег',
                     'directory-path'        => 'Шлях до каталогу',
+                    'no-directory'          => 'Каталог не призначено',
+                    'details'               => 'Деталі',
+                    'breadcrumb-assets'     => 'Ресурси',
                     'tab'                   => [
                         'preview'          => 'Попередній перегляд',
                         'properties'       => 'Властивості',

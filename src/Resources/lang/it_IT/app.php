@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Nessun metadato disponibile',
                     'tags'                  => 'Tag',
                     'select-tags'           => 'Scegli o Crea un Tag',
-                    'directory-path'        => 'Percorso della Directory',
+                    'directory-path'        => 'Percorso directory',
+                    'no-directory'          => 'Nessuna directory assegnata',
+                    'details'               => 'Dettagli',
+                    'breadcrumb-assets'     => 'Risorse',
                     'tab'                   => [
                         'preview'          => 'Anteprima',
                         'properties'       => 'Proprietà',

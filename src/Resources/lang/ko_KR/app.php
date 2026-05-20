@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => '사용 가능한 메타데이터가 없습니다',
                     'tags'                  => '태그',
                     'select-tags'           => '태그를 선택하거나 생성하세요',
-                    'directory-path'        => '디렉터리 경로',
+                    'directory-path'        => '디렉토리 경로',
+                    'no-directory'          => '할당된 디렉토리 없음',
+                    'details'               => '세부 정보',
+                    'breadcrumb-assets'     => '에셋',
                     'tab'                   => [
                         'preview'          => '미리보기',
                         'properties'       => '속성',

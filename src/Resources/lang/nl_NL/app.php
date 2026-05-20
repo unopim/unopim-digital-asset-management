@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Kies of Maak een Tag',
                     'directory-path'        => 'Mappad',
+                    'no-directory'          => 'Geen map toegewezen',
+                    'details'               => 'Details',
+                    'breadcrumb-assets'     => 'Bestanden',
                     'tab'                   => [
                         'preview'          => 'Voorbeeld',
                         'properties'       => 'Eigenschappen',

@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Мета өгөгдөл байхгүй байна',
                     'tags'                  => 'Таг',
                     'select-tags'           => 'Таг Сонгох эсвэл Үүсгэх',
-                    'directory-path'        => 'Директорын Зам',
+                    'directory-path'        => 'Хавтасны зам',
+                    'no-directory'          => 'Хавтас оноогдоогүй',
+                    'details'               => 'Дэлгэрэнгүй',
+                    'breadcrumb-assets'     => 'Хөрөнгө',
                     'tab'                   => [
                         'preview'          => 'Урдчилсан Харах',
                         'properties'       => 'Шинж Чанарууд',

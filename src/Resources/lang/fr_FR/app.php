@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Aucune métadonnée disponible',
                     'tags'                  => 'Étiquettes',
                     'select-tags'           => 'Choisir ou Créer une Étiquette',
-                    'directory-path'        => 'Chemin du Répertoire',
+                    'directory-path'        => 'Chemin du répertoire',
+                    'no-directory'          => 'Aucun répertoire assigné',
+                    'details'               => 'Détails',
+                    'breadcrumb-assets'     => 'Ressources',
                     'tab'                   => [
                         'preview'          => 'Aperçu',
                         'properties'       => 'Propriétés',

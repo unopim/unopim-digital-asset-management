@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Walang magagamit na metadata',
                     'tags'                  => 'Mga Tag',
                     'select-tags'           => 'Pumili o Gumawa ng Tag',
-                    'directory-path'        => 'Path ng Direktoryo',
+                    'directory-path'        => 'Landas ng Direktoryo',
+                    'no-directory'          => 'Walang direktoryong itinalaga',
+                    'details'               => 'Mga Detalye',
+                    'breadcrumb-assets'     => 'Mga Asset',
                     'tab'                   => [
                         'preview'          => 'Preview',
                         'properties'       => 'Mga Property',

@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'العلامات',
                     'select-tags'           => 'اختر أو أنشئ علامة',
                     'directory-path'        => 'مسار الدليل',
+                    'no-directory'          => 'لم يتم تعيين أي دليل',
+                    'details'               => 'التفاصيل',
+                    'breadcrumb-assets'     => 'الأصول',
                     'tab'                   => [
                         'preview'          => 'معاينة',
                         'properties'       => 'الخصائص',

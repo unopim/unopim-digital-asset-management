@@ -218,6 +218,9 @@ return [
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Choose or Create a Tag',
                     'directory-path'        => 'Directory Path',
+                    'no-directory'          => 'No directory assigned',
+                    'details'               => 'Details',
+                    'breadcrumb-assets'     => 'Assets',
                     'tab'                   => [
                         'preview'          => 'Preview',
                         'properties'       => 'Properties',

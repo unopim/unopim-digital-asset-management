@@ -201,6 +201,9 @@ return [
                     'tags'                  => '標籤',
                     'select-tags'           => '選擇或建立標籤',
                     'directory-path'        => '目錄路徑',
+                    'no-directory'          => '未分配目錄',
+                    'details'               => '詳情',
+                    'breadcrumb-assets'     => '資產',
                     'tab'                   => [
                         'preview'          => '預覽',
                         'properties'       => '屬性',

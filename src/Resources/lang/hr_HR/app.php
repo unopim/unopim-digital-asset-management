@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Oznake',
                     'select-tags'           => 'Odaberite ili stvorite oznaku',
                     'directory-path'        => 'Putanja direktorija',
+                    'no-directory'          => 'Nije dodijeljen direktorij',
+                    'details'               => 'Detalji',
+                    'breadcrumb-assets'     => 'Resursi',
                     'tab'                   => [
                         'preview'          => 'Pregled',
                         'properties'       => 'Svojstva',

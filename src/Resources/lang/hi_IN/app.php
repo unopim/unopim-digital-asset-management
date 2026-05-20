@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'कोई मेटाडेटा उपलब्ध नहीं है',
                     'tags'                  => 'टैग',
                     'select-tags'           => 'टैग चुनें या बनाएं',
-                    'directory-path'        => 'निर्देशिका का पथ',
+                    'directory-path'        => 'निर्देशिका पथ',
+                    'no-directory'          => 'कोई निर्देशिका नहीं सौंपी गई',
+                    'details'               => 'विवरण',
+                    'breadcrumb-assets'     => 'एसेट',
                     'tab'                   => [
                         'preview'          => 'पूर्वावलोकन',
                         'properties'       => 'गुण',

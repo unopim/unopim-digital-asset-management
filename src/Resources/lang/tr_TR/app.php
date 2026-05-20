@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Kullanılabilir meta veri yok',
                     'tags'                  => 'Etiketler',
                     'select-tags'           => 'Bir etiket seçin veya oluşturun',
-                    'directory-path'        => 'Dizin yolu',
+                    'directory-path'        => 'Dizin Yolu',
+                    'no-directory'          => 'Dizin atanmadı',
+                    'details'               => 'Detaylar',
+                    'breadcrumb-assets'     => 'Varlıklar',
                     'tab'                   => [
                         'preview'          => 'Önizleme',
                         'properties'       => 'Özellikler',

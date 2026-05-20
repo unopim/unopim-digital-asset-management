@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Ingen metadata tilgjengelig',
                     'tags'                  => 'Tagger',
                     'select-tags'           => 'Velg eller opprett en tagg',
-                    'directory-path'        => 'Mappesti',
+                    'directory-path'        => 'Mappebane',
+                    'no-directory'          => 'Ingen mappe tildelt',
+                    'details'               => 'Detaljer',
+                    'breadcrumb-assets'     => 'Ressurser',
                     'tab'                   => [
                         'preview'          => 'Forhåndsvisning',
                         'properties'       => 'Egenskaper',

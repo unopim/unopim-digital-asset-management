@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'No hi ha metadades disponibles',
                     'tags'                  => 'Etiquetes',
                     'select-tags'           => 'Escollir o Crear una Etiqueta',
-                    'directory-path'        => 'Ruta del Directori',
+                    'directory-path'        => 'Ruta del directori',
+                    'no-directory'          => 'Cap directori assignat',
+                    'details'               => 'Detalls',
+                    'breadcrumb-assets'     => 'Actius',
                     'tab'                   => [
                         'preview'          => 'Vista prèvia',
                         'properties'       => 'Propietats',

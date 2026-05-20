@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Nenhum metadado disponível',
                     'tags'                  => 'Etiquetas',
                     'select-tags'           => 'Escolher ou Criar uma Etiqueta',
-                    'directory-path'        => 'Caminho do Diretório',
+                    'directory-path'        => 'Caminho do directório',
+                    'no-directory'          => 'Nenhum directório atribuído',
+                    'details'               => 'Detalhes',
+                    'breadcrumb-assets'     => 'Ativos',
                     'tab'                   => [
                         'preview'          => 'Pré-visualização',
                         'properties'       => 'Propriedades',

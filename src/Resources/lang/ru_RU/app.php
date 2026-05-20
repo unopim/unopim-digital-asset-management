@@ -200,7 +200,10 @@ return [
                     'no-metadata-available' => 'Метаданные недоступны',
                     'tags'                  => 'Теги',
                     'select-tags'           => 'Выберите или создайте тег',
-                    'directory-path'        => 'Путь к директории',
+                    'directory-path'        => 'Путь к каталогу',
+                    'no-directory'          => 'Директория не назначена',
+                    'details'               => 'Подробности',
+                    'breadcrumb-assets'     => 'Ресурсы',
                     'tab'                   => [
                         'preview'          => 'Предпросмотр',
                         'properties'       => 'Свойства',

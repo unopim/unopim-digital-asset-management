@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Etiquetas',
                     'select-tags'           => 'Elegir o crear una etiqueta',
                     'directory-path'        => 'Ruta del directorio',
+                    'no-directory'          => 'No hay directorio asignado',
+                    'details'               => 'Detalles',
+                    'breadcrumb-assets'     => 'Activos',
                     'tab'                   => [
                         'preview'          => 'Vista previa',
                         'properties'       => 'Propiedades',

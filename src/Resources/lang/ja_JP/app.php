@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'タグ',
                     'select-tags'           => 'タグを選択または作成',
                     'directory-path'        => 'ディレクトリパス',
+                    'no-directory'          => 'ディレクトリが割り当てられていません',
+                    'details'               => '詳細',
+                    'breadcrumb-assets'     => 'アセット',
                     'tab'                   => [
                         'preview'          => 'プレビュー',
                         'properties'       => 'プロパティ',

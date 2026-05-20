@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Tag wählen oder erstellen',
                     'directory-path'        => 'Verzeichnispfad',
+                    'no-directory'          => 'Kein Verzeichnis zugewiesen',
+                    'details'               => 'Details',
+                    'breadcrumb-assets'     => 'Assets',
                     'tab'                   => [
                         'preview'          => 'Vorschau',
                         'properties'       => 'Eigenschaften',

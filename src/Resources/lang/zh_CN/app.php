@@ -201,6 +201,9 @@ return [
                     'tags'                  => '标签',
                     'select-tags'           => '选择或创建标签',
                     'directory-path'        => '目录路径',
+                    'no-directory'          => '未分配目录',
+                    'details'               => '详情',
+                    'breadcrumb-assets'     => '资产',
                     'tab'                   => [
                         'preview'          => '预览',
                         'properties'       => '属性',

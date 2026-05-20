@@ -201,6 +201,9 @@ return [
                     'tags'                  => 'Taggar',
                     'select-tags'           => 'Välj eller skapa en tagg',
                     'directory-path'        => 'Katalogsökväg',
+                    'no-directory'          => 'Ingen katalog tilldelad',
+                    'details'               => 'Detaljer',
+                    'breadcrumb-assets'     => 'Resurser',
                     'tab'                   => [
                         'preview'          => 'Förhandsgranskning',
                         'properties'       => 'Egenskaper',
