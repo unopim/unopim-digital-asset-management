@@ -61,6 +61,8 @@ class AssetDataGrid extends DataGrid
             ->groupBy('dam_assets.id');
 
         $this->addFilter('id', 'dam_assets.id');
+        $this->addFilter('file_name', 'dam_assets.file_name');
+        $this->addFilter('extension', 'dam_assets.extension');
         $this->addFilter('tag', 'dam_tags.name');
         $this->addFilter('property_name', 'dam_asset_properties.name');
         $this->addFilter('property_value', 'dam_asset_properties.value');
@@ -243,12 +245,16 @@ class AssetDataGrid extends DataGrid
                             }
                         });
 
+                        break;
+
                     case ColumnTypeEnum::INTEGER->value:
                         $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
                             foreach ($requestedValues as $value) {
                                 $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), $value);
                             }
                         });
+
+                        break;
 
                     case ColumnTypeEnum::DROPDOWN->value:
                         $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
