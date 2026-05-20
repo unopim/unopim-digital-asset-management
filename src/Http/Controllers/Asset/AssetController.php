@@ -580,10 +580,19 @@ class AssetController extends Controller
 
         $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
 
+        $directory = $asset->directories()->first();
+        $directoryAncestors = $directory
+            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
+            : collect();
+        $dirPathParts = $directoryAncestors->pluck('name')->toArray();
+        $dirPathParts[] = $asset->file_name;
+        $directoryPath = implode('/', $dirPathParts);
+
         return response()->json([
             'success'               => true,
             'asset'                 => $asset,
             'assetPath'             => $asset->getPathWithOutFileSystemRoot() ?? '',
+            'directoryPath'         => $directoryPath,
             'mediaUrl'              => $mediaUrl,
             'previewPath'           => $asset->previewPath,
             'placeholderSvg'        => $placeholderSvg,
