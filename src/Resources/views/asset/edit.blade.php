@@ -261,7 +261,7 @@
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayFileSize }}</span>
                                         </div>
                                     </template>
-                                    <template v-if="displayWidth && displayHeight">
+                                    <template v-if="asset.file_type === 'image' && displayWidth && displayHeight">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayWidth }} × @{{ displayHeight }} px</span>
