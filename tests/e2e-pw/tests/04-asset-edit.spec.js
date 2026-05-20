@@ -159,6 +159,8 @@ test.describe('DAM Asset Edit Page', () => {
     const tagsEl    = adminPage.locator('#app').getByText('Tags', { exact: true }).first();
     const detailsEl = adminPage.locator('#app').getByText('Details', { exact: true }).first();
 
+    await tagsEl.waitFor({ state: 'visible', timeout: 30000 });
+    await detailsEl.waitFor({ state: 'visible', timeout: 30000 });
     const tagsBox    = await tagsEl.boundingBox();
     const detailsBox = await detailsEl.boundingBox();
 
