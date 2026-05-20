@@ -348,20 +348,6 @@
                     };
                 },
 
-                mounted() {
-                    this._onAssetChange = (data) => {
-                        this.prevAssetId = data.previousAssetId;
-                        this.nextAssetId = data.nextAssetId;
-                    };
-                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
-                },
-
-                beforeUnmount() {
-                    if (this._onAssetChange) {
-                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
-                    }
-                },
-
                 methods: {
                     async navigateTo(id) {
                         if (!id || this.isNavigating) return;
@@ -384,7 +370,7 @@
                             this.displayMimeType  = data.asset.mime_type ?? '';
                             this.displayCreatedAt = data.createdAtFormatted ?? '';
                             this.displayUpdatedAt = data.updatedAtFormatted ?? '';
-                            this.displayAssetPath = data.asset.path ?? '';
+                            this.displayAssetPath = data.assetPath ?? '';
                             this.displayTags      = data.tags ?? [];
                             this.tagComponentKey  += 1;
                         } catch (e) {

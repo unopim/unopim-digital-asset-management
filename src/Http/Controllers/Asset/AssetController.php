@@ -582,6 +582,7 @@ class AssetController extends Controller
         return response()->json([
             'success'               => true,
             'asset'                 => $asset,
+            'assetPath'             => $asset->getPathWithOutFileSystemRoot() ?? '',
             'mediaUrl'              => $mediaUrl,
             'previewPath'           => $asset->previewPath,
             'placeholderSvg'        => $placeholderSvg,
