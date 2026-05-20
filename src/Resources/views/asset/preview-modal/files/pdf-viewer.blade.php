@@ -1,4 +1,4 @@
 <iframe
-    src="{{ $mediaUrl }}"
+    :src="previewData.mediaUrl"
     class="w-full h-full"
 ></iframe>

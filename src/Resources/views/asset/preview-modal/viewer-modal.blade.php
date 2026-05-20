@@ -9,21 +9,19 @@
         @click="closePreview"
     ></div>
 
-    @if ($asset->file_type === 'video' || $asset->extension === 'pdf' || $asset->file_type === 'image')
+    <template v-if="previewData.file_type === 'video' || previewData.extension === 'pdf' || previewData.file_type === 'image'">
         <!-- Large modal — video / pdf / image -->
         <div class="relative z-10 flex flex-col w-[85vw] h-[88vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
 
             <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold {{ $typeColor }}">
-                    {{ strtoupper($asset->extension) }}
+                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold" :class="previewData.typeColor">
+                    @{{ previewData.extension_upper }}
                 </span>
                 <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
-                    {{ $asset->file_name }}
+                    @{{ previewData.file_name }}
                 </p>
-                @if ($fileSize)
-                    <span class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block">{{ $fileSize }}</span>
-                @endif
+                <span v-if="previewData.fileSize" class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block">@{{ previewData.fileSize }}</span>
                 <button
                     type="button"
                     class="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -40,31 +38,32 @@
             <!-- Content -->
             <div class="flex-1 min-h-0 overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-900">
 
-                @if ($asset->file_type === 'video')
+                <template v-if="previewData.file_type === 'video'">
                     @include('dam::asset.preview-modal.video.video-player')
-                @elseif ($asset->extension === 'pdf')
+                </template>
+                <template v-else-if="previewData.extension === 'pdf'">
                     @include('dam::asset.preview-modal.files.pdf-viewer')
-                @else
+                </template>
+                <template v-else>
                     @include('dam::asset.preview-modal.image.image-viewer')
-                @endif
+                </template>
 
             </div>
         </div>
-    @else
+    </template>
+    <template v-else>
         <!-- Compact modal — audio / fallback -->
         <div class="relative z-10 w-full max-w-lg mx-4 rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
 
             <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold {{ $typeColor }}">
-                    {{ strtoupper($asset->extension) }}
+                <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold" :class="previewData.typeColor">
+                    @{{ previewData.extension_upper }}
                 </span>
                 <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
-                    {{ $asset->file_name }}
+                    @{{ previewData.file_name }}
                 </p>
-                @if ($fileSize)
-                    <span class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block">{{ $fileSize }}</span>
-                @endif
+                <span v-if="previewData.fileSize" class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block">@{{ previewData.fileSize }}</span>
                 <button
                     type="button"
                     class="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -78,11 +77,12 @@
                 </button>
             </div>
 
-            @if ($asset->file_type === 'audio')
+            <template v-if="previewData.file_type === 'audio'">
                 @include('dam::asset.preview-modal.audio.audio-player')
-            @else
+            </template>
+            <template v-else>
                 @include('dam::asset.preview-modal.fallback')
-            @endif
+            </template>
         </div>
-    @endif
+    </template>
 </div>

@@ -1,4 +1,3 @@
-@if ($asset->file_type === 'image')
 <!-- Image Editor Modal -->
 <div
     v-if="isEditOpen"
@@ -12,7 +11,7 @@
         <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <span class="text-lg icon-edit text-violet-600 dark:text-violet-400"></span>
             <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
-                {{ $asset->file_name }}
+                @{{ previewData.file_name }}
             </p>
             <button
                 type="button"
@@ -38,8 +37,8 @@
             >
                 <img
                     ref="editImg"
-                    :src="(editTool === 'edit-bg' && bgSubTab === 'color' && bgPreviewDataUrl) ? bgPreviewDataUrl : '{{ $asset->previewPath }}'"
-                    alt="{{ $asset->file_name }}"
+                    :src="(editTool === 'edit-bg' && bgSubTab === 'color' && bgPreviewDataUrl) ? bgPreviewDataUrl : previewData.previewPath"
+                    :alt="previewData.file_name"
                     class="block max-h-full max-w-full transition-all duration-200"
                     :style="{
                         filter:    editPreviewFilter    || undefined,
@@ -213,7 +212,7 @@
                         <!-- Color tab -->
                         <div v-if="bgSubTab === 'color'" class="flex flex-col gap-3">
 
-                            @if ($asset->extension === 'png')
+                            <template v-if="previewData.extension === 'png'">
                             <!-- Normal / AI mode toggle (PNG only) -->
                             <div class="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800">
                                 <button
@@ -233,7 +232,7 @@
                                     @click="bgColorMode = 'ai'; loadBgPlatforms()"
                                 >{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-color-mode-ai') }}</button>
                             </div>
-                            @endif
+                            </template>
 
                             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-color-label') }}</p>
                             <div class="grid grid-cols-8 gap-2">
@@ -632,4 +631,3 @@
         </div>
     </div>
 </div>
-@endif

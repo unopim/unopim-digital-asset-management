@@ -24,48 +24,36 @@
         <div class="flex flex-col divide-y divide-gray-50 dark:divide-gray-800 px-5">
             <div class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.file-name')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate text-right">{{ $asset->file_name }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate text-right">@{{ previewData.file_name }}</span>
             </div>
             <div class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.type')</span>
-                <span class="text-xs px-1.5 py-0.5 rounded font-semibold {{ $typeColor }}">{{ strtoupper($asset->extension) }}</span>
+                <span class="text-xs px-1.5 py-0.5 rounded font-semibold" :class="previewData.typeColor">@{{ previewData.extension_upper }}</span>
             </div>
-            @if ($fileSize)
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.fileSize" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.size')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $fileSize }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">@{{ previewData.fileSize }}</span>
             </div>
-            @endif
-            @if ($asset->file_type === 'image' && !empty($asset->width) && !empty($asset->height))
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.file_type === 'image' && previewData.width && previewData.height" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $asset->width }} × {{ $asset->height }}px</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">@{{ previewData.width }} × @{{ previewData.height }}px</span>
             </div>
-            @endif
-            @if (!empty($asset->path))
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.path" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.path')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate text-right">{{ $asset->path }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate text-right">@{{ previewData.path }}</span>
             </div>
-            @endif
-            @if (!empty($asset->mime_type))
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.mime_type" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">{{ trans('dam::app.admin.dam.asset.edit.preview-modal.mime') }}</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $asset->mime_type }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">@{{ previewData.mime_type }}</span>
             </div>
-            @endif
-            @if (!empty($asset->created_at))
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.created_at" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.created-at')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $asset->created_at->format('d M Y, H:i') }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">@{{ previewData.created_at }}</span>
             </div>
-            @endif
-            @if (!empty($asset->updated_at))
-            <div class="flex items-center justify-between py-3 gap-4">
+            <div v-if="previewData.updated_at" class="flex items-center justify-between py-3 gap-4">
                 <span class="text-xs text-gray-700 dark:text-gray-200 shrink-0">@lang('dam::app.admin.dam.asset.edit.updated-at')</span>
-                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $asset->updated_at->format('d M Y, H:i') }}</span>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-200">@{{ previewData.updated_at }}</span>
             </div>
-            @endif
         </div>
     </div>
 </div>

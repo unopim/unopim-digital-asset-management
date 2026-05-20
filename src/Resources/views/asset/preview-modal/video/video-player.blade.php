@@ -21,7 +21,7 @@
             @play="videoIsPlaying = true"
             @pause="videoIsPlaying = false"
         >
-            <source src="{{ $mediaUrl }}" type="{{ $asset->mime_type }}">
+            <source :src="previewData.mediaUrl" :type="previewData.mime_type">
             @lang('dam::app.admin.dam.asset.edit.preview-modal.not-available')
         </video>
 
@@ -248,7 +248,7 @@
                     class="absolute bottom-12 right-0 w-52 rounded-lg bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-2xl z-[10020] py-1 text-sm overflow-hidden"
                 >
                     <a
-                        href="{{ route('admin.dam.assets.download', $asset->id) }}"
+                        :href="previewData.downloadUrl"
                         class="flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors"
                         @click="videoMenuOpen = false"
                     >
@@ -259,7 +259,7 @@
                     </a>
 
                     <a
-                        href="{{ route('admin.dam.assets.download_compressed', $asset->id) }}"
+                        :href="previewData.downloadCompressedUrl"
                         class="flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors"
                         @click="videoMenuOpen = false"
                     >
@@ -274,7 +274,7 @@
                     <button
                         type="button"
                         class="w-full flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors text-left"
-                        @click="videoCopyLink('{{ $mediaUrl }}')"
+                        @click="videoCopyLink(previewData.mediaUrl)"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -288,7 +288,7 @@
                     </button>
 
                     <a
-                        href="{{ $mediaUrl }}"
+                        :href="previewData.mediaUrl"
                         target="_blank"
                         rel="noopener"
                         class="flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors"

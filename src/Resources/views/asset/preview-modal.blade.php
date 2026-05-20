@@ -18,6 +18,28 @@
     $fileSize = $bytes >= 1048576
         ? number_format($bytes / 1048576, 2) . ' MB'
         : ($bytes >= 1024 ? number_format($bytes / 1024, 1) . ' KB' : ($bytes > 0 ? $bytes . ' B' : null));
+
+    $initialPreviewData = [
+        'file_name'            => $asset->file_name,
+        'extension'            => $asset->extension,
+        'extension_upper'      => strtoupper($asset->extension ?? ''),
+        'file_type'            => $asset->file_type,
+        'mime_type'            => $asset->mime_type,
+        'path'                 => $asset->path,
+        'width'                => $asset->width ?? '',
+        'height'               => $asset->height ?? '',
+        'created_at'           => $asset->created_at?->format('d M Y, H:i'),
+        'updated_at'           => $asset->updated_at?->format('d M Y, H:i'),
+        'id'                   => $asset->id,
+        'mediaUrl'             => $mediaUrl,
+        'previewPath'          => $asset->previewPath,
+        'placeholderSvg'       => $placeholderSvg,
+        'coverArtUrl'          => $coverArtUrl,
+        'typeColor'            => $typeColor,
+        'fileSize'             => $fileSize,
+        'downloadUrl'          => route('admin.dam.assets.download', $asset->id),
+        'downloadCompressedUrl'=> route('admin.dam.assets.download_compressed', $asset->id),
+    ];
 @endphp
 
 <script
@@ -50,6 +72,8 @@
                 infoHover:  false,
                 isInfoOpen: false,
                 isEditOpen: false,
+
+                previewData: @json($initialPreviewData),
 
                 // Image
                 ...window._damImageViewer.data,
@@ -178,6 +202,43 @@
                 if (isVideoKey) this.videoShowControls();
             },
 
+            // ── SPA navigation ────────────────────────────────────────
+            onDamAssetChanged(data) {
+                this.closePreview();
+                this.isInfoOpen = false;
+                this.isEditOpen = false;
+                this.imgResetState();
+                this.videoResetState();
+                this.audioResetState();
+
+                this.previewData = {
+                    file_name:             data.asset.file_name,
+                    extension:             data.asset.extension,
+                    extension_upper:       (data.asset.extension || '').toUpperCase(),
+                    file_type:             data.asset.file_type,
+                    mime_type:             data.asset.mime_type,
+                    path:                  data.asset.path,
+                    width:                 data.width ?? '',
+                    height:                data.height ?? '',
+                    created_at:            data.createdAtFormatted ?? '',
+                    updated_at:            data.updatedAtFormatted ?? '',
+                    id:                    data.asset.id,
+                    mediaUrl:              data.mediaUrl,
+                    previewPath:           data.previewPath,
+                    placeholderSvg:        data.placeholderSvg,
+                    coverArtUrl:           data.coverArtUrl,
+                    typeColor:             data.typeColor,
+                    fileSize:              data.fileSize,
+                    downloadUrl:           data.downloadUrl,
+                    downloadCompressedUrl: data.downloadCompressedUrl,
+                };
+
+                this.$nextTick(() => {
+                    if (this.$refs.videoEl) this.$refs.videoEl.load();
+                    if (this.$refs.audioEl) this.$refs.audioEl.load();
+                });
+            },
+
             // ── Image ─────────────────────────────────────────────────
             ...window._damImageViewer.methods,
 
@@ -198,12 +259,17 @@
             window.addEventListener('keydown', this.handleEscape);
             this.imgMounted();
             this.videoMounted();
+            this._onAssetChange = (data) => this.onDamAssetChanged(data);
+            this.$emitter.on('dam-asset-changed', this._onAssetChange);
         },
 
         beforeUnmount() {
             window.removeEventListener('keydown', this.handleEscape);
             this.imgBeforeUnmount();
             this.videoBeforeUnmount();
+            if (this._onAssetChange) {
+                this.$emitter.off('dam-asset-changed', this._onAssetChange);
+            }
             document.body.style.overflow = '';
         },
     });

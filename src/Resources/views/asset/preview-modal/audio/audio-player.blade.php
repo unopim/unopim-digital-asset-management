@@ -77,16 +77,17 @@
             <!-- Fallback image — circular disc (front) -->
             <div class="relative z-10 h-28 w-28 rounded-full bg-violet-50 dark:bg-gray-800 ring-2 ring-violet-200 dark:ring-violet-900 shadow-lg flex items-center justify-center overflow-hidden" :class="audioIsPlaying ? 'audio-disc-spinning' : ''">
                 <img
-                    src="{{ $coverArtUrl ?? $placeholderSvg }}"
-                    alt="{{ $asset->file_name }}"
-                    class="h-full w-full object-cover{{ $coverArtUrl ? '' : ' opacity-75' }}"
-                    @if(! $coverArtUrl) style="transform: scale(1.2);" @endif
+                    :src="previewData.coverArtUrl || previewData.placeholderSvg"
+                    :alt="previewData.file_name"
+                    class="h-full w-full object-cover"
+                    :class="{ 'opacity-75': !previewData.coverArtUrl }"
+                    :style="previewData.coverArtUrl ? {} : { transform: 'scale(1.2)' }"
                 />
             </div>
         </div>
     </div>
 
-    <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate max-w-xl text-center">{{ $asset->file_name }}</p>
+    <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate max-w-xl text-center">@{{ previewData.file_name }}</p>
 
     <!-- Hidden native audio element driven by Vue -->
     <audio
@@ -96,7 +97,7 @@
         @loadedmetadata="audioOnLoadedMeta"
         @ended="audioOnEnded"
     >
-        <source src="{{ $mediaUrl }}" type="{{ $asset->mime_type }}">
+        <source :src="previewData.mediaUrl" :type="previewData.mime_type">
     </audio>
 
     <div class="flex flex-col gap-2 w-full max-w-lg">
