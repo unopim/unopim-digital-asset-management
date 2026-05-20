@@ -255,62 +255,42 @@
                                 </x-slot>
 
                                 <x-slot:content class="gap-4">
-                                    @php
-                                        $bytes = (int) ($asset->file_size ?? 0);
-                                        $fileSize = $bytes >= 1048576
-                                            ? number_format($bytes / 1048576, 2) . ' MB'
-                                            : ($bytes >= 1024 ? number_format($bytes / 1024, 1) . ' KB' : ($bytes > 0 ? $bytes . ' B' : null));
-                                    @endphp
-
-                                    @if ($fileSize)
+                                    <template v-if="displayFileSize">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.size')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $fileSize }}</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayFileSize }}</span>
                                         </div>
-                                    @endif
-
-                                    @if ($asset->file_type === 'image' && $asset->width && $asset->height)
+                                    </template>
+                                    <template v-if="displayWidth && displayHeight">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->width }} × {{ $asset->height }} px</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayWidth }} × @{{ displayHeight }} px</span>
                                         </div>
-                                    @endif
-
-                                    @if ($asset->extension)
+                                    </template>
+                                    <template v-if="displayExtension">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.type')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ strtoupper($asset->extension) }}</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayExtension.toUpperCase() }}</span>
                                         </div>
-                                    @endif
-
-                                    @if ($asset->mime_type)
+                                    </template>
+                                    <template v-if="displayMimeType">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.preview-modal.mime')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">{{ $asset->mime_type }}</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">@{{ displayMimeType }}</span>
                                         </div>
-                                    @endif
-
-                                    @php $assetPath = $asset->getPathWithOutFileSystemRoot(); @endphp
-                                    @if ($assetPath)
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.path')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">{{ $assetPath }}</span>
-                                        </div>
-                                    @endif
-
-                                    @if ($asset->created_at)
+                                    </template>
+                                    <template v-if="displayCreatedAt">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.created-at')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->created_at->format('d M Y, H:i') }}</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayCreatedAt }}</span>
                                         </div>
-                                    @endif
-
-                                    @if ($asset->updated_at)
+                                    </template>
+                                    <template v-if="displayUpdatedAt">
                                         <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
                                             <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.updated-at')</span>
-                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">{{ $asset->updated_at->format('d M Y, H:i') }}</span>
+                                            <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayUpdatedAt }}</span>
                                         </div>
-                                    @endif
+                                    </template>
                                 </x-slot>
                             </x-admin::accordion>
 
