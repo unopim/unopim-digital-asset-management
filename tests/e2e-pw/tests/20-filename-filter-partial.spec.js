@@ -11,10 +11,14 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
 
-    // Get the visible file name from the first asset card
+    // Get the visible file name from the first asset card.
+    // h2 sits outside .image-card (sibling div in the v-for wrapper);
+    // use the img alt attribute which Vue binds to record.file_name.
     const firstCard = adminPage.locator('.image-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 30000 });
-    const fileName = await firstCard.locator('h2').first().textContent();
+    const img = firstCard.locator('img').first();
+    await expect(img).toHaveAttribute('alt', /.+/, { timeout: 15000 });
+    const fileName = await img.getAttribute('alt');
     const baseName = fileName?.split('.')[0]?.trim();
     expect(baseName).toBeTruthy();
 
