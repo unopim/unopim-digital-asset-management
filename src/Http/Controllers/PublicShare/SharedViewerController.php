@@ -210,7 +210,7 @@ class SharedViewerController extends Controller
             return abort(404);
         }
 
-        if ($onSuccess) {
+        if ($onSuccess && $disposition === 'attachment') {
             $onSuccess();
         }
 
