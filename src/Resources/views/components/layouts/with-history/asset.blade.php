@@ -93,30 +93,23 @@
 
                     
                     <div class="flex flex-wrap justify-between gap-2 items-center">
-                        <div class="flex flex-col min-w-0 gap-0.5">
+                        <div class="flex min-w-0">
 
-                            {{-- Breadcrumb row (optional) --}}
-                            @isset($breadcrumb)
-                            <div class="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 flex-wrap">
-                                {{ $breadcrumb }}
-                            </div>
-                            @endisset
-
-                            {{-- Title row --}}
+                            {{-- Single title row: back · breadcrumb · icon · filename · counter --}}
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="{{ route('admin.dam.index') }}" class="transparent-button">
                                     <span class="text-base leading-none">&#8592;</span>
                                     @lang('dam::app.admin.dam.asset.edit.back')
                                 </a>
 
+                                {{-- Inline breadcrumb (optional) --}}
+                                @isset($breadcrumb){{ $breadcrumb }}@endisset
+
                                 {{-- File type icon (optional) --}}
                                 @isset($fileIcon){{ $fileIcon }}@endisset
 
                                 {{-- Reactive filename --}}
                                 <v-dam-asset-label initial-label="{{ $label ?? '' }}"></v-dam-asset-label>
-
-                                {{-- Meta chips (optional) --}}
-                                @isset($metaChips){{ $metaChips }}@endisset
 
                                 {{-- Asset counter --}}
                                 @isset($counter)
@@ -174,6 +167,9 @@
                                     <div class="{{  $item['code'] === $activeTab ? "-mb-px border-violet-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
                                         <span class="text-xl {{ $item['icon'] }}"></span>
                                         @lang($item['name'])
+                                        @if (array_key_exists('badge', $item))
+                                            <v-dam-tab-badge tab-code="{{ $item['code'] }}" :initial-count="{{ (int)($item['badge'] ?? 0) }}"></v-dam-tab-badge>
+                                        @endif
                                     </div>
                                 </a>
                             @endforeach
@@ -279,7 +275,9 @@
                         this.$emitter.on('dam-asset-changed', this._onAssetChange);
                     },
                     beforeUnmount() {
-                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                        if (this._onAssetChange) {
+                            this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                        }
                     },
                 });
             </script>
