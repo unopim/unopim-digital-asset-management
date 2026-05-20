@@ -38,8 +38,8 @@ class ShareDataGrid extends DataGrid
                 'dam_shares.download_count',
                 'dam_shares.last_accessed_at',
                 'dam_shares.created_at',
-                DB::raw('COALESCE(admins.name, NULL) as created_by_name'),
-                DB::raw('COALESCE(dam_assets.file_name, dam_directories.name) as target_name'),
+                DB::raw('COALESCE('.DB::getTablePrefix().'admins.name, NULL) as created_by_name'),
+                DB::raw('COALESCE('.DB::getTablePrefix().'dam_assets.file_name, '.DB::getTablePrefix().'dam_directories.name) as target_name'),
             );
 
         $this->addFilter('share_type', 'dam_shares.share_type');
