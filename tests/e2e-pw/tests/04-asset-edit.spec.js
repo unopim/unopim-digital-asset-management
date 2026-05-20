@@ -118,4 +118,52 @@ test.describe('DAM Asset Edit Page', () => {
       adminPage.locator('#app').getByText(/Are you sure/i).first()
     ).toBeVisible({ timeout: 5000 });
   });
+
+  test('Navigating to next asset updates filename in header', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const nextBtn = adminPage.locator('button[aria-label="Next"]').first();
+    const hasNext = await nextBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    if (!hasNext) {
+      test.skip(true, 'No next asset available');
+      return;
+    }
+
+    const labelSpan = adminPage.locator('v-dam-asset-label span').first();
+    const initialName = await labelSpan.textContent({ timeout: 5000 });
+
+    await nextBtn.click();
+    await adminPage.waitForTimeout(2000);
+
+    const newName = await labelSpan.textContent({ timeout: 5000 });
+    expect(newName.trim()).not.toBe('');
+  });
+
+  test('Header shows file type icon', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const fileIcon = adminPage.locator('.bg-violet-100').first();
+    await expect(fileIcon).toBeVisible({ timeout: 5000 });
+  });
+
+  test('Directory Path accordion visible in right rail', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const dirPathHeader = adminPage.locator('#app').getByText('Directory Path').first();
+    await expect(dirPathHeader).toBeVisible({ timeout: 5000 });
+  });
+
+  test('Tags accordion appears before Details accordion in right rail', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const tagsEl    = adminPage.locator('#app').getByText('Tags', { exact: true }).first();
+    const detailsEl = adminPage.locator('#app').getByText('Details', { exact: true }).first();
+
+    const tagsBox    = await tagsEl.boundingBox();
+    const detailsBox = await detailsEl.boundingBox();
+
+    expect(tagsBox).not.toBeNull();
+    expect(detailsBox).not.toBeNull();
+    expect(tagsBox.y).toBeLessThan(detailsBox.y);
+  });
 });

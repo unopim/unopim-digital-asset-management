@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
@@ -627,4 +628,42 @@ it('drag-move requires authentication', function () {
         'new_parent_id' => 1,
     ]);
     expect(in_array($response->status(), [302, 401, 403], true))->toBeTrue();
+});
+
+it('edit view exposes all fields needed for Vue reactive display', function () {
+    $asset = Asset::factory()->create([
+        'file_size' => 2_097_152,
+        'extension' => 'jpg',
+        'mime_type' => 'image/jpeg',
+    ]);
+
+    $this->get(route('admin.dam.assets.edit', $asset->id))
+        ->assertOk()
+        ->assertViewHas('fileSize', '2.00 MB')
+        ->assertViewHas('directoryAncestors');
+});
+
+it('edit view directoryAncestors is empty collection for asset without directory', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+
+    $ancestors = $response->viewData('directoryAncestors');
+    expect($ancestors)->toBeInstanceOf(Collection::class);
+    expect($ancestors->isEmpty())->toBeTrue();
+});
+
+it('edit view directoryAncestors contains parent chain for nested directory', function () {
+    $root = Directory::factory()->create(['name' => 'Assets', 'parent_id' => null]);
+    $sub = Directory::factory()->create(['name' => 'Photography', 'parent_id' => $root->id]);
+    $leaf = Directory::factory()->create(['name' => 'Landscapes', 'parent_id' => $sub->id]);
+    $asset = Asset::factory()->create();
+    $leaf->assets()->attach($asset);
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+
+    $ancestors = $response->viewData('directoryAncestors');
+    expect($ancestors->pluck('name')->toArray())->toBe(['Assets', 'Photography', 'Landscapes']);
 });
