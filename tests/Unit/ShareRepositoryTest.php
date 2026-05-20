@@ -6,9 +6,8 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Share;
 use Webkul\DAM\Repositories\ShareRepository;
-use Webkul\DAM\Tests\DamTestCase;
 
-uses(DamTestCase::class, DatabaseTransactions::class);
+uses(DatabaseTransactions::class);
 
 beforeEach(function () {
     DB::table('dam_shares')->delete();
