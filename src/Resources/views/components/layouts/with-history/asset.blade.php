@@ -123,6 +123,7 @@
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
                             {{ $buttonFour }}
+                            @isset($buttonFive) {{ $buttonFive }} @endisset
                         </div>
                     </div>
 

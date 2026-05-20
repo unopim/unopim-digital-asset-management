@@ -14,9 +14,7 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     // Get the visible file name from the first asset card
     const firstCard = adminPage.locator('.image-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 30000 });
-    const h2 = firstCard.locator('h2').first();
-    await expect(h2).not.toBeEmpty({ timeout: 15000 });
-    const fileName = await h2.textContent();
+    const fileName = await firstCard.locator('h2').first().textContent();
     const baseName = fileName?.split('.')[0]?.trim();
     expect(baseName).toBeTruthy();
 

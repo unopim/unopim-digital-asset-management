@@ -43,6 +43,12 @@ class Directory extends Model implements DirectoryContract
         return $this->hasMany(Directory::class, 'parent_id');
     }
 
+    public function shares()
+    {
+        return $this->hasMany(Share::class, 'target_id')
+            ->where('share_type', Share::TYPE_DIRECTORY);
+    }
+
     /**
      * check if possible to delete this directory
      */

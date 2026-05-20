@@ -16,6 +16,8 @@ use Webkul\Admin\Http\Requests\MassUpdateRequest;
 use Webkul\DAM\DataGrids\Asset\AssetDataGrid;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Jobs\GeneratePdfThumbnail;
+use Webkul\DAM\Jobs\GenerateVideoThumbnail;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetComments;
 use Webkul\DAM\Models\Directory;
@@ -358,6 +360,7 @@ class AssetController extends Controller
                 }
 
                 $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
+                $this->dispatchThumbnailJob($asset);
 
                 $uploadFiles[] = $asset;
             }
@@ -508,6 +511,8 @@ class AssetController extends Controller
                 'path'      => $filePath,
                 'meta_data' => $metaData,
             ]);
+
+            $this->dispatchThumbnailJob($asset->fresh());
         }
 
         return response()->json([
@@ -515,6 +520,28 @@ class AssetController extends Controller
             'file'    => $asset,
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
         ], 201);
+    }
+
+    /**
+     * Dispatch a queued job to generate a real thumbnail for non-image media
+     * (PDF first page, video frame). Audio cover art is handled inline at
+     * upload time by attachAudioCoverArt(). No-op for everything else.
+     */
+    protected function dispatchThumbnailJob(?Asset $asset): void
+    {
+        if (! $asset) {
+            return;
+        }
+
+        if ($asset->file_type === 'video') {
+            GenerateVideoThumbnail::dispatch($asset->id)->afterCommit();
+
+            return;
+        }
+
+        if (strtolower((string) $asset->extension) === 'pdf') {
+            GeneratePdfThumbnail::dispatch($asset->id)->afterCommit();
+        }
     }
 
     /**
@@ -580,19 +607,10 @@ class AssetController extends Controller
 
         $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
 
-        $directory = $asset->directories()->first();
-        $directoryAncestors = $directory
-            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
-            : collect();
-        $dirPathParts = $directoryAncestors->pluck('name')->toArray();
-        $dirPathParts[] = $asset->file_name;
-        $directoryPath = implode('/', $dirPathParts);
-
         return response()->json([
             'success'               => true,
             'asset'                 => $asset,
             'assetPath'             => $asset->getPathWithOutFileSystemRoot() ?? '',
-            'directoryPath'         => $directoryPath,
             'mediaUrl'              => $mediaUrl,
             'previewPath'           => $asset->previewPath,
             'placeholderSvg'        => $placeholderSvg,

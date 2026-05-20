@@ -66,6 +66,12 @@ class Asset extends Model implements AssetContract, HistoryAuditable
         return $this->hasMany(AssetResourceMapping::class, 'dam_asset_id');
     }
 
+    public function shares()
+    {
+        return $this->hasMany(Share::class, 'target_id')
+            ->where('share_type', Share::TYPE_ASSET);
+    }
+
     /**
      * Get the path without file system root
      */

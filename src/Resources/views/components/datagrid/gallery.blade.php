@@ -60,9 +60,19 @@
                                     <div class="flex flex-col justify-center invisible w-full p-3 bg-black dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
                                         <!-- Actions -->
                                         <div class="flex justify-center">
+                                            <!-- preview / eye icon -->
+                                            @if (bouncer()->hasPermission('dam.asset.view'))
+                                                <span
+                                                    class="icon-dam-preview text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
+                                                    title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
+                                                    @click="previewImage(record.id)"
+                                                >
+                                                </span>
+                                            @endif
+
                                             <!-- delete icon -->
                                             @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                                <span 
+                                                <span
                                                     class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
                                                     @click="deleteImage(record.id)"
                                                 >
@@ -71,7 +81,7 @@
 
                                             <!-- edit icon -->
                                             @if (bouncer()->hasPermission('dam.asset.edit'))
-                                                <div 
+                                                <div
                                                     class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
                                                     @click="editImage(record.id)"
                                                 >
@@ -135,9 +145,7 @@
             template: '#v-gallery-table-template',
 
             data: function () {
-                return {
-
-                }
+                return {}
             },
             computed: {
                 gridsCount() {
@@ -192,7 +200,10 @@
                 },
                 editImage(recordId) {
                     window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId);
-                }
+                },
+                previewImage(recordId) {
+                    this.$emitter.emit('dam-open-preview', recordId);
+                },
             }
         });
     </script>

@@ -35,6 +35,7 @@
         </v-delete-asset>
     </x-slot>
 
+
     @php
         $items = [
             [
@@ -128,6 +129,10 @@
         @include('dam::asset.meta-data.index', ['asset' => $asset])
     </x-slot:meta_data>
 
+    <x-slot:navButtons>
+        <v-share-asset-button :asset-id="{{ $asset->id }}"></v-share-asset-button>
+    </x-slot:navButtons>
+
     {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
 
     @pushOnce('scripts')
@@ -148,6 +153,28 @@
 
                         <!-- Left sub Component -->
                         <div class="flex flex-col flex-1 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-0">
+                            @php
+                                $crumbParts = $directoryAncestors->pluck('name')->toArray();
+                                $firstAncestorId = optional($directoryAncestors->first())->id;
+                            @endphp
+
+                            {{-- Full breadcrumb at the top of the preview area --}}
+                            <nav class="flex items-center gap-1 flex-wrap text-sm px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
+                                @foreach ($crumbParts as $i => $name)
+                                    @if ($i > 0)
+                                        <span class="text-gray-400 dark:text-gray-500">/</span>
+                                    @endif
+                                    <a
+                                        href="{{ route('admin.dam.assets.index').'?directory_id='.($directoryAncestors[$i]->id ?? '') }}"
+                                        class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
+                                    >{{ $name }}</a>
+                                @endforeach
+                                @if (count($crumbParts) > 0)
+                                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                                @endif
+                                <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">{{ $asset->file_name }}</span>
+                            </nav>
+
                             <div class="flex items-stretch flex-1 min-h-0">
 
                                 {{-- Prev arrow --}}
@@ -155,19 +182,19 @@
                                     <template v-if="prevAssetId">
                                         <button
                                             type="button"
-                                            class="flex items-center justify-center w-9 h-9 rounded-full bg-violet-500 dark:bg-gray-700 border border-violet-400 dark:border-gray-500 text-white dark:text-gray-200 hover:bg-violet-700 hover:border-violet-700 hover:text-white dark:hover:bg-violet-700 dark:hover:border-violet-500 dark:hover:text-white transition-colors"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
                                             :class="{ 'opacity-60 pointer-events-none': isNavigating }"
                                             title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                             aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                             @click="navigateTo(prevAssetId)"
                                         >
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
                                         </button>
                                     </template>
                                     <template v-else>
-                                        <span class="relative w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none inline-flex items-center justify-center"
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
                                               aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
                                         </span>
                                     </template>
                                 </div>
@@ -186,19 +213,19 @@
                                     <template v-if="nextAssetId">
                                         <button
                                             type="button"
-                                            class="flex items-center justify-center w-9 h-9 rounded-full bg-violet-500 dark:bg-gray-700 border border-violet-400 dark:border-gray-500 text-white dark:text-gray-200 hover:bg-violet-700 hover:border-violet-700 hover:text-white dark:hover:bg-violet-700 dark:hover:border-violet-500 dark:hover:text-white transition-colors"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
                                             :class="{ 'opacity-60 pointer-events-none': isNavigating }"
                                             title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                             aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                             @click="navigateTo(nextAssetId)"
                                         >
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
                                         </button>
                                     </template>
                                     <template v-else>
-                                        <span class="relative w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none inline-flex items-center justify-center"
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
                                               aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
                                         </span>
                                     </template>
                                 </div>
@@ -207,7 +234,7 @@
                         </div>
 
                         <!-- Right sub-component -->
-                        <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                        <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow p-4">
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
 
                             <x-admin::accordion>
@@ -260,38 +287,38 @@
 
                                 <x-slot:content class="gap-4">
                                     <template v-if="displayFileSize">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.size')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.size')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayFileSize }}</span>
                                         </div>
                                     </template>
                                     <template v-if="asset.file_type === 'image' && displayWidth && displayHeight">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.dimensions')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayWidth }} × @{{ displayHeight }} px</span>
                                         </div>
                                     </template>
                                     <template v-if="displayExtension">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.type')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.type')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayExtension.toUpperCase() }}</span>
                                         </div>
                                     </template>
                                     <template v-if="displayMimeType">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.preview-modal.mime')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.preview-modal.mime')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right break-all">@{{ displayMimeType }}</span>
                                         </div>
                                     </template>
                                     <template v-if="displayCreatedAt">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.created-at')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.created-at')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayCreatedAt }}</span>
                                         </div>
                                     </template>
                                     <template v-if="displayUpdatedAt">
-                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                            <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">@lang('dam::app.admin.dam.asset.edit.updated-at')</span>
+                                        <div class="flex justify-between py-2 gap-4 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                            <span class="text-xs text-gray-400 dark:text-gray-500 shrink-0">@lang('dam::app.admin.dam.asset.edit.updated-at')</span>
                                             <span class="text-xs font-medium text-gray-700 dark:text-gray-200 text-right">@{{ displayUpdatedAt }}</span>
                                         </div>
                                     </template>
@@ -314,7 +341,7 @@
                                         $pathParts[] = $asset->file_name;
                                         $fullPath = implode('/', $pathParts);
                                     @endphp
-                                    <v-dam-dir-path initial-path="{{ $fullPath }}"></v-dam-dir-path>
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">{{ $fullPath }}</p>
                                 </x-slot>
                             </x-admin::accordion>
 
@@ -588,24 +615,6 @@
             });
         </script>
 
-        <!-- **** Directory Path **** -->
-        <script type="module">
-            app.component('v-dam-dir-path', {
-                props: { initialPath: { type: String, default: '' } },
-                template: `<p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">@{{ path }}</p>`,
-                data() { return { path: this.initialPath }; },
-                mounted() {
-                    this._onAssetChange = (data) => {
-                        if (data.directoryPath !== undefined) this.path = data.directoryPath;
-                    };
-                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
-                },
-                beforeUnmount() {
-                    if (this._onAssetChange) this.$emitter.off('dam-asset-changed', this._onAssetChange);
-                },
-            });
-        </script>
-
         <!-- **** Custom Download **** -->
         <script
             type="text/x-template"
@@ -613,16 +622,16 @@
         >
 
             @if (bouncer()->hasPermission('dam.asset.download'))
-                <template v-if="selectedItem?.extension === 'svg'">
-                    <button class="primary-button"
-                        :disabled="isLocked"
-                        :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
-                        @click="svgDownloadModel">
-                        <span class="text-xl text-gray-50 icon-dam-download"></span>
-                        <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
-                    </button>
-                </template>
-                <template v-else-if="selectedItem?.file_type === 'image'">
+
+                @if($asset->extension ==='svg')
+                <button class="primary-button"
+                    :disabled="isLocked"
+                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                    @click="svgDownloadModel">
+                    <span class="text-xl text-gray-50 icon-dam-download"></span>
+                    <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
+                </button>
+                @elseif ($asset->file_type === 'image')
                     <button class="primary-button"
                         :disabled="isLocked"
                         :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
@@ -630,8 +639,7 @@
                         <span class="text-xl text-gray-50 icon-dam-download"></span>
                         <span>@lang('dam::app.admin.dam.asset.edit.button.custom_download')</span>
                     </button>
-                </template>
-                <template v-else>
+                @else
                     <button class="primary-button"
                         :disabled="isLocked"
                         :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
@@ -639,7 +647,7 @@
                         <span class="text-xl text-gray-50 icon-dam-download"></span>
                         <span>@lang('dam::app.admin.dam.asset.edit.button.download')</span>
                     </button>
-                </template>
+                @endif
             @endif
 
             <div style="position: absolute; width: 0; height: 0; overflow: visible;">
@@ -835,39 +843,41 @@
                         selectedItem: selectedItem,
                         isLocked: false,
                         onLockChange: null,
+                        supportedExtensionTypes: [{
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.original')",
+                                value: selectedItem?.extension,
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpg')",
+                                value: 'jpg'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpeg')",
+                                value: 'jpeg'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.png')",
+                                value: 'png'
+                            },
+                            {
+                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.webp')",
+                                value: 'webp'
+                            },
+                        ],
+
                         selectedItemExtension: selectedItem?.extension,
                         selectedItemWidth: selectedItem?.width ?? 0,
                         selectedItemHeight: selectedItem?.height ?? 0,
                     };
                 },
-                computed: {
-                    supportedExtensionTypes() {
-                        return [
-                            {
-                                label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.original')",
-                                value: this.selectedItem?.extension,
-                            },
-                            { label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpg')",  value: 'jpg' },
-                            { label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.jpeg')", value: 'jpeg' },
-                            { label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.png')",  value: 'png' },
-                            { label: "@lang('dam::app.admin.dam.asset.edit.custom-download.extension-types.webp')", value: 'webp' },
-                        ];
-                    },
-                },
                 mounted() {
                     this.onLockChange = (locked) => { this.isLocked = !!locked; };
                     this.$emitter.on('dam-asset-action-locked', this.onLockChange);
-                    this._onAssetChange = (data) => {
-                        this.selectedItem        = data.asset;
-                        this.selectedItemExtension = data.asset.extension ?? '';
-                        this.selectedItemWidth   = data.width ?? data.asset.width ?? 0;
-                        this.selectedItemHeight  = data.height ?? data.asset.height ?? 0;
-                    };
-                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
                 },
                 unmounted() {
-                    if (this.onLockChange)    this.$emitter.off('dam-asset-action-locked', this.onLockChange);
-                    if (this._onAssetChange)  this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
                 },
                 methods: {
 
@@ -1299,6 +1309,59 @@
             @endif
         </script>
 
+        <!-- **** Share button — opens the shared modal singleton (renders in the tab row's navButtons slot) **** -->
+        <script type="text/x-template" id="v-share-asset-button-template">
+            @if (bouncer()->hasPermission('dam.asset.share'))
+            <button
+                type="button"
+                class="transparent-button"
+                :disabled="isLocked"
+                :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked }"
+                @click="openShare"
+            >
+                <span class="text-xl icon-dam-link" style="color: inherit;"></span>
+                <span>@lang('dam::app.admin.dam.asset.edit.button.share')</span>
+            </button>
+            @endif
+        </script>
+
+        <script type="module">
+            app.component('v-share-asset-button', {
+                template: '#v-share-asset-button-template',
+                props: {
+                    assetId: { type: Number, required: true },
+                },
+                data() {
+                    return {
+                        isLocked: false,
+                        onLockChange: null,
+                    };
+                },
+                mounted() {
+                    this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                    this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                },
+                unmounted() {
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
+                },
+                methods: {
+                    openShare() {
+                        if (this.isLocked) return;
+                        this.$emitter.emit('open-share-modal', {
+                            targetType: 'asset',
+                            targetId: this.assetId,
+                        });
+                    },
+                },
+            });
+        </script>
+
+        @include('dam::share.components.share-link-modal')
+
+        @include('dam::share.components.zoomable-image')
+
         <script type="module">
             app.component('v-delete-asset', {
                 template: '#v-delete-asset-template',
@@ -1359,4 +1422,6 @@
             });
         </script>
     @endPushOnce
+
+    <v-share-link-modal></v-share-link-modal>
     </x-admin::layouts.with-history.asset>
