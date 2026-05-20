@@ -29,7 +29,7 @@ window._damImageViewer = {
 
         // Edit Background
         bgSubTab:             'color',
-        bgColorMode:          '{{ $asset->extension === "png" ? "normal" : "ai" }}',
+        bgColorMode:          'ai',
         bgColor:              null,
         bgPreviewDataUrl:     null,
         bgPreviewLoading:     false,
@@ -314,7 +314,7 @@ window._damImageViewer = {
             this.flipH           = false;
             this.flipV           = false;
             this.bgSubTab        = 'color';
-            this.bgColorMode     = '{{ $asset->extension === "png" ? "normal" : "ai" }}';
+            this.bgColorMode     = (this.previewData && this.previewData.extension === 'png') ? 'normal' : 'ai';
             this.bgColor         = null;
             this.bgUploadFile    = null;
             this.bgAiPrompt      = '';
@@ -333,12 +333,11 @@ window._damImageViewer = {
 
         async fetchBgPreview(color) {
             if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+            if (!this.previewData?.id) return;
             this.bgPreviewLoading = true;
             try {
-                const res = await window.axios.post(
-                    '{{ route('admin.dam.assets.image_edit.bg_preview', $asset->id) }}',
-                    { color }
-                );
+                const url = `{{ route('admin.dam.assets.image_edit.bg_preview', ['id' => ':id']) }}`.replace(':id', this.previewData.id);
+                const res = await window.axios.post(url, { color });
                 this.bgPreviewDataUrl = res.data.dataUrl;
             } catch (_) {
                 // silent — original image stays visible
@@ -382,11 +381,13 @@ window._damImageViewer = {
             this.editApplying = true;
             this.editError    = null;
 
+            const assetId = this.previewData?.id;
+            if (!assetId) { this.editApplying = false; return; }
             const routeMap = {
-                crop:    '{{ route('admin.dam.assets.image_edit.resize',    ['id' => $asset->id]) }}',
-                adjust:  '{{ route('admin.dam.assets.image_edit.adjust',    ['id' => $asset->id]) }}',
-                rotate:  '{{ route('admin.dam.assets.image_edit.transform', ['id' => $asset->id]) }}',
-                filters: '{{ route('admin.dam.assets.image_edit.filters',   ['id' => $asset->id]) }}',
+                crop:    `{{ route('admin.dam.assets.image_edit.resize',    ['id' => ':id']) }}`.replace(':id', assetId),
+                adjust:  `{{ route('admin.dam.assets.image_edit.adjust',    ['id' => ':id']) }}`.replace(':id', assetId),
+                rotate:  `{{ route('admin.dam.assets.image_edit.transform', ['id' => ':id']) }}`.replace(':id', assetId),
+                filters: `{{ route('admin.dam.assets.image_edit.filters',   ['id' => ':id']) }}`.replace(':id', assetId),
             };
 
             const bodyMap = {
@@ -415,9 +416,9 @@ window._damImageViewer = {
                     return;
                 }
                 const bgRoutes = {
-                    color:  '{{ route('admin.dam.assets.image_edit.bg_color',  ['id' => $asset->id]) }}',
-                    upload: '{{ route('admin.dam.assets.image_edit.bg_upload', ['id' => $asset->id]) }}',
-                    ai:     '{{ route('admin.dam.assets.image_edit.bg_ai',     ['id' => $asset->id]) }}',
+                    color:  `{{ route('admin.dam.assets.image_edit.bg_color',  ['id' => ':id']) }}`.replace(':id', assetId),
+                    upload: `{{ route('admin.dam.assets.image_edit.bg_upload', ['id' => ':id']) }}`.replace(':id', assetId),
+                    ai:     `{{ route('admin.dam.assets.image_edit.bg_ai',     ['id' => ':id']) }}`.replace(':id', assetId),
                 };
                 if (this.bgSubTab !== 'color') postRoute = bgRoutes[this.bgSubTab];
                 if (this.bgSubTab === 'color') {
@@ -427,7 +428,7 @@ window._damImageViewer = {
                         return;
                     }
                     if (this.bgColorMode === 'normal') {
-                        postRoute = '{{ route('admin.dam.assets.image_edit.bg_color_normal', ['id' => $asset->id]) }}';
+                        postRoute = `{{ route('admin.dam.assets.image_edit.bg_color_normal', ['id' => ':id']) }}`.replace(':id', assetId);
                         postBody  = { color: this.bgColor };
                     } else {
                         postRoute = bgRoutes.color;

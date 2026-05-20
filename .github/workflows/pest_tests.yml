@@ -101,6 +101,7 @@ jobs:
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
                   <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php
@@ -238,6 +239,7 @@ jobs:
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
                   <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php

@@ -14,6 +14,8 @@ use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Jobs\GeneratePdfThumbnail;
+use Webkul\DAM\Jobs\GenerateVideoThumbnail;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
@@ -196,6 +198,35 @@ class FileController
             $coverPath = $asset->meta_data['cover_art_path'] ?? null;
             if ($coverPath && Storage::disk($disk)->exists($coverPath)) {
                 return $this->getFileResponse($coverPath);
+            }
+        }
+
+        // Cloudinary-style thumbnails for PDF / video — real first-page or
+        // first-frame previews rather than the generic placeholder icon.
+        // Eager generation happens via queued job on upload; this branch also
+        // generates synchronously on first request as a fallback so assets
+        // uploaded before the feature still get a real thumbnail.
+        if ($asset && ($asset->file_type === 'video' || strtolower((string) $asset->extension) === 'pdf')) {
+            $cached = $asset->meta_data['thumbnail_path'] ?? ('thumbnails/'.$path.'.jpg');
+
+            if (Storage::disk($disk)->exists($cached)) {
+                return $this->getFileResponse($cached);
+            }
+
+            try {
+                $job = strtolower((string) $asset->extension) === 'pdf'
+                    ? new GeneratePdfThumbnail($asset->id)
+                    : new GenerateVideoThumbnail($asset->id);
+
+                dispatch_sync($job);
+
+                $cached = $asset->fresh()->meta_data['thumbnail_path'] ?? $cached;
+
+                if (Storage::disk($disk)->exists($cached)) {
+                    return $this->getFileResponse($cached);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('DAM thumbnail lazy-generation failed: '.$e->getMessage(), ['asset' => $asset->id]);
             }
         }
 

@@ -4,6 +4,54 @@
 
 ### Features & Enhancements
 
+- **Real thumbnails for PDFs and videos** — DAM grid now shows the actual
+  first page of a PDF and a real frame from a video instead of the generic
+  placeholder. Queued `GeneratePdfThumbnail` (`pdftoppm`) and
+  `GenerateVideoThumbnail` (`ffmpeg`) jobs run on upload / re-upload and
+  cache to `thumbnails/{path}.jpg`. Lazy sync fallback covers pre-existing
+  assets. New `dam:backfill-thumbnails` artisan command backfills the rest.
+
+- **Eye-icon preview on the asset grid** — Each tile now exposes a preview
+  eye on hover (gated by `dam.asset.view`). Opens a self-contained fullscreen
+  modal with native `<img>` (zoom / pan / rotate), `<video controls>`,
+  `<audio controls>`, or `<iframe>` for PDFs. Escape / backdrop closes.
+
+- **Inline preview on the asset edit page** — Removed the eye button. The
+  preview card now renders the media inline (image, custom video player,
+  custom audio player, or PDF.js) on mount, picked by `file_type` /
+  extension. Keyboard shortcuts now work without opening the old modal.
+
+- **Full-path breadcrumb on the DAM listing and edit pages** — Listing page
+  shows the full ancestor chain (e.g. `Root / National Delivery / 2026 / 05`);
+  edit page shows the path with the file name highlighted, with each
+  ancestor deep-linking to `dam/assets?directory_id={id}`. Built from the
+  tree's in-memory state — no extra HTTP call.
+
+- **Sidebar padding on the asset edit page** — Tags, Details, and Directory
+  Path accordions sit inside `p-4` on the right sidebar card.
+
+- **Unified shareable links** — Replaces the old asset-only signed
+  URL share with a unified system for assets *and* directories. New
+  `dam_shares` table stores each link with a 40-char token, owner, optional
+  expiry (1 day / 7 days / 30 days / 1 year / never), revoke flag, and view
+  and download counters. A new public viewer page at `/share/{token}` (no
+  admin auth, rate limited) shows a clean preview (image / video / audio /
+  PDF) with a Download button and file metadata. Directory shares render a
+  thumbnail gallery scoped to direct children only — visitors can preview
+  and download individual files but cannot traverse into subdirectories.
+  Expired and revoked links land on dedicated 410 pages. A new
+  **DAM → Shared Links** management page (DataGrid) lists all shares with
+  type, target, creator, status, views, downloads, and inline revoke. The
+  share modal (inline on asset edit, opened via the directory tree
+  context-menu) lists active links for the target with copy and revoke, and
+  uses Unopim's core `VMultiselect` dropdown for expiry selection.
+
+- **Asset preview image zoom** — New `v-zoomable-image` component adds
+  zoom in/out, fit, 1:1, rotate left/right, and reset to the inline image
+  preview on the asset edit page and the public share viewer. Mouse wheel
+  zooms, click-drag pans when zoomed, double-click toggles 1:1 / fit. The
+  toolbar renders as a row below the image rather than overlaying it.
+
 - **Role-based DAM directory permissions** — Admin roles can be granted
   access to specific directories via a new directory-grants tab on the role
   create and edit pages. Every DAM endpoint, the directory tree, and the
@@ -122,6 +170,12 @@
   with the selection counter instead of wrapping on narrow viewports.
 
 ### Fixed
+
+- **"Directory no longer accessible" flash on first load and back navigation** —
+  Reveal requests that arrived before the tree finished loading `formattedItems`
+  fired a spurious not-found flash. The tree now queues such requests until the
+  AJAX resolves, and deep-link / breadcrumb reveals pass `silent: true` so they
+  never flash. The explicit search path keeps its original behaviour.
 
 - Asset picker thumbnails
   Picker thumbnails now always go through the central thumbnail route, so

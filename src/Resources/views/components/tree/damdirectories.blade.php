@@ -718,6 +718,17 @@
                         </div>
                     @endif
 
+                    @if (bouncer()->hasPermission('dam.directory.share'))
+                        <div
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300"
+                            @click="shareDirectory"
+                            v-if="requestType == 'directory' && canAccessSelected()"
+                        >
+                            <i class="icon-dam-link"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.share')</span>
+                        </div>
+                    @endif
+
                     @if (bouncer()->hasPermission('dam.asset.download'))
                     <div
                         class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
@@ -999,7 +1010,19 @@
                 this.gridBusy = !! busy;
             });
 
-            this.$emitter.on('dam:reveal-directory', ({ id }) => this.revealDirectory(id));
+            this.$emitter.on('dam:reveal-directory', ({ id, silent = false } = {}) => {
+                // The tree's directories load asynchronously. If a reveal
+                // request arrives before `formattedItems` is populated (e.g.
+                // a deep link from the asset-edit breadcrumb, or a router
+                // back-nav), stash it and fire it once the tree is ready —
+                // otherwise `findPathToDirectory` returns null and a spurious
+                // "Directory no longer accessible" flash fires.
+                if (! this.formattedItems || ! this.formattedItems[0]) {
+                    this._pendingReveal = { id, silent };
+                    return;
+                }
+                this.revealDirectory(id, silent);
+            });
 
             this.loadDirectories();
         },
@@ -1115,13 +1138,17 @@
 
             // Expand all ancestors of the target dir, scroll the target row into
             // view, and fire setFilters() so the grid loads its assets.
-            async revealDirectory(id) {
+            // `silent=true` suppresses the not-found flash — used for non-user
+            // initiated reveals (deep link from edit page, breadcrumb click).
+            async revealDirectory(id, silent = false) {
                 const path = this.findPathToDirectory(id);
                 if (! path) {
-                    this.$emitter.emit('add-flash', {
-                        type: 'error',
-                        message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
-                    });
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
                     return;
                 }
 
@@ -1158,6 +1185,7 @@
                 let value = [this.selectedItem.id];
 
                 this.$emitter.emit('current-directory', this.parentItem);
+                this.emitBreadcrumb(this.parentItem);
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:filter', {
                     column: {
@@ -1179,7 +1207,22 @@
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:refresh');
                 this.$emitter.emit('current-directory', this.selectedItem);
+                this.emitBreadcrumb(this.selectedItem);
                 this.closeContextMenu();
+            },
+
+            // Build and broadcast the ancestor chain of a selected directory so
+            // the listing-page header can render a full breadcrumb. Uses the
+            // already-loaded tree data — no extra HTTP call.
+            emitBreadcrumb(item) {
+                if (! item) {
+                    this.$emitter.emit('current-directory-breadcrumb', []);
+                    return;
+                }
+
+                const path = this.findPathToDirectory(item.id);
+                const crumbs = (path || [item]).map(n => ({ id: n.id, name: n.name }));
+                this.$emitter.emit('current-directory-breadcrumb', crumbs);
             },
 
             findAllDirectoryIds(selectedItem) {
@@ -1363,6 +1406,15 @@
                 }
 
                 window.open(downloadLink, '_self');
+            },
+
+            shareDirectory() {
+                if (!this.selectedItem || !this.selectedItem.id) return;
+                this.$emitter.emit('open-share-modal', {
+                    targetType: 'directory',
+                    targetId: this.selectedItem.id,
+                });
+                this.closeContextMenu();
             },
 
             copyDirectory() {
@@ -1660,6 +1712,14 @@
                                 if (this.formattedItems && this.formattedItems[0]) {
                                     this.loadRootAssets();
                                 }
+
+                                // Drain any reveal request that arrived while
+                                // the tree was still fetching its directories.
+                                if (this._pendingReveal) {
+                                    const { id, silent } = this._pendingReveal;
+                                    this._pendingReveal = null;
+                                    this.revealDirectory(id, silent);
+                                }
                             });
                         })
                         .catch((error) => {
@@ -1715,6 +1775,7 @@
                 }
 
                 this.$emitter.emit('current-directory', this.selectedItem);
+                this.emitBreadcrumb(this.selectedItem);
             },
 
             getDatagrids() {

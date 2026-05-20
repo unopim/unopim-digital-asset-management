@@ -6,6 +6,7 @@ use Webkul\DAM\Http\Controllers\Asset\AssetController;
 use Webkul\DAM\Http\Controllers\Asset\CommentController;
 use Webkul\DAM\Http\Controllers\Asset\LinkedResourcesController;
 use Webkul\DAM\Http\Controllers\Asset\PropertyController;
+use Webkul\DAM\Http\Controllers\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\Asset\TagController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
 use Webkul\DAM\Http\Controllers\DAMController;
@@ -42,6 +43,7 @@ Route::group([
             Route::post('/moved', 'moved')->name('admin.dam.assets.moved');
 
             Route::get('metadata/{id}', 'getMetadataById')->name('admin.dam.assets.metadata')->where('id', '[0-9]+');
+
         });
 
         Route::controller(TagController::class)->prefix('')->group(function () {
@@ -91,6 +93,16 @@ Route::group([
         Route::get('/thumbnail', 'thumbnail')->name('admin.dam.file.thumbnail');
         Route::get('/preview/', 'preview')->name('admin.dam.file.preview');
         Route::get('/cover-art/{assetId}', 'coverArt')->name('admin.dam.file.cover-art');
+    });
+
+    Route::controller(ShareController::class)->prefix('shares')->group(function () {
+        Route::get('', 'index')->name('admin.dam.shares.index');
+        Route::post('', 'store')->name('admin.dam.shares.store');
+        Route::delete('{id}', 'destroy')->name('admin.dam.shares.destroy')->where('id', '[0-9]+');
+        Route::get('active/{type}/{targetId}', 'activeForTarget')
+            ->name('admin.dam.shares.active_for_target')
+            ->where('type', 'asset|directory')
+            ->where('targetId', '[0-9]+');
     });
 
     Route::controller(DirectoryController::class)->prefix('directory')->group(function () {

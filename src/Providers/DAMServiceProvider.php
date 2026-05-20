@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
+use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
@@ -45,6 +46,8 @@ class DAMServiceProvider extends ServiceProvider
 
         Route::middleware('web')->group(__DIR__.'/../Routes/web.php');
 
+        Route::group([], __DIR__.'/../Routes/share-public.php');
+
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'dam');
@@ -56,6 +59,7 @@ class DAMServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 DamInstaller::class,
+                BackfillThumbnails::class,
             ]);
         }
 

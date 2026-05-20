@@ -49,7 +49,6 @@
     <div class="flex flex-col items-center gap-2 w-full">
         @include('dam::asset.preview-modal.card')
         @include('dam::asset.preview-modal.info-modal')
-        @include('dam::asset.preview-modal.viewer-modal')
         @include('dam::asset.preview-modal.editor-modal')
     </div>
 </script>
@@ -116,7 +115,20 @@
             handleEscape(e) {
                 if (e.key === 'Escape' && this.isInfoOpen) { this.isInfoOpen = false; return; }
                 if (e.key === 'Escape' && this.isEditOpen) { this.isEditOpen = false; this.editTool = null; this.editPrompt = ''; return; }
-                if (!this.isOpen) return;
+
+                // Skip keyboard shortcuts when the user is typing into an input,
+                // textarea, contenteditable region, or the like — we don't want
+                // to hijack their input.
+                const target = e.target;
+                const tag = target && target.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) {
+                    return;
+                }
+
+                // Inline preview: media controls work whenever a player is on
+                // the page. The legacy fullscreen modal still uses isOpen for
+                // Escape close, but media shortcuts no longer require it.
+                if (!this.isOpen && !this.$refs.videoEl && !this.$refs.audioEl) return;
                 const isVideoKey = this.$refs.videoEl && [' ', 'f', 'F', 'm', 'M', 'l', 'L', '+', '=', '-', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key);
                 switch (e.key) {
                     case 'Escape': this.closePreview(); break;
@@ -234,8 +246,14 @@
                 };
 
                 this.$nextTick(() => {
-                    if (this.$refs.videoEl) this.$refs.videoEl.load();
-                    if (this.$refs.audioEl) this.$refs.audioEl.load();
+                    if (this.$refs.videoEl) {
+                        this.videoInitEl();
+                        this.$refs.videoEl.load();
+                    }
+                    if (this.$refs.audioEl) {
+                        this.audioInitEl();
+                        this.$refs.audioEl.load();
+                    }
                 });
             },
 
@@ -259,6 +277,18 @@
             window.addEventListener('keydown', this.handleEscape);
             this.imgMounted();
             this.videoMounted();
+
+            // Inline preview on the edit page replaces the old eye-modal flow.
+            // Reset/init the media-element refs once at mount so the player is
+            // ready as soon as Vue renders the inline DOM.
+            this.imgResetState();
+            this.videoResetState();
+            this.audioResetState();
+            this.$nextTick(() => {
+                this.videoInitEl();
+                this.audioInitEl();
+            });
+
             this._onAssetChange = (data) => this.onDamAssetChanged(data);
             this.$emitter.on('dam-asset-changed', this._onAssetChange);
         },

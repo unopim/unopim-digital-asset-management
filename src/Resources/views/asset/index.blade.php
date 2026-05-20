@@ -71,6 +71,21 @@
                     return {}
                 },
 
+                mounted() {
+                    // Open the tree at the requested directory if landed here
+                    // from a breadcrumb link on the asset edit page. Fired
+                    // immediately — the tree component queues the request if
+                    // its directories haven't finished loading yet, and the
+                    // silent flag suppresses a flash if the directory turns
+                    // out to be missing (e.g. it was deleted while we were
+                    // away on the edit page).
+                    const params = new URLSearchParams(window.location.search);
+                    const dirId = params.get('directory_id');
+                    if (dirId) {
+                        this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
+                    }
+                },
+
                 methods: {
 
                 }
@@ -85,18 +100,7 @@
         >
             <div>
                 <div class="flex justify-between items-center w-full">
-                    <p
-                        class="text-base text-gray-600 dark:text-gray-300 font-bold"
-                        v-if="currentDirectory"
-                    >
-                        @{{currentDirectory.name}}
-                    </p>
-                    <p
-                        class="text-base text-gray-600 dark:text-gray-300 font-bold"
-                        v-else
-                    >
-                        @lang('dam::app.admin.dam.index.root')
-                    </p>
+                    <v-dam-breadcrumb></v-dam-breadcrumb>
                     @if (bouncer()->hasPermission('dam.asset.upload') && bouncer()->hasPermission('dam.directory.index'))
                         <div class="flex items-center gap-2" v-if="canUploadHere">
                             <input type="file"
@@ -318,4 +322,61 @@
         })
     </script>
     @endPushOnce
+
+    {{-- Directory breadcrumb shown at the top of the asset grid --}}
+    @pushOnce('scripts')
+        <script type="text/x-template" id="v-dam-breadcrumb-template">
+            <nav class="flex items-center gap-1 flex-wrap text-sm" aria-label="Directory breadcrumb">
+                <template v-for="(crumb, i) in crumbs" :key="crumb.id">
+                    <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
+                    <button
+                        type="button"
+                        class="px-1 py-0.5 rounded transition-colors"
+                        :class="i === crumbs.length - 1
+                            ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
+                        :disabled="i === crumbs.length - 1"
+                        @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
+                    >@{{ crumb.name }}</button>
+                </template>
+                <span v-if="!crumbs.length" class="text-base text-gray-600 dark:text-gray-300 font-bold">@lang('dam::app.admin.dam.index.root')</span>
+            </nav>
+        </script>
+
+        <script type="module">
+            app.component('v-dam-breadcrumb', {
+                template: '#v-dam-breadcrumb-template',
+                data() {
+                    return { crumbs: [] };
+                },
+                mounted() {
+                    this._onBreadcrumb = (crumbs) => { this.crumbs = Array.isArray(crumbs) ? crumbs : []; };
+                    this.$emitter.on('current-directory-breadcrumb', this._onBreadcrumb);
+                },
+                beforeUnmount() {
+                    if (this._onBreadcrumb) this.$emitter.off('current-directory-breadcrumb', this._onBreadcrumb);
+                },
+                methods: {
+                    navigateTo(crumb) {
+                        // Crumbs are clickable — reveal the directory in the tree,
+                        // which triggers setFilters() and reloads the grid.
+                        // Silent: the crumb was built from the current tree
+                        // state, so a "not found" here is a transient race
+                        // (mid-refresh / deleted-elsewhere), not a real error.
+                        this.$emitter.emit('dam:reveal-directory', { id: crumb.id, silent: true });
+                    },
+                },
+            });
+        </script>
+    @endPushOnce
+
+    {{-- Standalone preview modal launched from the grid's eye icon --}}
+    @include('dam::asset.grid-preview-modal')
+
+    {{-- Share-link modal singleton; opened via the `open-share-modal` emitter event --}}
+    @pushOnce('scripts')
+        @include('dam::share.components.share-link-modal')
+    @endPushOnce
+
+    <v-share-link-modal></v-share-link-modal>
 </x-admin::layouts>

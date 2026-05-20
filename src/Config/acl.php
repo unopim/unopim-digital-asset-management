@@ -66,6 +66,11 @@ return [
         'name'  => 'dam::app.admin.acl.move',
         'route' => 'admin.dam.assets.moved',
         'sort'  => 10,
+    ], [
+        'key'   => 'dam.asset.share',
+        'name'  => 'dam::app.admin.acl.share',
+        'route' => 'admin.dam.shares.store',
+        'sort'  => 11,
     ],
 
     // @TODO: Tag ACL implements the future
@@ -187,9 +192,34 @@ return [
         'route' => 'admin.dam.directory.moved',
         'sort'  => 6,
     ], [
+        'key'   => 'dam.directory.share',
+        'name'  => 'dam::app.admin.acl.share',
+        'route' => 'admin.dam.shares.store',
+        'sort'  => 7,
+    ], [
         'key'   => 'dam.asset_assign',
         'name'  => 'dam::app.admin.acl.asset-assign',
         'route' => 'admin.dam.asset_picker.get_assets',
         'sort'  => 3,
+    ], [
+        'key'   => 'dam.assets',
+        'name'  => 'dam::app.admin.acl.assets',
+        'route' => 'admin.dam.index',
+        'sort'  => 4,
+    ], [
+        'key'   => 'dam.shares',
+        'name'  => 'dam::app.admin.acl.shares',
+        'route' => 'admin.dam.shares.index',
+        'sort'  => 5,
+    ], [
+        'key'   => 'dam.shares.index',
+        'name'  => 'dam::app.admin.acl.view',
+        'route' => 'admin.dam.shares.index',
+        'sort'  => 1,
+    ], [
+        'key'   => 'dam.shares.revoke',
+        'name'  => 'dam::app.admin.acl.revoke',
+        'route' => 'admin.dam.shares.destroy',
+        'sort'  => 2,
     ],
 ];

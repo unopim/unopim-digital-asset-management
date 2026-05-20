@@ -13,6 +13,8 @@ use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\ApiDataSource\AssetDataSource;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Jobs\GeneratePdfThumbnail;
+use Webkul\DAM\Jobs\GenerateVideoThumbnail;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
@@ -235,6 +237,13 @@ class AssetController extends Controller
                 ]);
 
                 $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
+
+                // Real Cloudinary-style thumbnail: queued so the response stays fast.
+                if ($asset->file_type === 'video') {
+                    GenerateVideoThumbnail::dispatch($asset->id)->afterCommit();
+                } elseif (strtolower((string) $asset->extension) === 'pdf') {
+                    GeneratePdfThumbnail::dispatch($asset->id)->afterCommit();
+                }
 
                 $assetIds[] = $asset->id;
                 $uploadFiles[] = $asset;
