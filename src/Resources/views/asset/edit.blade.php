@@ -11,6 +11,10 @@
         {{ ucfirst($asset->file_name) }}
     </x-slot>
 
+    <x-slot:fileIcon>
+        <v-dam-file-type-icon initial-type="{{ $asset->file_type }}"></v-dam-file-type-icon>
+    </x-slot:fileIcon>
+
     <x-slot:button-one>
         <v-custom-download>
         </v-custom-download>
@@ -50,28 +54,31 @@
 
         if (bouncer()->hasPermission('dam.asset.property')) {
             $items[] = [
-                'url' => '?properties',
-                'code' => 'properties',
-                'name' => 'dam::app.admin.dam.asset.edit.tab.properties',
-                'icon' => 'icon-dam-properties',
+                'url'   => '?properties',
+                'code'  => 'properties',
+                'name'  => 'dam::app.admin.dam.asset.edit.tab.properties',
+                'icon'  => 'icon-dam-properties',
+                'badge' => $asset->properties()->count(),
             ];
         }
 
         if (bouncer()->hasPermission('dam.asset.comment')) {
             $items[] = [
-                'url' => '?comments',
-                'code' => 'comments',
-                'name' => 'dam::app.admin.dam.asset.edit.tab.comments',
-                'icon' => 'icon-dam-notes',
+                'url'   => '?comments',
+                'code'  => 'comments',
+                'name'  => 'dam::app.admin.dam.asset.edit.tab.comments',
+                'icon'  => 'icon-dam-notes',
+                'badge' => \Webkul\DAM\Models\AssetComments::where('dam_asset_id', $asset->id)->count(),
             ];
         }
 
         if (bouncer()->hasPermission('dam.asset.linked_resources')) {
             $items[] = [
-                'url' => '?linked-resources',
-                'code' => 'linked-resources',
-                'name' => 'dam::app.admin.dam.asset.edit.tab.linked_resources',
-                'icon' => 'icon-dam-link',
+                'url'   => '?linked-resources',
+                'code'  => 'linked-resources',
+                'name'  => 'dam::app.admin.dam.asset.edit.tab.linked_resources',
+                'icon'  => 'icon-dam-link',
+                'badge' => $asset->resources()->count(),
             ];
         }
 
@@ -201,9 +208,8 @@
 
                         <!-- Right sub-component -->
                         <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow">
-                            <!-- Tags -->
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
-                            
+
                             <x-admin::accordion>
                                 <x-slot:header>
                                     <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
@@ -212,37 +218,32 @@
                                 </x-slot>
 
                                 <x-slot:content class="gap-4">
-                                    <x-admin::form.control-group>
+                                    <div :key="tagComponentKey">
+                                        <x-admin::form.control-group>
 
-                                        @php
-                                            $options = json_encode($tags->toArray());
+                                            @php
+                                                $options = json_encode($tags->toArray());
+                                            @endphp
 
-                                            $selectedOptions =  old('tags') ?? json_encode($asset->tags->pluck('id')->toArray());
+                                            <x-admin::form.control-group.control
+                                                type="tagging"
+                                                id="tags"
+                                                name="tags"
+                                                :options="$options"
+                                                v-model="tagValues"
+                                                :label="trans('dam::app.admin.dam.asset.edit.tags')"
+                                                :placeholder="trans('dam::app.admin.dam.asset.edit.select-tags')"
+                                                track-by="id"
+                                                label-by="name"
+                                                @add-option="onTaggingChange($event)"
+                                                @select-option="onTaggingChange($event)"
+                                                @remove-option="onTaggingRemove($event)"
+                                            />
 
-                                            $tagsVueValue = 'JSON.stringify(displayTags.map(t => t.id ?? t))';
-                                            $tagsVueKey   = 'tagComponentKey';
-                                        @endphp
+                                            <x-admin::form.control-group.error control-name="tags" />
 
-                                        <x-admin::form.control-group.control
-                                            type="tagging"
-                                            id="tags"
-                                            name="tags"
-                                            :options="$options"
-                                            :value="$tagsVueValue"
-                                            :key="$tagsVueKey"
-                                            :label="trans('dam::app.admin.dam.asset.edit.tags')"
-                                            :placeholder="trans('dam::app.admin.dam.asset.edit.select-tags')"
-                                            track-by="id"
-                                            label-by="name"
-                                            @add-option="onTaggingChange($event)"
-                                            @select-option="onTaggingChange($event)"
-                                            @remove-option="onTaggingRemove($event)"
-                                        />
-                                        
-                                        <x-admin::form.control-group.error control-name="tags" />
-
-                                    </x-admin::form.control-group>
-                                    
+                                        </x-admin::form.control-group>
+                                    </div>
                                 </x-slot>
                             </x-admin::accordion>
 
@@ -298,6 +299,26 @@
                             </x-admin::accordion>
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.after', ['asset' => $asset]) !!}
+
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.before', ['asset' => $asset]) !!}
+
+                            <x-admin::accordion>
+                                <x-slot:header>
+                                    <p class="p-2.5 text-gray-800 dark:text-white text-base font-semibold">
+                                        @lang('dam::app.admin.dam.asset.edit.directory-path')
+                                    </p>
+                                </x-slot>
+                                <x-slot:content>
+                                    @php
+                                        $pathParts = $directoryAncestors->pluck('name')->toArray();
+                                        $pathParts[] = $asset->file_name;
+                                        $fullPath = implode('/', $pathParts);
+                                    @endphp
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">{{ $fullPath }}</p>
+                                </x-slot>
+                            </x-admin::accordion>
+
+                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.after', ['asset' => $asset]) !!}
                         </div>
                     </div>
                 </div>
@@ -327,6 +348,7 @@
                         displayUpdatedAt: @js($asset->updated_at?->format('d M Y, H:i')),
                         displayAssetPath: @js($asset->getPathWithOutFileSystemRoot() ?? ''),
                         displayTags:      @json($asset->tags ?? []),
+                        tagValues:        @js(json_encode($asset->tags->pluck('id')->values()->all())),
                         tagComponentKey:  0,
                     };
                 },
@@ -355,6 +377,7 @@
                             this.displayUpdatedAt = data.updatedAtFormatted ?? '';
                             this.displayAssetPath = data.assetPath ?? '';
                             this.displayTags      = data.tags ?? [];
+                            this.tagValues        = JSON.stringify((data.tags ?? []).map(t => t.id ?? t));
                             this.tagComponentKey  += 1;
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
@@ -423,6 +446,118 @@
 
         <!-- **** Asset Preview Modal **** -->
         @include('dam::asset.preview-modal')
+
+        <!-- **** Tab Badge **** -->
+        <script type="module">
+            app.component('v-dam-tab-badge', {
+                props: {
+                    tabCode:      { type: String, required: true },
+                    initialCount: { type: Number, default: 0 },
+                },
+                template: `<span v-if="count > 0" class="text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300 rounded-full px-1.5 min-w-[1.25rem] text-center leading-5">@{{ count }}</span>`,
+                data() {
+                    return { count: this.initialCount };
+                },
+                mounted() {
+                    this._onAssetChange = (data) => {
+                        if (data.badgeCounts && this.tabCode in data.badgeCounts) {
+                            this.count = data.badgeCounts[this.tabCode];
+                        }
+                    };
+                    this._onBadgeDelta = (data) => {
+                        if (data.tab === this.tabCode) {
+                            this.count = Math.max(0, this.count + data.delta);
+                        }
+                    };
+                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                    this.$emitter.on('dam-badge-delta', this._onBadgeDelta);
+                },
+                beforeUnmount() {
+                    if (this._onAssetChange) this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                    if (this._onBadgeDelta)  this.$emitter.off('dam-badge-delta', this._onBadgeDelta);
+                },
+            });
+        </script>
+
+        <!-- **** Badge Live Updates **** -->
+        <script type="module">
+            (() => {
+                const assetId = {{ $asset->id }};
+                const editPath = `/edit/${assetId}/`;
+
+                window.axios.interceptors.response.use(function(response) {
+                    const method = (response.config.method || '').toLowerCase();
+                    const url    = response.config.url || '';
+
+                    if (!['post', 'delete'].includes(method) || !url.includes(editPath)) {
+                        return response;
+                    }
+
+                    const emitter = app.config.globalProperties.$emitter;
+
+                    if (url.includes('/comment/create') && method === 'post') {
+                        emitter.emit('dam-badge-delta', { tab: 'comments', delta: +1 });
+                    } else if (url.includes('/comment/delete') && method === 'delete') {
+                        emitter.emit('dam-badge-delta', { tab: 'comments', delta: -1 });
+                    } else if (url.includes('/properties/create') && method === 'post') {
+                        emitter.emit('dam-badge-delta', { tab: 'properties', delta: +1 });
+                    } else if (url.includes('/properties/destroy/') && method === 'delete') {
+                        emitter.emit('dam-badge-delta', { tab: 'properties', delta: -1 });
+                    } else if (url.includes('/properties/mass-delete') && method === 'post') {
+                        let count = 1;
+                        try {
+                            const body = response.config.data;
+                            if (body instanceof FormData) {
+                                const vals = [...body.getAll('indices[]'), ...body.getAll('indices')];
+                                if (vals.length) count = vals.length;
+                            }
+                        } catch (_) {}
+                        emitter.emit('dam-badge-delta', { tab: 'properties', delta: -count });
+                    }
+
+                    return response;
+                });
+            })();
+        </script>
+
+        <!-- **** File Type Icon **** -->
+        <script type="module">
+            app.component('v-dam-file-type-icon', {
+                props: {
+                    initialType: { type: String, default: '' },
+                },
+                template: `
+                    <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900 flex items-center justify-center shrink-0">
+                        <span :class="['text-lg text-violet-600 dark:text-violet-300', iconClass]"></span>
+                    </div>
+                `,
+                data() {
+                    return { fileType: this.initialType };
+                },
+                computed: {
+                    iconClass() {
+                        const map = {
+                            image:    'icon-dam-image',
+                            video:    'icon-dam-video',
+                            audio:    'icon-dam-audio',
+                            document: 'icon-dam-doc',
+                        };
+                        return map[this.fileType] || 'icon-dam-doc';
+                    },
+                },
+                mounted() {
+                    this._onAssetChange = (data) => {
+                        if (data.asset?.file_type) this.fileType = data.asset.file_type;
+                    };
+                    this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                },
+                beforeUnmount() {
+                    if (this._onAssetChange) {
+                        this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                    }
+                },
+            });
+        </script>
 
         <!-- **** Asset Counter **** -->
         <script type="module">
