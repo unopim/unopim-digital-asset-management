@@ -66,9 +66,11 @@ class TagController extends Controller
             }
 
             $asset->tags()->attach($assetTag->id);
+            $savedTag = $assetTag;
         } else {
             $newTag = $this->assetTagRepository->create(['name' => $newTag]);
             $asset->tags()->attach($newTag->id);
+            $savedTag = $newTag;
         }
 
         Event::dispatch('core.model.proxy.sync.tag', [
@@ -80,6 +82,7 @@ class TagController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
+            'tag'     => ['id' => $savedTag->id, 'name' => $savedTag->name],
             'message' => trans('Tag attached successfully'),
         ], 201);
     }
