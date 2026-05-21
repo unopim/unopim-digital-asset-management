@@ -1,7 +1,10 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetProperty;
+
+uses(DatabaseTransactions::class);
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -86,5 +89,6 @@ it('should delete all the properties at once', function () {
         $this->assertDatabaseMissing('dam_asset_properties', ['id' => $id]);
     }
 
-    $this->assertDatabaseCount('dam_asset_properties', 0);
+    // Scope to this asset only — demo-data fixtures may leave other properties around.
+    expect(AssetProperty::where('dam_asset_id', $assetId)->count())->toBe(0);
 });

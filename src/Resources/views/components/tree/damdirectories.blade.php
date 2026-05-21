@@ -981,20 +981,10 @@
                 copyingDirectoryId: null,
                 gridBusy: false,
                 moveStatusLabel: '',
-                localAccessibleIds: [],
             };
         },
 
         mounted() {
-            this.localAccessibleIds = [...this.accessibleIds];
-
-            this.$emitter.on('dam:directory-accessible', (id) => {
-                const numId = Number(id);
-                if (! this.localAccessibleIds.map(Number).includes(numId)) {
-                    this.localAccessibleIds.push(numId);
-                }
-            });
-
             this.$emitter.on('uploaded-assets', (data) => {
                 const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
                 if (uploadedCount > 0 && this.selectedItem) {
@@ -1074,7 +1064,7 @@
                 if (this.aclBypass) return true;
                 if (! this.selectedItem || this.selectedItem.id == null) return false;
 
-                return this.localAccessibleIds.map(Number).includes(Number(this.selectedItem.id));
+                return this.accessibleIds.map(Number).includes(Number(this.selectedItem.id));
             },
 
             focusNameInput() {
@@ -1274,9 +1264,6 @@
 
                             this.selectedItem.children.push(response.data.data);
 
-                            // Notify upload component so it can show the upload
-                            // button immediately without a page reload.
-                            this.$emitter.emit('dam:directory-accessible', response.data.data.id);
                         } else {
                             this.selectedItem = response.data.data;
                         }
