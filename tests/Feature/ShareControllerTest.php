@@ -97,10 +97,9 @@ it('returns 404 when revoking a non-existent share', function () {
         ->assertNotFound();
 });
 
-it('lists active shares for a target', function () {
+it('returns the share for a target (one share per target)', function () {
     $asset = Asset::factory()->create();
-    Share::factory()->forAsset($asset->id)->create();
-    Share::factory()->forAsset($asset->id)->revoked()->create();
+    $share = Share::factory()->forAsset($asset->id)->create();
 
     $response = $this->get(route('admin.dam.shares.active_for_target', [
         'type'     => Share::TYPE_ASSET,
@@ -108,5 +107,17 @@ it('lists active shares for a target', function () {
     ]));
 
     $response->assertOk()->assertJsonPath('success', true);
-    expect($response->json('shares'))->toHaveCount(1);
+    expect($response->json('share.id'))->toBe($share->id);
+});
+
+it('returns null share when no share exists for target', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->get(route('admin.dam.shares.active_for_target', [
+        'type'     => Share::TYPE_ASSET,
+        'targetId' => $asset->id,
+    ]));
+
+    $response->assertOk()->assertJsonPath('success', true);
+    expect($response->json('share'))->toBeNull();
 });
