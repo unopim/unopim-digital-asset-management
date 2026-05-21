@@ -98,7 +98,6 @@
                             {{-- Single title row: back · breadcrumb · icon · filename · counter --}}
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="{{ route('admin.dam.index') }}" class="transparent-button">
-                                    <span class="text-base leading-none">&#8592;</span>
                                     @lang('dam::app.admin.dam.asset.edit.back')
                                 </a>
 
