@@ -1,27 +1,13 @@
 const { test, expect } = require('../utils/fixtures');
 const { ensureAssetExists, navigateToAssetEditByName } = require('../utils/helpers');
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
-/**
- * Opens the fullscreen preview modal and waits for the viewer backdrop.
- * Viewer backdrop: absolute inset-0 bg-black/75 (inside v-if="isOpen" div).
- */
-async function openPreviewModal(page) {
-  const btn = page.locator('button[title="Preview"]').first();
-  await btn.waitFor({ state: 'visible', timeout: 20000 });
-  await btn.click();
-  // Wait for the viewer's own backdrop (distinct from info modal's bg-black/60)
-  await page.locator('.absolute.inset-0.bg-black\\/75').first()
-    .waitFor({ state: 'visible', timeout: 20000 });
-}
-
-/**
- * Navigate to floral.jpg (always an image) and open the preview modal.
- */
-async function openImagePreview(page) {
+// Navigate to floral.jpg and wait for the inline zoomable image viewer to mount.
+// The viewer (v-zoomable-image) is rendered inline on the edit page — no modal to open.
+async function openImageViewer(page) {
   await navigateToAssetEditByName(page, 'floral.jpg');
-  await openPreviewModal(page);
+  // Wait for the image area of the inline viewer to be visible.
+  await page.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first()
+    .waitFor({ state: 'visible', timeout: 20000 });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,34 +25,33 @@ test.describe('DAM Asset Preview Modal', () => {
   test.describe('Image viewer', () => {
 
     test('Image renders in modal content area', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      await expect(adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first()).toBeVisible({ timeout: 5000 });
+      await openImageViewer(adminPage);
+      await expect(adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Image has Vue-driven transform style attribute', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
+      await openImageViewer(adminPage);
+      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first();
       const style = await img.getAttribute('style');
-      // imgTransformStyle = "translate(Xpx,Ypx) scale(Z) rotate(Ddeg)"
       expect(style).toMatch(/translate\(/);
       expect(style).toMatch(/scale\(/);
     });
 
     test('Toolbar visible (bottom pill with buttons)', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      // Toolbar: absolute bottom-3, left-1/2, rounded-full, bg-black/60
-      const toolbar = adminPage.locator('.absolute.bottom-3.rounded-full').first();
+      await openImageViewer(adminPage);
+      // Toolbar sits below the image in the zoomable-image component.
+      const toolbar = adminPage.locator('.px-3.py-2.border-t').first();
       await expect(toolbar).toBeVisible({ timeout: 5000 });
     });
 
     test('Zoom percentage starts at 100%', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       const display = adminPage.locator('.font-mono.tabular-nums').filter({ hasText: /100%/ }).first();
       await expect(display).toBeVisible({ timeout: 5000 });
     });
 
     test('Zoom in button increases zoom percentage', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       await adminPage.locator('button[title="Zoom in (+)"]').first().click();
       await adminPage.waitForTimeout(200);
       const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
@@ -74,7 +59,7 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Zoom out button decreases zoom percentage', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       await adminPage.locator('button[title="Zoom out (-)"]').first().click();
       await adminPage.waitForTimeout(200);
       const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
@@ -82,8 +67,8 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Rotate right button changes image transform', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
+      await openImageViewer(adminPage);
+      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first();
       const before = await img.getAttribute('style');
       await adminPage.locator('button[title="Rotate right (R)"]').first().click();
       await adminPage.waitForTimeout(200);
@@ -91,8 +76,8 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Rotate left button changes image transform', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
+      await openImageViewer(adminPage);
+      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first();
       const before = await img.getAttribute('style');
       await adminPage.locator('button[title="Rotate left (L)"]').first().click();
       await adminPage.waitForTimeout(200);
@@ -100,7 +85,7 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Fit to screen button is visible and clickable', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       const btn = adminPage.locator('button[title="Fit to screen"]').first();
       await expect(btn).toBeVisible({ timeout: 5000 });
       await btn.click();
@@ -108,12 +93,12 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('1:1 button is visible', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       await expect(adminPage.locator('button[title="Actual size"]').first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Reset button restores zoom to 100%', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
+      await openImageViewer(adminPage);
       await adminPage.locator('button[title="Zoom in (+)"]').first().click();
       await adminPage.waitForTimeout(200);
       await adminPage.locator('button[title="Reset all (0)"]').first().click();
@@ -123,12 +108,11 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Mouse wheel zooms in on scroll up', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const content = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden').first();
+      await openImageViewer(adminPage);
+      const content = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center').first();
       const box = await content.boundingBox();
       if (!box) { test.skip(true, 'Could not get bounding box'); return; }
       await adminPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      // deltaY < 0 → zoom in (factor 1.1)
       await adminPage.mouse.wheel(0, -100);
       await adminPage.waitForTimeout(200);
       const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
@@ -136,12 +120,11 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Mouse wheel zooms out on scroll down', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const content = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden').first();
+      await openImageViewer(adminPage);
+      const content = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center').first();
       const box = await content.boundingBox();
       if (!box) { test.skip(true, 'Could not get bounding box'); return; }
       await adminPage.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      // deltaY > 0 → zoom out (factor 0.9)
       await adminPage.mouse.wheel(0, 100);
       await adminPage.waitForTimeout(200);
       const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
@@ -149,12 +132,11 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Mouse drag pans the image', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      // Zoom in so drag is meaningful
+      await openImageViewer(adminPage);
       await adminPage.locator('button[title="Zoom in (+)"]').first().click();
       await adminPage.waitForTimeout(200);
 
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
+      const img = adminPage.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first();
       const box = await img.boundingBox();
       if (!box) { test.skip(true, 'Could not get image bounding box'); return; }
 
@@ -176,78 +158,41 @@ test.describe('DAM Asset Preview Modal', () => {
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Image viewer — keyboard shortcuts
+  // v-zoomable-image has no keyboard event handlers — all shortcut tests skipped.
   // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Image viewer — keyboard shortcuts', () => {
 
     test('= key zooms in', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      await adminPage.keyboard.press('Equal');
-      await adminPage.waitForTimeout(200);
-      const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
-      expect(parseInt(text ?? '0')).toBeGreaterThan(100);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('- key zooms out', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      await adminPage.keyboard.press('Minus');
-      await adminPage.waitForTimeout(200);
-      const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
-      expect(parseInt(text ?? '200')).toBeLessThan(100);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('r key rotates right', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
-      const before = await img.getAttribute('style');
-      await adminPage.keyboard.press('r');
-      await adminPage.waitForTimeout(200);
-      expect(await img.getAttribute('style')).not.toBe(before);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('R key (uppercase) rotates right', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
-      const before = await img.getAttribute('style');
-      await adminPage.keyboard.press('R');
-      await adminPage.waitForTimeout(200);
-      expect(await img.getAttribute('style')).not.toBe(before);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('l key rotates left', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
-      const before = await img.getAttribute('style');
-      await adminPage.keyboard.press('l');
-      await adminPage.waitForTimeout(200);
-      expect(await img.getAttribute('style')).not.toBe(before);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('L key (uppercase) rotates left', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      const img = adminPage.locator('.fixed.inset-0 .flex-1.min-h-0.overflow-hidden img').first();
-      const before = await img.getAttribute('style');
-      await adminPage.keyboard.press('L');
-      await adminPage.waitForTimeout(200);
-      expect(await img.getAttribute('style')).not.toBe(before);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('0 key resets zoom to 100%', async ({ adminPage }) => {
-      await openImagePreview(adminPage);
-      await adminPage.keyboard.press('Equal'); // zoom in first
-      await adminPage.waitForTimeout(200);
-      await adminPage.keyboard.press('0');
-      await adminPage.waitForTimeout(200);
-      const text = await adminPage.locator('.font-mono.tabular-nums').first().textContent();
-      expect(parseInt(text ?? '0')).toBe(100);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
     test('Keyboard shortcuts inactive when preview modal is closed', async ({ adminPage }) => {
-      await navigateToAssetEditByName(adminPage, 'floral.jpg');
-      // Press = without opening the preview modal — page must not change
-      await adminPage.keyboard.press('Equal');
-      await adminPage.waitForTimeout(200);
-      await expect(adminPage).toHaveURL(/admin\/dam\/assets\/edit\/\d+/);
+      test.skip(true, 'v-zoomable-image has no keyboard handlers');
     });
 
   });

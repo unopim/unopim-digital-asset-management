@@ -172,7 +172,7 @@ test.describe('DAM Directory Management', () => {
     await rightClickDirectory(adminPage, dirName);
     await adminPage.getByText('Delete', { exact: true }).click({ force: true });
     await adminPage.waitForTimeout(500);
-    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ });
+    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
     await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
     await confirmBtn.click();
 
@@ -184,10 +184,10 @@ test.describe('DAM Directory Management', () => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
     await adminPage.getByText('Delete', { exact: true }).click({ force: true });
-    await adminPage.waitForTimeout(500);
-    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ });
-    if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await confirmBtn.click();
+    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
+    const modalAppeared = await confirmBtn.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+    if (modalAppeared) {
+      await confirmBtn.click({ force: true });
     }
     await expect(
       adminPage.locator('#app').getByText(/cannot be deleted|Root Directory/i).first()

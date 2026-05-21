@@ -5,6 +5,48 @@ const ROUTES = {
 };
 
 /**
+ * Close the AI Agent chat widget (ap-shell) if it is open.
+ * The widget has two open states:
+ *  1. Side-panel: .ap-panel is rendered with width > 0 (most common in tests)
+ *  2. Backdrop overlay: a fixed div with z-index >= 10001 covers the page
+ * Both states intercept pointer events on underlying page elements.
+ * Uses Playwright's real click (not synthetic JS click) so the close handler fires.
+ */
+async function closeApShell(page) {
+  try {
+    const isOpen = await page.evaluate(() => {
+      // Side-panel mode: .ap-panel is in the DOM and has non-zero width.
+      const panel = document.querySelector('.ap-panel');
+      if (panel && panel.getBoundingClientRect().width > 0) return true;
+
+      // Backdrop/overlay mode: fixed div with inset:0 and high z-index.
+      const backdrops = Array.from(document.querySelectorAll('div')).filter(el => {
+        const s = el.style;
+        return s.position === 'fixed' && s.inset === '0px' && parseInt(s.zIndex) >= 10001;
+      });
+      return backdrops.length > 0;
+    });
+    if (isOpen) {
+      // Prefer the dedicated Close button (side-panel mode); fall back to
+      // last button in .ap-shell (overlay toggle mode).
+      const closeBtn = page.locator('.ap-panel button[title="Close"]');
+      if (await closeBtn.isVisible().catch(() => false)) {
+        await closeBtn.click();
+      } else {
+        // Overlay mode: synthetic click on toggle button is sufficient.
+        await page.locator('.ap-shell').evaluate(shell => {
+          const buttons = shell.querySelectorAll('button');
+          if (buttons.length) buttons[buttons.length - 1].click();
+        });
+      }
+      await page.waitForTimeout(300);
+    }
+  } catch (_) {
+    // Best-effort: if anything fails, continue.
+  }
+}
+
+/**
  * Navigate directly to a DAM admin route.
  * @param {import('@playwright/test').Page} page
  * @param {keyof ROUTES} route
@@ -30,6 +72,8 @@ async function navigateTo(page, route) {
   // Sentinel: the toolbar's Search input only mounts after the Vue grid component
   // is interactive. Far cheaper than networkidle and doesn't deadlock.
   await page.getByPlaceholder('Search').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+  // Ensure the AI Agent chat widget is closed so it doesn't intercept clicks.
+  await closeApShell(page);
 }
 
 /**
@@ -42,7 +86,7 @@ async function navigateTo(page, route) {
  * inspecting the wrong asset.
  */
 async function searchInDataGrid(page, text, placeholder = 'Search') {
-  const searchInput = page.getByPlaceholder(placeholder).first();
+  const searchInput = page.getByPlaceholder(placeholder, { exact: true }).first();
   await searchInput.waitFor({ state: 'visible', timeout: 30000 });
   await searchInput.fill(text);
 
@@ -226,6 +270,7 @@ async function navigateToAssetEditByName(page, searchName) {
     .first();
   await cardWrapper.waitFor({ state: 'visible', timeout: 15000 });
   const card = cardWrapper.locator('.image-card').first();
+  await closeApShell(page);
   await card.hover({ force: true });
   await page.waitForTimeout(300);
   await card.locator('.icon-edit').first().click({ force: true });
@@ -247,4 +292,5 @@ module.exports = {
   ensureAssetExists,
   ensureAssetOfTypeExists,
   navigateToAssetEditByName,
+  closeApShell,
 };

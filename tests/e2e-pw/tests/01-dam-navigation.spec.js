@@ -24,7 +24,7 @@ test.describe('DAM Page Navigation & Rendering', () => {
 
   test('DAM page shows Upload button', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await expect(adminPage.getByText('Upload')).toBeVisible();
+    await expect(adminPage.getByText('Upload', { exact: true }).first()).toBeVisible();
   });
 
   test('DAM page shows asset grid with results', async ({ adminPage }) => {

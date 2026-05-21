@@ -1,6 +1,6 @@
 const path = require('path');
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, ensureAssetExists } = require('../utils/helpers');
+const { navigateTo, ensureAssetExists, closeApShell } = require('../utils/helpers');
 
 const ASSET_IMAGE = path.resolve(__dirname, '../assets/floral.jpg');
 
@@ -39,10 +39,11 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
     await expect(gridWrapper).toHaveClass(/pointer-events-none/);
     await expect(gridWrapper).toHaveClass(/opacity-60/);
 
+    await closeApShell(adminPage);
     const cancelBtn = adminPage.getByRole('button', { name: 'Cancel' }).first();
     await expect(cancelBtn).toBeVisible();
     await expect(cancelBtn).toBeEnabled();
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(500);
 
     await expect(gridWrapper).toHaveAttribute('aria-busy', 'false');
@@ -64,7 +65,7 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
     expect(adminPage.url()).not.toMatch(/admin\/dam\/assets\/edit\/\d+/);
 
     const cancelBtn = adminPage.getByRole('button', { name: 'Cancel' }).first();
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(500);
   });
 
@@ -78,7 +79,7 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
     const uploadLabel = adminPage.locator('label[for="file-upload"]').first();
     await expect(uploadLabel).toBeVisible();
 
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(500);
   });
 
@@ -89,7 +90,7 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
     await expect(gridWrapper).toHaveAttribute('aria-busy', 'true');
 
     const cancelBtn = adminPage.getByRole('button', { name: 'Cancel' }).first();
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(800);
 
     await expect(gridWrapper).toHaveAttribute('aria-busy', 'false');

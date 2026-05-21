@@ -82,8 +82,8 @@ test.describe('Role Edit — DAM Directory Permissions Tab', () => {
     // shared admin Vue component; clicking the visible "Custom" label opens
     // the dropdown then the "All" option commits.
     const permissionSelect = adminPage.locator('#permission_type').first();
-    await permissionSelect.click();
-    await adminPage.getByText('All', { exact: true }).first().click();
+    await permissionSelect.click({ force: true });
+    await adminPage.getByText('All', { exact: true }).first().click({ force: true });
 
     await expect(adminPage.locator('#dam-directory-permissions-tab')).toBeHidden({ timeout: 5000 });
   });

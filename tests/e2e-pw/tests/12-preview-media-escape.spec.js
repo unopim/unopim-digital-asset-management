@@ -1,6 +1,6 @@
 const path = require('path');
 const { test, expect } = require('../utils/fixtures');
-const { ensureAssetExists, ensureAssetOfTypeExists, navigateTo, searchInDataGrid } = require('../utils/helpers');
+const { ensureAssetExists, ensureAssetOfTypeExists, navigateTo, searchInDataGrid, closeApShell } = require('../utils/helpers');
 
 const ASSETS = path.resolve(__dirname, '../assets');
 
@@ -15,6 +15,7 @@ async function navigateToFirstAssetWithExt(page, ext) {
     .first();
   await cardWrapper.waitFor({ state: 'visible', timeout: 20000 });
   const card = cardWrapper.locator('.image-card').first();
+  await closeApShell(page);
   await card.hover({ force: true });
   await page.waitForTimeout(300);
   await card.locator('.icon-edit').first().click({ force: true });

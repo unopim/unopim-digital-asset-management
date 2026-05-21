@@ -1,5 +1,6 @@
+const path = require('path');
 const { test, expect } = require('../utils/fixtures');
-const { ensureAssetExists, navigateToAssetEditByName } = require('../utils/helpers');
+const { ensureAssetExists, ensureAssetOfTypeExists, navigateToAssetEditByName } = require('../utils/helpers');
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -60,7 +61,14 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
     test('Non-image asset thumbnail has opacity-60 class (placeholder)', async ({ adminPage }) => {
-      await navigateToAssetEditByName(adminPage, 'sample.mp4');
+      // Video assets (mp4) render a native video player, not a placeholder img.
+      // Use a plain-text file which renders an <img class="opacity-60"> placeholder.
+      await ensureAssetOfTypeExists(
+        adminPage,
+        path.resolve(__dirname, '../assets/sample.txt'),
+        'sample.txt'
+      );
+      await navigateToAssetEditByName(adminPage, 'sample.txt');
       const thumb = adminPage.locator('.rounded-lg.overflow-hidden img').first();
       await thumb.waitFor({ state: 'visible', timeout: 10000 });
       const hasOpacity = await thumb.evaluate(el => el.classList.contains('opacity-60'));

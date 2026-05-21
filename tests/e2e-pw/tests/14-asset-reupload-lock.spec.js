@@ -1,6 +1,6 @@
 const path = require('path');
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, ensureAssetExists } = require('../utils/helpers');
+const { navigateTo, ensureAssetExists, closeApShell } = require('../utils/helpers');
 
 async function navigateToFirstAssetEdit(page) {
   await navigateTo(page, 'dam');
@@ -9,6 +9,7 @@ async function navigateToFirstAssetEdit(page) {
 
   const firstCard = page.locator('.image-card').first();
   await firstCard.waitFor({ state: 'visible', timeout: 20000 });
+  await closeApShell(page);
   await firstCard.hover();
   await page.waitForTimeout(500);
 
@@ -65,7 +66,7 @@ test.describe('DAM Asset Edit — Re-upload locks other actions', () => {
     await expect(cancelBtn).toBeVisible();
     await expect(cancelBtn).toBeEnabled();
 
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(500);
 
     if (await renameBtn.isVisible().catch(() => false)) {
@@ -105,6 +106,6 @@ test.describe('DAM Asset Edit — Re-upload locks other actions', () => {
     const cancelBtn = adminPage.getByRole('button', { name: 'Cancel' }).first();
     await expect(cancelBtn).toBeEnabled();
 
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
   });
 });

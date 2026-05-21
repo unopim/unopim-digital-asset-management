@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid, ensureAssetExists } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid, ensureAssetExists, closeApShell } = require('../utils/helpers');
 
 /**
  * Helper: Navigate to the edit page of the first asset in the grid.
@@ -13,6 +13,7 @@ async function navigateToFirstAssetEdit(page) {
   // Hover over the first image card to reveal action icons
   const firstCard = page.locator('.image-card').first();
   await firstCard.waitFor({ state: 'visible', timeout: 20000 });
+  await closeApShell(page);
   await firstCard.hover();
   await page.waitForTimeout(500);
 
@@ -129,8 +130,8 @@ test.describe('DAM Asset Edit Page', () => {
       return;
     }
 
-    const labelSpan = adminPage.locator('v-dam-asset-label span').first();
-    // Vue mounts v-dam-asset-label after app.mount() — wait for the span to appear.
+    // Vue 3 replaces <v-dam-asset-label> with its root <span> in the DOM — no parent tag.
+    const labelSpan = adminPage.locator('span.font-bold.break-all').first();
     await labelSpan.waitFor({ state: 'visible', timeout: 30000 });
     const initialName = await labelSpan.textContent();
 
