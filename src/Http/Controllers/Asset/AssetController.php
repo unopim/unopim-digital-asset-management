@@ -131,9 +131,9 @@ class AssetController extends Controller
 
         $asset = $this->getNextAndPreviousAssets($asset, $id);
 
-        $accessibleQuery = $this->accessibleAssetQuery();
-        $assetPosition = (clone $accessibleQuery)->where('id', '<=', $id)->count();
-        $assetTotal = (clone $accessibleQuery)->count();
+        $assetModel = $this->assetRepository->model();
+        $assetPosition = $assetModel::where('id', '<=', $id)->count();
+        $assetTotal = $assetModel::count();
 
         $bytes = (int) ($asset->file_size ?? 0);
         $fileSize = $bytes >= 1048576
@@ -149,30 +149,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Returns a base Eloquent query for assets the current user may access.
-     * For restricted users this scopes to assets in their directly-granted
-     * directories; for admins / bypass roles it returns an unrestricted query.
-     */
-    protected function accessibleAssetQuery()
-    {
-        if ($this->permissionService->bypass()) {
-            return Asset::query();
-        }
-
-        $allowedIds = $this->permissionService->directlyGrantedIds();
-
-        if (empty($allowedIds)) {
-            return Asset::whereRaw('1 = 0');
-        }
-
-        return Asset::whereHas('directories', function ($q) use ($allowedIds) {
-            $q->whereIn('dam_directories.id', $allowedIds);
-        });
-    }
-
-    /**
-     * Get next and previous assets based on the current asset ID,
-     * scoped to assets the current user can access.
+     * Get next and previous assets based on the current asset ID.
      *
      * @param  Asset  $asset
      * @param  int  $id
@@ -180,12 +157,12 @@ class AssetController extends Controller
      */
     protected function getNextAndPreviousAssets($asset, $id)
     {
-        $query = $this->accessibleAssetQuery();
+        $assetModel = $this->assetRepository->model();
 
-        $nextAsset = (clone $query)->where('id', '>', $id)->orderBy('id', 'asc')->first();
+        $nextAsset = $assetModel::where('id', '>', $id)->orderBy('id', 'asc')->first();
         $asset->nextAssetId = $nextAsset ? $nextAsset->id : null;
 
-        $previousAsset = (clone $query)->where('id', '<', $id)->orderBy('id', 'desc')->first();
+        $previousAsset = $assetModel::where('id', '<', $id)->orderBy('id', 'desc')->first();
         $asset->previousAssetId = $previousAsset ? $previousAsset->id : null;
 
         return $asset;
@@ -622,18 +599,13 @@ class AssetController extends Controller
             ? number_format($bytes / 1048576, 2).' MB'
             : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
 
-        $accessibleQuery = $this->accessibleAssetQuery();
-        $nextAsset = (clone $accessibleQuery)->where('id', '>', $id)->orderBy('id', 'asc')->first();
-        $prevAsset = (clone $accessibleQuery)->where('id', '<', $id)->orderBy('id', 'desc')->first();
-        $assetPosition = (clone $accessibleQuery)->where('id', '<=', $id)->count();
-        $assetTotal = (clone $accessibleQuery)->count();
+        $assetModel = $this->assetRepository->model();
+        $nextAsset = $assetModel::where('id', '>', $id)->orderBy('id', 'asc')->first();
+        $prevAsset = $assetModel::where('id', '<', $id)->orderBy('id', 'desc')->first();
+        $assetPosition = $assetModel::where('id', '<=', $id)->count();
+        $assetTotal = $assetModel::count();
 
         $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
-
-        $directory = $asset->directories()->first();
-        $directoryAncestors = $directory
-            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
-            : collect();
 
         return response()->json([
             'success'               => true,
@@ -657,7 +629,6 @@ class AssetController extends Controller
             'assetTotal'            => $assetTotal,
             'editUrl'               => route('admin.dam.assets.edit', $id),
             'tags'                  => $tags,
-            'directoryAncestors'    => $directoryAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values(),
             'badgeCounts'           => [
                 'properties'       => $asset->properties()->count(),
                 'comments'         => AssetComments::where('dam_asset_id', $asset->id)->count(),

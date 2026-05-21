@@ -5,6 +5,9 @@ namespace Webkul\DAM\Http\Controllers\Asset;
 use Illuminate\Http\JsonResponse;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Share\ShareDataGrid;
+use Webkul\DAM\Exceptions\ShareAlreadyActiveException;
+use Webkul\DAM\Exceptions\ShareNeedsEnableException;
+use Webkul\DAM\Exceptions\ShareNotEnableableException;
 use Webkul\DAM\Http\Requests\StoreShareRequest;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
@@ -74,12 +77,67 @@ class ShareController extends Controller
 
         $userId = auth()->guard('admin')->id() ?? auth()->id();
 
-        $share = $type === Share::TYPE_ASSET
-            ? $this->shareRepository->createForAsset($targetId, $expiresAt, $userId)
-            : $this->shareRepository->createForDirectory($targetId, $expiresAt, $userId);
+        try {
+            $share = $type === Share::TYPE_ASSET
+                ? $this->shareRepository->createForAsset($targetId, $expiresAt, $userId)
+                : $this->shareRepository->createForDirectory($targetId, $expiresAt, $userId);
+        } catch (ShareAlreadyActiveException) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.already-active'),
+            ], 409);
+        } catch (ShareNeedsEnableException) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.needs-enable'),
+            ], 409);
+        }
 
         return response()->json([
             'success' => true,
+            'share'   => $this->presentShare($share),
+        ]);
+    }
+
+    /**
+     * Re-enable a previously revoked share. Keeps the same token & URL.
+     * Accepts an updated expiry from the modal so the user can refresh it
+     * at the moment of re-enabling.
+     */
+    public function enable(int $id): JsonResponse
+    {
+        $share = $this->shareRepository->find($id);
+
+        if (! $share) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.not-found'),
+            ], 404);
+        }
+
+        if (! $this->canRevoke($share)) {
+            return $this->unauthorized();
+        }
+
+        $expiresAt = null;
+        if (! request()->boolean('no_expiry')) {
+            $days = (int) (request()->input('expiry_days') ?? 7);
+            $days = max(1, min(365, $days));
+            $expiresAt = now()->addDays($days);
+        }
+
+        try {
+            $share = $this->shareRepository->enable($id, $expiresAt);
+        } catch (ShareNotEnableableException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.not-found'),
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => trans('dam::app.admin.dam.share.enabled'),
             'share'   => $this->presentShare($share),
         ]);
     }
@@ -133,17 +191,15 @@ class ShareController extends Controller
             }
         }
 
-        $shares = Share::query()
+        $share = Share::query()
             ->where('share_type', $type)
             ->where('target_id', $targetId)
-            ->active()
             ->orderByDesc('created_at')
-            ->get()
-            ->map(fn (Share $s) => $this->presentShare($s));
+            ->first();
 
         return response()->json([
             'success' => true,
-            'shares'  => $shares,
+            'share'   => $share ? $this->presentShare($share) : null,
         ]);
     }
 
@@ -157,6 +213,8 @@ class ShareController extends Controller
             'public_url'     => route('dam.share.show', ['token' => $share->token]),
             'expires_at'     => $share->expires_at?->toIso8601String(),
             'revoked_at'     => $share->revoked_at?->toIso8601String(),
+            'is_active'      => (bool) $share->is_active,
+            'can_be_enabled' => $share->canBeEnabled(),
             'view_count'     => $share->view_count,
             'download_count' => $share->download_count,
             'status'         => $share->statusLabel(),

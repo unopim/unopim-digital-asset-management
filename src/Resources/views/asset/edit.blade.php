@@ -131,6 +131,9 @@
 
     <x-slot:navButtons>
         <v-share-asset-button :asset-id="{{ $asset->id }}"></v-share-asset-button>
+        {{-- Mount the share-link modal in the nav bar (which renders on every
+             tab) so the modal works regardless of which tab is active. --}}
+        <v-share-link-modal></v-share-link-modal>
     </x-slot:navButtons>
 
     {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
@@ -146,7 +149,6 @@
                 :action="route('admin.dam.assets.update', $asset->id)"
                 enctype="multipart/form-data"
                 method="PUT"
-                ref="editForm"
             >
                 <!-- body content -->
                 <div class="flex gap-2.5 mt-3.5 flex-wrap">
@@ -161,15 +163,19 @@
 
                             {{-- Full breadcrumb at the top of the preview area --}}
                             <nav class="flex items-center gap-1 flex-wrap text-sm px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
-                                <template v-for="(crumb, i) in displayCrumbParts" :key="crumb.id">
-                                    <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
+                                @foreach ($crumbParts as $i => $name)
+                                    @if ($i > 0)
+                                        <span class="text-gray-400 dark:text-gray-500">/</span>
+                                    @endif
                                     <a
-                                        :href="`{{ route('admin.dam.assets.index') }}?directory_id=${crumb.id}`"
+                                        href="{{ route('admin.dam.assets.index').'?directory_id='.($directoryAncestors[$i]->id ?? '') }}"
                                         class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
-                                    >@{{ crumb.name }}</a>
-                                </template>
-                                <span v-if="displayCrumbParts.length > 0" class="text-gray-400 dark:text-gray-500">/</span>
-                                <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">@{{ displayFileName }}</span>
+                                    >{{ $name }}</a>
+                                @endforeach
+                                @if (count($crumbParts) > 0)
+                                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                                @endif
+                                <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">{{ $asset->file_name }}</span>
                             </nav>
 
                             <div class="flex items-stretch flex-1 min-h-0">
@@ -333,7 +339,12 @@
                                     </p>
                                 </x-slot>
                                 <x-slot:content>
-                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">@{{ displayCrumbParts.map(c => c.name).concat([displayFileName]).join('/') }}</p>
+                                    @php
+                                        $pathParts = $directoryAncestors->pluck('name')->toArray();
+                                        $pathParts[] = $asset->file_name;
+                                        $fullPath = implode('/', $pathParts);
+                                    @endphp
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">{{ $fullPath }}</p>
                                 </x-slot>
                             </x-admin::accordion>
 
@@ -365,9 +376,8 @@
                         displayMimeType:  @js($asset->mime_type ?? ''),
                         displayCreatedAt: @js($asset->created_at?->format('d M Y, H:i')),
                         displayUpdatedAt: @js($asset->updated_at?->format('d M Y, H:i')),
-                        displayAssetPath:  @js($asset->getPathWithOutFileSystemRoot() ?? ''),
-                        displayCrumbParts: @json($directoryAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values()->all()),
-                        displayTags:       @json($asset->tags ?? []),
+                        displayAssetPath: @js($asset->getPathWithOutFileSystemRoot() ?? ''),
+                        displayTags:      @json($asset->tags ?? []),
                         tagValues:        @js(json_encode($asset->tags->pluck('id')->values()->all())),
                         tagComponentKey:  0,
                     };
@@ -395,11 +405,9 @@
                             this.displayMimeType  = data.asset.mime_type ?? '';
                             this.displayCreatedAt = data.createdAtFormatted ?? '';
                             this.displayUpdatedAt = data.updatedAtFormatted ?? '';
-                            this.displayAssetPath  = data.assetPath ?? '';
-                            this.displayCrumbParts = data.directoryAncestors ?? [];
-                            this.displayTags       = data.tags ?? [];
-                            this.tagValues         = JSON.stringify((data.tags ?? []).map(t => t.id ?? t));
-                            this.$refs.editForm?.setValues({ tags: this.tagValues });
+                            this.displayAssetPath = data.assetPath ?? '';
+                            this.displayTags      = data.tags ?? [];
+                            this.tagValues        = JSON.stringify((data.tags ?? []).map(t => t.id ?? t));
                             this.tagComponentKey  += 1;
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
@@ -1271,7 +1279,7 @@
             type="text/x-template"
             id="v-delete-asset-template"
         >
-            @if (bouncer()->hasPermission('dam.asset.destroy'))
+            @if (bouncer()->hasPermission('dam.asset.delete'))
                 <button class="danger-button"
                     :disabled="isLocked || isDeleting"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked || isDeleting }"
@@ -1417,6 +1425,4 @@
             });
         </script>
     @endPushOnce
-
-    <v-share-link-modal></v-share-link-modal>
     </x-admin::layouts.with-history.asset>

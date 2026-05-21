@@ -172,46 +172,28 @@ class DirectoryController
     }
 
     /**
-     * Propagate the new directory's grant to every role that already has access
-     * to the parent directory, skipping roles with all-permission or all-directories bypass.
+     * Grant the new directory to the creator's role for custom-permission admins.
+     * Skipped when the role already bypasses (all-permission or all-directories).
      */
     private function autoGrantToCreator(int $directoryId): void
     {
-        $directory = $this->directoryRepository->find($directoryId);
+        $admin = auth()->guard('admin')->user();
 
-        if (! $directory || ! $directory->parent_id) {
+        if (! $admin) {
             return;
         }
 
-        $parentId = (int) $directory->parent_id;
+        $role = $admin->role;
 
-        $roleIds = DB::table('dam_directory_role')
-            ->where('directory_id', $parentId)
-            ->pluck('role_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        if (empty($roleIds)) {
+        if (! $role || $role->permission_type !== 'custom') {
             return;
         }
 
-        $allDirsRoleIds = DB::table('dam_role_settings')
-            ->whereIn('role_id', $roleIds)
-            ->where('all_directories', true)
-            ->pluck('role_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        $eligibleRoleIds = array_values(array_diff($roleIds, $allDirsRoleIds));
-
-        if (empty($eligibleRoleIds)) {
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
             return;
         }
 
-        foreach ($eligibleRoleIds as $roleId) {
-            $this->permissionRepository->addDirectoryToRole($roleId, $directoryId);
-        }
-
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
         $this->permissionService->flush();
     }
 

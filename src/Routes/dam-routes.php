@@ -99,6 +99,7 @@ Route::group([
         Route::get('', 'index')->name('admin.dam.shares.index');
         Route::post('', 'store')->name('admin.dam.shares.store');
         Route::delete('{id}', 'destroy')->name('admin.dam.shares.destroy')->where('id', '[0-9]+');
+        Route::post('{id}/enable', 'enable')->name('admin.dam.shares.enable')->where('id', '[0-9]+');
         Route::get('active/{type}/{targetId}', 'activeForTarget')
             ->name('admin.dam.shares.active_for_target')
             ->where('type', 'asset|directory')

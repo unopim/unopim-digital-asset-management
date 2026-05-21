@@ -28,6 +28,7 @@ class Share extends Model implements ShareContract
         'created_by',
         'expires_at',
         'revoked_at',
+        'is_active',
         'view_count',
         'download_count',
         'last_accessed_at',
@@ -39,6 +40,7 @@ class Share extends Model implements ShareContract
         'last_accessed_at' => 'datetime',
         'view_count'       => 'integer',
         'download_count'   => 'integer',
+        'is_active'        => 'boolean',
     ];
 
     public function creator(): BelongsTo
@@ -68,7 +70,7 @@ class Share extends Model implements ShareContract
 
     public function isRevoked(): bool
     {
-        return $this->revoked_at !== null;
+        return ! $this->is_active;
     }
 
     public function isExpired(): bool
@@ -78,12 +80,17 @@ class Share extends Model implements ShareContract
 
     public function isActive(): bool
     {
-        return ! $this->isRevoked() && ! $this->isExpired();
+        return $this->is_active && ! $this->isExpired();
+    }
+
+    public function canBeEnabled(): bool
+    {
+        return ! $this->is_active;
     }
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereNull('revoked_at')
+        return $query->where('is_active', true)
             ->where(function (Builder $q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             });
@@ -91,12 +98,12 @@ class Share extends Model implements ShareContract
 
     public function statusLabel(): string
     {
-        if ($this->isRevoked()) {
-            return 'revoked';
-        }
-
         if ($this->isExpired()) {
             return 'expired';
+        }
+
+        if (! $this->is_active) {
+            return 'revoked';
         }
 
         return 'active';
