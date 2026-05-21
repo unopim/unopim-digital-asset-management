@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Webkul\DAM\Contracts\Share as ShareContract;
 use Webkul\DAM\Database\Factories\ShareFactory;
+use Webkul\HistoryControl\Contracts\HistoryAuditable as HistoryContract;
+use Webkul\HistoryControl\Traits\HistoryTrait;
 use Webkul\User\Models\Admin;
 
-class Share extends Model implements ShareContract
+class Share extends Model implements HistoryContract, ShareContract
 {
-    use HasFactory;
+    use HasFactory, HistoryTrait;
 
     public const TYPE_ASSET = 'asset';
 
@@ -21,14 +23,28 @@ class Share extends Model implements ShareContract
 
     protected $table = 'dam_shares';
 
+    protected $historyTags = ['Share'];
+
+    /**
+     * Internal bookkeeping columns whose churn would spam the history feed.
+     * The user-visible fields (name, expires_at, revoked_at, token) stay tracked.
+     */
+    protected $auditExclude = [
+        'view_count',
+        'download_count',
+        'last_accessed_at',
+        'updated_at',
+        'created_at',
+    ];
+
     protected $fillable = [
         'token',
+        'name',
         'share_type',
         'target_id',
         'created_by',
         'expires_at',
         'revoked_at',
-        'is_active',
         'view_count',
         'download_count',
         'last_accessed_at',
@@ -40,7 +56,6 @@ class Share extends Model implements ShareContract
         'last_accessed_at' => 'datetime',
         'view_count'       => 'integer',
         'download_count'   => 'integer',
-        'is_active'        => 'boolean',
     ];
 
     public function creator(): BelongsTo
@@ -70,7 +85,7 @@ class Share extends Model implements ShareContract
 
     public function isRevoked(): bool
     {
-        return ! $this->is_active;
+        return $this->revoked_at !== null;
     }
 
     public function isExpired(): bool
@@ -80,17 +95,12 @@ class Share extends Model implements ShareContract
 
     public function isActive(): bool
     {
-        return $this->is_active && ! $this->isExpired();
-    }
-
-    public function canBeEnabled(): bool
-    {
-        return ! $this->is_active;
+        return ! $this->isRevoked() && ! $this->isExpired();
     }
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true)
+        return $query->whereNull('revoked_at')
             ->where(function (Builder $q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             });
@@ -98,12 +108,12 @@ class Share extends Model implements ShareContract
 
     public function statusLabel(): string
     {
-        if ($this->isExpired()) {
-            return 'expired';
+        if ($this->isRevoked()) {
+            return 'revoked';
         }
 
-        if (! $this->is_active) {
-            return 'revoked';
+        if ($this->isExpired()) {
+            return 'expired';
         }
 
         return 'active';

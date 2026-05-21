@@ -266,54 +266,6 @@
 
                             <x-admin::form.control-group.error control-name="value" />
                         </x-admin::form.control-group>
-
-                        <x-admin::form.control-group>
-                            <label class="flex items-center gap-2 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    name="is_filterable"
-                                    value="1"
-                                    class="w-4 h-4 accent-violet-600"
-                                    :checked="!!selectedProperty.is_filterable"
-                                    @change="selectedProperty.is_filterable = $event.target.checked ? 1 : 0"
-                                />
-                                <span class="text-sm text-gray-700 dark:text-slate-200">
-                                    @lang('dam::app.admin.dam.asset.properties.index.create.add-to-filter')
-                                </span>
-                                <span
-                                    class="icon-information text-base text-gray-400 dark:text-slate-400 cursor-help"
-                                    title="@lang('dam::app.admin.dam.asset.properties.index.create.add-to-filter-help')"
-                                    tabindex="0"
-                                ></span>
-                            </label>
-                        </x-admin::form.control-group>
-
-                        <x-admin::form.control-group v-if="!!selectedProperty.is_filterable">
-                            <div class="flex items-center gap-1.5">
-                                <x-admin::form.control-group.label class="!mb-0">
-                                    @lang('dam::app.admin.dam.asset.properties.index.create.sort-order')
-                                </x-admin::form.control-group.label>
-                                <span
-                                    class="icon-information text-base text-gray-400 dark:text-slate-400 cursor-help"
-                                    title="@lang('dam::app.admin.dam.asset.properties.index.create.sort-order-help')"
-                                    tabindex="0"
-                                ></span>
-                            </div>
-
-                            {{-- Plain HTML input on purpose: x-admin::form.control-group.control
-                                 wraps in <v-field> and filters attributes by name, which drops
-                                 `v-model.number` — leaving the field disconnected from the model. --}}
-                            <input
-                                type="number"
-                                name="sort_order"
-                                min="0"
-                                max="9999"
-                                step="1"
-                                v-model.number="selectedProperty.sort_order"
-                                :placeholder="@js(trans('dam::app.admin.dam.asset.properties.index.create.sort-order-placeholder'))"
-                                class="w-full py-2.5 px-3 border rounded-md text-sm text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400 dark:bg-cherry-900 dark:hover:border-slate-300 dark:border-gray-600 mt-1.5"
-                            />
-                        </x-admin::form.control-group>
                     </x-slot:content>
 
                     <x-slot:footer>

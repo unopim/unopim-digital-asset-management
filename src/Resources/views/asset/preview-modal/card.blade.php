@@ -1,5 +1,27 @@
-<!-- Top-right action icons -->
-<div class="flex justify-end items-center gap-1 w-full">
+@php
+    $crumbParts = $directoryAncestors->pluck('name')->toArray();
+@endphp
+
+<!-- Breadcrumb (left) + action icons (right) -->
+<div class="flex justify-between items-center gap-2 w-full px-2 py-1 border-b border-gray-100 dark:border-gray-700">
+
+    <nav class="flex items-center gap-1 flex-wrap text-sm min-w-0" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
+        @foreach ($crumbParts as $i => $name)
+            @if ($i > 0)
+                <span class="text-gray-400 dark:text-gray-500">/</span>
+            @endif
+            <a
+                href="{{ route('admin.dam.assets.index').'?directory_id='.($directoryAncestors[$i]->id ?? '') }}"
+                class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
+            >{{ $name }}</a>
+        @endforeach
+        @if (count($crumbParts) > 0)
+            <span class="text-gray-400 dark:text-gray-500">/</span>
+        @endif
+        <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">{{ $asset->file_name }}</span>
+    </nav>
+
+    <div class="flex items-center gap-1 shrink-0">
 
     <!-- Info — hover tooltip + click modal -->
     <div class="relative" @mouseenter="infoHover = true" @mouseleave="infoHover = false">
@@ -35,6 +57,17 @@
     >
         <span class="text-lg icon-edit"></span>
     </button>
+
+    <!-- Fullscreen preview -->
+    <button
+        type="button"
+        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+        title="{{ trans('dam::app.admin.dam.asset.edit.tab.preview') }}"
+        @click="openPreview"
+    >
+        <span class="text-lg icon-dam-preview"></span>
+    </button>
+    </div>
 </div>
 
 <!-- Inline asset preview — renders the actual media (no extra eye click) -->
@@ -49,7 +82,7 @@
     </template>
 
     <template v-else-if="previewData.file_type === 'video'">
-        <div class="w-full aspect-video max-h-[70vh]">
+        <div class="w-full" style="height: 70vh;">
             @include('dam::asset.preview-modal.video.video-player')
         </div>
     </template>

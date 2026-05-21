@@ -19,15 +19,12 @@
     <script type="text/x-template" id="v-dam-grid-preview-modal-template">
         <div
             v-if="isOpen"
-            class="fixed inset-0 z-[10010] flex items-center justify-center"
+            class="fixed inset-0 z-[10010]"
         >
-            {{-- Backdrop --}}
-            <div class="absolute inset-0 bg-black/75" @click="close"></div>
-
             {{-- Loading --}}
             <div
                 v-if="isLoading"
-                class="relative z-10 flex items-center justify-center w-24 h-24 rounded-xl bg-white dark:bg-gray-900 shadow-2xl"
+                class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900"
             >
                 <svg class="animate-spin h-10 w-10 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -35,10 +32,10 @@
                 </svg>
             </div>
 
-            {{-- Large layout: image / video / pdf --}}
+            {{-- Fullscreen layout: image / video / pdf --}}
             <div
                 v-else-if="asset && isLargeLayout"
-                class="relative z-10 flex flex-col w-[85vw] h-[88vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10"
+                class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900"
             >
                 <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                     <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300" v-text="badge"></span>
@@ -121,10 +118,10 @@
                 </div>
             </div>
 
-            {{-- Compact layout: audio / fallback --}}
+            {{-- Fullscreen layout: audio / fallback --}}
             <div
                 v-else-if="asset"
-                class="relative z-10 w-full max-w-lg mx-4 rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10"
+                class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900"
             >
                 <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                     <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300" v-text="badge"></span>

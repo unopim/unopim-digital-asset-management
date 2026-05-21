@@ -24,18 +24,6 @@ class AssetDataGrid extends DataGrid
     protected $customFilterColumns = [];
 
     /**
-     * Map of `property_filter_<md5>` column index → the property name it filters on.
-     * Populated in prepareColumns() and consumed in processRequestedFilters().
-     */
-    protected array $propertyFilterMap = [];
-
-    /**
-     * Hard cap on the number of distinct "Add to Filter" property names exposed
-     * as sidebar filters. Anything past this is dropped (logged once).
-     */
-    protected const PROPERTY_FILTER_LIMIT = 50;
-
-    /**
      * {@inheritDoc}
      */
     protected $itemsPerPage = 50;
@@ -109,11 +97,6 @@ class AssetDataGrid extends DataGrid
      */
     public function prepareColumns()
     {
-        // Filterable properties (admin-flagged via "Add to Filter") render
-        // BEFORE the static columns so they sit at the top of the sidebar in
-        // sort_order. Ordering is governed by MIN(sort_order) ASC, then name.
-        $this->registerFilterableProperties();
-
         $this->addColumn([
             'index'      => 'file_name',
             'label'      => trans('dam::app.admin.dam.index.datagrid.file-name'),
@@ -142,7 +125,7 @@ class AssetDataGrid extends DataGrid
             'label'      => trans('dam::app.admin.dam.index.datagrid.property-name'),
             'type'       => 'string',
             'searchable' => true,
-            'filterable' => false,
+            'filterable' => true,
             'sortable'   => true,
         ]);
 
@@ -151,7 +134,7 @@ class AssetDataGrid extends DataGrid
             'label'      => trans('dam::app.admin.dam.index.datagrid.property-value'),
             'type'       => 'string',
             'searchable' => true,
-            'filterable' => false,
+            'filterable' => true,
             'sortable'   => true,
         ]);
 
@@ -196,40 +179,6 @@ class AssetDataGrid extends DataGrid
     }
 
     /**
-     * Read distinct property names flagged is_filterable=true and expose each as
-     * a sidebar-only string filter on the assets grid.
-     */
-    protected function registerFilterableProperties(): void
-    {
-        // Order by the smallest sort_order seen for each property name so admins
-        // control the sidebar order. Ties (or missing values, which default to 0)
-        // fall back to alphabetical.
-        $names = DB::table('dam_asset_properties')
-            ->where('is_filterable', true)
-            ->select('name', DB::raw('MIN(sort_order) as min_sort'))
-            ->groupBy('name')
-            ->orderBy('min_sort')
-            ->orderBy('name')
-            ->limit(self::PROPERTY_FILTER_LIMIT)
-            ->pluck('name');
-
-        foreach ($names as $name) {
-            $index = 'property_filter_'.md5($name);
-            $this->propertyFilterMap[$index] = $name;
-
-            $this->addColumn([
-                'index'      => $index,
-                'label'      => $name,
-                'type'       => 'string',
-                'searchable' => false,
-                'filterable' => true,
-                'sortable'   => false,
-                'visible'    => false,
-            ]);
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function formatData(): array
@@ -257,23 +206,6 @@ class AssetDataGrid extends DataGrid
                 });
             } else {
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
-
-                if (isset($this->propertyFilterMap[$requestedColumn])) {
-                    $propertyName = $this->propertyFilterMap[$requestedColumn];
-                    $this->queryBuilder->where(function ($scope) use ($propertyName, $requestedValues) {
-                        foreach ($requestedValues as $value) {
-                            $scope->orWhereExists(function ($sub) use ($propertyName, $value) {
-                                $sub->select(DB::raw(1))
-                                    ->from('dam_asset_properties as pf')
-                                    ->whereColumn('pf.dam_asset_id', 'dam_assets.id')
-                                    ->where('pf.name', $propertyName)
-                                    ->where('pf.value', 'LIKE', '%'.$value.'%');
-                            });
-                        }
-                    });
-
-                    continue;
-                }
 
                 if ($requestedColumn === 'directory_id') {
                     // Expand to descendants server-side; frontend sends only the selected id.

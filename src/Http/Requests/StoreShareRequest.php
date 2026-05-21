@@ -19,6 +19,7 @@ class StoreShareRequest extends FormRequest
             'target_id'   => 'required|integer|min:1',
             'expiry_days' => 'nullable|integer|min:1|max:365',
             'no_expiry'   => 'nullable|boolean',
+            'name'        => 'nullable|string|max:255',
         ];
     }
 }

@@ -131,8 +131,7 @@
 
     <x-slot:navButtons>
         <v-share-asset-button :asset-id="{{ $asset->id }}"></v-share-asset-button>
-        {{-- Mount the share-link modal in the nav bar (which renders on every
-             tab) so the modal works regardless of which tab is active. --}}
+        {{-- Modal lives in the always-rendered tab strip so it survives tab switches --}}
         <v-share-link-modal></v-share-link-modal>
     </x-slot:navButtons>
 
@@ -156,27 +155,6 @@
 
                         <!-- Left sub Component -->
                         <div class="flex flex-col flex-1 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-0">
-                            @php
-                                $crumbParts = $directoryAncestors->pluck('name')->toArray();
-                                $firstAncestorId = optional($directoryAncestors->first())->id;
-                            @endphp
-
-                            {{-- Full breadcrumb at the top of the preview area --}}
-                            <nav class="flex items-center gap-1 flex-wrap text-sm px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-700" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
-                                @foreach ($crumbParts as $i => $name)
-                                    @if ($i > 0)
-                                        <span class="text-gray-400 dark:text-gray-500">/</span>
-                                    @endif
-                                    <a
-                                        href="{{ route('admin.dam.assets.index').'?directory_id='.($directoryAncestors[$i]->id ?? '') }}"
-                                        class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
-                                    >{{ $name }}</a>
-                                @endforeach
-                                @if (count($crumbParts) > 0)
-                                    <span class="text-gray-400 dark:text-gray-500">/</span>
-                                @endif
-                                <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">{{ $asset->file_name }}</span>
-                            </nav>
 
                             <div class="flex items-stretch flex-1 min-h-0">
 
@@ -185,7 +163,7 @@
                                     <template v-if="prevAssetId">
                                         <button
                                             type="button"
-                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-600 dark:hover:text-white dark:hover:border-violet-400 transition-colors"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
                                             :class="{ 'opacity-60 pointer-events-none': isNavigating }"
                                             title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                             aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
@@ -195,7 +173,7 @@
                                         </button>
                                     </template>
                                     <template v-else>
-                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none"
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
                                               aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
                                             <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
                                         </span>
@@ -216,7 +194,7 @@
                                     <template v-if="nextAssetId">
                                         <button
                                             type="button"
-                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-600 dark:hover:text-white dark:hover:border-violet-400 transition-colors"
+                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
                                             :class="{ 'opacity-60 pointer-events-none': isNavigating }"
                                             title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                             aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
@@ -226,7 +204,7 @@
                                         </button>
                                     </template>
                                     <template v-else>
-                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none"
+                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
                                               aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
                                             <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
                                         </span>
@@ -251,24 +229,24 @@
                                     <div :key="tagComponentKey">
                                         <x-admin::form.control-group>
 
-                                            <v-field
-                                                v-slot="{ field }"
-                                                v-model="tagValues"
+                                            @php
+                                                $options = json_encode($tags->toArray());
+                                            @endphp
+
+                                            <x-admin::form.control-group.control
+                                                type="tagging"
+                                                id="tags"
                                                 name="tags"
-                                            >
-                                                <v-tagging-handler
-                                                    :taggable="true"
-                                                    name="tags"
-                                                    v-bind="field"
-                                                    :options="JSON.stringify(allTagOptions)"
-                                                    track-by="id"
-                                                    label-by="name"
-                                                    placeholder="{{ trans('dam::app.admin.dam.asset.edit.select-tags') }}"
-                                                    @add-option="onTaggingChange($event)"
-                                                    @select-option="onTaggingChange($event)"
-                                                    @remove-option="onTaggingRemove($event)"
-                                                ></v-tagging-handler>
-                                            </v-field>
+                                                :options="$options"
+                                                v-model="tagValues"
+                                                :label="trans('dam::app.admin.dam.asset.edit.tags')"
+                                                :placeholder="trans('dam::app.admin.dam.asset.edit.select-tags')"
+                                                track-by="id"
+                                                label-by="name"
+                                                @add-option="onTaggingChange($event)"
+                                                @select-option="onTaggingChange($event)"
+                                                @remove-option="onTaggingRemove($event)"
+                                            />
 
                                             <x-admin::form.control-group.error control-name="tags" />
 
@@ -380,7 +358,6 @@
                         displayTags:      @json($asset->tags ?? []),
                         tagValues:        @js(json_encode($asset->tags->pluck('id')->values()->all())),
                         tagComponentKey:  0,
-                        allTagOptions:    @json($tags->values()->all()),
                     };
                 },
 
@@ -450,12 +427,6 @@
                     },
                     addOrUpdateTag(formData) {
                         this.$axios.post("{{ route('admin.dam.assets.tag') }}", formData).then((response) => {
-                            if (response.data.tag) {
-                                const tag = response.data.tag;
-                                if (!this.allTagOptions.some(t => t.id === tag.id)) {
-                                    this.allTagOptions.push({ id: tag.id, name: tag.name });
-                                }
-                            }
                             this.$emitter.emit('uploaded-assets', response.data.file);
                         }).catch((error) => {
                             this.$emitter.emit('add-flash', {
@@ -1286,7 +1257,7 @@
             type="text/x-template"
             id="v-delete-asset-template"
         >
-            @if (bouncer()->hasPermission('dam.asset.delete'))
+            @if (bouncer()->hasPermission('dam.asset.destroy'))
                 <button class="danger-button"
                     :disabled="isLocked || isDeleting"
                     :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isLocked || isDeleting }"
@@ -1431,5 +1402,7 @@
                 }
             });
         </script>
+
     @endPushOnce
+
     </x-admin::layouts.with-history.asset>

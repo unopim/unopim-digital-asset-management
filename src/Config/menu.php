@@ -4,14 +4,14 @@ return [
     [
         'key'   => 'dam',
         'name'  => 'dam::app.admin.components.layouts.sidebar.dam',
-        'route' => 'admin.dam.assets.index',
+        'route' => 'admin.dam.index',
         'sort'  => 10,
         'icon'  => 'icon-dam-menu',
     ],
     [
         'key'   => 'dam.assets',
         'name'  => 'dam::app.admin.components.layouts.sidebar.assets',
-        'route' => 'admin.dam.assets.index',
+        'route' => 'admin.dam.index',
         'sort'  => 1,
         'icon'  => '',
     ],

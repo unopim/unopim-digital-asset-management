@@ -44,7 +44,7 @@ class AssetPropertyDataGrid extends DataGrid
             'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.name'),
             'type'       => 'string',
             'searchable' => true,
-            'filterable' => false,
+            'filterable' => true,
             'sortable'   => true,
         ]);
 
@@ -83,7 +83,7 @@ class AssetPropertyDataGrid extends DataGrid
             'label'      => trans('dam::app.admin.dam.asset.properties.index.datagrid.value'),
             'type'       => 'string',
             'searchable' => true,
-            'filterable' => false,
+            'filterable' => true,
             'sortable'   => true,
         ]);
     }

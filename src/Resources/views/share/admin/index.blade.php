@@ -17,5 +17,7 @@
 
     <x-admin::datagrid src="{{ route('admin.dam.shares.index') }}" />
 
+    @include('dam::share.components.share-edit-modal')
+
     {!! view_render_event('unopim.dam.shares.list.after') !!}
 </x-admin::layouts>

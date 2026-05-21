@@ -5,9 +5,6 @@ namespace Webkul\DAM\Http\Controllers\Asset;
 use Illuminate\Http\JsonResponse;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Share\ShareDataGrid;
-use Webkul\DAM\Exceptions\ShareAlreadyActiveException;
-use Webkul\DAM\Exceptions\ShareNeedsEnableException;
-use Webkul\DAM\Exceptions\ShareNotEnableableException;
 use Webkul\DAM\Http\Requests\StoreShareRequest;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
@@ -76,22 +73,13 @@ class ShareController extends Controller
         }
 
         $userId = auth()->guard('admin')->id() ?? auth()->id();
+        $name = $request->input('name');
+        $name = is_string($name) ? trim($name) : null;
+        $name = $name === '' ? null : $name;
 
-        try {
-            $share = $type === Share::TYPE_ASSET
-                ? $this->shareRepository->createForAsset($targetId, $expiresAt, $userId)
-                : $this->shareRepository->createForDirectory($targetId, $expiresAt, $userId);
-        } catch (ShareAlreadyActiveException) {
-            return response()->json([
-                'success' => false,
-                'message' => trans('dam::app.admin.dam.share.already-active'),
-            ], 409);
-        } catch (ShareNeedsEnableException) {
-            return response()->json([
-                'success' => false,
-                'message' => trans('dam::app.admin.dam.share.needs-enable'),
-            ], 409);
-        }
+        $share = $type === Share::TYPE_ASSET
+            ? $this->shareRepository->createForAsset($targetId, $expiresAt, $userId, $name)
+            : $this->shareRepository->createForDirectory($targetId, $expiresAt, $userId, $name);
 
         return response()->json([
             'success' => true,
@@ -100,11 +88,10 @@ class ShareController extends Controller
     }
 
     /**
-     * Re-enable a previously revoked share. Keeps the same token & URL.
-     * Accepts an updated expiry from the modal so the user can refresh it
-     * at the moment of re-enabling.
+     * Update an existing share — currently allows editing the custom name and
+     * the expiry (or removing it entirely via no_expiry=true).
      */
-    public function enable(int $id): JsonResponse
+    public function update(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
 
@@ -115,30 +102,35 @@ class ShareController extends Controller
             ], 404);
         }
 
+        // Rename / re-expiry is bundled with the existing dam.shares.revoke
+        // permission — anyone who can already manage a share's revoke state
+        // can also change its label. Plus the standard per-target access check.
         if (! $this->canRevoke($share)) {
             return $this->unauthorized();
         }
 
-        $expiresAt = null;
-        if (! request()->boolean('no_expiry')) {
-            $days = (int) (request()->input('expiry_days') ?? 7);
-            $days = max(1, min(365, $days));
-            $expiresAt = now()->addDays($days);
+        $data = request()->validate([
+            'name'        => 'nullable|string|max:255',
+            'no_expiry'   => 'sometimes|boolean',
+            'expiry_days' => 'sometimes|integer|min:1|max:365',
+        ]);
+
+        $payload = [
+            'name' => $data['name'] ?? null,
+        ];
+
+        if (request()->boolean('no_expiry')) {
+            $payload['expires_at'] = null;
+        } elseif (isset($data['expiry_days'])) {
+            $payload['expires_at'] = now()->addDays((int) $data['expiry_days']);
         }
 
-        try {
-            $share = $this->shareRepository->enable($id, $expiresAt);
-        } catch (ShareNotEnableableException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => trans('dam::app.admin.dam.share.not-found'),
-            ], 409);
-        }
+        $share->fill($payload)->save();
 
         return response()->json([
             'success' => true,
-            'message' => trans('dam::app.admin.dam.share.enabled'),
-            'share'   => $this->presentShare($share),
+            'share'   => $this->presentShare($share->fresh()),
+            'message' => trans('dam::app.admin.dam.share.updated'),
         ]);
     }
 
@@ -191,15 +183,17 @@ class ShareController extends Controller
             }
         }
 
-        $share = Share::query()
+        $shares = Share::query()
             ->where('share_type', $type)
             ->where('target_id', $targetId)
+            ->active()
             ->orderByDesc('created_at')
-            ->first();
+            ->get()
+            ->map(fn (Share $s) => $this->presentShare($s));
 
         return response()->json([
             'success' => true,
-            'share'   => $share ? $this->presentShare($share) : null,
+            'shares'  => $shares,
         ]);
     }
 
@@ -208,17 +202,17 @@ class ShareController extends Controller
         return [
             'id'             => $share->id,
             'token'          => $share->token,
+            'name'           => $share->name,
             'share_type'     => $share->share_type,
             'target_id'      => $share->target_id,
             'public_url'     => route('dam.share.show', ['token' => $share->token]),
             'expires_at'     => $share->expires_at?->toIso8601String(),
             'revoked_at'     => $share->revoked_at?->toIso8601String(),
-            'is_active'      => (bool) $share->is_active,
-            'can_be_enabled' => $share->canBeEnabled(),
             'view_count'     => $share->view_count,
             'download_count' => $share->download_count,
             'status'         => $share->statusLabel(),
             'created_at'     => $share->created_at?->toIso8601String(),
+            'update_url'     => route('admin.dam.shares.update', $share->id),
         ];
     }
 

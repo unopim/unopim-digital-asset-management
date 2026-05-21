@@ -26,11 +26,11 @@
                     @if ($backUrl)
                         <a
                             href="{{ $backUrl }}"
-                            class="secondary-button shrink-0"
+                            class="secondary-button"
                             title="@lang('dam::app.share.public.back-to-gallery')"
                         >
-                            <i class="icon-arrow-left text-lg leading-none" aria-hidden="true"></i>
-                            <span>@lang('dam::app.share.public.back')</span>
+                            <span class="icon-back text-lg"></span>
+                            <span class="hidden sm:inline">@lang('dam::app.share.public.back')</span>
                         </a>
                     @endif
                     <h1 class="text-lg font-semibold text-zinc-900 dark:text-slate-50 truncate" title="{{ $asset->file_name }}">

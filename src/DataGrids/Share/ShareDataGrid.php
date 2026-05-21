@@ -30,6 +30,7 @@ class ShareDataGrid extends DataGrid
             ->select(
                 'dam_shares.id',
                 'dam_shares.token',
+                'dam_shares.name as share_name',
                 'dam_shares.share_type',
                 'dam_shares.target_id',
                 'dam_shares.expires_at',
@@ -39,7 +40,7 @@ class ShareDataGrid extends DataGrid
                 'dam_shares.last_accessed_at',
                 'dam_shares.created_at',
                 DB::raw('COALESCE('.DB::getTablePrefix().'admins.name, NULL) as created_by_name'),
-                DB::raw('COALESCE('.DB::getTablePrefix().'dam_assets.file_name, '.DB::getTablePrefix().'dam_directories.name) as target_name'),
+                DB::raw('COALESCE('.DB::getTablePrefix().'dam_shares.name, '.DB::getTablePrefix().'dam_assets.file_name, '.DB::getTablePrefix().'dam_directories.name) as target_name'),
             );
 
         $this->addFilter('share_type', 'dam_shares.share_type');
@@ -89,6 +90,40 @@ class ShareDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
+            'index'      => 'status',
+            'label'      => trans('dam::app.admin.dam.share.datagrid.status'),
+            'type'       => 'string',
+            'searchable' => false,
+            'filterable' => false,
+            'sortable'   => false,
+            'closure'    => function ($row) {
+                $badge = fn (string $label, string $classes) => sprintf(
+                    '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold %s">%s</span>',
+                    $classes,
+                    e($label),
+                );
+
+                if ($row->revoked_at) {
+                    return $badge(
+                        trans('dam::app.admin.dam.share.datagrid.status-revoked'),
+                        'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                    );
+                }
+                if ($row->expires_at && Carbon::parse($row->expires_at)->isPast()) {
+                    return $badge(
+                        trans('dam::app.admin.dam.share.datagrid.status-expired'),
+                        'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                    );
+                }
+
+                return $badge(
+                    trans('dam::app.admin.dam.share.datagrid.status-active'),
+                    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                );
+            },
+        ]);
+
+        $this->addColumn([
             'index'      => 'expires_at',
             'label'      => trans('dam::app.admin.dam.share.datagrid.expires-at'),
             'type'       => 'date_range',
@@ -98,25 +133,6 @@ class ShareDataGrid extends DataGrid
             'closure'    => fn ($row) => $row->expires_at
                 ? Carbon::parse($row->expires_at)->toDateTimeString()
                 : trans('dam::app.admin.dam.share.datagrid.never'),
-        ]);
-
-        $this->addColumn([
-            'index'      => 'status',
-            'label'      => trans('dam::app.admin.dam.share.datagrid.status'),
-            'type'       => 'string',
-            'searchable' => false,
-            'filterable' => false,
-            'sortable'   => false,
-            'closure'    => function ($row) {
-                if ($row->revoked_at) {
-                    return trans('dam::app.admin.dam.share.datagrid.status-revoked');
-                }
-                if ($row->expires_at && Carbon::parse($row->expires_at)->isPast()) {
-                    return trans('dam::app.admin.dam.share.datagrid.status-expired');
-                }
-
-                return trans('dam::app.admin.dam.share.datagrid.status-active');
-            },
         ]);
 
         $this->addColumn([
@@ -151,6 +167,27 @@ class ShareDataGrid extends DataGrid
     {
         if (bouncer()->hasPermission('dam.shares.revoke')) {
             $this->addAction([
+                'index'     => 'edit',
+                'icon'      => 'icon-edit',
+                'title'     => trans('dam::app.admin.dam.share.datagrid.edit'),
+                'method'    => 'edit-share',
+                'url'       => fn ($row) => route('admin.dam.shares.update', $row->id),
+                'condition' => fn ($row) => empty($row->revoked_at),
+            ]);
+        }
+
+        $this->addAction([
+            'index'     => 'copy_link',
+            'icon'      => 'icon-copy',
+            'title'     => trans('dam::app.admin.dam.share.datagrid.copy-link'),
+            'method'    => 'copy',
+            'url'       => fn ($row) => route('dam.share.show', ['token' => $row->token]),
+            'condition' => fn ($row) => empty($row->revoked_at),
+        ]);
+
+        if (bouncer()->hasPermission('dam.shares.revoke')) {
+            $this->addAction([
+                'index'  => 'revoke',
                 'icon'   => 'icon-delete',
                 'title'  => trans('dam::app.admin.dam.share.datagrid.revoke'),
                 'method' => 'DELETE',

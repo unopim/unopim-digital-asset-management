@@ -3,14 +3,26 @@
 @pushOnce('scripts')
 <script type="text/x-template" id="v-directory-search-template">
     <div class="relative">
-        <div class="flex items-center gap-2 border border-gray-200 dark:border-cherry-700 rounded-md px-2 py-1 bg-white dark:bg-cherry-800">
-            <i
+        <div class="relative w-full">
+            <input
+                ref="searchInput"
+                v-model="query"
+                type="text"
+                class="block w-full rounded-lg border dark:border-cherry-800 bg-white dark:bg-cherry-900 py-1.5 ltr:pl-3 rtl:pr-3 ltr:pr-10 rtl:pl-10 leading-6 text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400 outline-none"
+                :placeholder="placeholder"
+                autocomplete="off"
+                @keydown.esc="clearAndClose"
+                @focus="maybeReopen"
+            />
+
+            <div
                 v-if="!isLoading"
-                class="icon-search text-zinc-500 dark:text-slate-300 text-lg"
-            ></i>
+                class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl text-gray-400"
+                aria-hidden="true"
+            ></div>
             <svg
                 v-else
-                class="animate-spin h-4 w-4 text-violet-600"
+                class="animate-spin h-4 w-4 text-violet-600 absolute ltr:right-3 rtl:left-3 top-3 pointer-events-none"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -18,15 +30,6 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
-            <input
-                ref="searchInput"
-                v-model="query"
-                type="text"
-                class="flex-1 bg-transparent text-sm text-zinc-700 dark:text-white placeholder:text-zinc-400 outline-none"
-                :placeholder="placeholder"
-                @keydown.esc="clearAndClose"
-                @focus="maybeReopen"
-            />
         </div>
 
         <div

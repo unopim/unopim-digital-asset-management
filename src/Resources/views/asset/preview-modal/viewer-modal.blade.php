@@ -1,17 +1,11 @@
 <!-- Fullscreen Preview Modal -->
 <div
     v-if="isOpen"
-    class="fixed inset-0 z-[10010] flex items-center justify-center"
+    class="fixed inset-0 z-[10010]"
 >
-    <!-- Backdrop -->
-    <div
-        class="absolute inset-0 bg-black/75"
-        @click="closePreview"
-    ></div>
-
     <template v-if="previewData.file_type === 'video' || previewData.extension === 'pdf' || previewData.file_type === 'image'">
-        <!-- Large modal — video / pdf / image -->
-        <div class="relative z-10 flex flex-col w-[85vw] h-[88vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
+        <!-- Fullscreen modal — video / pdf / image -->
+        <div class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
 
             <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -52,8 +46,8 @@
         </div>
     </template>
     <template v-else>
-        <!-- Compact modal — audio / fallback -->
-        <div class="relative z-10 w-full max-w-lg mx-4 rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
+        <!-- Fullscreen modal — audio / fallback -->
+        <div class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
 
             <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">

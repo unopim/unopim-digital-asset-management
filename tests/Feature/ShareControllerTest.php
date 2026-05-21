@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Share;
+use Webkul\DAM\Tests\DamTestCase;
 
-uses(DatabaseTransactions::class);
+uses(DamTestCase::class, DatabaseTransactions::class);
 
 beforeEach(function () {
     DB::table('dam_shares')->delete();
@@ -97,9 +98,10 @@ it('returns 404 when revoking a non-existent share', function () {
         ->assertNotFound();
 });
 
-it('returns the share for a target (one share per target)', function () {
+it('lists active shares for a target', function () {
     $asset = Asset::factory()->create();
-    $share = Share::factory()->forAsset($asset->id)->create();
+    Share::factory()->forAsset($asset->id)->create();
+    Share::factory()->forAsset($asset->id)->revoked()->create();
 
     $response = $this->get(route('admin.dam.shares.active_for_target', [
         'type'     => Share::TYPE_ASSET,
@@ -107,17 +109,5 @@ it('returns the share for a target (one share per target)', function () {
     ]));
 
     $response->assertOk()->assertJsonPath('success', true);
-    expect($response->json('share.id'))->toBe($share->id);
-});
-
-it('returns null share when no share exists for target', function () {
-    $asset = Asset::factory()->create();
-
-    $response = $this->get(route('admin.dam.shares.active_for_target', [
-        'type'     => Share::TYPE_ASSET,
-        'targetId' => $asset->id,
-    ]));
-
-    $response->assertOk()->assertJsonPath('success', true);
-    expect($response->json('share'))->toBeNull();
+    expect($response->json('shares'))->toHaveCount(1);
 });

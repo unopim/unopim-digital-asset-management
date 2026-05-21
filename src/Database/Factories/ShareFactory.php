@@ -48,7 +48,6 @@ class ShareFactory extends Factory
     {
         return $this->state(fn () => [
             'revoked_at' => now()->subMinute(),
-            'is_active'  => false,
         ]);
     }
 

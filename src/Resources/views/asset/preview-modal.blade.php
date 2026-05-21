@@ -48,6 +48,7 @@
 >
     <div class="flex flex-col items-center gap-2 w-full">
         @include('dam::asset.preview-modal.card')
+        @include('dam::asset.preview-modal.viewer-modal')
         @include('dam::asset.preview-modal.info-modal')
         @include('dam::asset.preview-modal.editor-modal')
     </div>
@@ -102,7 +103,26 @@
                 this.$nextTick(() => {
                     this.videoInitEl();
                     this.audioInitEl();
+                    this.autoplayMedia();
                 });
+            },
+
+            autoplayMedia() {
+                const tryPlay = (el) => {
+                    if (!el) return;
+                    const p = el.play();
+                    if (p && typeof p.catch === 'function') {
+                        p.catch(() => { el.muted = true; el.play().catch(() => {}); });
+                    }
+                };
+
+                if (this.previewData?.file_type === 'video') {
+                    tryPlay(this.$refs.videoEl);
+                    this.videoIsPlaying = true;
+                } else if (this.previewData?.file_type === 'audio') {
+                    tryPlay(this.$refs.audioEl);
+                    this.audioIsPlaying = true;
+                }
             },
 
             closePreview() {
@@ -291,6 +311,9 @@
 
             this._onAssetChange = (data) => this.onDamAssetChanged(data);
             this.$emitter.on('dam-asset-changed', this._onAssetChange);
+
+            this._onPreviewRequested = () => this.openPreview();
+            this.$emitter.on('open-asset-preview', this._onPreviewRequested);
         },
 
         beforeUnmount() {
@@ -299,6 +322,9 @@
             this.videoBeforeUnmount();
             if (this._onAssetChange) {
                 this.$emitter.off('dam-asset-changed', this._onAssetChange);
+            }
+            if (this._onPreviewRequested) {
+                this.$emitter.off('open-asset-preview', this._onPreviewRequested);
             }
             document.body.style.overflow = '';
         },

@@ -98,6 +98,7 @@
                             {{-- Single title row: back · breadcrumb · icon · filename · counter --}}
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="{{ route('admin.dam.index') }}" class="transparent-button">
+                                    <i class="icon-left text-xl -mt-px" aria-hidden="true"></i>
                                     @lang('dam::app.admin.dam.asset.edit.back')
                                 </a>
 
@@ -122,7 +123,7 @@
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
                             {{ $buttonFour }}
-                            @isset($buttonFive) {{ $buttonFive }} @endisset
+                            {{ $buttonFive ?? '' }}
                         </div>
                     </div>
 

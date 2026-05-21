@@ -56,6 +56,32 @@
                                         class="w-full h-full object-cover object-center"
                                     >
 
+                                    {{-- File-type badge (top-right corner) — visible at a glance.
+                                         Only Tailwind classes already in the built bundle (bg-violet-600, bg-red-600, bg-gray-600)
+                                         are used; an outer ring + drop shadow keeps the badge legible on any background. --}}
+                                    <span
+                                        v-if="record.extension"
+                                        class="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md"
+                                        :class="{
+                                            'bg-violet-600': record.file_type === 'video' || record.file_type === 'audio',
+                                            'bg-red-600':    (record.extension || '').toLowerCase() === 'pdf',
+                                            'bg-gray-600':   record.file_type !== 'video' && record.file_type !== 'audio' && (record.extension || '').toLowerCase() !== 'pdf',
+                                        }"
+                                        v-text="(record.extension || '').toUpperCase()"
+                                    ></span>
+
+                                    {{-- Centred play/audio overlay — clearly marks non-image media --}}
+                                    <div
+                                        v-if="record.file_type === 'video' || record.file_type === 'audio'"
+                                        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                    >
+                                        <span
+                                            class="flex items-center justify-center w-12 h-12 rounded-full bg-black/55 text-white text-2xl shadow-lg"
+                                            :class="record.file_type === 'video' ? 'icon-play' : 'icon-information'"
+                                            aria-hidden="true"
+                                        ></span>
+                                    </div>
+
                                     <!-- ################ -->
                                     <div class="flex flex-col justify-center invisible w-full p-3 bg-black dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
                                         <!-- Actions -->
@@ -70,22 +96,24 @@
                                                 </span>
                                             @endif
 
-                                            <!-- delete icon -->
-                                            @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                                <span
-                                                    class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
-                                                    @click="deleteImage(record.id)"
-                                                >
-                                                </span>
-                                            @endif
-
                                             <!-- edit icon -->
                                             @if (bouncer()->hasPermission('dam.asset.edit'))
                                                 <div
                                                     class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
+                                                    title="@lang('dam::app.admin.dam.index.directory.actions.edit')"
                                                     @click="editImage(record.id)"
                                                 >
                                                 </div>
+                                            @endif
+
+                                            <!-- delete icon (destructive — placed last, red hover) -->
+                                            @if (bouncer()->hasPermission('dam.asset.destroy'))
+                                                <span
+                                                    class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-white hover:bg-red-600 dark:hover:bg-red-600 transition-colors"
+                                                    title="@lang('dam::app.admin.dam.index.directory.actions.delete')"
+                                                    @click="deleteImage(record.id)"
+                                                >
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
