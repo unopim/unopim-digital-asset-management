@@ -13,7 +13,7 @@ function makeRootFakeDir(Directory $root): void
     Storage::disk($disk)->makeDirectory('assets/'.$root->name);
 }
 
-it('auto-grants newly created directory to creator role', function () {
+it('auto-grants new subdirectory to every role that has the parent directory granted', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
 
@@ -50,13 +50,20 @@ it('auto-grants newly created directory to creator role', function () {
     )->toBeTrue();
 });
 
-it('does not auto-grant when creator role has all_directories enabled', function () {
+it('skips auto-grant for roles that have all_directories enabled even when parent is granted', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
 
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => ['dam.directory.store']]);
     $root = Directory::factory()->create(['name' => 'AllDirRoot', 'parent_id' => null]);
     makeRootFakeDir($root);
+
+    DB::table('dam_directory_role')->insertOrIgnore([
+        'directory_id' => $root->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
 
     DB::table('dam_role_settings')->updateOrInsert(
         ['role_id' => $role->id],
@@ -85,7 +92,7 @@ it('does not auto-grant when creator role has all_directories enabled', function
     )->toBeFalse();
 });
 
-it('does not auto-grant when creator role has all_permissions', function () {
+it('does not auto-grant when no role has the parent directory granted', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
 

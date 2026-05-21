@@ -199,6 +199,7 @@
                     isUploading: false,
                     abortController: null,
                     treeBusy: false,
+                    localAccessibleIds: [],
                 }
             },
 
@@ -210,11 +211,13 @@
                     if (this.aclBypass) return true;
                     if (! this.currentDirectory) return false;
 
-                    return this.accessibleIds.map(Number).includes(Number(this.currentDirectory.id));
+                    return this.localAccessibleIds.map(Number).includes(Number(this.currentDirectory.id));
                 },
             },
 
             mounted() {
+                this.localAccessibleIds = [...this.accessibleIds];
+
                 this.$emitter.on('current-directory', (data) => {
                     this.currentDirectory = data;
                 });
@@ -232,6 +235,16 @@
                 this.$emitter.on('dam:upload-files', (formData) => {
                     if (this.isUploading) return;
                     this.handleFileUpload(formData);
+                });
+
+                // When a new subdirectory is created and auto-granted to the
+                // current user's role, add its ID so canUploadHere reacts
+                // without a page reload.
+                this.$emitter.on('dam:directory-accessible', (id) => {
+                    const numId = Number(id);
+                    if (! this.localAccessibleIds.map(Number).includes(numId)) {
+                        this.localAccessibleIds.push(numId);
+                    }
                 });
             },
 
