@@ -13,6 +13,8 @@ use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\ApiDataSource\AssetDataSource;
 use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Jobs\GeneratePdfThumbnail;
+use Webkul\DAM\Jobs\GenerateVideoThumbnail;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
@@ -20,10 +22,14 @@ use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 
 class AssetController extends Controller
 {
+    use AssetAccessControl;
     use DirectoryTrait;
 
     /**
@@ -34,7 +40,8 @@ class AssetController extends Controller
         protected AssetTagRepository $assetTagRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
         protected FileStorer $fileStorer,
-        protected DirectoryRepository $directoryRepository
+        protected DirectoryRepository $directoryRepository,
+        protected MetadataExtractionService $metadataExtractionService
     ) {}
 
     /**
@@ -44,11 +51,7 @@ class AssetController extends Controller
      */
     public function index(): JsonResponse
     {
-        try {
-            return app(AssetDataSource::class)->toJson();
-        } catch (\Exception $e) {
-            return $this->storeExceptionLog($e);
-        }
+        return app(AssetDataSource::class)->toJson();
     }
 
     /**
@@ -135,6 +138,9 @@ class AssetController extends Controller
      */
     public function upload(Request $request): JsonResponse
     {
+        set_time_limit(0);
+        ignore_user_abort(true);
+
         $request->validate([
             'directory_id' => 'required|exists:dam_directories,id',
         ]);
@@ -164,6 +170,15 @@ class AssetController extends Controller
         }
 
         $directoryId = $request->get('directory_id');
+
+        $service = app(DirectoryPermissionService::class);
+        if (! $service->canAccess((int) $directoryId)) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->find($directoryId);
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
@@ -208,6 +223,9 @@ class AssetController extends Controller
                     options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
                 );
 
+                $localFilePath = $file->getRealPath();
+                $metaData = $this->metadataExtractionService->extractMetadata($localFilePath, disk: 'local', originalFileName: $originalName);
+
                 $asset = Asset::create([
                     'file_name' => $uniqueFileName,
                     'file_type' => AssetHelper::getFileType($file),
@@ -215,7 +233,17 @@ class AssetController extends Controller
                     'mime_type' => $mimeType,
                     'extension' => $extension,
                     'path'      => $filePath,
+                    'meta_data' => json_encode($metaData),
                 ]);
+
+                $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
+
+                // Real Cloudinary-style thumbnail: queued so the response stays fast.
+                if ($asset->file_type === 'video') {
+                    GenerateVideoThumbnail::dispatch($asset->id)->afterCommit();
+                } elseif (strtolower((string) $asset->extension) === 'pdf') {
+                    GeneratePdfThumbnail::dispatch($asset->id)->afterCommit();
+                }
 
                 $assetIds[] = $asset->id;
                 $uploadFiles[] = $asset;
@@ -251,6 +279,9 @@ class AssetController extends Controller
      */
     public function reUpload(Request $request)
     {
+        set_time_limit(0);
+        ignore_user_abort(true);
+
         $maxKb = AssetHelper::getMaxUploadSizeKb();
         $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
             'size' => $this->humanReadableSize($maxKb),
@@ -274,6 +305,8 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset($assetId);
 
         $directoryId = $asset->directories()->first()->id ?? null;
         $directory = $this->directoryRepository->find($directoryId);
@@ -306,6 +339,19 @@ class AssetController extends Controller
             $originalName = $file->getClientOriginalName();
             $uniqueFileName = $this->generateUniqueFileName($directoryPath, $originalName);
 
+            $localFilePath = $file->getRealPath();
+            $metaData = $this->metadataExtractionService->extractMetadata($localFilePath, disk: 'local', originalFileName: $originalName);
+
+            if (str_starts_with($mimeType ?? '', 'audio/') && $localFilePath && file_exists($localFilePath)) {
+                $coverData = $this->metadataExtractionService->extractCoverArtData($localFilePath);
+                if ($coverData) {
+                    $coverPath = $this->metadataExtractionService->storeCoverArt($coverData, $asset->id, $disk);
+                    if ($coverPath) {
+                        $metaData = array_merge($metaData, ['cover_art_path' => $coverPath]);
+                    }
+                }
+            }
+
             $filePath = $this->fileStorer->store(
                 path: $directoryPath,
                 file: $file,
@@ -320,6 +366,7 @@ class AssetController extends Controller
                 'mime_type' => $file->getMimeType(),
                 'extension' => $file->getClientOriginalExtension(),
                 'path'      => $filePath,
+                'meta_data' => $metaData,
             ]);
         }
 
@@ -328,6 +375,34 @@ class AssetController extends Controller
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
             'file'    => $asset,
         ], 201);
+    }
+
+    /**
+     * For audio assets, extract embedded cover art and attach its storage path
+     * to the asset's meta_data. No-op for non-audio mime types or when no
+     * embedded artwork is found.
+     */
+    private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
+    {
+        if (! str_starts_with($mimeType ?? '', 'audio/')) {
+            return;
+        }
+
+        if (! $localFilePath || ! file_exists($localFilePath)) {
+            return;
+        }
+
+        $coverData = $this->metadataExtractionService->extractCoverArtData($localFilePath);
+        if (! $coverData) {
+            return;
+        }
+
+        $coverPath = $this->metadataExtractionService->storeCoverArt($coverData, $asset->id, $disk);
+        if (! $coverPath) {
+            return;
+        }
+
+        $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
     }
 
     /**
@@ -361,7 +436,12 @@ class AssetController extends Controller
             ], 404);
         }
 
-        $asset->previewPath = route('admin.dam.file.preview', ['path' => urlencode($asset->path), 'size' => $asset->file_size]);
+        $this->damAuthorizeAsset($id);
+
+        $asset->previewPath = AssetHelper::getPreviewUrl(
+            $asset->path,
+            $asset->file_size
+        );
 
         if ($asset->file_type === 'image') {
             $metaData = $this->getMetadata($asset->path, $disk);
@@ -403,6 +483,7 @@ class AssetController extends Controller
     {
         $asset = $this->assetRepository->find($id);
         $disk = Directory::getAssetDisk();
+
         if (! $asset) {
             return response()->json([
                 'success' => false,
@@ -410,7 +491,12 @@ class AssetController extends Controller
             ], 404);
         }
 
-        $asset->previewPath = route('admin.dam.file.preview', ['path' => urlencode($asset->path), 'size' => '1356']);
+        $this->damAuthorizeAsset($id);
+
+        $asset->previewPath = AssetHelper::getPreviewUrl(
+            $asset->path,
+            1356
+        );
 
         if ($asset->file_type === 'image') {
             $metaData = $this->getMetadata($asset->path, $disk);
@@ -456,6 +542,8 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-update'),
             ], 404);
         }
+
+        $this->damAuthorizeAsset((int) $id);
 
         $request->validate([
             'file_name' => 'string',
@@ -506,6 +594,8 @@ class AssetController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset((int) $id);
+
         if ($asset->resources()->get()->count()) {
             return response()->json([
                 'success' => false,
@@ -551,35 +641,39 @@ class AssetController extends Controller
 
     public function download(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         $asset = Asset::find($id);
         $disk = Directory::getAssetDisk();
 
         if (! $asset || ! Storage::disk($disk)->exists($asset->path)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Asset not found or file does not exist.',
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-or-no-file'),
             ], 404);
         }
 
-        if ($disk === 'private') {
+        $fileName = $asset->file_name ?? basename($asset->path);
+
+        if (config('filesystems.default') === 's3') {
+            $downloadUrl = Storage::disk($disk)->temporaryUrl(
+                $asset->path,
+                now()->addMinutes(10),
+                [
+                    'ResponseContentDisposition' => 'attachment; filename="'.$fileName.'"',
+                ]
+            );
+        } else {
             $downloadUrl = URL::temporarySignedRoute(
                 'admin.api.dam.assets.private.download',
                 now()->addMinutes(10),
                 ['id' => $asset->id]
             );
-        } else {
-            $downloadUrl = Storage::disk($disk)->temporaryUrl(
-                $asset->path,
-                now()->addMinutes(10),
-                [
-                    'ResponseContentDisposition' => 'attachment; filename="'.($asset->file_name ?? basename($asset->path)).'"',
-                ]
-            );
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Asset found. You can download the file from the provided link.',
+            'message' => trans('dam::app.admin.dam.asset.datagrid.download-link-ready'),
             'data'    => [
                 'download_url' => $downloadUrl,
             ],

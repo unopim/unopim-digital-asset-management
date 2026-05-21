@@ -1,17 +1,28 @@
-<v-tree-view>
-    <x-admin::shimmer.tree />
-</v-tree-view>
+<div class="flex flex-col gap-2">
+    <x-dam::tree.search />
+    <x-dam::tree.asset-count-badge />
+
+    <v-tree-view
+        :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
+        :accessible-ids='@json(dam_accessible_dir_ids())'
+        :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
+    >
+        <x-admin::shimmer.tree />
+    </v-tree-view>
+</div>
 
 @pushOnce('scripts')
 <!-- asset name template -->
 <script type="text/x-template" id="v-asset-item-template">
-    <div 
-        class="tree-container-assets-details" 
-    >    
+    <div
+        class="tree-container-assets-details"
+    >
         <div
-            class="flex gap-1 w-full p-1 cursor-pointer"
-            @click.stop="setFilters(item)"
-            @contextmenu.prevent.stop="showContextMenu($event, item)"
+            class="flex gap-1 w-full p-1"
+            :class="treeLocked ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
+            :aria-disabled="treeLocked"
+            @click.stop="treeLocked ? null : setFilters(item)"
+            @contextmenu.prevent.stop="treeLocked ? null : showContextMenu($event, item)"
         >
             <span>
                 <i 
@@ -32,6 +43,10 @@
         props: {
             item: Object,
             selectedItem: Object,
+            treeLocked: {
+                type: Boolean,
+                default: false,
+            },
         },
         mounted() {
             this.$emitter.on('update-current-item', (data) => {
@@ -93,31 +108,59 @@
 <script type="text/x-template" id="v-item-template">
     <div class="tree-container-details">
         <div
-            class="flex gap-1 w-full pl-1 pt-1 text-nowrap cursor-pointer"
-            @click.stop="toggle(item)"
-            @contextmenu.prevent.stop="showContextMenu($event, item)"
+            class="flex items-center gap-1 w-full pl-1 pt-1 text-nowrap"
+            :class="isBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
+            :aria-disabled="isBusy"
+            :data-dir-id="item.id"
+            @click.stop="isBusy ? null : toggle(item)"
+            @contextmenu.prevent.stop="isBusy ? null : showContextMenu($event, item)"
+            @dragenter.prevent="isBusy ? null : onDragEnter()"
+            @dragover.prevent
         >
-            <span 
+            <span
                 class="text-xl text-zinc-600 dark:text-white"
                 v-if="isDirectory || isAssets"
                 :class="isOpen ? 'icon-dam-close' : 'icon-dam-open'"
             >
             </span>
             <span>
-                <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
+                <svg
+                    v-if="isSelfBusy"
+                    class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                >
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                    ></circle>
+                    <path
+                        class="opacity-75"
+                        fill="#8A2BE2"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                </svg>
+                <i v-else class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
             </span>
             <span
                 class="text-sm"
                 :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
+            <v-asset-count-badge :count="item?.assets_total_count ?? 0" />
         </div>
-        <div 
-            v-show="isOpen" 
-            v-if="isDirectory || isAssets"
+        <div
+            v-show="isOpen"
+            v-if="hasDropZone"
             class="flex flex-col pl-6"
         >
             <!-- Directories -->
-            <draggable 
+            <draggable
                 id="child-tree-groups"
                 class="directoryItems"
                 ghost-class="draggable-ghost"
@@ -135,24 +178,28 @@
                         <v-tree-item
                             class="sub-tree-item"
                             :item="element"
-                            :key="index"
+                            :key="element.id"
                             @right-click-item="showContextMenu"
                             @set-filters="setFilters"
                             @on-merge-items="onMergeItems"
                             @on-drag-start="onDragStart"
                             :selectedItem="selectedItem"
+                            :movingDirectoryId="movingDirectoryId"
+                            :deletingDirectoryId="deletingDirectoryId"
+                            :copyingDirectoryId="copyingDirectoryId"
+                            :treeLocked="treeLocked"
                         ></v-tree-item>
                     </div>
                 </template>
             </draggable>
 
             <!-- Asset -->
-            <draggable 
+            <draggable
                 id="assets-items"
                 ghost-class="draggable-ghost"
                 handle=".tree-container-assets-details"
-                v-bind="{animation: 200}"
-                :list="item.assets"
+                v-bind="{ animation: 200 }"
+                :list="localAssets"
                 item-key="id"
                 :sort='false'
                 group="itemsAssets"
@@ -168,6 +215,7 @@
                             :selectedItem="selectedItem"
                             @on-merge-items="onMergeItems"
                             @on-drag-start="onDragStart"
+                            :treeLocked="treeLocked"
                         />
                     </div>
                 </template>
@@ -194,14 +242,14 @@
         </template>
     </draggable>
     <!-- Asset -->
-    <draggable 
+    <draggable
         v-if="!isAssets"
         id="assets-items"
         class="mb-1 itemsAssets ml-6"
         ghost-class="draggable-ghost"
         handle=".tree-container-assets-details"
-        v-bind="{animation: 200}"
-        :list="item.assets"
+        v-bind="{ animation: 200 }"
+        :list="localAssets"
         item-key="id"
         :sort='false'
         group="itemsAssets"
@@ -216,33 +264,81 @@
 <script type="module">
     app.component('v-tree-item', {
         template: "#v-item-template",
+        inject: ['damTreeShowAssets'],
         props: {
             item: Object,
             selectedItem: Object,
+            movingDirectoryId: {
+                type: [String, Number],
+                default: null,
+            },
+            deletingDirectoryId: {
+                type: [String, Number],
+                default: null,
+            },
+            copyingDirectoryId: {
+                type: [String, Number],
+                default: null,
+            },
+            treeLocked: {
+                type: Boolean,
+                default: false,
+            },
         },
         data: function() {
             return {
                 isOpen: false,
-                showContextMenuFlag: false, // To control menu visibility
-                contextMenuPosition: {
-                    x: 0,
-                    y: 0
-                }, // Store menu position
-                // selectedItem: null, // To store selected item
+                showContextMenuFlag: false,
+                contextMenuPosition: { x: 0, y: 0 },
+                assetsLoaded: false,
+                assetsLoading: false,
+                assetsStale: false,
+                // Local reactive asset list — own data, never reassigned, so
+                // vuedraggable's Sortable stays bound to a stable array ref
+                // for the lifetime of this component instance. Avoids the
+                // race where the prop's `assets` is undefined at first paint
+                // and the draggable orphans onto undefined.
+                localAssets: [],
             };
         },
         mounted() {
+            // Seed local list from prop if backend happened to include assets
+            // (picker path with `with_assets=1`). Splice keeps the same ref.
+            if (Array.isArray(this.item.assets) && this.item.assets.length) {
+                this.localAssets.splice(0, 0, ...this.item.assets);
+            }
+
             this.$emitter.on('current-item-expanded', (data) => {
-                if (data.id === this.item.id) {
-                    this.isOpen = true;
+                if (data.id !== this.item.id) return;
+                this.isOpen = true;
+                if (! this.assetsLoaded && ! this.assetsLoading) {
+                    this.loadDirectoryAssets();
                 }
             });
 
             this.$emitter.on('update-current-item', (data) => {
-                if (data.id === this.item.id) {
-                    this.item = data;
+                if (data.id === this.item.id) this.item = data;
+            });
+
+            // `dirId === null` means "invalidate all"; otherwise scoped to id.
+            this.$emitter.on('invalidate-dir-assets', (dirId) => {
+                if (dirId == null || dirId == this.item.id) {
+                    this.invalidateAssetCache();
                 }
             });
+        },
+        watch: {
+            // When parent reloads the tree (`loadDirectories`), this instance
+            // may be reused for a different directory entirely (only with a
+            // non-id key — id-based keys force re-mount). Reset flags and
+            // empty the local list in place so vuedraggable's bound ref
+            // survives.
+            'item.id'() {
+                this.assetsLoaded = false;
+                this.assetsLoading = false;
+                this.assetsStale = false;
+                this.localAssets.splice(0, this.localAssets.length);
+            },
         },
         computed: {
             isDirectory: function() {
@@ -250,8 +346,53 @@
             },
 
             isAssets: function() {
-                return this.item.assets && Object.keys(this.item.assets).length;
-            }
+                // DAM_TREE_SHOW_ASSETS off → suppress the asset section
+                // entirely regardless of count hints from the backend.
+                if (! this.damTreeShowAssets) return false;
+
+                // True when the directory actually has assets to render:
+                //   - lazy fetch resolved with at least one asset, or
+                //   - backend hint `assets_count > 0`.
+                return this.localAssets.length > 0
+                    || (this.item.assets_count && this.item.assets_count > 0);
+            },
+
+            // Used to mount the inner wrapper so the asset drop target exists
+            // even on empty leaf dirs that the user has expanded once.
+            hasDropZone: function() {
+                return this.isDirectory || this.isAssets || this.assetsLoaded;
+            },
+
+            isMoving: function() {
+                return this.movingDirectoryId !== null
+                    && this.item
+                    && this.item.id == this.movingDirectoryId;
+            },
+
+            isDeleting: function() {
+                return this.deletingDirectoryId !== null
+                    && this.item
+                    && this.item.id == this.deletingDirectoryId;
+            },
+
+            isCopying: function() {
+                return this.copyingDirectoryId !== null
+                    && this.item
+                    && this.item.id == this.copyingDirectoryId;
+            },
+
+            isSelfBusy: function() {
+                // True only when THIS directory has an active mutation (its own
+                // delete/move/copy). Drives the per-node spinner so it shows on
+                // the affected dir alone.
+                return this.isMoving || this.isDeleting || this.isCopying;
+            },
+
+            isBusy: function() {
+                // True when the row should be non-interactive — either this dir
+                // is being mutated, or any other dir is (treeLocked broadcast).
+                return this.isSelfBusy || this.treeLocked;
+            },
         },
         methods: {
             onDragStart(event) {
@@ -263,11 +404,77 @@
             },
 
             toggle: function(item) {
-                if (this.isDirectory || this.isAssets) {
-                    this.isOpen = !this.isOpen;
+                const willOpen = ! this.isOpen;
+                if (this.isDirectory || this.isAssets || ! this.assetsLoaded) {
+                    this.isOpen = willOpen;
+                }
+
+                if (willOpen && ! this.assetsLoaded && ! this.assetsLoading) {
+                    this.loadDirectoryAssets();
                 }
 
                 this.$emit("set-filters", item);
+            },
+
+            // Replace contents of `localAssets` in place. vuedraggable's
+            // Sortable holds the original array reference from mount; splice
+            // keeps the same ref with new contents.
+            replaceAssetsInPlace(fresh) {
+                this.localAssets.splice(0, this.localAssets.length, ...fresh);
+            },
+
+            loadDirectoryAssets() {
+                // Skip the network round-trip when the tree is configured
+                // not to render assets — the server returns [] anyway, but
+                // suppressing the request avoids unnecessary traffic on
+                // installs with large folder counts.
+                if (! this.damTreeShowAssets) {
+                    this.assetsLoaded = true;
+                    return;
+                }
+
+                if (this.assetsLoading) {
+                    this.assetsStale = true;
+                    return;
+                }
+                this.assetsLoading = true;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.assets', ':id') }}`.replace(':id', this.item.id))
+                    .then((response) => {
+                        this.replaceAssetsInPlace(response.data.data || []);
+                        this.assetsLoaded = true;
+                        this.assetsLoading = false;
+                        if (this.assetsStale) {
+                            this.assetsStale = false;
+                            this.loadDirectoryAssets();
+                        }
+                    })
+                    .catch(() => {
+                        this.assetsLoading = false;
+                    });
+            },
+
+            // Auto-expand collapsed dir on dragenter so the inner asset draggable
+            // mounts and can accept the drop. Mirrors Windows Explorer hover-expand.
+            onDragEnter() {
+                if (this.assetsLoading) return;
+                if (! this.isOpen) {
+                    this.isOpen = true;
+                }
+                if (! this.assetsLoaded) {
+                    this.loadDirectoryAssets();
+                }
+            },
+
+            invalidateAssetCache() {
+                if (this.assetsLoading) {
+                    this.assetsStale = true;
+                    return;
+                }
+                this.assetsLoaded = false;
+                if (this.isOpen) {
+                    this.loadDirectoryAssets();
+                }
             },
 
             setFilters: function(item, type = 'directory') {
@@ -288,28 +495,53 @@
     });
 </script>
 <script type="text/x-template" id="v-tree-view-template">
-    <div 
-            class="relative" 
+    <div
+            class="relative"
             ref="treeContainer"
             v-if="formattedItems"
         >
-            <div class="tree-container text-nowrap overflow-hidden text-ellipsis">
+            <!-- Move-in-flight overlay (directory or asset drag-move) -->
+            <div
+                v-if="moveStatusLabel"
+                class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+                style="z-index: 99998;"
+                role="status"
+                aria-live="polite"
+            >
                 <div
-                    class="flex gap-1 w-full p-1 text-nowrap cursor-pointer"
-                    @click.stop="resetFilters(formattedItems[0])"
-                    @contextmenu.prevent.stop="showContextMenu($event, formattedItems[0])"
+                    class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
+                    style="min-width: 360px; z-index: 99999;"
+                >
+                    <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span class="text-base font-semibold text-gray-900 dark:text-white text-center break-words" v-text="moveStatusLabel"></span>
+                </div>
+            </div>
+            <div
+                class="tree-container text-nowrap overflow-auto"
+                style="max-height: calc(100vh - 360px);"
+                :class="treeBusy ? 'cursor-not-allowed' : ''"
+            >
+                <div
+                    class="flex items-center gap-1 w-full p-1 text-nowrap"
+                    :class="treeBusy ? 'cursor-not-allowed opacity-60 pointer-events-none' : 'cursor-pointer'"
+                    :aria-disabled="treeBusy"
+                    :data-dir-id="formattedItems[0].id"
+                    @click.stop="treeBusy ? null : resetFilters(formattedItems[0])"
+                    @contextmenu.prevent.stop="treeBusy ? null : showContextMenu($event, formattedItems[0])"
                 >
                     <span>
                         <i class="icon-dam-folder text-xl transition-all group-hover:text-gray-800 dark:group-hover:text-white cursor-grab"></i>
                     </span>
-                    <span 
+                    <span
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
-                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
-                    >
-                        @{{ formattedItems[0].name }}
-                    </span>
+                        :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
+                    >@{{ formattedItems[0].name }}</span>
+                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? 0" />
                 </div>
-                <draggable 
+                <draggable
                     id="root-tree-groups"
                     ghost-class="draggable-ghost"
                     handle=".icon-dam-folder"
@@ -327,22 +559,26 @@
                             <v-tree-item
                                 class="item"
                                 :item="element"
-                                :key="index"
+                                :key="element.id"
                                 @right-click-item="showContextMenu"
                                 @set-filters="setFilters"
                                 @on-merge-items="onMergeItems"
                                 @on-drag-start="onDragStart"
                                 :selectedItem="selectedItem"
+                                :movingDirectoryId="movingDirectoryId"
+                                :deletingDirectoryId="deletingDirectoryId"
+                                :copyingDirectoryId="copyingDirectoryId"
+                                :treeLocked="treeBusy"
                             ></v-tree-item>
                         </div>
                     </template>
                 </draggable>
 
-                <draggable 
+                <draggable
                     id="assets-items"
                     ghost-class="draggable-ghost"
                     handle=".tree-container-assets-details"
-                    v-bind="{animation: 200}"
+                    v-bind="{ animation: 200 }"
                     :list="formattedItems[0].assets"
                     item-key="id"
                     :sort="false"
@@ -359,10 +595,11 @@
                                 @on-drag-start="onDragStart"
                                 @right-click-item="showContextMenu"
                                 :selectedItem="selectedItem"
+                                :treeLocked="treeBusy"
                             />
                         </div>
-                        
-                    </template> 
+
+                    </template>
                 </draggable>
             </div>
 
@@ -373,10 +610,10 @@
             >
                 <div>
                     @if (bouncer()->hasPermission('dam.asset.upload'))
-                     <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                     <div
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                         @click="uploadFile"
-                        v-if="requestType != 'asset'"
+                        v-if="requestType != 'asset' && canAccessSelected()"
                     >
                         <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
                         <input 
@@ -392,21 +629,21 @@
                     @endif
 
                     @if (bouncer()->hasPermission('dam.directory.store'))
-                        <div 
-                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300" 
+                        <div
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300"
                             @click="createDirectory"
-                            v-if="requestType != 'asset'"
+                            v-if="requestType != 'asset' && canAccessSelected()"
                         >
                             <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
                             <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.add-directory') </span>
                         </div>
                     @endif
                     <!-- @TODO: Feature Update -->
-                    <!-- <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" @click="copyDirectory">
+                    <!-- <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal" @click="copyDirectory">
                         <i class="icon-dam-copy"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.copy')</span>
                     </div>
-                    <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" @click="copyDirectory">
+                    <div class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal" @click="copyDirectory">
                         <i class="icon-dam-cut"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.cut')</span>
                     </div>
@@ -416,10 +653,10 @@
                     </div> -->
 
                     @if (bouncer()->hasPermission('dam.directory.rename'))
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                    <div
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                         @click="renameItem"
-                        v-if="requestType == 'directory'"
+                        v-if="requestType == 'directory' && canAccessSelected()"
                     >
                         <i class="icon-dam-rename"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.rename')</span>
@@ -428,7 +665,7 @@
 
                     @if (bouncer()->hasPermission('dam.asset.rename'))
                         <div 
-                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal" 
                             @click="renameItem"
                             v-if="requestType == 'asset'"
                         >
@@ -438,10 +675,10 @@
                     @endif
 
                     @if (bouncer()->hasPermission('dam.directory.destroy'))
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                    <div
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                         @click="deleteItem"
-                        v-if="requestType == 'directory'"
+                        v-if="requestType == 'directory' && canAccessSelected()"
                     >
                         <i class="icon-dam-delete"></i>
                         <span class="text-sm text-zinc-600 dark:text-white">@lang('dam::app.admin.dam.index.directory.actions.delete')</span>
@@ -450,7 +687,7 @@
 
                     @if (bouncer()->hasPermission('dam.asset.destroy'))
                         <div 
-                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal" 
                             @click="deleteFile"
                             v-if="requestType == 'asset'"
                         >
@@ -460,10 +697,10 @@
                     @endif
 
                     @if (bouncer()->hasPermission('dam.directory.copy_structure'))
-                        <div 
-                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                        <div
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                             @click="copyDirectory"
-                            v-if="requestType != 'asset'"
+                            v-if="requestType != 'asset' && canAccessSelected()"
                         >
                             <i class="icon-dam-directory"></i>
                             <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.copy-directory-structured')</span>
@@ -471,19 +708,30 @@
                     @endif
 
                     @if (bouncer()->hasPermission('dam.directory.download_zip'))
-                        <div 
-                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                        <div
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300"
                             @click="downloadItem('directory')"
-                            v-if="requestType != 'asset'"
+                            v-if="requestType != 'asset' && canAccessSelected()"
                         >
                             <i class="icon-dam-zip"></i>
                             <span class="text-sm text-zinc-600  dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.download-zip')</span>
                         </div>
                     @endif
 
+                    @if (bouncer()->hasPermission('dam.directory.share'))
+                        <div
+                            class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 !leading-normal dark:text-slate-300"
+                            @click="shareDirectory"
+                            v-if="requestType == 'directory' && canAccessSelected()"
+                        >
+                            <i class="icon-dam-link"></i>
+                            <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.share')</span>
+                        </div>
+                    @endif
+
                     @if (bouncer()->hasPermission('dam.asset.download'))
-                    <div 
-                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal dark:text-slate-300" 
+                    <div
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                         @click="downloadItem('asset')"
                         v-if="requestType == 'asset'"
                     >
@@ -491,35 +739,19 @@
                         <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.download')</span>
                     </div>
                     @endif
+
+                    <!-- Placeholder shown when the right-clicked dir is only
+                         visible as an ancestor breadcrumb (not directly granted)
+                         so every action above is hidden. Replaces the otherwise
+                         empty floating box that looked like a glitch. -->
+                    <div
+                        v-if="requestType == 'directory' && ! canAccessSelected()"
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 text-sm text-zinc-500 dark:text-slate-400 italic !leading-normal cursor-default"
+                    >
+                        <span class="text-sm text-nowrap">@lang('dam::app.admin.permissions.no-actions')</span>
+                    </div>
                 </div>
             </div>
-
-            <!-- Show loader -->
-             <div 
-                v-if="isLoading" 
-                :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
-                class="absolute z-50 dark:text-white"
-            >
-                <!-- Spinner -->
-                <svg class="align-center inline-block animate-spin h-5 w-5 ml-2 text-white-700" xmlns="http://www.w3.org/2000/svg" fill="none"  aria-hidden="true" viewBox="0 0 24 24">
-                    <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                    >
-                    </circle>
-
-                    <path
-                        class="opacity-75"
-                        fill="#8A2BE2"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    >
-                    </path>
-                </svg>
-             </div>
         </div>
         
 
@@ -696,7 +928,33 @@
 <script type="module">
     app.component('v-tree-view', {
         template: '#v-tree-view-template',
-        props: ['src'],
+        props: {
+            src: {
+                type: String,
+                default: null,
+            },
+            aclBypass: {
+                type: Boolean,
+                default: false,
+            },
+            accessibleIds: {
+                type: Array,
+                default: () => [],
+            },
+            showAssets: {
+                type: Boolean,
+                default: false,
+            },
+        },
+        provide() {
+            // DAM_TREE_SHOW_ASSETS env toggle surfaced to descendants. When
+            // false (default), the tree skips lazy-fetching assets and hides
+            // the asset section under each folder. Static per page load, so
+            // non-reactive inject is fine.
+            return {
+                damTreeShowAssets: this.showAssets,
+            };
+        },
         data() {
             return {
                 formattedItems: null,
@@ -718,27 +976,97 @@
                 isLoading: false,
                 actionStatus: null,
                 dragStart: false,
+                movingDirectoryId: null,
+                deletingDirectoryId: null,
+                copyingDirectoryId: null,
+                gridBusy: false,
+                moveStatusLabel: '',
             };
         },
 
         mounted() {
             this.$emitter.on('uploaded-assets', (data) => {
+                const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
+                if (uploadedCount > 0 && this.selectedItem) {
+                    this.adjustAncestorCounts(this.selectedItem.id, uploadedCount);
+                }
                 this.setAssets(data);
             });
 
-            this.$emitter.on('delete-assets', (data) => {
-                // @TODO: Need to implement in future
-                // if (data.actionType == 'single-action') {
-                //     this.setFilters(this.parentItem);
-                // }
+            this.$emitter.on('delete-assets', (payload = {}) => {
+                // Mass-delete from grid — tree structure unchanged, refresh
+                // asset caches without reloading the whole directory tree.
+                const deletedCount = Number(payload.count || 0);
+                if (deletedCount > 0 && this.selectedItem) {
+                    this.adjustAncestorCounts(this.selectedItem.id, -deletedCount);
+                }
+                this.invalidateAllAssetCaches();
+            });
 
-                this.loadDirectories()
+            // Grid-side mutations (upload in progress, mass-selection active)
+            // freeze the tree so users can't move folders out from under an
+            // in-flight grid action.
+            this.$emitter.on('dam:grid-busy', (busy) => {
+                this.gridBusy = !! busy;
+            });
+
+            this.$emitter.on('dam:reveal-directory', ({ id, silent = false } = {}) => {
+                // The tree's directories load asynchronously. If a reveal
+                // request arrives before `formattedItems` is populated (e.g.
+                // a deep link from the asset-edit breadcrumb, or a router
+                // back-nav), stash it and fire it once the tree is ready —
+                // otherwise `findPathToDirectory` returns null and a spurious
+                // "Directory no longer accessible" flash fires.
+                if (! this.formattedItems || ! this.formattedItems[0]) {
+                    this._pendingReveal = { id, silent };
+                    return;
+                }
+                this.revealDirectory(id, silent);
             });
 
             this.loadDirectories();
         },
 
+        computed: {
+            // Aggregate "an async tree mutation is in flight" — drives the
+            // grid lockout so user can't act on assets while a directory
+            // delete/move/copy job is still running.
+            treeMutating() {
+                return !! (
+                    this.deletingDirectoryId
+                    || this.movingDirectoryId
+                    || this.copyingDirectoryId
+                );
+            },
+            // Tree row interaction lock — true when this side is mutating OR
+            // grid is busy on the other side. Drives `treeLocked` prop chain.
+            treeBusy() {
+                return this.treeMutating || this.gridBusy;
+            },
+        },
+
+        watch: {
+            // Only broadcast TREE-side mutations to the grid. Including
+            // `gridBusy` here would create a feedback loop: grid emits busy →
+            // tree treeBusy=true → tree emits dam:tree-busy → grid locks
+            // itself mid-upload.
+            treeMutating(value) {
+                this.$emitter.emit('dam:tree-busy', value);
+            },
+        },
+
         methods: {
+            // Whether the currently right-clicked dir is directly granted to
+            // the admin's role. Bypass roles (all/anonymous/API) always pass.
+            // Used to hide upload/create/rename/delete/copy/zip context-menu
+            // entries on ancestors that are tree-visible only.
+            canAccessSelected() {
+                if (this.aclBypass) return true;
+                if (! this.selectedItem || this.selectedItem.id == null) return false;
+
+                return this.accessibleIds.map(Number).includes(Number(this.selectedItem.id));
+            },
+
             focusNameInput() {
                 this.$nextTick(() => {
                     if (this.$refs.nameInput) {
@@ -788,6 +1116,63 @@
                 document.removeEventListener('click', this.closeContextMenu);
             },
 
+            // Find the path from root to the directory with the given id within
+            // the locally-loaded `formattedItems`. Returns an array of nodes
+            // top-down (root first, target last) or null if not found.
+            findPathToDirectory(id) {
+                const root = this.formattedItems && this.formattedItems[0];
+                if (! root) return null;
+
+                const stack = [[root, [root]]];
+                while (stack.length) {
+                    const [node, path] = stack.pop();
+                    if (Number(node.id) === Number(id)) {
+                        return path;
+                    }
+                    for (const child of (node.children || [])) {
+                        stack.push([child, [...path, child]]);
+                    }
+                }
+                return null;
+            },
+
+            // Expand all ancestors of the target dir, scroll the target row into
+            // view, and fire setFilters() so the grid loads its assets.
+            // `silent=true` suppresses the not-found flash — used for non-user
+            // initiated reveals (deep link from edit page, breadcrumb click).
+            async revealDirectory(id, silent = false) {
+                const path = this.findPathToDirectory(id);
+                if (! path) {
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
+                    return;
+                }
+
+                // Expand every ancestor (all but the last node).
+                for (let i = 0; i < path.length - 1; i++) {
+                    this.$emitter.emit('current-item-expanded', path[i]);
+                }
+
+                await this.$nextTick();
+
+                // Wait one more tick so newly-expanded subtrees mount their rows
+                // before we try to scroll to the target.
+                await this.$nextTick();
+
+                const target = path[path.length - 1];
+                const el = this.$refs.treeContainer
+                    && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
+                if (el && typeof el.scrollIntoView === 'function') {
+                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+
+                this.setFilters(target);
+            },
+
             setFilters(item, type = "directory") {
                 this.selectedItem = item;
                 this.parentItem = item;
@@ -799,11 +1184,8 @@
                 let column = type == 'directory' ? 'directory_id' : 'directory_asset_id';
                 let value = [this.selectedItem.id];
 
-                if (type == 'directory') {
-                    value = [...value, ...this.findAllDirectoryIds(this.selectedItem)];
-                }
-
                 this.$emitter.emit('current-directory', this.parentItem);
+                this.emitBreadcrumb(this.parentItem);
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:filter', {
                     column: {
@@ -825,7 +1207,22 @@
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:refresh');
                 this.$emitter.emit('current-directory', this.selectedItem);
+                this.emitBreadcrumb(this.selectedItem);
                 this.closeContextMenu();
+            },
+
+            // Build and broadcast the ancestor chain of a selected directory so
+            // the listing-page header can render a full breadcrumb. Uses the
+            // already-loaded tree data — no extra HTTP call.
+            emitBreadcrumb(item) {
+                if (! item) {
+                    this.$emitter.emit('current-directory-breadcrumb', []);
+                    return;
+                }
+
+                const path = this.findPathToDirectory(item.id);
+                const crumbs = (path || [item]).map(n => ({ id: n.id, name: n.name }));
+                this.$emitter.emit('current-directory-breadcrumb', crumbs);
             },
 
             findAllDirectoryIds(selectedItem) {
@@ -859,7 +1256,7 @@
                 let formData = new FormData(this.$refs.directoryCreateOrRenameForm);
                 this.$axios.post(this.directoryCreate ? "{{ route('admin.dam.directory.store') }}" : "{{ route('admin.dam.directory.update') }}", formData)
                     .then((response) => {
-                        this.$refs.directoryCreateOrRenameModal.close();
+                        this.$refs.directoryCreateOrRenameModal?.close();
                         if (this.directoryCreate) {
                             if (!this.selectedItem.children) {
                                 this.selectedItem.children = [];
@@ -915,7 +1312,7 @@
                 let formData = new FormData(this.$refs.assetRenameForm);
                 this.$axios.post("{{ route('admin.dam.assets.rename') }}", formData)
                     .then((response) => {
-                        this.$refs.assetRenameModal.close();
+                        this.$refs.assetRenameModal?.close();
                         this.$emitter.emit('add-flash', {
                             type: 'success',
                             message: response.data.message
@@ -941,6 +1338,7 @@
                     message: "@lang('dam::app.admin.components.modal.confirm.message')",
                     agree: () => {
                         this.isLoading = true;
+                        this.deletingDirectoryId = this.selectedItem.id;
                         this.$axios.delete(`{{ route('admin.dam.directory.destroy', ':id') }}`.replace(':id', this.selectedItem.id))
                             .then(response => {
                                 this.parentItem = response.data.data;
@@ -956,6 +1354,7 @@
                             })
                             .catch((error) => {
                                 this.isLoading = false;
+                                this.deletingDirectoryId = null;
                                 this.$emitter.emit('add-flash', {
                                     type: 'error',
                                     message: error.response.data.message
@@ -972,7 +1371,10 @@
                     agree: () => {
                         this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', this.selectedItem.id))
                             .then(response => {
-                                this.loadDirectories();
+                                // Asset delete — tree structure unchanged, just
+                                // refresh asset caches so the deleted asset
+                                // disappears from the tree.
+                                this.invalidateAllAssetCaches();
 
                                 this.$emitter.emit('data-grid:refresh');
 
@@ -1006,8 +1408,18 @@
                 window.open(downloadLink, '_self');
             },
 
+            shareDirectory() {
+                if (!this.selectedItem || !this.selectedItem.id) return;
+                this.$emitter.emit('open-share-modal', {
+                    targetType: 'directory',
+                    targetId: this.selectedItem.id,
+                });
+                this.closeContextMenu();
+            },
+
             copyDirectory() {
                 this.isLoading = true;
+                this.copyingDirectoryId = this.selectedItem.id;
                 this.$axios.post("{{ route('admin.dam.directory.copy_structure') }}", this.selectedItem)
                     .then((response) => {
                         setTimeout(() => {
@@ -1021,6 +1433,7 @@
                     })
                     .catch(error => {
                         this.isLoading = false;
+                        this.copyingDirectoryId = null;
                         this.$emitter.emit('add-flash', {
                             type: 'error',
                             message: error.response.data.message
@@ -1083,11 +1496,15 @@
                     }
                 }
 
-                if (moved  && type == 'asset') {
-                    // @TODO: this is hot fixed, need to improve
-                    let {item} = this.findItemAssetById(this.formattedItems, moved.element.id);
-                    if (parent) {
-                        this.addedItems(moved.element, item.id, type);
+                if (moved && type == 'asset') {
+                    // Only the `added` half of the cross-list change (target
+                    // dir gained the asset) drives the move. The `removed`
+                    // half (source dir lost the asset) fires too — ignore it
+                    // to avoid a duplicate API call.
+                    // `directoryId` here is the target dir's id, supplied by
+                    // the receiving draggable's `@change` binding.
+                    if (added) {
+                        this.addedItems(moved.element, directoryId, type);
                     }
                 }
             },
@@ -1111,11 +1528,11 @@
 
             findItemAssetById(items, targetId, parent = null) {
                 for (const item of items) {
-                    const assetItem = item.assets.find(obj => obj.id === targetId);
+                    const assetItem = (item.assets || []).find(obj => obj.id === targetId);
                     if (assetItem) {
                         return { item, parent };
                     }
-                    
+
                     if (item.children && item.children.length > 0) {
                         const found = this.findItemAssetById(item.children, targetId, item);
                         if (found) {
@@ -1124,12 +1541,22 @@
                     }
                 }
 
-                return null; 
+                return null;
             },
 
             addedItems(item, moveTodirectoryId, type = 'directory') {
                 this.isLoading = true;
                 this.actionStatus = 'pending';
+
+                const itemName = type == 'directory' ? (item.name ?? '') : (item.file_name ?? '');
+                const labelTemplate = type == 'directory'
+                    ? `@lang('dam::app.admin.dam.index.move.directory')`
+                    : `@lang('dam::app.admin.dam.index.move.asset')`;
+                this.moveStatusLabel = labelTemplate.replace(':name', itemName);
+
+                if (type == 'directory') {
+                    this.movingDirectoryId = item.id;
+                }
 
                 this.$axios.post(type == 'directory' ? "{{ route('admin.dam.directory.moved') }}" : "{{ route('admin.dam.assets.moved') }}", {
                         new_parent_id: moveTodirectoryId,
@@ -1148,12 +1575,18 @@
                         } else {
                             this.isLoading = false;
                             this.actionStatus = null;
-                            this.loadDirectories();
+                            this.moveStatusLabel = '';
+                            // Asset drag-move — refresh source and target asset
+                            // caches; tree structure unchanged so no need to
+                            // reload the directory list.
+                            this.invalidateAllAssetCaches();
                         }
                     })
                     .catch(error => {
                         this.isLoading = false;
                         this.actionStatus = null;
+                        this.movingDirectoryId = null;
+                        this.moveStatusLabel = '';
                         this.$emitter.emit('add-flash', {
                             type: 'error',
                             message: error.response.data.message
@@ -1168,64 +1601,151 @@
             },
 
             handleFileChange(event) {
-                let fileInput = event.target.files;
-                if (fileInput.length > 0) {
-                    let formData = new FormData();
+                const fileInput = event.target.files;
+                if (! fileInput || fileInput.length === 0) return;
 
-                    for (let index = 0; index < fileInput.length; index++) {
-                        formData.append('files[]', fileInput[index]);
-                    }
-
-                    formData.append('directory_id', this.selectedItem.id);
-
-                    this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        }
-                    }).then((response) => {
-                        this.$emitter.emit('uploaded-assets', response.data.files);
-                        this.$emitter.emit('data-grid:refresh');
-                        this.$emitter.emit('add-flash', {
-                            type: 'success',
-                            message: response.data.message
-                        });
-                    }).catch((error) => {
-                        console.log(error);
-                        this.$emitter.emit('add-flash', {
-                            type: 'error',
-                            message: error.response.data.message
-                        });
-                        console.error('Upload failed:', error);
-                    });
+                const formData = new FormData();
+                for (let i = 0; i < fileInput.length; i++) {
+                    formData.append('files[]', fileInput[i]);
                 }
+                formData.append('directory_id', this.selectedItem.id);
+
+                // Route through v-dam-upload's pipeline so the upload spinner,
+                // cancel button, and error/large-file handling kick in. Owning
+                // the axios call here would skip those affordances.
+                this.$emitter.emit('dam:upload-files', formData);
+
+                event.target.value = null;
             },
 
             setAssets(data) {
-                if (!this.selectedItem.assets) {
-                    this.selectedItem.assets = [];
+                if (! this.selectedItem.assets) this.selectedItem.assets = [];
+                if (! this.selectedItem.children) this.selectedItem.children = [];
+
+                // Asset upload — tree structure unchanged, just refresh the
+                // target dir's lazy-loaded asset cache. Root is handled below
+                // via the same broadcast, since root assets are managed by
+                // this component (not a v-tree-item).
+                this.invalidateDirAssetCache(this.selectedItem.id);
+
+                this.$nextTick(() => {
+                    this.$emitter.emit('current-item-expanded', this.selectedItem);
+                    this.$emitter.emit('current-directory', this.selectedItem);
+                    this.setFilters(this.selectedItem);
+                });
+            },
+
+            isRootDir(id) {
+                return this.formattedItems
+                    && this.formattedItems[0]
+                    && id == this.formattedItems[0].id;
+            },
+
+            invalidateDirAssetCache(dirId) {
+                if (this.isRootDir(dirId)) {
+                    this.loadRootAssets();
+                } else {
+                    this.$emitter.emit('invalidate-dir-assets', dirId);
                 }
+            },
 
-                if (!this.selectedItem.children) {
-                    this.selectedItem.children = [];
+            invalidateAllAssetCaches() {
+                // Broadcast to every v-tree-item (id=null = match all) and
+                // refresh root's own list.
+                this.$emitter.emit('invalidate-dir-assets', null);
+                this.loadRootAssets();
+            },
+
+            // Walk from root to `dirId` in `formattedItems` and apply `delta`
+            // to every node's `assets_total_count` (the recursive rollup chip).
+            // Client-side bookkeeping so the count stays accurate after upload
+            // / delete without a tree refetch. Drifts only if a second admin
+            // mutates concurrently — reconciles on next page load.
+            adjustAncestorCounts(dirId, delta) {
+                if (! delta || ! this.formattedItems || ! this.formattedItems[0]) return;
+
+                const path = [];
+                const find = (node) => {
+                    path.push(node);
+                    if (Number(node.id) === Number(dirId)) return true;
+                    for (const child of (node.children || [])) {
+                        if (find(child)) return true;
+                    }
+                    path.pop();
+                    return false;
+                };
+
+                if (! find(this.formattedItems[0])) return;
+
+                for (const node of path) {
+                    const current = Number(node.assets_total_count || 0);
+                    node.assets_total_count = Math.max(0, current + delta);
                 }
-
-                this.selectedItem.assets = [...this.selectedItem.assets, ...data];
-
-
-                this.setFilters(this.selectedItem);
-
-                this.$emitter.emit('current-item-expanded', this.selectedItem);
             },
 
             loadDirectories() {
                 this.$axios.get("{{ route('admin.dam.directory.index') }}")
+                        .then((response) => {
+                            const tree = response.data.data;
+
+                            // Default Root.assets to an empty array synchronously
+                            // so the root `<draggable :list>` binds to a valid
+                            // array; without this, vuedraggable wires up against
+                            // `undefined` for the brief window before
+                            // `loadRootAssets` resolves and never re-binds when
+                            // the array later replaces undefined — leaving the
+                            // root asset list blank until a manual page reload.
+                            if (tree && tree[0] && ! Array.isArray(tree[0].assets)) {
+                                tree[0].assets = [];
+                            }
+
+                            this.formattedItems = tree;
+
+                            this.$nextTick(() => {
+                                if (this.selectedItem) {
+                                    this.$emitter.emit('current-item-expanded', this.selectedItem);
+                                    this.setFilters(this.selectedItem);
+                                } else {
+                                    this.setDefaultSeletedItem();
+                                }
+
+                                if (this.formattedItems && this.formattedItems[0]) {
+                                    this.loadRootAssets();
+                                }
+
+                                // Drain any reveal request that arrived while
+                                // the tree was still fetching its directories.
+                                if (this._pendingReveal) {
+                                    const { id, silent } = this._pendingReveal;
+                                    this._pendingReveal = null;
+                                    this.revealDirectory(id, silent);
+                                }
+                            });
+                        })
+                        .catch((error) => {
+                            console.error('Error fetching directories:', error);
+                        });
+            },
+
+            loadRootAssets() {
+                const root = this.formattedItems[0];
+                if (! root) return;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.assets', ':id') }}`.replace(':id', root.id))
                     .then((response) => {
-                        this.formattedItems = response.data.data;
-                        this.setDefaultSeletedItem();
+                        const fresh = response.data.data || [];
+                        // Mutate in place so vuedraggable's Sortable instance,
+                        // which holds the original array reference from initial
+                        // mount, sees the new contents. Reassigning `root.assets`
+                        // creates a new array that the already-mounted Sortable
+                        // does not pick up.
+                        if (Array.isArray(root.assets)) {
+                            root.assets.splice(0, root.assets.length, ...fresh);
+                        } else {
+                            root.assets = fresh;
+                        }
                     })
-                    .catch((error) => {
-                        console.error('Error fetching directories:', error);
-                    });
+                    .catch(() => {});
             },
 
             loadDirectoryChildrens() {
@@ -1255,6 +1775,7 @@
                 }
 
                 this.$emitter.emit('current-directory', this.selectedItem);
+                this.emitBreadcrumb(this.selectedItem);
             },
 
             getDatagrids() {
@@ -1272,6 +1793,19 @@
                         this.selectedItem = this.parentItem
                         this.$emitter.emit('data-grid:reset-all-filters');
                         this.setFilters(this.parentItem);
+
+                        if (action == 'move_directory_structure') {
+                            this.movingDirectoryId = null;
+                            this.moveStatusLabel = '';
+                        }
+
+                        if (action == 'delete_directory') {
+                            this.deletingDirectoryId = null;
+                        }
+
+                        if (action == 'copy_directory_structure') {
+                            this.copyingDirectoryId = null;
+                        }
                     }, 1000);
 
                     this.isLoading = false;
@@ -1291,6 +1825,17 @@
                         if (this.actionStatus == 'failed') {
                                 this.$emitter.emit('add-flash', { type: 'error', message: response.data.message });
                                 this.isLoading = false;
+                                if (action == 'move_directory_structure') {
+                                    this.movingDirectoryId = null;
+                                }
+
+                                if (action == 'delete_directory') {
+                                    this.deletingDirectoryId = null;
+                                }
+
+                                if (action == 'copy_directory_structure') {
+                                    this.copyingDirectoryId = null;
+                                }
 
                                 return;
                             }
@@ -1302,6 +1847,18 @@
                                 message: response.data.message
                             });
                             this.isLoading = false;
+                            if (action == 'move_directory_structure') {
+                                this.movingDirectoryId = null;
+                                this.moveStatusLabel = '';
+                            }
+
+                            if (action == 'delete_directory') {
+                                this.deletingDirectoryId = null;
+                            }
+
+                            if (action == 'copy_directory_structure') {
+                                this.copyingDirectoryId = null;
+                            }
                             this.goForNextAction(action);
                             return;
                         }
@@ -1312,6 +1869,18 @@
                     })
                     .catch((error) => {
                         this.isLoading = false;
+                        if (action == 'move_directory_structure') {
+                            this.movingDirectoryId = null;
+                            this.moveStatusLabel = '';
+                        }
+
+                        if (action == 'delete_directory') {
+                            this.deletingDirectoryId = null;
+                        }
+
+                        if (action == 'copy_directory_structure') {
+                            this.copyingDirectoryId = null;
+                        }
                     });
             },
 

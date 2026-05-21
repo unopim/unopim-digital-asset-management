@@ -64,6 +64,14 @@
                 return {
                     isLoading: false,
 
+                    defaultFilterIndices: [],
+
+                    activeFilterIndices: [],
+
+                    showFilterPicker: false,
+
+                    filterPickerSearch: '',
+
                     available: {
                         id: null,
 
@@ -147,6 +155,14 @@
 
                             this.applied.filters = currentDatagrid.applied.filters;
 
+                            if (currentDatagrid.activeFilterIndices?.length) {
+                                this.activeFilterIndices = currentDatagrid.activeFilterIndices;
+                            }
+
+                            if (currentDatagrid.defaultFilterIndices?.length) {
+                                this.defaultFilterIndices = currentDatagrid.defaultFilterIndices;
+                            }
+
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');
 
@@ -192,7 +208,7 @@
 
                     this.isLoading = true;
 
-                    this.$refs['filterDrawer'].close();
+                    this.$refs['filterDrawer']?.close();
 
                     this.$axios
                         .get(this.src, {
@@ -228,6 +244,18 @@
                             this.available.meta = meta;
 
                             this.available.searchPlaceholder = search_placeholder;
+
+                            if (this.activeFilterIndices.length === 0) {
+                                this.activeFilterIndices = this.available.columns
+                                    .filter(col => col.filterable && col.visible !== false)
+                                    .map(col => col.index);
+                            }
+
+                            if (this.defaultFilterIndices.length === 0) {
+                                this.defaultFilterIndices = this.available.columns
+                                    .filter(col => col.filterable && col.visible !== false)
+                                    .map(col => col.index);
+                            }
 
                             this.setCurrentSelectionMode();
 
@@ -720,6 +748,8 @@
                                         requestCount: ++datagrid.requestCount,
                                         available: this.available,
                                         applied: this.applied,
+                                        activeFilterIndices: this.activeFilterIndices,
+                                        defaultFilterIndices: this.defaultFilterIndices,
                                     };
                                 }
 
@@ -735,12 +765,48 @@
                     this.setDatagrids(datagrids);
                 },
 
+                getActiveFilterColumns() {
+                    return this.available.columns.filter(
+                        col => col.filterable && this.activeFilterIndices.includes(col.index)
+                    );
+                },
+
+                getInactiveFilterColumns() {
+                    return this.available.columns.filter(
+                        col => col.filterable && !this.activeFilterIndices.includes(col.index)
+                    );
+                },
+
+                addActiveFilter(columnIndex) {
+                    if (!this.activeFilterIndices.includes(columnIndex)) {
+                        this.activeFilterIndices.push(columnIndex);
+                    }
+
+                    this.updateDatagrids();
+                },
+
+                removeActiveFilter(columnIndex) {
+                    if (this.defaultFilterIndices.includes(columnIndex)) {
+                        return;
+                    }
+
+                    this.activeFilterIndices = this.activeFilterIndices.filter(i => i !== columnIndex);
+
+                    this.applied.filters.columns = this.applied.filters.columns.filter(
+                        col => col.index !== columnIndex
+                    );
+
+                    this.updateDatagrids();
+                },
+
                 getDatagridInitialProperties() {
                     return {
                         src: this.src,
                         requestCount: 0,
                         available: this.available,
                         applied: this.applied,
+                        activeFilterIndices: this.activeFilterIndices,
+                        defaultFilterIndices: this.defaultFilterIndices,
                     };
                 },
 

@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class TagController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -45,6 +48,8 @@ class TagController extends Controller
             ], 404);
         }
 
+        $this->damAuthorizeAsset((int) $assetId);
+
         $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 
         $oldTags = $asset->tags->pluck('name')->toArray();
@@ -61,9 +66,11 @@ class TagController extends Controller
             }
 
             $asset->tags()->attach($assetTag->id);
+            $savedTag = $assetTag;
         } else {
             $newTag = $this->assetTagRepository->create(['name' => $newTag]);
             $asset->tags()->attach($newTag->id);
+            $savedTag = $newTag;
         }
 
         Event::dispatch('core.model.proxy.sync.tag', [
@@ -75,6 +82,7 @@ class TagController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
+            'tag'     => ['id' => $savedTag->id, 'name' => $savedTag->name],
             'message' => trans('Tag attached successfully'),
         ], 201);
     }
@@ -105,6 +113,8 @@ class TagController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
             ], 404);
         }
+
+        $this->damAuthorizeAsset((int) $assetId);
 
         $assetTag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($newTag)])->first();
 

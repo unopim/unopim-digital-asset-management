@@ -6,11 +6,13 @@ use Webkul\DAM\Http\Controllers\Asset\AssetController;
 use Webkul\DAM\Http\Controllers\Asset\CommentController;
 use Webkul\DAM\Http\Controllers\Asset\LinkedResourcesController;
 use Webkul\DAM\Http\Controllers\Asset\PropertyController;
+use Webkul\DAM\Http\Controllers\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\Asset\TagController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
 use Webkul\DAM\Http\Controllers\DAMController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
+use Webkul\DAM\Http\Controllers\ImageEditController;
 
 Route::group([
     'middleware' => ['admin', 'dam'],
@@ -34,10 +36,14 @@ Route::group([
             Route::post('/mass-delete', 'massDestroy')->name('admin.dam.assets.mass_delete');
 
             Route::get('download/{id}', 'download')->name('admin.dam.assets.download');
+            Route::get('download-compressed/{id}', 'downloadCompressed')->name('admin.dam.assets.download_compressed');
             Route::get('custom-download/{id}', 'customDownload')->name('admin.dam.assets.custom_download');
 
             Route::post('rename', 'rename')->name('admin.dam.assets.rename');
             Route::post('/moved', 'moved')->name('admin.dam.assets.moved');
+
+            Route::get('metadata/{id}', 'getMetadataById')->name('admin.dam.assets.metadata')->where('id', '[0-9]+');
+
         });
 
         Route::controller(TagController::class)->prefix('')->group(function () {
@@ -62,6 +68,18 @@ Route::group([
             Route::delete('edit/{id}/comment/delete', 'commentDelete')->name('admin.dam.asset.comment.delete');
         });
 
+        Route::controller(ImageEditController::class)->prefix('image-edit')->group(function () {
+            Route::post('/resize/{id}', 'resize')->name('admin.dam.assets.image_edit.resize')->where('id', '[0-9]+');
+            Route::post('/adjust/{id}', 'adjust')->name('admin.dam.assets.image_edit.adjust')->where('id', '[0-9]+');
+            Route::post('/transform/{id}', 'transform')->name('admin.dam.assets.image_edit.transform')->where('id', '[0-9]+');
+            Route::post('/bg-color/{id}', 'bgColor')->name('admin.dam.assets.image_edit.bg_color')->where('id', '[0-9]+');
+            Route::post('/bg-upload/{id}', 'bgUpload')->name('admin.dam.assets.image_edit.bg_upload')->where('id', '[0-9]+');
+            Route::post('/bg-ai/{id}', 'bgAi')->name('admin.dam.assets.image_edit.bg_ai')->where('id', '[0-9]+');
+            Route::post('/bg-preview/{id}', 'bgPreview')->name('admin.dam.assets.image_edit.bg_preview')->where('id', '[0-9]+');
+            Route::post('/bg-color-normal/{id}', 'bgColorNormal')->name('admin.dam.assets.image_edit.bg_color_normal')->where('id', '[0-9]+');
+            Route::post('/filters/{id}', 'filters')->name('admin.dam.assets.image_edit.filters')->where('id', '[0-9]+');
+        });
+
         Route::controller(LinkedResourcesController::class)->prefix('linked-resources')->group(function () {
             Route::get('', 'index')->name('admin.dam.asset.linked_resources.index');
         });
@@ -74,10 +92,23 @@ Route::group([
         Route::get('/fetch/{path}', 'fetchFile')->where('path', '^assets/.*')->name('admin.dam.file.fetch')->withoutMiddleware(['admin', 'dam']);
         Route::get('/thumbnail', 'thumbnail')->name('admin.dam.file.thumbnail');
         Route::get('/preview/', 'preview')->name('admin.dam.file.preview');
+        Route::get('/cover-art/{assetId}', 'coverArt')->name('admin.dam.file.cover-art');
+    });
+
+    Route::controller(ShareController::class)->prefix('shares')->group(function () {
+        Route::get('', 'index')->name('admin.dam.shares.index');
+        Route::post('', 'store')->name('admin.dam.shares.store');
+        Route::delete('{id}', 'destroy')->name('admin.dam.shares.destroy')->where('id', '[0-9]+');
+        Route::post('{id}/enable', 'enable')->name('admin.dam.shares.enable')->where('id', '[0-9]+');
+        Route::get('active/{type}/{targetId}', 'activeForTarget')
+            ->name('admin.dam.shares.active_for_target')
+            ->where('type', 'asset|directory')
+            ->where('targetId', '[0-9]+');
     });
 
     Route::controller(DirectoryController::class)->prefix('directory')->group(function () {
         Route::get('', 'index')->name('admin.dam.directory.index');
+        Route::get('/search', 'search')->name('admin.dam.directory.search');
         Route::get('/children-directory/{id}', 'childrenDirectory')->name('admin.dam.directory.children');
         Route::get('/directory-assets/{id}', 'directoryAssets')->name('admin.dam.directory.assets');
         Route::post('/store', 'store')->name('admin.dam.directory.store');
@@ -98,4 +129,5 @@ Route::group([
 
         Route::get('/get', 'fetchAssets')->name('admin.dam.asset_picker.get_assets');
     });
+
 });

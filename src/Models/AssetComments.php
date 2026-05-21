@@ -10,6 +10,7 @@ use Webkul\DAM\Contracts\AssetComments as AssetCommentsContract;
 use Webkul\DAM\Database\Factories\CommentFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
 use Webkul\HistoryControl\Traits\HistoryTrait;
+use Webkul\User\Models\Admin;
 
 class AssetComments extends Model implements AssetCommentsContract, HistoryAuditable
 {
@@ -34,6 +35,11 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'dam_asset_id');
+    }
+
+    public function admin(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
     }
 
     public function children()

@@ -102,6 +102,7 @@ jobs:
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
                   <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php
@@ -129,6 +130,9 @@ jobs:
       - name: Running DAM Installer
         working-directory: unopim
         run: php artisan dam-package:install --no-interaction
+
+      - name: Install exiftool
+        run: sudo apt-get install -y libimage-exiftool-perl
 
       - name: Running Pest Tests
         working-directory: unopim
@@ -240,6 +244,7 @@ jobs:
           sed -i '/<\/testsuites>/i\
               <testsuite name="DAM Feature Test">\
                   <directory suffix="Test.php">packages/Webkul/DAM/tests/Unit</directory>\
+                  <directory suffix="Test.php">packages/Webkul/DAM/tests/Feature</directory>\
               </testsuite>' phpunit.xml
 
       - name: Register DAM test case in Pest.php
@@ -278,6 +283,9 @@ jobs:
           curl -s http://127.0.0.1:9200/_cluster/health | python3 -m json.tool
           php artisan unopim:product:index
           php artisan unopim:category:index
+
+      - name: Install exiftool
+        run: sudo apt-get install -y libimage-exiftool-perl
 
       - name: Running Pest Tests
         working-directory: unopim

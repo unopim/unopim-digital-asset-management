@@ -11,9 +11,12 @@ use Webkul\Core\Filesystem\FileStorer;
 use Webkul\DAM\DataGrids\Asset\AssetPropertyDataGrid;
 use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class PropertyController extends Controller
 {
+    use AssetAccessControl;
+
     /**
      *  Create instance
      */
@@ -30,6 +33,8 @@ class PropertyController extends Controller
      */
     public function properties(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         if (request()->ajax()) {
             return app(AssetPropertyDataGrid::class)->toJson();
         }
@@ -44,16 +49,20 @@ class PropertyController extends Controller
      */
     public function propertiesCreate(int $id)
     {
+        $this->damAuthorizeAsset($id);
+
         $messages = [
             'name.required' => trans('dam::app.admin.validation.property.name.required'),
             'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
         ];
 
         $this->validate(request(), [
-            'type'     => 'required',
-            'language' => 'required',
-            'value'    => 'required|max:1000',
-            'name'     => [
+            'type'          => 'required',
+            'language'      => 'required',
+            'value'         => 'required|max:1000',
+            'is_filterable' => 'sometimes|boolean',
+            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+            'name'          => [
                 'required',
                 'min:3',
                 'max:100',
@@ -65,12 +74,18 @@ class PropertyController extends Controller
             ],
         ], $messages);
 
-        $this->assetPropertyRepository->create(array_merge(request()->only([
+        $payload = array_merge(request()->only([
             'name',
             'type',
             'language',
             'value',
-        ]), ['dam_asset_id' => $id]));
+        ]), [
+            'dam_asset_id'  => $id,
+            'is_filterable' => request()->boolean('is_filterable'),
+            'sort_order'    => (int) request()->input('sort_order', 0),
+        ]);
+
+        $this->assetPropertyRepository->create($payload);
 
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.properties.index.create-success'),
@@ -86,6 +101,8 @@ class PropertyController extends Controller
     {
         $property = $this->assetPropertyRepository->findOrFail($id);
 
+        $this->damAuthorizeAsset((int) $property->dam_asset_id);
+
         return new JsonResponse($property);
     }
 
@@ -98,16 +115,39 @@ class PropertyController extends Controller
     public function propertiesUpdate()
     {
         $id = request('id');
+        $property = $this->assetPropertyRepository->findOrFail($id);
+        $this->damAuthorizeAsset((int) $property->dam_asset_id);
+
+        $messages = [
+            'name.unique' => trans('dam::app.admin.validation.property.name.unique'),
+        ];
 
         $this->validate(request(), [
-            'name'  => 'required|min:3|max:100|unique:dam_asset_properties,name,NULL,id,dam_asset_id,'.$id,
-            'value' => 'required',
-        ]);
+            'name' => [
+                'required',
+                'min:3',
+                'max:100',
+                Rule::unique('dam_asset_properties')
+                    ->ignore($id)
+                    ->where(function ($query) use ($property) {
+                        return $query->where('dam_asset_id', $property->dam_asset_id)
+                            ->where('language', $property->language);
+                    }),
+            ],
+            'value'         => 'required',
+            'is_filterable' => 'sometimes|boolean',
+            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+        ], $messages);
 
-        $this->assetPropertyRepository->update(request()->only([
-            'name',
-            'value',
-        ]), $id);
+        $payload = array_merge(
+            request()->only(['name', 'value']),
+            [
+                'is_filterable' => request()->boolean('is_filterable'),
+                'sort_order'    => (int) request()->input('sort_order', 0),
+            ]
+        );
+
+        $this->assetPropertyRepository->update($payload, $id);
 
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.asset.properties.index.update-success'),
@@ -123,6 +163,10 @@ class PropertyController extends Controller
     public function propertiesDestroy()
     {
         $id = request('id');
+        $property = $this->assetPropertyRepository->find($id);
+        if ($property) {
+            $this->damAuthorizeAsset((int) $property->dam_asset_id);
+        }
         try {
             $this->assetPropertyRepository->delete($id);
 

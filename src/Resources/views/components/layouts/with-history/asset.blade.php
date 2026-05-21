@@ -65,7 +65,7 @@
     <body class="h-full dark:bg-cherry-800">
         {!! view_render_event('unopim.admin.layout.body.before') !!}
 
-        <div id="app" class="h-full">
+        <div id="app" class="h-screen flex flex-col">
             <!-- Flash Message Blade Component -->
             <x-admin::flash-group />
 
@@ -81,29 +81,53 @@
             <x-admin::layouts.header />
 
             <div
-                class="flex gap-4 group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
+                class="flex gap-4 flex-1 min-h-0 overflow-hidden group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
                 ref="appLayout"
             >
                 <!-- Page Sidebar Blade Component -->
                 <x-admin::layouts.sidebar />
                 
                                 
-                <div class="flex-1 max-w-full px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 ltr:pl-[286px] rtl:pr-[286px] max-lg:!px-4 transition-all duration-300 group-[.sidebar-collapsed]/container:ltr:pl-[85px] group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
+                <div class="flex-1 max-w-full overflow-y-auto px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 ltr:pl-[286px] rtl:pr-[286px] max-lg:!px-4 transition-all duration-300 group-[.sidebar-collapsed]/container:ltr:pl-[85px] group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
                     {!! view_render_event('unopim.admin.layouts.tabs.before') !!}
 
                     
-                    <div class="flex justify-between">
-                        <span class="text-base text-gray-600 dark:text-gray-300 font-bold">{{ $label ?? '' }}</span>
+                    <div class="flex flex-wrap justify-between gap-2 items-center">
+                        <div class="flex min-w-0">
 
-                        <div class="flex gap-2 ">
+                            {{-- Single title row: back · breadcrumb · icon · filename · counter --}}
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <a href="{{ route('admin.dam.index') }}" class="transparent-button">
+                                    @lang('dam::app.admin.dam.asset.edit.back')
+                                </a>
+
+                                {{-- Inline breadcrumb (optional) --}}
+                                @isset($breadcrumb){{ $breadcrumb }}@endisset
+
+                                {{-- File type icon (optional) --}}
+                                @isset($fileIcon){{ $fileIcon }}@endisset
+
+                                {{-- Reactive filename --}}
+                                <v-dam-asset-label initial-label="{{ $label ?? '' }}"></v-dam-asset-label>
+
+                                {{-- Asset counter --}}
+                                @isset($counter)
+                                {{ $counter }}
+                                @endisset
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 items-center">
                             {{ $buttonOne }}
                             {{ $buttonTwo }}
                             {{ $buttonThree }}
                             {{ $buttonFour }}
+                            @isset($buttonFive) {{ $buttonFive }} @endisset
                         </div>
-                    </div> 
+                    </div>
 
-                    <div class="tabs">    
+                    <v-asset-lock-zone>
+                    <div class="tabs">
                         @php
                             
                             /**
@@ -137,17 +161,26 @@
                             
                         @endphp
 
-                        <div class="flex gap-4 mb-4 pt-2 border-b-2 max-sm:hidden dark:border-gray-800">
+                        <div class="flex flex-wrap gap-4 my-4 border-b-2 max-sm:hidden dark:border-gray-800 items-center">
                             @foreach ($items as $key => $item)
-                                <a href="{{ $item['url'] }}">
+                                <a href="{{ $item['url'] }}" class="self-stretch flex items-end">
                                     <div class="{{  $item['code'] === $activeTab ? "-mb-px border-violet-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
                                         <span class="text-xl {{ $item['icon'] }}"></span>
                                         @lang($item['name'])
+                                        @if (array_key_exists('badge', $item))
+                                            <v-dam-tab-badge tab-code="{{ $item['code'] }}" :initial-count="{{ (int)($item['badge'] ?? 0) }}"></v-dam-tab-badge>
+                                        @endif
                                     </div>
                                 </a>
                             @endforeach
-                        </div>    
-                        
+
+                            @isset($navButtons)
+                            <div class="ml-auto flex gap-2 items-center">
+                                {{ $navButtons }}
+                            </div>
+                            @endisset
+                        </div>
+
                     </div>
 
                     @if ($activeTab === 'history')
@@ -171,9 +204,13 @@
                     @elseif ($activeTab === 'comments')    
                         {{$comments}}
                     
-                    @elseif ($activeTab === 'linked-resources')    
+                    @elseif ($activeTab === 'linked-resources')
                         {{$linked_resources}}
+
+                    @elseif ($activeTab === 'meta-data')
+                        {{$meta_data}}
                     @endif
+                    </v-asset-lock-zone>
 
                     {!! view_render_event('unopim.admin.layouts.tabs.after') !!}
                 </div>
@@ -183,6 +220,68 @@
         </div>
 
         {!! view_render_event('unopim.admin.layout.body.after') !!}
+
+        @pushOnce('scripts')
+            <script
+                type="text/x-template"
+                id="v-asset-lock-zone-template"
+            >
+                <div
+                    :class="{ 'cursor-not-allowed': isLocked }"
+                    :aria-busy="isLocked"
+                >
+                    <div :class="{ 'opacity-60 pointer-events-none': isLocked }">
+                        <slot></slot>
+                    </div>
+                </div>
+            </script>
+
+            <script type="module">
+                app.component('v-asset-lock-zone', {
+                    template: '#v-asset-lock-zone-template',
+                    data() {
+                        return {
+                            isLocked: false,
+                            onLockChange: null,
+                        };
+                    },
+                    mounted() {
+                        this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                        this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                    },
+                    unmounted() {
+                        if (this.onLockChange) {
+                            this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                        }
+                    },
+                });
+            </script>
+
+            <script type="module">
+                app.component('v-dam-asset-label', {
+                    props: {
+                        initialLabel: { type: String, default: '' },
+                    },
+                    template: `<span class="text-base text-gray-600 dark:text-gray-300 font-bold min-w-0 break-all">@{{ label }}</span>`,
+                    data() {
+                        return { label: this.initialLabel };
+                    },
+                    mounted() {
+                        this._onAssetChange = (data) => {
+                            if (data.asset?.file_name) {
+                                this.label = data.asset.file_name;
+                            }
+                        };
+                        this.$emitter.on('dam-asset-changed', this._onAssetChange);
+                    },
+                    beforeUnmount() {
+                        if (this._onAssetChange) {
+                            this.$emitter.off('dam-asset-changed', this._onAssetChange);
+                        }
+                    },
+                });
+            </script>
+        @endPushOnce
 
         @stack('scripts')
 

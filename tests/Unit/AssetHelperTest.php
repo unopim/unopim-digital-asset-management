@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Models\Directory;
 
 it('should detect image file type from mime type', function () {
     $file = UploadedFile::fake()->image('test.jpg');
@@ -145,4 +148,85 @@ it('should handle case insensitive extension check for forbidden files', functio
 
 it('should return false when both extension and mime are null', function () {
     expect(AssetHelper::isForbiddenFile(null, null))->toBeFalse();
+});
+
+it('should return correct s3 url based on visibility for pdf files', function (string $visibility, string $expectedMethod) {
+    config(['filesystems.default' => 's3']);
+
+    $path = 'assets/Root/test.pdf';
+    $expectedUrl = "https://s3.example.com/{$path}".($visibility === 'private' ? '?signature=test' : '');
+
+    $disk = Mockery::mock();
+    $disk->shouldReceive('exists')
+        ->once()
+        ->with($path)
+        ->andReturn(true);
+    $disk->shouldReceive('mimeType')
+        ->once()
+        ->with($path)
+        ->andReturn('application/pdf');
+    $disk->shouldReceive('getVisibility')
+        ->once()
+        ->with($path)
+        ->andReturn($visibility);
+    $disk->shouldReceive($expectedMethod)
+        ->once()
+        ->with($path, ...($visibility === 'private' ? [Mockery::type(Carbon::class)] : []))
+        ->andReturn($expectedUrl);
+
+    Storage::shouldReceive('disk')
+        ->once()
+        ->with(Directory::ASSETS_DISK_AWS)
+        ->andReturn($disk);
+
+    expect(AssetHelper::getPreviewUrl($path, 1356))
+        ->toBe($expectedUrl);
+})->with([
+    'private visibility returns signed url' => ['private', 'temporaryUrl'],
+    'public visibility returns direct url'  => ['public',  'url'],
+]);
+
+it('should keep using the preview route on local storage', function () {
+    config(['filesystems.default' => 'local']);
+
+    $file = UploadedFile::fake()->create('test.pdf', 100, 'application/pdf');
+    $path = 'assets/Root/'.$file->getClientOriginalName();
+    $assetId = 1356;
+    $encodedPath = urlencode(urlencode($path));
+
+    $previewUrl = AssetHelper::getPreviewUrl($path, $assetId);
+
+    expect($previewUrl)
+        ->toContain(route('admin.dam.file.preview', [], false))
+        ->toContain("path={$encodedPath}");
+});
+
+it('should keep using the preview route for resizable images on s3', function () {
+    config(['filesystems.default' => 's3']);
+
+    $file = UploadedFile::fake()->image('test.png');
+    $path = 'assets/Root/'.$file->getClientOriginalName();
+    $assetId = 1356;
+    $encodedPath = urlencode(urlencode($path));
+
+    $disk = Mockery::mock();
+    $disk->shouldReceive('exists')
+        ->once()
+        ->with($path)
+        ->andReturn(true);
+    $disk->shouldReceive('mimeType')
+        ->once()
+        ->with($path)
+        ->andReturn($file->getMimeType());
+
+    Storage::shouldReceive('disk')
+        ->once()
+        ->with(Directory::ASSETS_DISK_AWS)
+        ->andReturn($disk);
+
+    $previewUrl = AssetHelper::getPreviewUrl($path, $assetId);
+
+    expect($previewUrl)
+        ->toContain(route('admin.dam.file.preview', [], false))
+        ->toContain("path={$encodedPath}");
 });

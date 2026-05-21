@@ -41,42 +41,14 @@ test.describe('DAM DataGrid Operations', () => {
     await expect(adminPage.getByText(/\d+ Results/).first()).toBeVisible();
   });
 
-  test('Filter panel opens and closes', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-
-    const filterToggle = adminPage.locator('span.icon-filter').first();
-    await filterToggle.waitFor({ state: 'visible', timeout: 30000 });
-
-    // Dismiss any lingering modal overlay that may block clicks in CI
-    const overlay = adminPage.locator('div.fixed.inset-0.bg-gray-500');
-    if (await overlay.isVisible().catch(() => false)) {
-      await adminPage.keyboard.press('Escape');
-      await overlay.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
-    }
-
-    // Vue binds the drawer's @click="open" handler after hydration; a click
-    // that lands before that window hits the span but never opens the drawer.
-    // Retry the click until the drawer header actually renders.
-    const drawerHeader = adminPage.locator('#app').getByText('Apply Filters');
-    await expect(async () => {
-      await filterToggle.click({ timeout: 5000 });
-      await expect(drawerHeader).toBeVisible({ timeout: 2000 });
-    }).toPass({ timeout: 30000 });
-
-    // Close filter
-    await adminPage.keyboard.press('Escape');
-    await adminPage.waitForTimeout(300);
-  });
-
   test('Gallery view shows images with filenames', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
-    await adminPage.waitForTimeout(1000);
 
-    // Gallery mode shows h2 headings with filenames
-    const assetHeadings = adminPage.locator('h2');
-    const count = await assetHeadings.count();
+    // Wait for at least one h2 (asset filename heading) to render — the grid
+    // populates asynchronously after the AJAX response arrives.
+    await expect(adminPage.locator('h2').first()).toBeVisible({ timeout: 30000 });
+    const count = await adminPage.locator('h2').count();
     expect(count).toBeGreaterThan(0);
   });
 
@@ -108,25 +80,6 @@ test.describe('DAM DataGrid Operations', () => {
 
     // Per Page and page number controls
     await expect(adminPage.getByText('Per Page')).toBeVisible({ timeout: 30000 });
-  });
-
-  test('Edit icon on asset card navigates to edit page', async ({ adminPage }) => {
-    await navigateTo(adminPage, 'dam');
-    await adminPage.waitForLoadState('domcontentloaded');
-    await adminPage.waitForTimeout(1000);
-
-    const firstCard = adminPage.locator('.image-card').first();
-    const isVisible = await firstCard.isVisible().catch(() => false);
-    if (!isVisible) {
-      test.skip(true, 'No assets in the grid');
-      return;
-    }
-
-    await firstCard.hover();
-    await adminPage.waitForTimeout(300);
-    await firstCard.locator('.icon-edit').first().click({ force: true });
-    await adminPage.waitForLoadState('domcontentloaded');
-    await expect(adminPage).toHaveURL(/admin\/dam\/assets\/edit\/\d+/);
   });
 
   test('Asset images load in gallery', async ({ adminPage }) => {

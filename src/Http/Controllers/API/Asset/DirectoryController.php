@@ -3,19 +3,26 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
 class DirectoryController
 {
     use ActionRequestTrait;
 
-    public function __construct(protected DirectoryRepository $directoryRepository) {}
+    public function __construct(
+        protected DirectoryRepository $directoryRepository,
+        protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
+    ) {}
 
     /**
      * Get all the directory.
@@ -33,18 +40,25 @@ class DirectoryController
 
     /**
      * Store a newly created directory.
-     *
-     * @return JsonResponse
      */
-    public function store(DirectoryRequest $request)
+    public function store(DirectoryRequest $request): JsonResponse
     {
         $parentDirectoryId = $request->input('parent_id', 1);
+
+        if (! $this->permissionService->canAccess((int) $parentDirectoryId)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
 
         try {
             $newDirectory = $this->directoryRepository->create([
                 'name'      => $request->input('name'),
                 'parent_id' => $parentDirectoryId,
             ]);
+
+            $this->autoGrantToCreator($newDirectory->id);
 
             return response()->json([
                 'success' => true,
@@ -60,6 +74,28 @@ class DirectoryController
         }
     }
 
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user() ?? auth()->guard('api')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
+    }
+
     /**
      * Get a directory by its id.
      *
@@ -67,6 +103,13 @@ class DirectoryController
      */
     public function getDirectory(int $id): JsonResponse
     {
+        if (! $this->permissionService->canView($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->getDirectoryTree($id);
         if (! $directory) {
             return response()->json([
@@ -86,6 +129,13 @@ class DirectoryController
      */
     public function update(DirectoryRequest $request, int $id): JsonResponse
     {
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         try {
             $directory = $this->directoryRepository->find($id);
 
@@ -123,6 +173,13 @@ class DirectoryController
      */
     public function destroy(int $id): JsonResponse
     {
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->find($id);
 
         if (! $directory) {

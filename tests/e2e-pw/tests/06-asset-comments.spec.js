@@ -8,20 +8,21 @@ const { navigateTo, generateUid, ensureAssetExists } = require('../utils/helpers
 async function navigateToCommentsTab(page) {
   await navigateTo(page, 'dam');
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
 
   // Hover over first image card and click edit
   const firstCard = page.locator('.image-card').first();
+  await firstCard.waitFor({ state: 'visible', timeout: 20000 });
   await firstCard.hover();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500);
   await firstCard.locator('.icon-edit').first().click({ force: true });
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForURL(/admin\/dam\/assets\/edit\/\d+/, { timeout: 30000 });
+  await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
 
   // Click Comments tab
   const commentsTab = page.locator('#app').getByText('Comments').first();
   await commentsTab.click();
-  await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(500);
+  await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
 }
 
 test.describe('DAM Asset Comments', () => {

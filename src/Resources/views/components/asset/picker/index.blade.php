@@ -74,6 +74,7 @@
             data() {
                 return {
                     isLoading: false,
+                    searchDebounceTimer: null,
 
                     available: {
                         id: null,
@@ -175,7 +176,7 @@
 
                             this.applied.sort = currentDatagrid.applied.sort;
 
-                            this.applied.filters = currentDatagrid.applied.filters;
+                            // this.applied.filters = currentDatagrid.applied.filters;
 
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');
@@ -219,6 +220,9 @@
                     this.applied.filters.columns.forEach(column => {
                         params.filters[column.index] = column.value;
                     });
+
+                    const focusedName = document.activeElement?.name ?? null;
+                    const focusedSelectionStart = document.activeElement?.selectionStart ?? null;
 
                     this.isLoading = true;
 
@@ -273,6 +277,18 @@
                             });
 
                             this.isLoading = false;
+
+                            if (focusedName) {
+                                this.$nextTick(() => {
+                                    const el = this.$el.querySelector(`input[name="${focusedName}"]`);
+                                    if (el) {
+                                        el.focus();
+                                        if (focusedSelectionStart !== null) {
+                                            el.setSelectionRange(focusedSelectionStart, focusedSelectionStart);
+                                        }
+                                    }
+                                });
+                            }
                         });
                 },
 
@@ -422,6 +438,11 @@
                     if ('search' == $event.srcElement.name) {
                         this.get();
                     }
+                },
+
+                debouncedFilterPage($event) {
+                    clearTimeout(this.searchDebounceTimer);
+                    this.searchDebounceTimer = setTimeout(() => this.filterPage($event), 500);
                 },
 
                 runFilters() {

@@ -14,7 +14,11 @@ use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Jobs\GeneratePdfThumbnail;
+use Webkul\DAM\Jobs\GenerateVideoThumbnail;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 /**
  * Class FileController
@@ -27,6 +31,58 @@ use Webkul\DAM\Models\Directory;
  */
 class FileController
 {
+    /**
+     * Resolve the underlying asset path from a thumbnail/preview path, if any.
+     * thumbnails/{path}                   ⇒ {path}
+     * preview/{size}/{path}               ⇒ {path}
+     * other                               ⇒ original
+     */
+    protected function resolveOriginalAssetPath(string $path): string
+    {
+        if (Str::startsWith($path, 'thumbnails/')) {
+            return Str::after($path, 'thumbnails/');
+        }
+
+        if (Str::startsWith($path, 'preview/')) {
+            $rest = Str::after($path, 'preview/');
+            // strip "{size}/"
+            $slash = strpos($rest, '/');
+
+            return $slash === false ? $rest : substr($rest, $slash + 1);
+        }
+
+        return $path;
+    }
+
+    /**
+     * If the given path corresponds to a known DAM asset, deny access when the
+     * current admin cannot view that asset's directory. Returns null when allowed,
+     * a JsonResponse otherwise. Paths that don't match a known asset (covers,
+     * unrelated private files) fall through unchanged.
+     */
+    protected function assertPathAllowed(string $path)
+    {
+        $service = app(DirectoryPermissionService::class);
+        if ($service->bypass()) {
+            return null;
+        }
+
+        $original = $this->resolveOriginalAssetPath($path);
+        $asset = Asset::where('path', $original)->first();
+
+        if (! $asset) {
+            return null;
+        }
+
+        $dirId = (int) ($asset->directories()->value('dam_directories.id') ?? 0);
+
+        if (! $dirId || ! $service->canAccess($dirId)) {
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
+        return null;
+    }
+
     /**
      * Create a new file in the private storage.
      *
@@ -54,9 +110,9 @@ class FileController
         if (Storage::disk($disk)->exists($request->path)) {
             Storage::disk($disk)->delete($request->path);
 
-            return response()->json(['status' => 'File deleted']);
+            return response()->json(['status' => trans('dam::app.admin.dam.file.deleted')]);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -81,7 +137,7 @@ class FileController
 
             return response()->json(['new_path' => $newPath]);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -94,13 +150,15 @@ class FileController
      */
     public function fetchFile(string $path)
     {
+        $this->assertPathAllowed($path);
+
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
             $mimeType = Storage::disk($disk)->mimeType($path);
 
             return response(Storage::disk($disk)->get($path), 200)->header('Content-Type', $mimeType);
         } else {
-            return response()->json(['error' => 'File not found'], 404);
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
@@ -116,10 +174,62 @@ class FileController
     {
         $disk = Directory::getAssetDisk();
         if (! Auth::check()) {
-            return abort(403, 'Unauthorized');
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
 
         $path = urldecode(request()->path);
+        $this->assertPathAllowed($path);
+
+        $asset = Asset::where('path', $path)->first();
+        if ($asset && $asset->file_type === 'audio') {
+            if ($this->isBrowserNavigation()) {
+                $canRedirect = $disk !== Directory::ASSETS_DISK_AWS
+                    || Storage::disk($disk)->exists($path);
+
+                if ($canRedirect) {
+                    $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+
+                    if ($assetUrl !== null) {
+                        return redirect()->away($assetUrl);
+                    }
+                }
+            }
+
+            $coverPath = $asset->meta_data['cover_art_path'] ?? null;
+            if ($coverPath && Storage::disk($disk)->exists($coverPath)) {
+                return $this->getFileResponse($coverPath);
+            }
+        }
+
+        // Cloudinary-style thumbnails for PDF / video — real first-page or
+        // first-frame previews rather than the generic placeholder icon.
+        // Eager generation happens via queued job on upload; this branch also
+        // generates synchronously on first request as a fallback so assets
+        // uploaded before the feature still get a real thumbnail.
+        if ($asset && ($asset->file_type === 'video' || strtolower((string) $asset->extension) === 'pdf')) {
+            $cached = $asset->meta_data['thumbnail_path'] ?? ('thumbnails/'.$path.'.jpg');
+
+            if (Storage::disk($disk)->exists($cached)) {
+                return $this->getFileResponse($cached);
+            }
+
+            try {
+                $job = strtolower((string) $asset->extension) === 'pdf'
+                    ? new GeneratePdfThumbnail($asset->id)
+                    : new GenerateVideoThumbnail($asset->id);
+
+                dispatch_sync($job);
+
+                $cached = $asset->fresh()->meta_data['thumbnail_path'] ?? $cached;
+
+                if (Storage::disk($disk)->exists($cached)) {
+                    return $this->getFileResponse($cached);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('DAM thumbnail lazy-generation failed: '.$e->getMessage(), ['asset' => $asset->id]);
+            }
+        }
+
         $thumbnailPath = 'thumbnails/'.$path;
         if ($this->isImageFile($thumbnailPath, true)) {
             return $this->getFileResponse($thumbnailPath);
@@ -147,7 +257,52 @@ class FileController
                 ->header('Content-Type', 'image/svg+xml');
         }
 
+        if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
+            $assetUrl = $this->resolveAssetOpenUrl($disk, $path);
+
+            if ($assetUrl !== null) {
+                return redirect()->away($assetUrl);
+            }
+        }
+
         return $this->getDefaultThumbnailImage($path);
+    }
+
+    /**
+     * Whether the current request looks like a top-level browser navigation
+     * (new tab / address bar) rather than an <img>/<video> resource fetch.
+     */
+    private function isBrowserNavigation(): bool
+    {
+        $accept = (string) request()->header('Accept', '');
+
+        return str_contains($accept, 'text/html');
+    }
+
+    /**
+     * Resolve a URL the browser can navigate to for the underlying asset.
+     *
+     * S3 disks return their (public or presigned) object URL directly.
+     * Private/local disks fall back to the auth-checked fetch route so the
+     * file can still be streamed without exposing it publicly.
+     */
+    private function resolveAssetOpenUrl(string $disk, string $path): ?string
+    {
+        if ($disk === Directory::ASSETS_DISK_AWS) {
+            try {
+                $visibility = Storage::disk($disk)->getVisibility($path);
+
+                $url = $visibility === 'public'
+                    ? Storage::disk($disk)->url($path)
+                    : Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(10));
+
+                return ! empty($url) ? $url : null;
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
+
+        return route('admin.dam.file.fetch', ['path' => $path]);
     }
 
     /**
@@ -216,10 +371,9 @@ class FileController
             return redirect($url);
         }
 
-        $file = Storage::disk($disk)->get($path);
-        $mimeType = Storage::disk($disk)->mimeType($path);
+        $absolutePath = Storage::disk($disk)->path($path);
 
-        return response($file, 200)->header('Content-Type', $mimeType);
+        return response()->file($absolutePath);
     }
 
     /**
@@ -252,10 +406,11 @@ class FileController
         $disk = Directory::getAssetDisk();
 
         if (! Auth::check()) {
-            return abort(403, 'Unauthorized');
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
 
         $path = urldecode(request()->path);
+        $this->assertPathAllowed($path);
         $customSize = intval(request()->get('size'));
 
         $maxSize = 1920;
@@ -278,12 +433,12 @@ class FileController
 
                     Storage::disk($disk)->put($previewPath, $imageData);
 
-                    return response($imageData, 200)->header('Content-Type', $mimeType);
+                    return $this->getFileResponse($previewPath);
                 } catch (NotReadableException $e) {
                     Log::info('Failed Generating Image preview: '.json_encode($e));
                 }
             } elseif ($this->isSupportedMediaFile($mimeType)) {
-                return response(Storage::disk($disk)->get($path), 200)->header('Content-Type', $mimeType);
+                return $this->getFileResponse($path);
             }
         }
 
@@ -329,13 +484,45 @@ class FileController
                 ->header('Content-Type', $mimeType);
         }
 
-        return response()->json(['error' => trans('Placeholder not found')], 404);
+        return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
+    }
+
+    /**
+     * Serve the extracted cover art for an audio asset.
+     * Returns 404 when the asset has no stored cover art.
+     */
+    public function coverArt(int $assetId)
+    {
+        if (! Auth::check()) {
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
+        $disk = Directory::getAssetDisk();
+        $asset = Asset::find($assetId);
+
+        if (! $asset) {
+            return abort(404);
+        }
+
+        $service = app(DirectoryPermissionService::class);
+        if (! $service->bypass()) {
+            $dirId = (int) ($asset->directories()->value('dam_directories.id') ?? 0);
+            if (! $dirId || ! $service->canAccess($dirId)) {
+                return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+            }
+        }
+
+        $path = $asset->meta_data['cover_art_path'] ?? null;
+
+        if (! $path || ! Storage::disk($disk)->exists($path)) {
+            return abort(404);
+        }
+
+        return $this->getFileResponse($path);
     }
 
     /**
      * Retrieve a default thumbnail image based on the file type.
-     *
-     * This method uses the helper to fetch a thumbnail placeholder.
      *
      * @param  string  $path
      * @return Response
@@ -347,8 +534,6 @@ class FileController
 
     /**
      * Retrieve a default preview image based on the file extension.
-     *
-     * This method uses the helper to fetch a preview placeholder.
      *
      * @param  string  $path
      * @return Response

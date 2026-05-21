@@ -4,15 +4,19 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
+use Webkul\DAM\Http\Requests\DirectorySearchRequest;
 use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 use ZipArchive;
 
@@ -20,17 +24,54 @@ class DirectoryController
 {
     use ActionRequestTrait;
 
-    public function __construct(protected DirectoryRepository $directoryRepository) {}
+    public function __construct(
+        protected DirectoryRepository $directoryRepository,
+        protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
+    ) {}
 
     /**
      * Get the directory
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $directories = $this->directoryRepository->getDirectoryTree();
+        // Callers that need asset nodes in the tree (e.g. the asset picker)
+        // must pass `with_assets=1`. The main DAM directory tree only lists
+        // folders, so the default skips asset eager-loading for a lighter
+        // payload.
+        $directories = $request->boolean('with_assets')
+            ? $this->directoryRepository->getDirectoryTree()
+            : $this->directoryRepository->getDirectoryTreeOnly();
 
         return new JsonResponse([
             'data' => $directories,
+        ]);
+    }
+
+    /**
+     * Substring search across ACL-visible directories.
+     */
+    public function search(DirectorySearchRequest $request): JsonResponse
+    {
+        $q = $request->validated('q');
+        $limit = 20;
+        $offset = (int) ($request->validated('offset') ?? 0);
+
+        $results = $this->directoryRepository->search($q, $limit, $offset);
+        $total = $this->directoryRepository->searchCount($q);
+
+        return new JsonResponse([
+            'data' => $results->map(fn ($directory) => [
+                'id'         => $directory->id,
+                'name'       => $directory->name,
+                'parent_id'  => $directory->parent_id,
+                'path_names' => $directory->path_names,
+            ])->values(),
+            'meta' => [
+                'total'  => $total,
+                'limit'  => $limit,
+                'offset' => $offset,
+            ],
         ]);
     }
 
@@ -39,7 +80,13 @@ class DirectoryController
      */
     public function childrenDirectory(int $id): JsonResponse
     {
-        $directory = $this->directoryRepository->getDirectoryTree($id)->first();
+        if (! $this->permissionService->canView($id)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $directory = $this->directoryRepository->getDirectoryTree($id)?->first();
 
         if (! $directory) {
             return new JsonResponse([
@@ -57,7 +104,27 @@ class DirectoryController
      */
     public function directoryAssets(int $id): JsonResponse
     {
-        $directory = $this->directoryRepository->getDirectoryTree($id)->first();
+        // DAM_TREE_SHOW_ASSETS env gates the in-tree asset listing. Default
+        // off — frontend still uses the right-hand grid for asset browsing
+        // on directories with large asset counts.
+        if (! config('dam.tree.show_assets')) {
+            return new JsonResponse([
+                'data' => [],
+            ]);
+        }
+
+        // Asset listing: strict access (ancestors via expansion don't count).
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'data' => [],
+            ]);
+        }
+
+        // `getDirectoryTree($id)` returns a single Directory model (or null) when
+        // an id is supplied — calling `->first()` on it proxied to a fresh query
+        // and silently returned the table's first row, which is the wrong
+        // directory. Use the model directly.
+        $directory = $this->directoryRepository->getDirectoryTree($id);
 
         if (! $directory) {
             return new JsonResponse([
@@ -79,11 +146,19 @@ class DirectoryController
     {
         $parentDirectoryId = $request->input('parent_id', 1); // default to root directory
 
+        if (! $this->permissionService->canAccess((int) $parentDirectoryId)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         try {
             $newDirectory = $this->directoryRepository->create([
                 'name'      => $request->input('name'),
                 'parent_id' => $parentDirectoryId,
             ]);
+
+            $this->autoGrantToCreator($newDirectory->id);
 
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.created-success'),
@@ -97,11 +172,43 @@ class DirectoryController
     }
 
     /**
+     * Grant the new directory to the creator's role for custom-permission admins.
+     * Skipped when the role already bypasses (all-permission or all-directories).
+     */
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
+    }
+
+    /**
      * Updates a directory
      */
     public function update(DirectoryRequest $request): JsonResponse
     {
         $id = $request->input('id'); // default to root directory
+
+        if (! $this->permissionService->canAccess((int) $id)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
 
         try {
             $directory = $this->directoryRepository->find($id);
@@ -138,6 +245,12 @@ class DirectoryController
      */
     public function destroy(int $id): JsonResponse
     {
+        if (! $this->permissionService->canAccess($id)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         $directory = $this->directoryRepository->find($id);
 
         if (! $directory) {
@@ -182,7 +295,7 @@ class DirectoryController
         // $newDirectory = $this->directoryRepository->copy($copyId, $parentDirectoryId);
 
         return new JsonResponse([
-            'message' => 'Folder copy successfully.',
+            'message' => trans('dam::app.admin.dam.index.directory.copy-success'),
             'data'    => null,
         ]);
     }
@@ -197,6 +310,12 @@ class DirectoryController
         );
 
         $copyId = $request->input('id', 1);
+
+        if (! $this->permissionService->canAccess((int) $copyId)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
 
         $directory = $this->directoryRepository->find($copyId);
 
@@ -237,6 +356,17 @@ class DirectoryController
             'new_parent_id' => 'required|integer',
         ]);
 
+        $moveId = (int) $request->input('move_item_id');
+        $newParentId = (int) $request->input('new_parent_id');
+
+        if (! $this->permissionService->canAccess($moveId)
+            || ! $this->permissionService->canAccess($newParentId)
+        ) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
         try {
             $requestAction = $this->start(EventType::MOVE_DIRECTORY_STRUCTURE->value);
 
@@ -257,6 +387,10 @@ class DirectoryController
      */
     public function downloadArchive(int $id)
     {
+        if (! $this->permissionService->canAccess($id)) {
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
         $directory = $this->directoryRepository->findOrFail($id);
 
         $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());

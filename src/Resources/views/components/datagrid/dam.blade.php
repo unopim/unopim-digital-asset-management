@@ -11,7 +11,30 @@
         type="text/x-template"
         id="v-datagrid-template"
     >
-        <div>
+        <div
+            :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': gridLocked }"
+            :aria-busy="gridLocked"
+        >
+            <!-- Action-in-flight overlay (mass delete / mass action) -->
+            <div
+                v-if="actionInFlight"
+                class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+                style="z-index: 99998;"
+                role="status"
+                aria-live="polite"
+            >
+                <div
+                    class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
+                    style="min-width: 360px; z-index: 99999;"
+                >
+                    <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span class="text-base font-semibold text-gray-900 dark:text-white text-center" v-text="actionStatusLabel"></span>
+                </div>
+            </div>
+
             <x-dam::datagrid.toolbar />
 
             <div class="flex mt-4">
@@ -63,6 +86,18 @@
             data() {
                 return {
                     isLoading: false,
+                    actionInFlight: false,
+                    actionStatusLabel: '',
+                    treeBusy: false,
+                    searchDebounceTimer: null,
+
+                    defaultFilterIndices: [],
+
+                    activeFilterIndices: [],
+
+                    showFilterPicker: false,
+
+                    filterPickerSearch: '',
 
                     available: {
                         id: null,
@@ -115,6 +150,29 @@
                 };
             },
 
+            computed: {
+                // Freeze the directory tree only while a destructive request
+                // is actually in flight (mass-delete / mass-action / per-row
+                // delete). Selection alone does NOT lock — the user should be
+                // free to click around until they confirm the action.
+                gridBusy() {
+                    return !! this.actionInFlight;
+                },
+                // Visual lock for the grid surface — true while this side is
+                // mutating OR the tree side is mid-mutation. Keeps grid UI
+                // non-interactive during in-flight mass-delete/mass-action,
+                // matching the tree's own lockout.
+                gridLocked() {
+                    return this.actionInFlight || this.treeBusy;
+                },
+            },
+
+            watch: {
+                gridBusy(value) {
+                    this.$emitter.emit('dam:grid-busy', value);
+                },
+            },
+
             mounted() {
                 this.$emitter.on('data-grid:reset-all-filters', () => {
                     this.applied.filters.columns = [{
@@ -133,6 +191,10 @@
 
                     this.get();
                 })
+
+                this.$emitter.on('dam:tree-busy', (busy) => {
+                    this.treeBusy = !! busy;
+                });
 
                 this.boot();
             },
@@ -165,6 +227,14 @@
                             this.applied.sort = currentDatagrid.applied.sort;
 
                             // this.applied.filters = currentDatagrid.applied.filters;
+
+                            if (currentDatagrid.activeFilterIndices?.length) {
+                                this.activeFilterIndices = currentDatagrid.activeFilterIndices;
+                            }
+
+                            if (currentDatagrid.defaultFilterIndices?.length) {
+                                this.defaultFilterIndices = currentDatagrid.defaultFilterIndices;
+                            }
 
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');
@@ -209,9 +279,12 @@
                         params.filters[column.index] = column.value;
                     });
 
+                    const focusedName = document.activeElement?.name ?? null;
+                    const focusedSelectionStart = document.activeElement?.selectionStart ?? null;
+
                     this.isLoading = true;
 
-                    this.$refs['filterDrawer'].close();
+                    this.$refs['filterDrawer']?.close();
 
                     this.$axios
                         .get(this.src, {
@@ -248,6 +321,18 @@
 
                             this.available.searchPlaceholder = search_placeholder;
 
+                            if (this.activeFilterIndices.length === 0) {
+                                this.activeFilterIndices = this.available.columns
+                                    .filter(col => col.filterable && col.visible !== false)
+                                    .map(col => col.index);
+                            }
+
+                            if (this.defaultFilterIndices.length === 0) {
+                                this.defaultFilterIndices = this.available.columns
+                                    .filter(col => col.filterable && col.visible !== false)
+                                    .map(col => col.index);
+                            }
+
                             this.setCurrentSelectionMode();
 
                             this.updateDatagrids();
@@ -262,6 +347,18 @@
                             });
 
                             this.isLoading = false;
+
+                            if (focusedName) {
+                                this.$nextTick(() => {
+                                    const el = this.$el.querySelector(`input[name="${focusedName}"]`);
+                                    if (el) {
+                                        el.focus();
+                                        if (focusedSelectionStart !== null) {
+                                            el.setSelectionRange(focusedSelectionStart, focusedSelectionStart);
+                                        }
+                                    }
+                                });
+                            }
                         });
                 },
 
@@ -408,9 +505,14 @@
                      * We need to reset the page on filtering.
                      */
                     this.applied.pagination.page = 1;
-                    if ('search' == $event.srcElement.name) {
+                    if ('search' == $event.srcElement?.name) {
                         this.get();
                     }
+                },
+
+                debouncedFilterPage($event) {
+                    clearTimeout(this.searchDebounceTimer);
+                    this.searchDebounceTimer = setTimeout(() => this.filterPage($event), 500);
                 },
 
                 runFilters() {
@@ -660,12 +762,27 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
+                    const selectedCount = this.applied.massActions.indices.length;
+                    const startStatus = (label) => {
+                        this.actionStatusLabel = label.replace(':count', selectedCount);
+                        this.actionInFlight = true;
+                    };
+                    const stopStatus = () => {
+                        this.actionInFlight = false;
+                        this.actionStatusLabel = '';
+                    };
+
                     this.$emitter.emit('delete' === actionType ? 'open-delete-modal': 'open-confirm-modal', {
                         agree: () => {
+                            const statusLabel = 'delete' === actionType
+                                ? `@lang('dam::app.admin.dam.index.mass-action.deleting')`
+                                : `@lang('dam::app.admin.dam.index.mass-action.processing')`;
+
                             switch (method) {
                                 case 'post':
                                 case 'put':
                                 case 'patch':
+                                    startStatus(statusLabel);
                                     this.$axios[method](action.url, {
                                             indices: this.applied.massActions.indices,
                                             value: this.applied.massActions.value,
@@ -676,7 +793,8 @@
                                                 message: response.data.message
                                             });
                                             this.$emitter.emit('delete-assets', {
-                                                actionType: 'mass-action'
+                                                actionType: 'mass-action',
+                                                count: selectedCount,
                                             });
                                             this.get();
                                         })
@@ -685,11 +803,15 @@
                                                 type: 'error',
                                                 message: error.response.data.message
                                             });
+                                        })
+                                        .finally(() => {
+                                            stopStatus();
                                         });
 
                                     break;
 
                                 case 'delete':
+                                    startStatus(statusLabel);
                                     this.$axios[method](action.url, {
                                             indices: this.applied.massActions.indices
                                         })
@@ -699,6 +821,13 @@
                                                 message: response.data.message
                                             });
 
+                                            if ('delete' === actionType) {
+                                                this.$emitter.emit('delete-assets', {
+                                                    actionType: 'mass-action',
+                                                    count: selectedCount,
+                                                });
+                                            }
+
                                             this.get();
                                         })
                                         .catch((error) => {
@@ -706,6 +835,9 @@
                                                 type: 'error',
                                                 message: error.response.data.message
                                             });
+                                        })
+                                        .finally(() => {
+                                            stopStatus();
                                         });
 
                                     break;
@@ -741,6 +873,8 @@
                                         requestCount: ++datagrid.requestCount,
                                         available: this.available,
                                         applied: this.applied,
+                                        activeFilterIndices: this.activeFilterIndices,
+                                        defaultFilterIndices: this.defaultFilterIndices,
                                     };
                                 }
 
@@ -756,12 +890,48 @@
                     this.setDatagrids(datagrids);
                 },
 
+                getActiveFilterColumns() {
+                    return this.available.columns.filter(
+                        col => col.filterable && this.activeFilterIndices.includes(col.index)
+                    );
+                },
+
+                getInactiveFilterColumns() {
+                    return this.available.columns.filter(
+                        col => col.filterable && !this.activeFilterIndices.includes(col.index)
+                    );
+                },
+
+                addActiveFilter(columnIndex) {
+                    if (!this.activeFilterIndices.includes(columnIndex)) {
+                        this.activeFilterIndices.push(columnIndex);
+                    }
+
+                    this.updateDatagrids();
+                },
+
+                removeActiveFilter(columnIndex) {
+                    if (this.defaultFilterIndices.includes(columnIndex)) {
+                        return;
+                    }
+
+                    this.activeFilterIndices = this.activeFilterIndices.filter(i => i !== columnIndex);
+
+                    this.applied.filters.columns = this.applied.filters.columns.filter(
+                        col => col.index !== columnIndex
+                    );
+
+                    this.updateDatagrids();
+                },
+
                 getDatagridInitialProperties() {
                     return {
                         src: this.src,
                         requestCount: 0,
                         available: this.available,
                         applied: this.applied,
+                        activeFilterIndices: this.activeFilterIndices,
+                        defaultFilterIndices: this.defaultFilterIndices,
                     };
                 },
 
@@ -804,6 +974,7 @@
                         case 'delete':
                             this.$emitter.emit('delete' === method ? 'open-delete-modal' : 'open-confirm-modal', {
                                 agree: () => {
+                                    this.actionInFlight = true;
                                     this.$axios[method](action.url)
                                         .then(response => {
                                             this.$emitter.emit('add-flash', {
@@ -818,6 +989,9 @@
                                                 type: 'error',
                                                 message: error.response.data.message
                                             });
+                                        })
+                                        .finally(() => {
+                                            this.actionInFlight = false;
                                         });
                                 }
                             });

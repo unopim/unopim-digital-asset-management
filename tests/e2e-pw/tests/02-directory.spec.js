@@ -35,10 +35,26 @@ async function createDirectory(page, name) {
   const nameInput = page.getByPlaceholder('Name').first();
   await nameInput.waitFor({ state: 'visible', timeout: 10000 });
   await nameInput.fill(name);
+
+  // Capture the store response to confirm the API call succeeded before navigating.
+  const storeResponse = page.waitForResponse(
+    (res) => /\/admin\/dam\/directory\/store/.test(res.url()) && res.request().method() === 'POST',
+    { timeout: 15000 }
+  ).catch(() => null);
+
   await page.getByRole('button', { name: 'Save Directory' }).click();
-  await page.waitForTimeout(1500);
+  await storeResponse;
+  await page.waitForTimeout(500);
   await navigateTo(page, 'dam');
-  await page.locator('#app').getByText(name).first().waitFor({ state: 'visible', timeout: 10000 });
+
+  // The directory tree fetches its list via AJAX on mount. Wait for that response
+  // before asserting the new directory is visible.
+  await page.waitForResponse(
+    (res) => /\/admin\/dam\/directory$/.test(res.url()) && res.request().method() === 'GET',
+    { timeout: 20000 }
+  ).catch(() => page.waitForTimeout(3000));
+
+  await page.locator('#app').getByText(name).first().waitFor({ state: 'visible', timeout: 20000 });
 }
 
 /**
@@ -156,7 +172,7 @@ test.describe('DAM Directory Management', () => {
     await rightClickDirectory(adminPage, dirName);
     await adminPage.getByText('Delete', { exact: true }).click({ force: true });
     await adminPage.waitForTimeout(500);
-    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ });
+    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
     await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
     await confirmBtn.click();
 
@@ -168,10 +184,10 @@ test.describe('DAM Directory Management', () => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
     await adminPage.getByText('Delete', { exact: true }).click({ force: true });
-    await adminPage.waitForTimeout(500);
-    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ });
-    if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await confirmBtn.click();
+    const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
+    const modalAppeared = await confirmBtn.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+    if (modalAppeared) {
+      await confirmBtn.click({ force: true });
     }
     await expect(
       adminPage.locator('#app').getByText(/cannot be deleted|Root Directory/i).first()

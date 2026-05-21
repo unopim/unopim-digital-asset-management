@@ -21,7 +21,16 @@ class Asset extends Model implements AssetContract, HistoryAuditable
 
     protected $table = 'dam_assets';
 
-    protected $fillable = ['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension'];
+    protected $fillable = ['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension', 'meta_data'];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'meta_data' => 'array',
+    ];
 
     /**
      * These columns history will not be generated
@@ -49,12 +58,18 @@ class Asset extends Model implements AssetContract, HistoryAuditable
     {
         return $this->hasMany(AssetComments::class, 'dam_asset_id')
             ->whereNull('parent_id')
-            ->with(['children']);
+            ->with(['admin', 'children.admin']);
     }
 
     public function resources()
     {
         return $this->hasMany(AssetResourceMapping::class, 'dam_asset_id');
+    }
+
+    public function shares()
+    {
+        return $this->hasMany(Share::class, 'target_id')
+            ->where('share_type', Share::TYPE_ASSET);
     }
 
     /**

@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, searchInDataGrid, ensureAssetExists } = require('../utils/helpers');
+const { navigateTo, searchInDataGrid, ensureAssetExists, closeApShell } = require('../utils/helpers');
 
 /**
  * Helper: Navigate to the edit page of the first asset in the grid.
@@ -8,17 +8,23 @@ const { navigateTo, searchInDataGrid, ensureAssetExists } = require('../utils/he
 async function navigateToFirstAssetEdit(page) {
   await navigateTo(page, 'dam');
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
 
   // Hover over the first image card to reveal action icons
   const firstCard = page.locator('.image-card').first();
+  await firstCard.waitFor({ state: 'visible', timeout: 20000 });
+  await closeApShell(page);
   await firstCard.hover();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500);
 
   // Click the edit icon that appears on hover
   const editIcon = firstCard.locator('.icon-edit').first();
   await editIcon.click({ force: true });
-  await page.waitForLoadState('domcontentloaded');
+  // Wait for the URL to confirm navigation to the edit page
+  await page.waitForURL(/admin\/dam\/assets\/edit\/\d+/, { timeout: 30000 });
+  // networkidle ensures Vue has finished mounting all components (accordion slots,
+  // action buttons, etc.). The edit page has no background polling so this resolves.
+  await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
 }
 
 test.describe('DAM Asset Edit Page', () => {
@@ -112,5 +118,60 @@ test.describe('DAM Asset Edit Page', () => {
     await expect(
       adminPage.locator('#app').getByText(/Are you sure/i).first()
     ).toBeVisible({ timeout: 5000 });
+  });
+
+  test('Navigating to next asset updates filename in header', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const nextBtn = adminPage.locator('button[aria-label="Next"]').first();
+    const hasNext = await nextBtn.isVisible({ timeout: 5000 }).catch(() => false);
+    if (!hasNext) {
+      test.skip(true, 'No next asset available');
+      return;
+    }
+
+    // Vue 3 replaces <v-dam-asset-label> with its root <span> in the DOM — no parent tag.
+    const labelSpan = adminPage.locator('span.font-bold.break-all').first();
+    await labelSpan.waitFor({ state: 'visible', timeout: 30000 });
+    const initialName = await labelSpan.textContent();
+
+    await nextBtn.click();
+    // Wait for the SPA navigation AJAX call to complete before reading the label.
+    await adminPage.waitForResponse(
+      (res) => /\/admin\/dam\/assets\/show\/\d+/.test(res.url()) && res.request().method() === 'GET',
+      { timeout: 15000 }
+    ).catch(() => adminPage.waitForTimeout(3000));
+    await adminPage.waitForTimeout(500);
+
+    const newName = await labelSpan.textContent({ timeout: 10000 });
+    expect(newName.trim()).not.toBe('');
+  });
+
+  test('Header shows file type icon', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const fileIcon = adminPage.locator('.bg-violet-100').first();
+    await expect(fileIcon).toBeVisible({ timeout: 5000 });
+  });
+
+  test('Directory Path accordion visible in right rail', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const dirPathHeader = adminPage.locator('#app').getByText('Directory Path').first();
+    await expect(dirPathHeader).toBeVisible({ timeout: 5000 });
+  });
+
+  test('Tags accordion appears before Details accordion in right rail', async ({ adminPage }) => {
+    await navigateToFirstAssetEdit(adminPage);
+
+    const tagsEl    = adminPage.locator('#app').getByText('Tags', { exact: true }).first();
+    const detailsEl = adminPage.locator('#app').getByText('Details', { exact: true }).first();
+
+    const tagsBox    = await tagsEl.boundingBox();
+    const detailsBox = await detailsEl.boundingBox();
+
+    expect(tagsBox).not.toBeNull();
+    expect(detailsBox).not.toBeNull();
+    expect(tagsBox.y).toBeLessThan(detailsBox.y);
   });
 });

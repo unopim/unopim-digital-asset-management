@@ -50,19 +50,29 @@
                                 v-for="record in $parent.available.records"
                                 >
                                 <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
-                                    <img 
+                                    <img
                                         :src="record.path"
                                         :alt="record.file_name"
                                         class="w-full h-full object-cover object-center"
                                     >
-                                
+
                                     <!-- ################ -->
                                     <div class="flex flex-col justify-center invisible w-full p-3 bg-black dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
                                         <!-- Actions -->
                                         <div class="flex justify-center">
+                                            <!-- preview / eye icon -->
+                                            @if (bouncer()->hasPermission('dam.asset.view'))
+                                                <span
+                                                    class="icon-dam-preview text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
+                                                    title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
+                                                    @click="previewImage(record.id)"
+                                                >
+                                                </span>
+                                            @endif
+
                                             <!-- delete icon -->
                                             @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                                <span 
+                                                <span
                                                     class="icon-delete text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
                                                     @click="deleteImage(record.id)"
                                                 >
@@ -71,7 +81,7 @@
 
                                             <!-- edit icon -->
                                             @if (bouncer()->hasPermission('dam.asset.edit'))
-                                                <div 
+                                                <div
                                                     class="icon-edit text-2xl p-1.5 rounded-md cursor-pointer text-white hover:text-cherry-800 hover:bg-violet-100 dark:hover:bg-black"
                                                     @click="editImage(record.id)"
                                                 >
@@ -86,23 +96,32 @@
                                 <!-- ########### -->
                                 <div class="flex gap-2 items-center mt-2.5">
                                     <!-- Mass Actions -->
-                                    <p v-if="$parent.available.massActions.length">
-                                        <label :for="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`">
-                                            <input
-                                                type="checkbox"
-                                                class="peer hidden"
-                                                :name="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
-                                                :value="record[$parent.available.meta.primary_column]"
-                                                :id="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
-                                                v-model="$parent.applied.massActions.indices"
-                                                @change="$parent.setCurrentSelectionMode"
-                                            >
+                                    <label
+                                        v-if="$parent.available.massActions.length"
+                                        :for="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
+                                        class="flex gap-2 items-center cursor-pointer overflow-hidden"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            class="peer hidden"
+                                            :name="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
+                                            :value="record[$parent.available.meta.primary_column]"
+                                            :id="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
+                                            v-model="$parent.applied.massActions.indices"
+                                            @change="$parent.setCurrentSelectionMode"
+                                        >
 
-                                            <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
-                                            </span>
-                                        </label>
-                                    </p>
-                                    <h2 class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>
+                                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl shrink-0">
+                                        </span>
+
+                                        <h2 class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>
+                                    </label>
+
+                                    <h2
+                                        v-else
+                                        class="text-sm text-gray-600 dark:text-gray-300 overflow-hidden"
+                                        v-text="record.file_name"
+                                    ></h2>
                                 </div>
                             </div>
                         </template>
@@ -126,9 +145,7 @@
             template: '#v-gallery-table-template',
 
             data: function () {
-                return {
-
-                }
+                return {}
             },
             computed: {
                 gridsCount() {
@@ -160,7 +177,8 @@
                                         message: 'successfully deleted'
                                     });
                                     this.$emitter.emit('delete-assets', {
-                                        actionType: 'single-action'
+                                        actionType: 'single-action',
+                                        count: 1,
                                     });
                                     this.$parent.get();
                                 })
@@ -182,7 +200,10 @@
                 },
                 editImage(recordId) {
                     window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId);
-                }
+                },
+                previewImage(recordId) {
+                    this.$emitter.emit('dam-open-preview', recordId);
+                },
             }
         });
     </script>

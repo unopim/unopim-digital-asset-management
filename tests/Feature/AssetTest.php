@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetResourceMapping;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Models\Tag;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -36,7 +38,30 @@ it('should return the asset detail page', function () {
 
     $this->get(route('admin.dam.assets.show', $asset->id))
         ->assertOk()
-        ->assertSeeText($asset->name ?? $asset->file_name);
+        ->assertJsonPath('asset.file_name', $asset->file_name);
+});
+
+it('show endpoint includes tags in response', function () {
+    $asset = Asset::factory()->create();
+    $tag = Tag::create(['name' => 'sunset']);
+    $asset->tags()->attach($tag);
+
+    $this->get(route('admin.dam.assets.show', $asset->id))
+        ->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonStructure(['tags']);
+});
+
+it('edit view passes directoryAncestors to blade', function () {
+    $parent = Directory::factory()->create(['name' => 'Photography', 'parent_id' => null]);
+    $child = Directory::factory()->create(['name' => 'Landscapes', 'parent_id' => $parent->id]);
+    $asset = Asset::factory()->create();
+    $child->assets()->attach($asset);
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+    $response->assertViewHas('directoryAncestors');
+    $response->assertViewHas('fileSize');
 });
 
 // Update the Asset
@@ -186,6 +211,25 @@ it('should allow downloading the asset file', function () {
 
     $response->assertOk();
     $response->assertHeader('Content-Disposition');
+});
+
+it('should redirect to s3 presigned url on download when disk is aws', function () {
+    config()->set('filesystems.default', Directory::ASSETS_DISK_AWS);
+    Storage::fake(Directory::ASSETS_DISK_AWS);
+
+    $fileName = 'sample-'.uniqid().'.pdf';
+    $filePath = 'assets/Root/'.$fileName;
+    Storage::disk(Directory::ASSETS_DISK_AWS)->put($filePath, 'dummy content');
+
+    $asset = Asset::factory()->create([
+        'file_name' => $fileName,
+        'path'      => $filePath,
+    ]);
+
+    $response = $this->get(route('admin.dam.assets.download', $asset->id));
+
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->not->toBeEmpty();
 });
 
 // Custom Download Asset
@@ -416,4 +460,210 @@ it('should move asset from one directory to another', function () {
     Storage::disk($disk)->assertExists($expectedPath);
 
     Storage::disk($disk)->assertMissing($originalPath);
+});
+
+// ── Download Compressed ───────────────────────────────────────────────────
+
+it('should download asset as a zip file', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+
+    $fileName = 'sample-'.uniqid().'.pdf';
+    $filePath = 'assets/Root/'.$fileName;
+    Storage::disk($disk)->put($filePath, 'dummy content');
+
+    $asset = Asset::factory()->create([
+        'file_name' => $fileName,
+        'path'      => $filePath,
+    ]);
+
+    $response = $this->get(route('admin.dam.assets.download_compressed', $asset->id));
+
+    $response->assertOk();
+    $response->assertHeader('Content-Disposition');
+});
+
+it('should return 404 when compressed-download targets a non-existent asset', function () {
+    $this->get(route('admin.dam.assets.download_compressed', 99999))
+        ->assertNotFound();
+});
+
+it('should return 404 when compressed-download file is missing from storage', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+
+    $asset = Asset::factory()->create([
+        'file_name' => 'missing.pdf',
+        'path'      => 'assets/Root/missing.pdf',
+    ]);
+
+    $this->get(route('admin.dam.assets.download_compressed', $asset->id))
+        ->assertNotFound();
+});
+
+// ── Metadata ──────────────────────────────────────────────────────────────
+
+it('should return cached metadata for an asset', function () {
+    $asset = Asset::factory()->create([
+        'meta_data' => ['FileType' => 'JPEG', 'ImageWidth' => 800],
+    ]);
+
+    $this->getJson(route('admin.dam.assets.metadata', $asset->id))
+        ->assertOk()
+        ->assertJson(['success' => true])
+        ->assertJsonPath('data.FileType', 'JPEG')
+        ->assertJsonPath('data.ImageWidth', 800);
+});
+
+it('should flatten exif sub-keys from cached metadata', function () {
+    $asset = Asset::factory()->create([
+        'meta_data' => [
+            'FileType'  => 'PNG',
+            'exif'      => ['Make' => 'Canon', 'Model' => 'EOS'],
+        ],
+    ]);
+
+    $response = $this->getJson(route('admin.dam.assets.metadata', $asset->id))
+        ->assertOk()
+        ->assertJson(['success' => true]);
+
+    // exif scalar values merged to top level; 'exif' key removed
+    $data = $response->json('data');
+    expect($data)->toHaveKey('Make');
+    expect($data)->toHaveKey('Model');
+    expect($data)->not->toHaveKey('exif');
+});
+
+it('should return error when asset has no metadata and file is missing', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+
+    $asset = Asset::factory()->create([
+        'path'      => 'assets/Root/missing-file.jpg',
+        'meta_data' => null,
+    ]);
+
+    $this->getJson(route('admin.dam.assets.metadata', $asset->id))
+        ->assertOk()
+        ->assertJson(['success' => false]);
+});
+
+// ── Drag-Move (tree) ──────────────────────────────────────────────────────
+
+function seedAssetMove(): array
+{
+    $src = Directory::factory()->create();
+    $dst = Directory::factory()->create();
+
+    $disk = Directory::getAssetDisk();
+    Storage::disk($disk)->makeDirectory('assets');
+    Storage::disk($disk)->makeDirectory('assets/'.$src->generatePath());
+    Storage::disk($disk)->makeDirectory('assets/'.$dst->generatePath());
+
+    $fileName = 'sample.jpg';
+    $assetPath = sprintf('assets/%s/%s', $src->generatePath(), $fileName);
+    Storage::disk($disk)->put($assetPath, 'fake-content');
+
+    $asset = Asset::factory()->create([
+        'file_name' => $fileName,
+        'path'      => $assetPath,
+    ]);
+    $src->assets()->attach($asset->id);
+
+    return [$src, $dst, $asset];
+}
+
+it('moves a single asset from one directory to another (drag-move)', function () {
+    [$src, $dst, $asset] = seedAssetMove();
+
+    $response = $this->postJson(route('admin.dam.assets.moved'), [
+        'move_item_id'  => $asset->id,
+        'new_parent_id' => $dst->id,
+    ]);
+
+    $response->assertOk();
+
+    $asset->refresh();
+    $linkedDirectoryIds = $asset->directories()->pluck('dam_directories.id')->all();
+    expect($linkedDirectoryIds)->toContain($dst->id);
+    expect($linkedDirectoryIds)->not->toContain($src->id);
+});
+
+it('after drag-move, source directory.assets no longer lists the asset', function () {
+    config()->set('dam.tree.show_assets', true);
+
+    [$src, $dst, $asset] = seedAssetMove();
+
+    $this->postJson(route('admin.dam.assets.moved'), [
+        'move_item_id'  => $asset->id,
+        'new_parent_id' => $dst->id,
+    ])->assertOk();
+
+    $srcResp = $this->getJson(route('admin.dam.directory.assets', ['id' => $src->id]));
+    $srcResp->assertOk();
+    $srcIds = collect($srcResp->json('data'))->pluck('id')->all();
+    expect($srcIds)->not->toContain($asset->id);
+});
+
+it('after drag-move, target directory.assets includes the asset', function () {
+    config()->set('dam.tree.show_assets', true);
+
+    [$src, $dst, $asset] = seedAssetMove();
+
+    $this->postJson(route('admin.dam.assets.moved'), [
+        'move_item_id'  => $asset->id,
+        'new_parent_id' => $dst->id,
+    ])->assertOk();
+
+    $dstResp = $this->getJson(route('admin.dam.directory.assets', ['id' => $dst->id]));
+    $dstResp->assertOk();
+    $dstIds = collect($dstResp->json('data'))->pluck('id')->all();
+    expect($dstIds)->toContain($asset->id);
+});
+
+it('drag-move requires authentication', function () {
+    auth('admin')->logout();
+    $response = $this->postJson(route('admin.dam.assets.moved'), [
+        'move_item_id'  => 1,
+        'new_parent_id' => 1,
+    ]);
+    expect(in_array($response->status(), [302, 401, 403], true))->toBeTrue();
+});
+
+it('edit view exposes all fields needed for Vue reactive display', function () {
+    $asset = Asset::factory()->create([
+        'file_size' => 2_097_152,
+        'extension' => 'jpg',
+        'mime_type' => 'image/jpeg',
+    ]);
+
+    $this->get(route('admin.dam.assets.edit', $asset->id))
+        ->assertOk()
+        ->assertViewHas('fileSize', '2.00 MB')
+        ->assertViewHas('directoryAncestors');
+});
+
+it('edit view directoryAncestors is empty collection for asset without directory', function () {
+    $asset = Asset::factory()->create();
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+
+    $ancestors = $response->viewData('directoryAncestors');
+    expect($ancestors)->toBeInstanceOf(Collection::class);
+    expect($ancestors->isEmpty())->toBeTrue();
+});
+
+it('edit view directoryAncestors contains parent chain for nested directory', function () {
+    $root = Directory::factory()->create(['name' => 'Assets', 'parent_id' => null]);
+    $sub = Directory::factory()->create(['name' => 'Photography', 'parent_id' => $root->id]);
+    $leaf = Directory::factory()->create(['name' => 'Landscapes', 'parent_id' => $sub->id]);
+    $asset = Asset::factory()->create();
+    $leaf->assets()->attach($asset);
+
+    $response = $this->get(route('admin.dam.assets.edit', $asset->id));
+    $response->assertOk();
+
+    $ancestors = $response->viewData('directoryAncestors');
+    expect($ancestors->pluck('name')->toArray())->toBe(['Assets', 'Photography', 'Landscapes']);
 });
