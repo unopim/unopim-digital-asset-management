@@ -161,3 +161,133 @@ it('does not bypass for a custom role without all_directories', function () {
 
     expect($this->service->bypass())->toBeFalse();
 });
+
+it('directlyGrantedIds returns only explicit grants when inherit_children is false', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    $parent = Directory::create(['name' => 'IcParent', 'parent_id' => null]);
+    $child = Directory::create(['name' => 'IcChild', 'parent_id' => $parent->id]);
+
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $parent->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $role->id],
+        ['all_directories' => false, 'inherit_children' => false, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    $ids = $this->service->directlyGrantedIds();
+
+    expect($ids)->toContain($parent->id);
+    expect($ids)->not->toContain($child->id);
+});
+
+it('directlyGrantedIds includes all descendants when inherit_children is true', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    $parent = Directory::create(['name' => 'IcExpandParent', 'parent_id' => null]);
+    $child = Directory::create(['name' => 'IcExpandChild', 'parent_id' => $parent->id]);
+    $grandchild = Directory::create(['name' => 'IcExpandGrandchild', 'parent_id' => $child->id]);
+
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $parent->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $role->id],
+        ['all_directories' => false, 'inherit_children' => true, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    $ids = $this->service->directlyGrantedIds();
+
+    expect($ids)->toContain($parent->id);
+    expect($ids)->toContain($child->id);
+    expect($ids)->toContain($grandchild->id);
+});
+
+it('directlyGrantedIds returns empty array when inherit_children is true but no explicit grants exist', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $role->id],
+        ['all_directories' => false, 'inherit_children' => true, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    expect($this->service->directlyGrantedIds())->toBe([]);
+});
+
+it('canAccess returns true for inherited descendants when inherit_children is true', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    $parent = Directory::create(['name' => 'IcAccessParent', 'parent_id' => null]);
+    $child = Directory::create(['name' => 'IcAccessChild', 'parent_id' => $parent->id]);
+
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $parent->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $role->id],
+        ['all_directories' => false, 'inherit_children' => true, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    expect($this->service->canAccess($child->id))->toBeTrue();
+    expect($this->service->canAccess($parent->id))->toBeTrue();
+});
+
+it('directlyGrantedIds result is memoised per request when inherit_children is true', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $admin = Admin::factory()->create(['role_id' => $role->id]);
+    $this->actingAs($admin, 'admin');
+    $this->service->flush();
+
+    $parent = Directory::create(['name' => 'IcMemoParent', 'parent_id' => null]);
+    Directory::create(['name' => 'IcMemoChild', 'parent_id' => $parent->id]);
+
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $parent->id,
+        'role_id'      => $role->id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $role->id],
+        ['all_directories' => false, 'inherit_children' => true, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+
+    $this->service->directlyGrantedIds();
+    $this->service->directlyGrantedIds();
+    $this->service->directlyGrantedIds();
+
+    $count = collect(DB::getQueryLog())->filter(
+        fn ($q) => str_contains(strtolower($q['query']), 'dam_directory_role')
+    )->count();
+
+    expect($count)->toBe(1);
+});

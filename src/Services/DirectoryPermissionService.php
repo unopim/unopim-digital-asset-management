@@ -21,6 +21,12 @@ class DirectoryPermissionService
     /** Cached bypass decision for the current request. */
     protected ?bool $bypassCache = null;
 
+    /** Cached directly-granted ids (possibly with descendants). */
+    protected ?array $directlyGrantedCache = null;
+
+    /** The admin id that produced the cached directly-granted ids. */
+    protected ?int $directlyGrantedForAdminId = null;
+
     /**
      * True when directory ACL filtering should be skipped for the current request.
      *
@@ -99,9 +105,14 @@ class DirectoryPermissionService
     }
 
     /**
-     * Directly granted directory ids for the current admin's role — the raw pivot
-     * rows, no ancestor expansion. Used for write-action gating where ancestors
-     * should NOT count.
+     * Directly granted directory ids for the current admin's role.
+     *
+     * When the role has `inherit_children = true` in dam_role_settings, the
+     * explicit pivot grants are expanded to include all nested descendants
+     * (full subtree, unlimited depth) using the existing nested-set columns.
+     *
+     * Result is memoised per request. Used for write-action gating (canAccess)
+     * and as the seed for viewableIds() ancestor expansion.
      *
      * @return array<int>
      */
@@ -113,11 +124,41 @@ class DirectoryPermissionService
             return [];
         }
 
-        return DB::table('dam_directory_role')
+        if ($this->directlyGrantedCache !== null && $this->directlyGrantedForAdminId === $admin->id) {
+            return $this->directlyGrantedCache;
+        }
+
+        $explicit = DB::table('dam_directory_role')
             ->where('role_id', $admin->role_id)
             ->pluck('directory_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+
+        $inheritChildren = (bool) DB::table('dam_role_settings')
+            ->where('role_id', $admin->role_id)
+            ->value('inherit_children');
+
+        if ($inheritChildren && ! empty($explicit)) {
+            $descendants = DB::table('dam_directories as ancestor')
+                ->join('dam_directories as descendant', function ($join) {
+                    $join->whereColumn('descendant._lft', '>=', 'ancestor._lft')
+                        ->whereColumn('descendant._rgt', '<=', 'ancestor._rgt');
+                })
+                ->whereIn('ancestor.id', $explicit)
+                ->distinct()
+                ->pluck('descendant.id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $ids = array_values(array_unique(array_merge($explicit, $descendants)));
+        } else {
+            $ids = $explicit;
+        }
+
+        $this->directlyGrantedCache = $ids;
+        $this->directlyGrantedForAdminId = $admin->id;
+
+        return $ids;
     }
 
     /**
@@ -157,6 +198,8 @@ class DirectoryPermissionService
         $this->viewableIdsCache = null;
         $this->cachedForAdminId = null;
         $this->bypassCache = null;
+        $this->directlyGrantedCache = null;
+        $this->directlyGrantedForAdminId = null;
     }
 
     /**

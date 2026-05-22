@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'Uprawnienia katalogu DAM',
-            'tab-subtitle'    => 'Katalogi, do których ta rola ma dostęp.',
-            'no-actions'      => 'Tylko podgląd. Otwórz podfolder, do którego masz dostęp.',
-            'unauthorized'    => 'Nie masz uprawnień do zarządzania uprawnieniami katalogu DAM.',
-            'all-directories' => 'Wszystkie katalogi — przyznaj dostęp do wszystkich katalogów teraz i w przyszłości',
+            'title'            => 'Uprawnienia katalogu DAM',
+            'tab-subtitle'     => 'Katalogi, do których ta rola ma dostęp.',
+            'no-actions'       => 'Tylko podgląd. Otwórz podfolder, do którego masz dostęp.',
+            'unauthorized'     => 'Nie masz uprawnień do zarządzania uprawnieniami katalogu DAM.',
+            'all-directories'  => 'Wszystkie katalogi — przyznaj dostęp do wszystkich katalogów teraz i w przyszłości',
+            'inherit-children' => 'Dziedzicz podkatalogi — automatycznie uzyskuj dostęp do wszystkich podkatalogów w przyznanych katalogach',
         ],
         'validation' => [
             'asset' => [

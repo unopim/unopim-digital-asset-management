@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'Quyền thư mục DAM',
-            'tab-subtitle'    => 'Các thư mục mà vai trò này có thể truy cập.',
-            'no-actions'      => 'Chỉ xem. Mở thư mục con mà bạn có quyền truy cập.',
-            'unauthorized'    => 'Bạn không được phép quản lý quyền thư mục DAM.',
-            'all-directories' => 'Tất cả thư mục — cấp quyền truy cập vào mọi thư mục hiện tại và tương lai',
+            'title'            => 'Quyền thư mục DAM',
+            'tab-subtitle'     => 'Các thư mục mà vai trò này có thể truy cập.',
+            'no-actions'       => 'Chỉ xem. Mở thư mục con mà bạn có quyền truy cập.',
+            'unauthorized'     => 'Bạn không được phép quản lý quyền thư mục DAM.',
+            'all-directories'  => 'Tất cả thư mục — cấp quyền truy cập vào mọi thư mục hiện tại và tương lai',
+            'inherit-children' => 'Kế thừa thư mục con — tự động truy cập tất cả thư mục con trong các thư mục được cấp phép',
         ],
         'validation' => [
             'asset' => [

@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'Permissions du répertoire DAM',
-            'tab-subtitle'    => 'Répertoires auxquels ce rôle peut accéder.',
-            'no-actions'      => 'Lecture seule. Ouvrez un sous-dossier auquel vous avez accès.',
-            'unauthorized'    => 'Vous n\'êtes pas autorisé à gérer les permissions du répertoire DAM.',
-            'all-directories' => 'Tous les répertoires — accorder l\'accès à tous les répertoires maintenant et à l\'avenir',
+            'title'            => 'Permissions du répertoire DAM',
+            'tab-subtitle'     => 'Répertoires auxquels ce rôle peut accéder.',
+            'no-actions'       => 'Lecture seule. Ouvrez un sous-dossier auquel vous avez accès.',
+            'unauthorized'     => 'Vous n\'êtes pas autorisé à gérer les permissions du répertoire DAM.',
+            'all-directories'  => 'Tous les répertoires — accorder l\'accès à tous les répertoires maintenant et à l\'avenir',
+            'inherit-children' => 'Hériter des sous-répertoires — accéder automatiquement à tous les sous-répertoires des répertoires accordés',
         ],
         'validation' => [
             'asset' => [

@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'DAM Dizin İzinleri',
-            'tab-subtitle'    => 'Bu rolün erişebileceği dizinler.',
-            'no-actions'      => 'Yalnızca görüntüleme. Erişiminiz olan bir alt klasörü açın.',
-            'unauthorized'    => 'DAM dizin izinlerini yönetme yetkiniz yok.',
-            'all-directories' => 'Tüm Dizinler — şimdi ve gelecekte tüm dizinlere erişim ver',
+            'title'            => 'DAM Dizin İzinleri',
+            'tab-subtitle'     => 'Bu rolün erişebileceği dizinler.',
+            'no-actions'       => 'Yalnızca görüntüleme. Erişiminiz olan bir alt klasörü açın.',
+            'unauthorized'     => 'DAM dizin izinlerini yönetme yetkiniz yok.',
+            'all-directories'  => 'Tüm Dizinler — şimdi ve gelecekte tüm dizinlere erişim ver',
+            'inherit-children' => 'Alt dizinleri devral — verilen dizinlerdeki tüm alt dizinlere otomatik olarak eriş',
         ],
         'validation' => [
             'asset' => [

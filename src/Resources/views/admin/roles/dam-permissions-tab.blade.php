@@ -3,6 +3,8 @@
         id="dam-directory-permissions-tab"
         v-if="permission_type == 'custom' || selected_permission_type == 'custom'"
         class="flex flex-col gap-2 flex-1 max-xl:flex-auto"
+        data-inherit-children="{{ $inheritChildren ? '1' : '0' }}"
+        data-explicit-grants="{{ json_encode($grantedIds) }}"
     >
         <input
             type="hidden"
@@ -33,6 +35,22 @@
                 </span>
             </label>
 
+            {{-- Inherit Sub-directories toggle --}}
+            <label class="flex items-center gap-2 cursor-pointer mb-4 select-none" id="dam-inherit-children-label">
+                <input
+                    type="checkbox"
+                    id="dam-inherit-children-toggle"
+                    name="dam_inherit_children"
+                    value="1"
+                    class="w-4 h-4 rounded border-gray-300 text-violet-700 cursor-pointer"
+                    {{ $inheritChildren ? 'checked' : '' }}
+                    {{ $allDirectories ? 'disabled' : '' }}
+                />
+                <span class="font-semibold text-gray-800 dark:text-white text-sm">
+                    @lang('dam::app.admin.permissions.inherit-children')
+                </span>
+            </label>
+
             {{-- Directory tree (hidden when all-directories is checked) --}}
             <div id="dam-directory-tree-wrapper" {{ $allDirectories ? 'style=display:none' : '' }}>
                 <x-admin::tree.view
@@ -43,7 +61,7 @@
                     label-field="name"
                     selection-type="individual"
                     :items="json_encode($directoryTree)"
-                    :value="json_encode($grantedIds)"
+                    :value="json_encode($expandedGrantedIds)"
                     :fallback-locale="config('app.fallback_locale')"
                 />
             </div>
@@ -156,11 +174,97 @@
                     return true;
                 }
 
+                function restoreCheckboxStates() {
+                    var r = root();
+                    if (! r) return;
+
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
+                    if (inheritToggle && r.dataset.inheritChildren === '1') {
+                        inheritToggle.checked = true;
+                    }
+                }
+
+                function cascadeInheritOn() {
+                    var r = root();
+                    if (! r) return;
+                    var checkedBoxes = Array.prototype.slice.call(
+                        r.querySelectorAll('input[type="checkbox"][name="directories[]"]:checked')
+                    );
+                    propagating = true;
+                    try {
+                        checkedBoxes.forEach(function (cb) {
+                            var item = cb.closest('.v-tree-item');
+                            if (! item) return;
+                            var descendants = item.querySelectorAll(
+                                ':scope .v-tree-item input[type="checkbox"][name="directories[]"]'
+                            );
+                            for (var j = 0; j < descendants.length; j++) {
+                                if (! descendants[j].checked) {
+                                    descendants[j].checked = true;
+                                    var descItem = descendants[j].closest('.v-tree-item');
+                                    if (descItem) {
+                                        markAncestorsExpanded(descItem);
+                                        if (descItem.querySelector('.v-tree-item')) {
+                                            markSubtreeExpanded(descItem);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } finally {
+                        propagating = false;
+                    }
+                    applyAttrs();
+                }
+
+                function cascadeInheritOff() {
+                    var r = root();
+                    if (! r) return;
+                    var explicit = [];
+                    try { explicit = JSON.parse(r.dataset.explicitGrants || '[]'); } catch (e) {}
+                    var allBoxes = r.querySelectorAll(
+                        'input[type="checkbox"][name="directories[]"]'
+                    );
+                    propagating = true;
+                    try {
+                        for (var k = 0; k < allBoxes.length; k++) {
+                            allBoxes[k].checked = explicit.indexOf(parseInt(allBoxes[k].value, 10)) !== -1;
+                        }
+                    } finally {
+                        propagating = false;
+                    }
+                    applyAttrs();
+                }
+
+                function attachInheritToggleHandler() {
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
+                    if (! inheritToggle || inheritToggle.dataset.damInheritAttached) return;
+                    inheritToggle.dataset.damInheritAttached = '1';
+                    inheritToggle.addEventListener('change', function () {
+                        var checked = inheritToggle.checked;
+                        var tries = 0;
+                        var iv = setInterval(function () {
+                            var r = root();
+                            if (! r) { if (++tries > 20) clearInterval(iv); return; }
+                            var boxes = r.querySelectorAll(
+                                'input[type="checkbox"][name="directories[]"]'
+                            );
+                            if (boxes.length > 0 || ++tries > 20) {
+                                clearInterval(iv);
+                                if (checked) { cascadeInheritOn(); } else { cascadeInheritOff(); }
+                            }
+                        }, 80);
+                    });
+                }
+
                 function attachInteractionTrackers() {
                     var r = root();
                     if (! r) return;
                     if (r.getAttribute(ATTACHED_ATTR) === '1') return;
                     r.setAttribute(ATTACHED_ATTR, '1');
+
+                    restoreCheckboxStates();
+                    attachInheritToggleHandler();
 
                     // Tab DOM is fresh — Vue may not have rendered the tree
                     // checkboxes yet. Retry initial expansion until they
@@ -287,8 +391,16 @@
                 function syncTreeVisibility() {
                     var toggle = document.getElementById('dam-all-directories-toggle');
                     var tree = document.getElementById('dam-directory-tree-wrapper');
+                    var inheritLabel = document.getElementById('dam-inherit-children-label');
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
                     if (! toggle || ! tree) return;
                     tree.style.display = toggle.checked ? 'none' : '';
+                    if (inheritToggle) {
+                        inheritToggle.disabled = toggle.checked;
+                    }
+                    if (inheritLabel) {
+                        inheritLabel.style.opacity = toggle.checked ? '0.4' : '';
+                    }
                 }
 
                 function attachToggle() {

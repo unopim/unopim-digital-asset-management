@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'Permisos del directorio DAM',
-            'tab-subtitle'    => 'Directorios a los que este rol puede acceder.',
-            'no-actions'      => 'Solo lectura. Abre una subcarpeta a la que tengas acceso.',
-            'unauthorized'    => 'No está autorizado para gestionar los permisos del directorio DAM.',
-            'all-directories' => 'Todos los directorios — conceder acceso a todos los directorios ahora y en el futuro',
+            'title'            => 'Permisos del directorio DAM',
+            'tab-subtitle'     => 'Directorios a los que este rol puede acceder.',
+            'no-actions'       => 'Solo lectura. Abre una subcarpeta a la que tengas acceso.',
+            'unauthorized'     => 'No está autorizado para gestionar los permisos del directorio DAM.',
+            'all-directories'  => 'Todos los directorios — conceder acceso a todos los directorios ahora y en el futuro',
+            'inherit-children' => 'Heredar subdirectorios — acceder automáticamente a todos los subdirectorios dentro de los directorios concedidos',
         ],
         'validation' => [
             'asset' => [
