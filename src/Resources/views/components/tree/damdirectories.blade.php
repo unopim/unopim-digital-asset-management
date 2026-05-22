@@ -610,21 +610,38 @@
             >
                 <div>
                     @if (bouncer()->hasPermission('dam.asset.upload'))
-                     <div
+                    <input
+                        class="hidden"
+                        type="file"
+                        ref="fileInput"
+                        @change="handleFileChange"
+                        multiple="multiple"
+                        name="files[]"
+                    />
+                    <input
+                        class="hidden"
+                        type="file"
+                        ref="folderInput"
+                        @change="handleFolderChange"
+                        webkitdirectory
+                        multiple
+                        name="folder_files[]"
+                    />
+                    <div
                         class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
                         @click="uploadFile"
                         v-if="requestType != 'asset' && canAccessSelected()"
                     >
                         <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
-                        <input 
-                            class="hidden" 
-                            type="file"
-                            ref="fileInput"
-                            @change="handleFileChange"
-                            multiple="multiple"
-                            name="files[]"
-                         />
-                        <span class="text-sm text-zinc-600 dark:text-white"> @lang('dam::app.admin.dam.index.directory.actions.upload-files') </span>
+                        <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.upload-files')</span>
+                    </div>
+                    <div
+                        class="flex items-center justify-start rounded-md p-1.5 gap-2 cursor-pointer text-sm text-zinc-600 dark:text-white !leading-normal"
+                        @click="triggerFolderUpload"
+                        v-if="requestType != 'asset' && canAccessSelected()"
+                    >
+                        <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                        <span class="text-sm text-zinc-600 dark:text-white text-nowrap">@lang('dam::app.admin.dam.index.directory.actions.upload-folder')</span>
                     </div>
                     @endif
 
@@ -926,6 +943,8 @@
 
     </script>
 <script type="module">
+    const damTreeMaxFileUploads = @js((int) ini_get('max_file_uploads'));
+
     app.component('v-tree-view', {
         template: '#v-tree-view-template',
         props: {
@@ -981,6 +1000,7 @@
                 copyingDirectoryId: null,
                 gridBusy: false,
                 moveStatusLabel: '',
+                _folderAbortController: null,
             };
         },
 
@@ -1008,6 +1028,19 @@
             // in-flight grid action.
             this.$emitter.on('dam:grid-busy', (busy) => {
                 this.gridBusy = !! busy;
+            });
+
+            this.$emitter.on('dam:cancel-folder-upload', () => {
+                if (this._folderAbortController) {
+                    this._folderAbortController.abort();
+                }
+            });
+
+            this.$emitter.on('dam:folder-drop-uploaded', ({ directoryId, count } = {}) => {
+                if (count > 0 && directoryId) {
+                    this.adjustAncestorCounts(directoryId, count);
+                }
+                this.loadDirectories();
             });
 
             this.$emitter.on('dam:reveal-directory', ({ id, silent = false } = {}) => {
@@ -1597,25 +1630,150 @@
             },
 
             uploadFile() {
+                this.closeContextMenu();
                 this.$refs.fileInput.click();
             },
 
+            async triggerFolderUpload() {
+                this.closeContextMenu();
+
+                if (window.showDirectoryPicker) {
+                    try {
+                        const dirHandle = await window.showDirectoryPicker();
+                        await this.handleDirectoryPicker(dirHandle);
+                        return;
+                    } catch (e) {
+                        if (e.name === 'AbortError') return;
+                        // API failed — fall through to webkitdirectory
+                    }
+                }
+
+                this.$refs.folderInput.click();
+            },
+
+            async handleDirectoryPicker(dirHandle) {
+                const collectFiles = async (handle, prefix) => {
+                    const results = [];
+                    for await (const [name, entry] of handle) {
+                        const path = prefix ? `${prefix}/${name}` : name;
+                        if (entry.kind === 'file') {
+                            const file = await entry.getFile();
+                            results.push({ file, relativePath: `${dirHandle.name}/${path}` });
+                        } else {
+                            results.push(...await collectFiles(entry, path));
+                        }
+                    }
+                    return results;
+                };
+
+                const fileEntries = await collectFiles(dirHandle, '');
+                if (fileEntries.length === 0) return;
+
+                await this.chunkedFolderUpload(fileEntries);
+            },
+
             handleFileChange(event) {
-                const fileInput = event.target.files;
-                if (! fileInput || fileInput.length === 0) return;
+                const files = event.target.files;
+                if (! files || files.length === 0) return;
 
                 const formData = new FormData();
-                for (let i = 0; i < fileInput.length; i++) {
-                    formData.append('files[]', fileInput[i]);
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files[]', files[i]);
                 }
                 formData.append('directory_id', this.selectedItem.id);
 
-                // Route through v-dam-upload's pipeline so the upload spinner,
-                // cancel button, and error/large-file handling kick in. Owning
-                // the axios call here would skip those affordances.
                 this.$emitter.emit('dam:upload-files', formData);
+                event.target.value = null;
+            },
+
+            async handleFolderChange(event) {
+                const files = event.target.files;
+                if (! files || files.length === 0) return;
+
+                const fileEntries = Array.from(files).map(file => ({
+                    file,
+                    relativePath: file.webkitRelativePath || file.name,
+                }));
 
                 event.target.value = null;
+
+                await this.chunkedFolderUpload(fileEntries);
+            },
+
+            async chunkedFolderUpload(fileEntries) {
+                if (! fileEntries.length) return;
+
+                if (this._folderAbortController) {
+                    this._folderAbortController.abort();
+                }
+                this._folderAbortController = new AbortController();
+                const signal = this._folderAbortController.signal;
+
+                const chunkSize = Math.max(1, damTreeMaxFileUploads - 2);
+                const chunks = [];
+                for (let i = 0; i < fileEntries.length; i += chunkSize) {
+                    chunks.push(fileEntries.slice(i, i + chunkSize));
+                }
+
+                this.$emitter.emit('dam:grid-busy', true);
+                this.$emitter.emit('dam:folder-upload-start');
+
+                let totalUploaded = 0;
+
+                for (const chunk of chunks) {
+                    if (signal.aborted) break;
+
+                    const formData = new FormData();
+                    formData.append('directory_id', this.selectedItem.id);
+                    formData.append('preserve_root', '1');
+                    chunk.forEach(({ file, relativePath }) => {
+                        formData.append('files[]', file);
+                        formData.append('relative_paths[]', relativePath);
+                    });
+
+                    try {
+                        const response = await this.$axios.post(
+                            "{{ route('admin.dam.assets.upload_folder') }}",
+                            formData,
+                            { headers: { 'Content-Type': 'multipart/form-data' }, signal }
+                        );
+                        totalUploaded += (response.data.files || []).length;
+                    } catch (error) {
+                        this._folderAbortController = null;
+                        this.$emitter.emit('dam:grid-busy', false);
+                        this.$emitter.emit('dam:folder-upload-end');
+
+                        if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED' || signal.aborted) {
+                            this.$emitter.emit('add-flash', {
+                                type: 'warning',
+                                message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
+                            });
+                        } else {
+                            this.$emitter.emit('add-flash', {
+                                type: 'error',
+                                message: error?.response?.data?.message || "@lang('dam::app.admin.dam.index.directory.creation-failed')",
+                            });
+                        }
+                        return;
+                    }
+                }
+
+                this._folderAbortController = null;
+                this.$emitter.emit('dam:grid-busy', false);
+                this.$emitter.emit('dam:folder-upload-end');
+
+                if (totalUploaded > 0 && this.selectedItem) {
+                    this.adjustAncestorCounts(this.selectedItem.id, totalUploaded);
+                }
+
+                if (! signal.aborted) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'success',
+                        message: "@lang('dam::app.admin.dam.index.upload-complete')",
+                    });
+                    this.loadDirectories();
+                    this.$emitter.emit('data-grid:refresh');
+                }
             },
 
             setAssets(data) {
