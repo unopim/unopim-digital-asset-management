@@ -27,8 +27,6 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=3
-          --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=600m
-          --tmpfs /tmp:rw,noexec,nosuid,size=100m
 
     steps:
       - name: Checkout DAM
@@ -154,8 +152,6 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=3
-          --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=600m
-          --tmpfs /tmp:rw,noexec,nosuid,size=100m
 
       elasticsearch:
         image: elasticsearch:8.17.0
