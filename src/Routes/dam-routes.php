@@ -12,6 +12,7 @@ use Webkul\DAM\Http\Controllers\AssetPickerController;
 use Webkul\DAM\Http\Controllers\DAMController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
+use Webkul\DAM\Http\Controllers\HistoryRestoreController;
 use Webkul\DAM\Http\Controllers\ImageEditController;
 
 Route::group([
@@ -128,6 +129,20 @@ Route::group([
         Route::get('', 'index')->name('admin.dam.asset_picker.index');
 
         Route::get('/get', 'fetchAssets')->name('admin.dam.asset_picker.get_assets');
+    });
+
+    Route::group(['prefix' => 'history'], function () {
+        Route::post('restore/{asset}', [HistoryRestoreController::class, 'restore'])
+            ->name('admin.dam.history.restore')
+            ->where('asset', '[0-9]+');
+
+        Route::get('datagrid/{entity}/{id}', [HistoryRestoreController::class, 'datagrid'])
+            ->name('admin.dam.history.datagrid')
+            ->where('id', '[0-9]+');
+
+        Route::get('thumbnail/{asset}', [HistoryRestoreController::class, 'thumbnail'])
+            ->name('admin.dam.history.thumbnail')
+            ->where('asset', '[0-9]+');
     });
 
 });

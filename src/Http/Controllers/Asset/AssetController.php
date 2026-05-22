@@ -24,6 +24,7 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\AssetVersionService;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
@@ -43,6 +44,7 @@ class AssetController extends Controller
         protected DirectoryRepository $directoryRepository,
         protected MetadataExtractionService $metadataExtractionService,
         protected DirectoryPermissionService $permissionService,
+        protected AssetVersionService $assetVersionService,
     ) {}
 
     /**
@@ -324,6 +326,7 @@ class AssetController extends Controller
                 $isOverwrite = (bool) $existingAsset;
 
                 if ($isOverwrite) {
+                    $this->assetVersionService->backup($existingAsset);
                     Storage::disk($disk)->delete($existingAsset->path);
                     $this->clearAssetCache($existingAsset->path, $disk, $existingAsset->id);
                     $fileName = $originalName;
@@ -468,6 +471,7 @@ class AssetController extends Controller
 
             $disk = Directory::getAssetDisk();
             $oldPath = $asset->path;
+            $this->assetVersionService->backup($asset);
             Storage::disk($disk)->delete($oldPath);
             $this->clearAssetCache($oldPath, $disk, $asset->id);
 
@@ -1009,6 +1013,7 @@ class AssetController extends Controller
                 }
 
                 if (Storage::disk($disk)->exists($oldPath)) {
+                    $this->assetVersionService->backup($asset);
                     $fileRenamed = Storage::disk($disk)->move($oldPath, $newPath);
 
                     if (! $fileRenamed) {
@@ -1104,6 +1109,9 @@ class AssetController extends Controller
             && $oldAssetFullPath !== $newAssetFullPath
             && Storage::disk($disk)->exists($oldAssetFullPath)
         ) {
+            $assetForBackup = (clone $asset);
+            $assetForBackup->path = $oldAssetFullPath;
+            $this->assetVersionService->backup($assetForBackup);
             Storage::disk($disk)->move($oldAssetFullPath, $newAssetFullPath);
         }
 

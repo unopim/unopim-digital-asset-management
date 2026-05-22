@@ -49,7 +49,7 @@ class GeneratePdfThumbnail implements ShouldQueue
             file_put_contents($tmpPdf, Storage::disk($disk)->get($asset->path));
 
             $process = new Process([
-                'pdftoppm',
+                \Webkul\DAM\Support\ThumbnailBinaries::pdftoppm(),
                 '-png',
                 '-f', '1',
                 '-l', '1',

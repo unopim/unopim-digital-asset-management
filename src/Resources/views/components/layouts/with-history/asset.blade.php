@@ -69,8 +69,8 @@
             <!-- Flash Message Blade Component -->
             <x-admin::flash-group />
 
-            <!-- Confirm Modal Blade Component -->
-            <x-admin::modal.history />
+            <!-- DAM Asset History Modal (overrides core to support thumbnail HTML) -->
+            <x-dam::modal.asset-history />
 
             <!-- Confirm Modal Blade Component -->
             <x-admin::modal.confirm />
@@ -187,7 +187,7 @@
                     @if ($activeTab === 'history')
                         {!! view_render_event('unopim.settings.channels.list.before') !!}
                         
-                        <x-admin::history src="{{ route('admin.history.index',[$entityName, request()->id]) }}" >
+                        <x-admin::history src="{{ route('admin.dam.history.datagrid',[$entityName, request()->id]) }}" >
                         </x-admin::history>
                         
                         {!! view_render_event('unopim.settings.channels.list.after') !!}

@@ -78,7 +78,7 @@ it('streams the asset file via the download route', function () {
 
     $this->get(route('dam.share.download', $share->token))
         ->assertOk()
-        ->assertHeader('Content-Disposition', 'attachment; filename="'.addslashes($asset->file_name).'"');
+        ->assertHeader('Content-Disposition', 'attachment; filename="'.$asset->file_name.'"');
 
     expect($share->fresh()->download_count)->toBe(1);
 });

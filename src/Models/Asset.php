@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\DAM\Contracts\Asset as AssetContract;
 use Webkul\DAM\Database\Factories\AssetFactory;
+use Webkul\DAM\Presenters\Asset as AssetPresenter;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
+use Webkul\HistoryControl\Interfaces\PresentableHistoryInterface;
 use Webkul\HistoryControl\Traits\HistoryTrait;
 
-class Asset extends Model implements AssetContract, HistoryAuditable
+class Asset extends Model implements AssetContract, HistoryAuditable, PresentableHistoryInterface
 {
     use HasFactory;
     use HistoryTrait;
@@ -78,6 +80,16 @@ class Asset extends Model implements AssetContract, HistoryAuditable
     public function getPathWithOutFileSystemRoot()
     {
         return str_replace(Directory::ASSETS_DIRECTORY.'/', '', $this->path);
+    }
+
+    /**
+     * Map field names to the history presenter that renders their old/new values.
+     */
+    public static function getPresenters(): array
+    {
+        return [
+            'path' => AssetPresenter::class,
+        ];
     }
 
     /**

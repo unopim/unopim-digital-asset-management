@@ -265,6 +265,17 @@ class FileController
             }
         }
 
+        // Last-resort lookup for the cached video/PDF thumbnail (`<path>.jpg`).
+        // The branch above only runs when an Asset row exists at $path; once a
+        // user replaces / renames / moves the asset, the original path no
+        // longer matches any row and this branch is skipped. We still want to
+        // serve the previously-generated thumbnail though, so the history-row
+        // thumbnail for the OLD value keeps rendering.
+        $jpgCached = 'thumbnails/'.$path.'.jpg';
+        if (Storage::disk($disk)->exists($jpgCached)) {
+            return $this->getFileResponse($jpgCached);
+        }
+
         return $this->getDefaultThumbnailImage($path);
     }
 

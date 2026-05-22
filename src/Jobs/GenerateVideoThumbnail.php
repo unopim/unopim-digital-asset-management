@@ -47,7 +47,7 @@ class GenerateVideoThumbnail implements ShouldQueue
             file_put_contents($tmpVideo, Storage::disk($disk)->get($asset->path));
 
             $process = new Process([
-                'ffmpeg',
+                \Webkul\DAM\Support\ThumbnailBinaries::ffmpeg(),
                 '-y',
                 '-ss', '00:00:01',
                 '-i', $tmpVideo,
@@ -62,7 +62,7 @@ class GenerateVideoThumbnail implements ShouldQueue
             if (! $process->isSuccessful() || ! file_exists($tmpJpg) || filesize($tmpJpg) === 0) {
                 // Some videos are shorter than 1s — retry from the first frame.
                 $retry = new Process([
-                    'ffmpeg',
+                    \Webkul\DAM\Support\ThumbnailBinaries::ffmpeg(),
                     '-y',
                     '-i', $tmpVideo,
                     '-vframes', '1',

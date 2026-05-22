@@ -5,6 +5,9 @@ namespace Webkul\DAM\Providers;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
+use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Models\AssetVersion;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
@@ -122,5 +125,19 @@ class EventServiceProvider extends ServiceProvider
 
         Event::listen('user.role.update.after', $syncDirectoryGrants);
         Event::listen('user.role.create.after', $syncDirectoryGrants);
+
+        Asset::deleting(function (Asset $asset) {
+            $disk = Directory::getAssetDisk();
+
+            $version = AssetVersion::where('asset_id', $asset->id)->first();
+            if ($version) {
+                Storage::disk($disk)->delete($version->version_path);
+            }
+
+            Storage::disk($disk)->delete([
+                'versions/thumbnails/'.$asset->id.'/last.jpg',
+                'versions/thumbnails/'.$asset->id.'/last.svg',
+            ]);
+        });
     }
 }
