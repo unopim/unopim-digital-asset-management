@@ -14,6 +14,7 @@ use Intervention\Image\ImageManager;
 use Symfony\Component\Process\Process;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Support\ThumbnailBinaries;
 
 class GeneratePdfThumbnail implements ShouldQueue
 {
@@ -49,7 +50,7 @@ class GeneratePdfThumbnail implements ShouldQueue
             file_put_contents($tmpPdf, Storage::disk($disk)->get($asset->path));
 
             $process = new Process([
-                \Webkul\DAM\Support\ThumbnailBinaries::pdftoppm(),
+                ThumbnailBinaries::pdftoppm(),
                 '-png',
                 '-f', '1',
                 '-l', '1',
