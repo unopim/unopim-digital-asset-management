@@ -218,7 +218,7 @@
 
                             this.applied.sort = currentDatagrid.applied.sort;
 
-                            // this.applied.filters = currentDatagrid.applied.filters;
+                            this.applied.filters = currentDatagrid.applied.filters;
 
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');
