@@ -1737,13 +1737,14 @@
                 formData.append('directory_id', this.selectedItem.id);
 
                 this.$emitter.emit('dam:upload-files', formData);
-                event.target.value = null;
+                event.target.value = '';
             },
 
             async handleFolderChange(event) {
                 this._awaitingFolderFiles = false;
                 const files = event.target.files;
                 if (! files || files.length === 0) {
+                    event.target.value = '';
                     this.$emitter.emit('add-flash', {
                         type: 'warning',
                         message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
@@ -1756,7 +1757,7 @@
                     relativePath: file.webkitRelativePath || file.name,
                 }));
 
-                event.target.value = null;
+                event.target.value = '';
 
                 await this.chunkedFolderUpload(fileEntries);
             },
