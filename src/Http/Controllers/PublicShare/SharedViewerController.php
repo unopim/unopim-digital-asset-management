@@ -56,9 +56,14 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        $assets = $directory->assets()
-            ->orderByDesc('dam_assets.updated_at')
-            ->get();
+        $directoryIds = Directory::descendantsOf($directory->id)
+            ->pluck('id')
+            ->push($directory->id)
+            ->unique();
+
+        $assets = Asset::whereHas('directories', function ($q) use ($directoryIds) {
+            $q->whereIn('dam_directories.id', $directoryIds);
+        })->orderByDesc('updated_at')->get();
 
         return view('dam::share.public.directory', [
             'share'     => $share,
@@ -198,6 +203,66 @@ class SharedViewerController extends Controller
     }
 
     /**
+     * Download all assets in a shared directory (and its subdirectories) as a ZIP archive.
+     */
+    public function downloadZip(string $token)
+    {
+        $share = $this->shareRepository->findActiveByToken($token);
+
+        if (! $share || $share->share_type !== Share::TYPE_DIRECTORY) {
+            return $this->renderExpiredOrNotFound($token);
+        }
+
+        $directory = $share->directory;
+        if (! $directory) {
+            return $this->renderNotFound();
+        }
+
+        $directoryIds = Directory::descendantsOf($directory->id)
+            ->pluck('id')
+            ->push($directory->id)
+            ->unique();
+
+        $assets = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))->get();
+
+        $disk = Directory::getAssetDisk();
+        $zipName = Str::slug($directory->name ?: 'download').'.zip';
+        $tmpPath = sys_get_temp_dir().'/'.uniqid('dam_zip_').'.zip';
+
+        $zip = new \ZipArchive;
+        if ($zip->open($tmpPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return abort(500);
+        }
+
+        $usedNames = [];
+        foreach ($assets as $asset) {
+            if (! Storage::disk($disk)->exists($asset->path)) {
+                continue;
+            }
+            $filename = $asset->file_name;
+            if (in_array($filename, $usedNames, true)) {
+                $info = pathinfo($filename);
+                $base = $info['filename'] ?? 'file';
+                $ext = isset($info['extension']) ? '.'.$info['extension'] : '';
+                $counter = 1;
+                do {
+                    $filename = $base.'_'.$counter.$ext;
+                    $counter++;
+                } while (in_array($filename, $usedNames, true));
+            }
+            $usedNames[] = $filename;
+            $zip->addFromString($filename, Storage::disk($disk)->get($asset->path));
+        }
+
+        $zip->close();
+
+        $this->shareRepository->incrementDownload($share);
+
+        return response()->download($tmpPath, $zipName, ['Content-Type' => 'application/zip'])
+            ->deleteFileAfterSend(true);
+    }
+
+    /**
      * Stream a file. For S3, redirect to a short-lived presigned URL; for the
      * local/private disk, response()->file() handles range requests so video
      * scrubbing in the public viewer works.
@@ -248,13 +313,18 @@ class SharedViewerController extends Controller
     }
 
     /**
-     * Look up an asset that must be a DIRECT child of the share's directory.
-     * Subdirectory traversal is rejected with null (caller returns 404).
+     * Look up an asset that lives within the share's directory tree
+     * (direct child or any descendant subdirectory).
      */
     protected function resolveDirectoryAsset(Share $share, int $assetId): ?Asset
     {
+        $directoryIds = Directory::descendantsOf($share->target_id)
+            ->pluck('id')
+            ->push($share->target_id)
+            ->unique();
+
         return Asset::query()
-            ->whereHas('directories', fn ($q) => $q->where('dam_directories.id', $share->target_id))
+            ->whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
             ->where('id', $assetId)
             ->first();
     }

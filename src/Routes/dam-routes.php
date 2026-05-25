@@ -100,6 +100,7 @@ Route::group([
         Route::post('', 'store')->name('admin.dam.shares.store');
         Route::patch('{id}', 'update')->name('admin.dam.shares.update')->where('id', '[0-9]+');
         Route::delete('{id}', 'destroy')->name('admin.dam.shares.destroy')->where('id', '[0-9]+');
+        Route::patch('{id}/reauthorize', 'reauthorize')->name('admin.dam.shares.reauthorize')->where('id', '[0-9]+');
         Route::get('active/{type}/{targetId}', 'activeForTarget')
             ->name('admin.dam.shares.active_for_target')
             ->where('type', 'asset|directory')
