@@ -450,9 +450,24 @@ class DirectoryController
             ], 403);
         }
 
-        $dirCache = [];
+        $forbiddenRe = '/[\\\\\/\:\*\?\"\<\>\|]/u';
 
-        $resolveOrCreate = function (int $parentId, array $segments) use (&$resolveOrCreate, &$dirCache): void {
+        foreach ($paths as $path) {
+            $segments = array_filter(explode('/', str_replace('\\', '/', trim((string) $path))), fn ($s) => $s !== '');
+            foreach ($segments as $seg) {
+                if (mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),
+                    ], 422);
+                }
+            }
+        }
+
+        $dirCache = [];
+        $createdIds = [];
+
+        $resolveOrCreate = function (int $parentId, array $segments) use (&$resolveOrCreate, &$dirCache, &$createdIds): void {
             if (empty($segments)) {
                 return;
             }
@@ -465,9 +480,13 @@ class DirectoryController
                     ->where('name', $segment)
                     ->first();
 
-                $dirCache[$cacheKey] = $existing
-                    ? $existing->id
-                    : $this->directoryRepository->create(['name' => $segment, 'parent_id' => $parentId])->id;
+                if ($existing) {
+                    $dirCache[$cacheKey] = $existing->id;
+                } else {
+                    $newId = $this->directoryRepository->create(['name' => $segment, 'parent_id' => $parentId])->id;
+                    $dirCache[$cacheKey] = $newId;
+                    $createdIds[] = $newId;
+                }
             }
 
             $resolveOrCreate($dirCache[$cacheKey], $segments);
@@ -475,12 +494,16 @@ class DirectoryController
 
         foreach ($paths as $path) {
             $segments = array_values(
-                array_filter(explode('/', str_replace('\\', '/', trim((string) $path))))
+                array_filter(explode('/', str_replace('\\', '/', trim((string) $path))), fn ($s) => $s !== '')
             );
 
             if (! empty($segments)) {
                 $resolveOrCreate($directoryId, $segments);
             }
+        }
+
+        foreach ($createdIds as $id) {
+            $this->autoGrantToCreator($id);
         }
 
         return response()->json(['success' => true]);
