@@ -15,6 +15,14 @@
                         @lang('dam::app.share.public.files-count', ['count' => $assets->count()])
                     </span>
                 </div>
+
+                <a
+                    href="{{ route('dam.share.download_zip', $share->token) }}"
+                    class="primary-button shrink-0"
+                >
+                    <span class="icon-dam-download text-lg"></span>
+                    @lang('dam::app.share.public.download-zip')
+                </a>
             </div>
         </header>
 
@@ -29,20 +37,62 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     @foreach ($assets as $asset)
                         @php
-                            $thumbnailUrl = route('dam.share.thumbnail', ['token' => $share->token, 'assetId' => $asset->id]);
-                            $viewUrl = route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $asset->id]);
+                            $thumbnailUrl   = route('dam.share.thumbnail', ['token' => $share->token, 'assetId' => $asset->id]);
+                            $viewUrl        = route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $asset->id]);
+                            $placeholderSvg = match ($asset->file_type) {
+                                'image'    => asset('storage/dam/grid/image.svg'),
+                                'video'    => asset('storage/dam/grid/video.svg'),
+                                'audio'    => asset('storage/dam/grid/audio.svg'),
+                                'document' => asset('storage/dam/grid/file.svg'),
+                                default    => asset('storage/dam/grid/unspecified.svg'),
+                            };
+                            $extension  = strtolower(pathinfo($asset->file_name, PATHINFO_EXTENSION));
+                            $badgeColor = match (true) {
+                                in_array($asset->file_type, ['video', 'audio']) => 'bg-violet-600',
+                                $extension === 'pdf'                            => 'bg-red-600',
+                                default                                         => 'bg-gray-600',
+                            };
                         @endphp
                         <a
                             href="{{ $viewUrl }}"
-                            class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-blue-400 transition"
+                            class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-violet-400 dark:hover:border-violet-500 transition"
                         >
-                            <div class="aspect-square bg-gray-100 dark:bg-cherry-800 flex items-center justify-center overflow-hidden">
+                            <div class="aspect-square overflow-hidden relative bg-gray-100 dark:bg-cherry-800">
+                                {{--
+                                    Fallback layer: file-type SVG + shimmer.
+                                    z-0 keeps it behind the thumbnail (z-10).
+                                    Removed by the onload handler once the real thumbnail renders.
+                                --}}
+                                <div class="absolute inset-0 z-0 flex items-center justify-center bg-gray-100 dark:bg-cherry-800">
+                                    <img
+                                        src="{{ $placeholderSvg }}"
+                                        alt=""
+                                        aria-hidden="true"
+                                        class="w-20 h-20 object-contain opacity-60 dark:opacity-40 select-none pointer-events-none"
+                                    />
+                                    <div class="absolute inset-0 animate-pulse bg-gray-200/70 dark:bg-cherry-700/60 pointer-events-none"></div>
+                                </div>
+
+                                {{--
+                                    Real thumbnail.
+                                    In normal flow (position: relative) so aspect-square keeps its height.
+                                    z-10 stacks it above the fallback layer.
+                                    Starts opacity-0; fades in on load and removes the fallback layer.
+                                --}}
                                 <img
                                     src="{{ $thumbnailUrl }}"
                                     alt="{{ $asset->file_name }}"
                                     loading="lazy"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition"
+                                    class="relative z-10 w-full h-full object-cover opacity-0 transition-[transform,opacity] duration-300 group-hover:scale-105"
+                                    onload="this.style.opacity='1'; this.previousElementSibling.remove();"
+                                    onerror="this.remove();"
                                 />
+
+                                @if ($extension)
+                                    <span class="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md {{ $badgeColor }}">
+                                        {{ strtoupper($extension) }}
+                                    </span>
+                                @endif
                             </div>
                             <div class="px-3 py-2">
                                 <p class="text-sm text-zinc-800 dark:text-slate-100 truncate" title="{{ $asset->file_name }}">
