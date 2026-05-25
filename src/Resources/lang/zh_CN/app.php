@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'DAM目录权限',
-            'tab-subtitle'    => '此角色可以访问的目录。',
-            'no-actions'      => '仅查看。请打开您有权限访问的子文件夹。',
-            'unauthorized'    => '您没有权限管理DAM目录权限。',
-            'all-directories' => '所有目录 — 授予现在和将来对所有目录的访问权限',
+            'title'            => 'DAM目录权限',
+            'tab-subtitle'     => '此角色可以访问的目录。',
+            'no-actions'       => '仅查看。请打开您有权限访问的子文件夹。',
+            'unauthorized'     => '您没有权限管理DAM目录权限。',
+            'all-directories'  => '所有目录 — 授予现在和将来对所有目录的访问权限',
+            'inherit-children' => '继承子目录 — 自动访问已授权目录内的所有子目录',
         ],
         'validation' => [
             'asset' => [

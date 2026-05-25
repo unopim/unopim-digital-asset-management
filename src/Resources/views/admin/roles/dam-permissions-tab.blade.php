@@ -3,6 +3,8 @@
         id="dam-directory-permissions-tab"
         v-if="permission_type == 'custom' || selected_permission_type == 'custom'"
         class="flex flex-col gap-2 flex-1 max-xl:flex-auto"
+        data-inherit-children="{{ $inheritChildren ? '1' : '0' }}"
+        data-explicit-grants="{{ json_encode($grantedIds) }}"
     >
         <input
             type="hidden"
@@ -25,11 +27,28 @@
                     id="dam-all-directories-toggle"
                     name="dam_all_directories"
                     value="1"
-                    class="w-4 h-4 rounded border-gray-300 text-violet-700 cursor-pointer"
+                    class="sr-only peer"
                     {{ $allDirectories ? 'checked' : '' }}
                 />
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer"></span>
                 <span class="font-semibold text-gray-800 dark:text-white text-sm">
                     @lang('dam::app.admin.permissions.all-directories')
+                </span>
+            </label>
+
+            {{-- Inherit Sub-directories toggle --}}
+            <label class="flex items-center gap-2 cursor-pointer mb-4 select-none" id="dam-inherit-children-label">
+                <input
+                    type="checkbox"
+                    id="dam-inherit-children-toggle"
+                    name="dam_inherit_children"
+                    value="1"
+                    class="sr-only peer"
+                    {{ $inheritChildren ? 'checked' : '' }}
+                />
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 peer-disabled:opacity-70 peer-disabled:cursor-not-allowed cursor-pointer"></span>
+                <span class="font-semibold text-gray-800 dark:text-white text-sm">
+                    @lang('dam::app.admin.permissions.inherit-children')
                 </span>
             </label>
 
@@ -43,7 +62,7 @@
                     label-field="name"
                     selection-type="individual"
                     :items="json_encode($directoryTree)"
-                    :value="json_encode($grantedIds)"
+                    :value="json_encode($expandedGrantedIds)"
                     :fallback-locale="config('app.fallback_locale')"
                 />
             </div>
@@ -58,6 +77,7 @@
                 var ATTACHED_ATTR = 'data-dam-perm-attached';
                 var propagating = false;
                 var syncing = false;
+                var inheritSelectionSnapshot = null;
 
                 function root() {
                     return document.getElementById('dam-directory-permissions-tab');
@@ -156,11 +176,107 @@
                     return true;
                 }
 
+                function restoreCheckboxStates() {
+                    var r = root();
+                    if (! r) return;
+
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
+                    if (inheritToggle && r.dataset.inheritChildren === '1') {
+                        inheritToggle.checked = true;
+                    }
+                }
+
+                function cascadeInheritOn() {
+                    var r = root();
+                    if (! r) return;
+                    var checkedBoxes = Array.prototype.slice.call(
+                        r.querySelectorAll('input[type="checkbox"][name="directories[]"]:checked')
+                    );
+                    // Snapshot current user selection before cascading so toggleing
+                    // inherit back off restores in-progress state, not the DB grants.
+                    inheritSelectionSnapshot = checkedBoxes.map(function (cb) {
+                        return parseInt(cb.value, 10);
+                    });
+                    propagating = true;
+                    try {
+                        checkedBoxes.forEach(function (cb) {
+                            var item = cb.closest('.v-tree-item');
+                            if (! item) return;
+                            var descendants = item.querySelectorAll(
+                                ':scope .v-tree-item input[type="checkbox"][name="directories[]"]'
+                            );
+                            for (var j = 0; j < descendants.length; j++) {
+                                if (! descendants[j].checked) {
+                                    descendants[j].checked = true;
+                                    var descItem = descendants[j].closest('.v-tree-item');
+                                    if (descItem) {
+                                        markAncestorsExpanded(descItem);
+                                        if (descItem.querySelector('.v-tree-item')) {
+                                            markSubtreeExpanded(descItem);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } finally {
+                        propagating = false;
+                    }
+                    applyAttrs();
+                }
+
+                function cascadeInheritOff() {
+                    var r = root();
+                    if (! r) return;
+                    // Prefer the in-progress snapshot over the original DB grants so
+                    // unsaved selections made before toggling inherit are preserved.
+                    var explicit = inheritSelectionSnapshot;
+                    if (! explicit) {
+                        try { explicit = JSON.parse(r.dataset.explicitGrants || '[]'); } catch (e) { explicit = []; }
+                    }
+                    inheritSelectionSnapshot = null;
+                    var allBoxes = r.querySelectorAll(
+                        'input[type="checkbox"][name="directories[]"]'
+                    );
+                    propagating = true;
+                    try {
+                        for (var k = 0; k < allBoxes.length; k++) {
+                            allBoxes[k].checked = explicit.indexOf(parseInt(allBoxes[k].value, 10)) !== -1;
+                        }
+                    } finally {
+                        propagating = false;
+                    }
+                    applyAttrs();
+                }
+
+                function attachInheritToggleHandler() {
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
+                    if (! inheritToggle || inheritToggle.dataset.damInheritAttached) return;
+                    inheritToggle.dataset.damInheritAttached = '1';
+                    inheritToggle.addEventListener('change', function () {
+                        var checked = inheritToggle.checked;
+                        var tries = 0;
+                        var iv = setInterval(function () {
+                            var r = root();
+                            if (! r) { if (++tries > 20) clearInterval(iv); return; }
+                            var boxes = r.querySelectorAll(
+                                'input[type="checkbox"][name="directories[]"]'
+                            );
+                            if (boxes.length > 0 || ++tries > 20) {
+                                clearInterval(iv);
+                                if (checked) { cascadeInheritOn(); } else { cascadeInheritOff(); }
+                            }
+                        }, 80);
+                    });
+                }
+
                 function attachInteractionTrackers() {
                     var r = root();
                     if (! r) return;
                     if (r.getAttribute(ATTACHED_ATTR) === '1') return;
                     r.setAttribute(ATTACHED_ATTR, '1');
+
+                    restoreCheckboxStates();
+                    attachInheritToggleHandler();
 
                     // Tab DOM is fresh — Vue may not have rendered the tree
                     // checkboxes yet. Retry initial expansion until they
@@ -287,8 +403,19 @@
                 function syncTreeVisibility() {
                     var toggle = document.getElementById('dam-all-directories-toggle');
                     var tree = document.getElementById('dam-directory-tree-wrapper');
+                    var inheritLabel = document.getElementById('dam-inherit-children-label');
+                    var inheritToggle = document.getElementById('dam-inherit-children-toggle');
                     if (! toggle || ! tree) return;
                     tree.style.display = toggle.checked ? 'none' : '';
+                    if (inheritLabel) {
+                        // Visually dim and block interaction without disabling the input.
+                        // Disabled inputs are excluded from POST, so the inherit value
+                        // would be lost on save; pointer-events + opacity gives the same
+                        // visual cue while the value is still submitted.
+                        inheritLabel.style.opacity        = toggle.checked ? '0.4' : '';
+                        inheritLabel.style.pointerEvents  = toggle.checked ? 'none' : '';
+                        inheritLabel.style.cursor         = toggle.checked ? 'default' : '';
+                    }
                 }
 
                 function attachToggle() {

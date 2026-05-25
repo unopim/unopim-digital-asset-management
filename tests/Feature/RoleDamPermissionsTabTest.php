@@ -179,3 +179,89 @@ it('clears all_directories in dam_role_settings when unchecked', function () {
     $setting = DB::table('dam_role_settings')->where('role_id', $role->id)->first();
     expect((bool) $setting?->all_directories)->toBeFalse();
 });
+
+it('saves inherit_children true in dam_role_settings when submitted', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_inherit_children'         => '1',
+        'directories'                  => [],
+    ], $role);
+
+    expect(
+        DB::table('dam_role_settings')
+            ->where('role_id', $role->id)
+            ->where('inherit_children', true)
+            ->exists()
+    )->toBeTrue();
+});
+
+it('clears inherit_children in dam_role_settings when unchecked', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+
+    DB::table('dam_role_settings')->insert([
+        'role_id'          => $role->id,
+        'all_directories'  => false,
+        'inherit_children' => true,
+        'created_at'       => now(),
+        'updated_at'       => now(),
+    ]);
+
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_inherit_children'         => '0',
+        'directories'                  => [],
+    ], $role);
+
+    $setting = DB::table('dam_role_settings')->where('role_id', $role->id)->first();
+    expect((bool) $setting?->inherit_children)->toBeFalse();
+});
+
+it('preserves explicit child grants when inherit_children strips expanded descendants', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $parent = Directory::create(['name' => 'PreserveParent', 'parent_id' => null]);
+    $child = Directory::create(['name' => 'PreserveChild', 'parent_id' => $parent->id]);
+    $grandchild = Directory::create(['name' => 'PreserveGrand', 'parent_id' => $child->id]);
+
+    // Seed: parent + child both explicitly in DB (child was auto-granted by User B)
+    DB::table('dam_directory_role')->insert([
+        ['directory_id' => $parent->id, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()],
+        ['directory_id' => $child->id, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()],
+    ]);
+
+    // Form submits parent + child + grandchild (grandchild added by inherit expansion)
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_inherit_children'         => '1',
+        'directories'                  => [$parent->id, $child->id, $grandchild->id],
+    ], $role);
+
+    $stored = DB::table('dam_directory_role')
+        ->where('role_id', $role->id)
+        ->pluck('directory_id')
+        ->map(fn ($id) => (int) $id)
+        ->sort()->values()->all();
+
+    expect($stored)->toEqualCanonicalizing([$parent->id, $child->id]);
+});
+
+it('strips inherit-expanded descendants when no prior grants exist', function () {
+    $role = Role::factory()->create(['permission_type' => 'custom']);
+    $root = Directory::create(['name' => 'StripFreshRoot', 'parent_id' => null]);
+    $child = Directory::create(['name' => 'StripFreshChild', 'parent_id' => $root->id]);
+
+    dispatchRoleUpdateWith([
+        'dam_directory_grants_managed' => '1',
+        'dam_inherit_children'         => '1',
+        'directories'                  => [$root->id, $child->id],
+    ], $role);
+
+    $stored = DB::table('dam_directory_role')
+        ->where('role_id', $role->id)
+        ->pluck('directory_id')
+        ->map(fn ($id) => (int) $id)
+        ->all();
+
+    expect($stored)->toBe([$root->id]);
+});

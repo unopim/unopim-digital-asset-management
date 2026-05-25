@@ -544,11 +544,12 @@ return [
             'revoke'           => 'Revoke',
         ],
         'permissions' => [
-            'title'           => 'Permissões do diretório DAM',
-            'tab-subtitle'    => 'Diretórios aos quais este papel pode acessar.',
-            'no-actions'      => 'Somente visualização. Abra uma subpasta à qual você tem acesso.',
-            'unauthorized'    => 'Você não está autorizado a gerenciar as permissões do diretório DAM.',
-            'all-directories' => 'Todos os diretórios — conceder acesso a todos os diretórios agora e no futuro',
+            'title'            => 'Permissões do diretório DAM',
+            'tab-subtitle'     => 'Diretórios aos quais este papel pode acessar.',
+            'no-actions'       => 'Somente visualização. Abra uma subpasta à qual você tem acesso.',
+            'unauthorized'     => 'Você não está autorizado a gerenciar as permissões do diretório DAM.',
+            'all-directories'  => 'Todos os diretórios — conceder acesso a todos os diretórios agora e no futuro',
+            'inherit-children' => 'Herdar subdiretórios — acessar automaticamente todos os subdiretórios dentro dos diretórios concedidos',
         ],
         'validation' => [
             'asset' => [

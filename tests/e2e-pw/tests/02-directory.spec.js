@@ -213,11 +213,11 @@ test.describe('DAM Directory Management', () => {
     const downloadZip = adminPage.getByText('Download Zip');
     await expect(downloadZip).toBeVisible({ timeout: 5000 });
 
-    // Set up download listener before clicking
-    const downloadPromise = adminPage.waitForEvent('download', { timeout: 30000 }).catch(() => null);
-    await downloadZip.click({ force: true });
-
-    // Verify download started or at least the action was triggered without error
+    // Use evaluate to native-click so Playwright doesn't block on navigation wait.
+    // Promise.all with click({ force }) still hangs when no download fires because
+    // the click promise internally waits for navigation to settle.
+    const downloadPromise = adminPage.waitForEvent('download', { timeout: 10000 }).catch(() => null);
+    await downloadZip.evaluate((el) => el.click());
     const download = await downloadPromise;
     if (download) {
       // Download started successfully
