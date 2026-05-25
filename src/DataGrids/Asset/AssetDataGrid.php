@@ -42,7 +42,6 @@ class AssetDataGrid extends DataGrid
         $queryBuilder = DB::table('dam_directories')
             ->join('dam_asset_directory', 'dam_directories.id', '=', 'dam_asset_directory.directory_id')
             ->join('dam_assets', 'dam_asset_directory.asset_id', '=', 'dam_assets.id')
-            ->leftJoin('dam_asset_properties', 'dam_assets.id', '=', 'dam_asset_properties.dam_asset_id')
             ->leftJoin('dam_asset_tag', 'dam_assets.id', '=', 'dam_asset_tag.asset_id')
             ->leftJoin('dam_tags', 'dam_asset_tag.tag_id', '=', 'dam_tags.id')
             ->select(
@@ -64,8 +63,6 @@ class AssetDataGrid extends DataGrid
         $this->addFilter('file_name', 'dam_assets.file_name');
         $this->addFilter('extension', 'dam_assets.extension');
         $this->addFilter('tag', 'dam_tags.name');
-        $this->addFilter('property_name', 'dam_asset_properties.name');
-        $this->addFilter('property_value', 'dam_asset_properties.value');
         $this->addFilter('created_at', 'dam_assets.created_at');
         $this->addFilter('updated_at', 'dam_assets.updated_at');
 
@@ -121,24 +118,6 @@ class AssetDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
-            'index'      => 'property_name',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.property-name'),
-            'type'       => 'string',
-            'searchable' => true,
-            'filterable' => true,
-            'sortable'   => true,
-        ]);
-
-        $this->addColumn([
-            'index'      => 'property_value',
-            'label'      => trans('dam::app.admin.dam.index.datagrid.property-value'),
-            'type'       => 'string',
-            'searchable' => true,
-            'filterable' => true,
-            'sortable'   => true,
-        ]);
-
-        $this->addColumn([
             'index'      => 'extension',
             'label'      => trans('dam::app.admin.dam.index.datagrid.extension'),
             'type'       => 'string',
@@ -176,6 +155,30 @@ class AssetDataGrid extends DataGrid
             'filterable' => true,
             'sortable'   => true,
         ]);
+
+        $this->addFilterablePropertyColumns();
+    }
+
+    protected function addFilterablePropertyColumns(): void
+    {
+        $props = DB::table('dam_asset_properties')
+            ->select('name', DB::raw('MIN(sort_order) as sort_order'))
+            ->where('is_filterable', true)
+            ->groupBy('name')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        foreach ($props as $prop) {
+            $this->addColumn([
+                'index'      => 'prop_'.$prop->name,
+                'label'      => $prop->name,
+                'type'       => 'string',
+                'searchable' => false,
+                'filterable' => true,
+                'sortable'   => false,
+            ]);
+        }
     }
 
     /**
@@ -233,6 +236,23 @@ class AssetDataGrid extends DataGrid
                             $scopeQueryBuilder->orWhere($this->customFilterColumns[$requestedColumn], $value);
                         }
                     });
+
+                    continue;
+                }
+
+                if (str_starts_with($requestedColumn, 'prop_')) {
+                    $propName = substr($requestedColumn, 5);
+                    $prefix = DB::getTablePrefix();
+
+                    foreach ($requestedValues as $value) {
+                        $this->queryBuilder->whereExists(function ($sub) use ($prefix, $propName, $value) {
+                            $sub->select(DB::raw(1))
+                                ->from('dam_asset_properties')
+                                ->whereRaw("{$prefix}dam_asset_properties.dam_asset_id = {$prefix}dam_assets.id")
+                                ->where('name', $propName)
+                                ->whereRaw('LOWER(value) LIKE ?', ['%'.strtolower($value).'%']);
+                        });
+                    }
 
                     continue;
                 }
