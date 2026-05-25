@@ -5,6 +5,7 @@ namespace Webkul\DAM\Http\Controllers\Asset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -24,6 +25,7 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
@@ -43,6 +45,7 @@ class AssetController extends Controller
         protected DirectoryRepository $directoryRepository,
         protected MetadataExtractionService $metadataExtractionService,
         protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -430,10 +433,10 @@ class AssetController extends Controller
         ]);
 
         $request->validate([
-            'files'           => 'required|array',
+            'files'           => 'required|array|min:1',
             'files.*'         => 'file|max:'.$maxKb,
             'relative_paths'  => 'required|array',
-            'relative_paths.*'=> 'string',
+            'relative_paths.*'=> 'string|max:500',
             'directory_id'    => 'required|exists:dam_directories,id',
         ], [
             'files.*.max'      => $sizeMessage,
@@ -469,7 +472,9 @@ class AssetController extends Controller
          * @param  string[]  $segments  Directory name segments (no file name).
          * @return int Leaf directory id.
          */
-        $resolveOrCreatePath = function (int $rootId, array $segments) use (&$resolveOrCreatePath, &$dirCache): int {
+        $createdIds = [];
+
+        $resolveOrCreatePath = function (int $rootId, array $segments) use (&$resolveOrCreatePath, &$dirCache, &$createdIds): int {
             if (empty($segments)) {
                 return $rootId;
             }
@@ -492,6 +497,7 @@ class AssetController extends Controller
                         'parent_id' => $rootId,
                     ]);
                     $dirCache[$cacheKey] = $newDir->id;
+                    $createdIds[] = $newDir->id;
                 }
             }
 
@@ -599,6 +605,10 @@ class AssetController extends Controller
             // Batch-attach new assets to their directories.
             foreach ($assetsByDir as $dirId => $ids) {
                 $this->mappedWithDirectory($ids, $dirId);
+            }
+
+            foreach ($createdIds as $id) {
+                $this->autoGrantToCreator($id);
             }
 
             $message = $skippedCount > 0
@@ -1368,5 +1378,27 @@ class AssetController extends Controller
         $directory->assets()->attach($assetIds);
 
         return $directory;
+    }
+
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
     }
 }
