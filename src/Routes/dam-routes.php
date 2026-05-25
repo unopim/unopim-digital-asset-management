@@ -119,6 +119,7 @@ Route::group([
         Route::get('zip-download/{id}', 'downloadArchive')->name('admin.dam.directory.zip_download');
         Route::post('/copy-structure', 'copyStructure')->name('admin.dam.directory.copy_structure');
         Route::post('/moved', 'moved')->name('admin.dam.directory.moved');
+        Route::post('/create-structure', 'createStructure')->name('admin.dam.directory.create_structure');
     });
 
     Route::controller(ActionRequestController::class)->prefix('action-request')->group(function () {

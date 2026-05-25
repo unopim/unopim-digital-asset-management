@@ -425,4 +425,64 @@ class DirectoryController
             return back()->with('error', trans('dam::app.admin.dam.index.directory.failed-download-directory'));
         }
     }
+
+    /**
+     * Create an empty directory structure under the given parent directory.
+     *
+     * Accepts an array of slash-separated relative paths (e.g. "FolderA/SubDir").
+     * Each path is walked and any missing segments are created via the repository.
+     */
+    public function createStructure(Request $request): JsonResponse
+    {
+        $request->validate([
+            'directory_id' => 'required|exists:dam_directories,id',
+            'paths'        => 'required|array|min:1',
+            'paths.*'      => 'string|max:500',
+        ]);
+
+        $directoryId = (int) $request->input('directory_id');
+        $paths = $request->input('paths');
+
+        if (! $this->permissionService->canAccess($directoryId)) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $dirCache = [];
+
+        $resolveOrCreate = function (int $parentId, array $segments) use (&$resolveOrCreate, &$dirCache): void {
+            if (empty($segments)) {
+                return;
+            }
+
+            $segment = array_shift($segments);
+            $cacheKey = $parentId.'/'.$segment;
+
+            if (! isset($dirCache[$cacheKey])) {
+                $existing = Directory::where('parent_id', $parentId)
+                    ->where('name', $segment)
+                    ->first();
+
+                $dirCache[$cacheKey] = $existing
+                    ? $existing->id
+                    : $this->directoryRepository->create(['name' => $segment, 'parent_id' => $parentId])->id;
+            }
+
+            $resolveOrCreate($dirCache[$cacheKey], $segments);
+        };
+
+        foreach ($paths as $path) {
+            $segments = array_values(
+                array_filter(explode('/', str_replace('\\', '/', trim((string) $path))))
+            );
+
+            if (! empty($segments)) {
+                $resolveOrCreate($directoryId, $segments);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
 }
