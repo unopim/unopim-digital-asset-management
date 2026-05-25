@@ -600,7 +600,6 @@ return [
             'empty-directory'       => 'This shared directory has no files yet.',
             'expires-on'            => 'This link expires on',
             'powered-by-dam'        => 'Powered by Unopim DAM',
-            'download-zip'          => '下載全部為 ZIP',
             'expired-title'         => 'Link expired',
             'expired-message'       => 'This share link has expired and is no longer accessible. Please request a new link from the owner.',
             'revoked-title'         => 'Link revoked',
