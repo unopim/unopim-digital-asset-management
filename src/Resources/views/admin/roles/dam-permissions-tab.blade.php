@@ -27,9 +27,10 @@
                     id="dam-all-directories-toggle"
                     name="dam_all_directories"
                     value="1"
-                    class="w-4 h-4 rounded border-gray-300 text-violet-700 cursor-pointer"
+                    class="sr-only peer"
                     {{ $allDirectories ? 'checked' : '' }}
                 />
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer"></span>
                 <span class="font-semibold text-gray-800 dark:text-white text-sm">
                     @lang('dam::app.admin.permissions.all-directories')
                 </span>
@@ -42,10 +43,10 @@
                     id="dam-inherit-children-toggle"
                     name="dam_inherit_children"
                     value="1"
-                    class="w-4 h-4 rounded border-gray-300 text-violet-700 cursor-pointer"
+                    class="sr-only peer"
                     {{ $inheritChildren ? 'checked' : '' }}
-                    {{ $allDirectories ? 'disabled' : '' }}
                 />
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 peer-disabled:opacity-70 peer-disabled:cursor-not-allowed cursor-pointer"></span>
                 <span class="font-semibold text-gray-800 dark:text-white text-sm">
                     @lang('dam::app.admin.permissions.inherit-children')
                 </span>
@@ -76,6 +77,7 @@
                 var ATTACHED_ATTR = 'data-dam-perm-attached';
                 var propagating = false;
                 var syncing = false;
+                var inheritSelectionSnapshot = null;
 
                 function root() {
                     return document.getElementById('dam-directory-permissions-tab');
@@ -190,6 +192,11 @@
                     var checkedBoxes = Array.prototype.slice.call(
                         r.querySelectorAll('input[type="checkbox"][name="directories[]"]:checked')
                     );
+                    // Snapshot current user selection before cascading so toggleing
+                    // inherit back off restores in-progress state, not the DB grants.
+                    inheritSelectionSnapshot = checkedBoxes.map(function (cb) {
+                        return parseInt(cb.value, 10);
+                    });
                     propagating = true;
                     try {
                         checkedBoxes.forEach(function (cb) {
@@ -220,8 +227,13 @@
                 function cascadeInheritOff() {
                     var r = root();
                     if (! r) return;
-                    var explicit = [];
-                    try { explicit = JSON.parse(r.dataset.explicitGrants || '[]'); } catch (e) {}
+                    // Prefer the in-progress snapshot over the original DB grants so
+                    // unsaved selections made before toggling inherit are preserved.
+                    var explicit = inheritSelectionSnapshot;
+                    if (! explicit) {
+                        try { explicit = JSON.parse(r.dataset.explicitGrants || '[]'); } catch (e) { explicit = []; }
+                    }
+                    inheritSelectionSnapshot = null;
                     var allBoxes = r.querySelectorAll(
                         'input[type="checkbox"][name="directories[]"]'
                     );
@@ -395,11 +407,14 @@
                     var inheritToggle = document.getElementById('dam-inherit-children-toggle');
                     if (! toggle || ! tree) return;
                     tree.style.display = toggle.checked ? 'none' : '';
-                    if (inheritToggle) {
-                        inheritToggle.disabled = toggle.checked;
-                    }
                     if (inheritLabel) {
-                        inheritLabel.style.opacity = toggle.checked ? '0.4' : '';
+                        // Visually dim and block interaction without disabling the input.
+                        // Disabled inputs are excluded from POST, so the inherit value
+                        // would be lost on save; pointer-events + opacity gives the same
+                        // visual cue while the value is still submitted.
+                        inheritLabel.style.opacity        = toggle.checked ? '0.4' : '';
+                        inheritLabel.style.pointerEvents  = toggle.checked ? 'none' : '';
+                        inheritLabel.style.cursor         = toggle.checked ? 'default' : '';
                     }
                 }
 
