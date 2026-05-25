@@ -1637,24 +1637,51 @@
             async triggerFolderUpload() {
                 this.closeContextMenu();
 
-                if (window.showDirectoryPicker) {
-                    try {
-                        const dirHandle = await window.showDirectoryPicker();
-                        await this.handleDirectoryPicker(dirHandle);
-                        return;
-                    } catch (e) {
-                        if (e.name === 'AbortError') return;
-                        // API failed — fall through to webkitdirectory
-                    }
+                if (! window.showDirectoryPicker) {
+                    this._awaitingFolderFiles = true;
+                    window.addEventListener('focus', () => {
+                        setTimeout(() => {
+                            if (! this._awaitingFolderFiles) return;
+                            this._awaitingFolderFiles = false;
+                            this.$emitter.emit('add-flash', {
+                                type: 'warning',
+                                message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                            });
+                        }, 400);
+                    }, { once: true });
+                    this.$refs.folderInput.click();
+                    return;
                 }
 
-                this.$refs.folderInput.click();
+                try {
+                    const dirHandle = await window.showDirectoryPicker();
+                    await this.handleDirectoryPicker(dirHandle);
+                } catch (e) {
+                    if (e.name === 'AbortError') return;
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: @js(trans('dam::app.admin.dam.index.folder-upload-https-required')),
+                    });
+                }
             },
 
             async handleDirectoryPicker(dirHandle) {
+                const emptyDirs = [];
+
                 const collectFiles = async (handle, prefix) => {
                     const results = [];
+                    const children = [];
                     for await (const [name, entry] of handle) {
+                        children.push([name, entry]);
+                    }
+
+                    if (children.length === 0) {
+                        const relPath = prefix ? `${dirHandle.name}/${prefix}` : dirHandle.name;
+                        emptyDirs.push(relPath);
+                        return results;
+                    }
+
+                    for (const [name, entry] of children) {
                         const path = prefix ? `${prefix}/${name}` : name;
                         if (entry.kind === 'file') {
                             const file = await entry.getFile();
@@ -1667,7 +1694,34 @@
                 };
 
                 const fileEntries = await collectFiles(dirHandle, '');
-                if (fileEntries.length === 0) return;
+
+                if (emptyDirs.length > 0) {
+                    try {
+                        await this.$axios.post(
+                            "{{ route('admin.dam.directory.create_structure') }}",
+                            { directory_id: this.selectedItem.id, paths: emptyDirs }
+                        );
+                    } catch (e) {
+                        // non-fatal
+                    }
+                }
+
+                if (fileEntries.length === 0) {
+                    if (emptyDirs.length > 0) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'success',
+                            message: "@lang('dam::app.admin.dam.index.upload-complete')",
+                        });
+                        this.loadDirectories();
+                        this.$emitter.emit('data-grid:refresh');
+                    } else {
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                        });
+                    }
+                    return;
+                }
 
                 await this.chunkedFolderUpload(fileEntries);
             },
@@ -1687,8 +1741,15 @@
             },
 
             async handleFolderChange(event) {
+                this._awaitingFolderFiles = false;
                 const files = event.target.files;
-                if (! files || files.length === 0) return;
+                if (! files || files.length === 0) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'warning',
+                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                    });
+                    return;
+                }
 
                 const fileEntries = Array.from(files).map(file => ({
                     file,
