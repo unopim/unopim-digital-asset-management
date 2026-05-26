@@ -219,7 +219,12 @@ return [
     ], [
         'key'   => 'dam.shares.revoke',
         'name'  => 'dam::app.admin.acl.revoke',
-        'route' => 'admin.dam.shares.destroy',
+        'route' => 'admin.dam.shares.revoke',
         'sort'  => 2,
+    ], [
+        'key'   => 'dam.shares.delete',
+        'name'  => 'dam::app.admin.acl.delete',
+        'route' => 'admin.dam.shares.destroy',
+        'sort'  => 3,
     ],
 ];

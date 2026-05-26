@@ -69,6 +69,17 @@ class ShareRepository extends Repository
         return true;
     }
 
+    public function hardDelete(int $id): bool
+    {
+        $share = $this->find($id);
+
+        if (! $share) {
+            return false;
+        }
+
+        return (bool) $share->delete();
+    }
+
     public function reauthorize(int $id): bool
     {
         $share = $this->find($id);

@@ -165,9 +165,9 @@ class ShareController extends Controller
     }
 
     /**
-     * Revoke a share.
+     * Revoke a share (soft — sets revoked_at).
      */
-    public function destroy(int $id): JsonResponse
+    public function revoke(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
 
@@ -189,6 +189,34 @@ class ShareController extends Controller
             'message' => $revoked
                 ? trans('dam::app.admin.dam.share.revoked')
                 : trans('dam::app.admin.dam.share.already-revoked'),
+        ]);
+    }
+
+    /**
+     * Permanently delete a share record.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $share = $this->shareRepository->find($id);
+
+        if (! $share) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.not-found'),
+            ], 404);
+        }
+
+        if (! $this->canDelete($share)) {
+            return $this->unauthorized();
+        }
+
+        $deleted = $this->shareRepository->hardDelete($id);
+
+        return response()->json([
+            'success' => $deleted,
+            'message' => $deleted
+                ? trans('dam::app.admin.dam.share.deleted')
+                : trans('dam::app.admin.dam.share.delete-failed'),
         ]);
     }
 
@@ -276,6 +304,20 @@ class ShareController extends Controller
             return false;
         }
 
+        return $this->hasTargetAccess($share);
+    }
+
+    protected function canDelete(Share $share): bool
+    {
+        if (! bouncer()->hasPermission('dam.shares.delete')) {
+            return false;
+        }
+
+        return $this->hasTargetAccess($share);
+    }
+
+    protected function hasTargetAccess(Share $share): bool
+    {
         if ($this->permissionService->bypass()) {
             return true;
         }
