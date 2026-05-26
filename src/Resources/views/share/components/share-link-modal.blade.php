@@ -6,182 +6,192 @@
     type="text/x-template"
     id="v-share-link-modal-template"
 >
-    <div style="position: absolute; width: 0; height: 0; overflow: visible;">
-        <x-admin::modal ref="shareModal">
-            <x-slot:header>
-                <p class="text-lg text-gray-800 dark:text-white font-bold">
-                    @{{ headerLabel }}
-                </p>
-            </x-slot>
-
-            <x-slot:content>
-                <div class="flex flex-col gap-4">
-                    <!-- Loading -->
-                    <div v-if="isLoading" class="text-sm text-gray-500 dark:text-slate-400 py-4 text-center">
-                        @lang('dam::app.admin.dam.share.modal.loading')
+    <div>
+        <div v-if="showModal">
+            <v-modal :is-active="true">
+                <template v-slot:header="{ toggle }">
+                    <div class="flex justify-between items-center gap-2.5 px-4 py-3 border-b dark:border-gray-800">
+                        <p class="text-lg text-gray-800 dark:text-white font-bold">
+                            @{{ headerLabel }}
+                        </p>
+                        <span
+                            class="icon-cancel text-3xl cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 hover:rounded-md"
+                            @click="toggle"
+                        ></span>
                     </div>
+                </template>
 
-                    <template v-else>
-                        <!-- ── Active: show URL row ── -->
-                        <div v-if="currentShare && currentShare.status === 'active'" class="flex items-center gap-2">
-                            <input
-                                type="text"
-                                :value="currentShare.public_url"
-                                readonly
-                                class="flex-1 min-w-0 rounded-md border border-gray-300 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none cursor-not-allowed"
-                            />
-                            <button
-                                type="button"
-                                class="secondary-button shrink-0"
-                                @click="copyLink(currentShare.public_url)"
-                            >
-                                @lang('dam::app.admin.dam.share.modal.copy')
-                            </button>
-                        </div>
-
-                        <!-- ── Revoked: notice + reauthorize / create new ── -->
-                        <div v-else-if="currentShare && currentShare.status === 'revoked'" class="flex flex-col gap-3">
-                            <div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-3 py-2">
-                                <span class="icon-warning text-lg text-amber-500 shrink-0 mt-px"></span>
-                                <p class="text-sm text-amber-700 dark:text-amber-300">
-                                    @lang('dam::app.admin.dam.share.modal.revoked-notice')
-                                </p>
+                <template v-slot:content>
+                    <div class="px-4 py-2.5 border-b dark:border-gray-800">
+                        <div class="flex flex-col gap-4">
+                            <!-- Loading -->
+                            <div v-if="isLoading" class="text-sm text-gray-500 dark:text-slate-400 py-4 text-center">
+                                @lang('dam::app.admin.dam.share.modal.loading')
                             </div>
-                            <div class="flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    :value="currentShare.public_url"
-                                    readonly
-                                    class="flex-1 min-w-0 rounded-md border border-gray-200 dark:border-cherry-700 bg-gray-100 dark:bg-cherry-900 px-3 py-2 text-sm text-gray-400 dark:text-slate-500 line-through focus:outline-none cursor-not-allowed"
-                                />
-                                <button
-                                    type="button"
-                                    class="primary-button shrink-0"
-                                    :disabled="isReauthorizing"
-                                    @click="reauthorize"
-                                >
-                                    <span v-if="!isReauthorizing">@lang('dam::app.admin.dam.share.modal.reauthorize')</span>
-                                    <span v-else>@lang('dam::app.admin.dam.share.modal.reauthorizing')</span>
-                                </button>
-                            </div>
-                        </div>
 
-                        <!-- ── No share: create button ── -->
-                        <div v-else>
-                            <button
-                                type="button"
-                                class="primary-button"
-                                :disabled="isCreating || !targetId"
-                                @click="createShare"
-                            >
-                                <span v-if="!isCreating">@lang('dam::app.admin.dam.share.modal.create')</span>
-                                <span v-else>@lang('dam::app.admin.dam.share.modal.creating')</span>
-                            </button>
-                        </div>
+                            <template v-else>
+                                <!-- ── Active: show URL row ── -->
+                                <div v-if="currentShare && currentShare.status === 'active'" class="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        :value="currentShare.public_url"
+                                        readonly
+                                        class="flex-1 min-w-0 rounded-md border border-gray-300 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none cursor-not-allowed"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="secondary-button shrink-0"
+                                        @click="copyLink(currentShare.public_url)"
+                                    >
+                                        @lang('dam::app.admin.dam.share.modal.copy')
+                                    </button>
+                                </div>
 
-                        <!-- Advanced checkbox -->
-                        <label class="flex items-center gap-2 cursor-pointer select-none mt-1">
-                            <input
-                                type="checkbox"
-                                class="peer hidden"
-                                v-model="showAdvanced"
-                            />
-                            <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
-                            <span class="text-sm text-gray-600 dark:text-slate-300">
-                                @lang('dam::app.admin.dam.share.modal.advanced')
-                            </span>
-                        </label>
+                                <!-- ── Revoked: notice + reauthorize / create new ── -->
+                                <div v-else-if="currentShare && currentShare.status === 'revoked'" class="flex flex-col gap-3">
+                                    <div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-3 py-2">
+                                        <span class="icon-warning text-lg text-amber-500 shrink-0 mt-px"></span>
+                                        <p class="text-sm text-amber-700 dark:text-amber-300">
+                                            @lang('dam::app.admin.dam.share.modal.revoked-notice')
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            :value="currentShare.public_url"
+                                            readonly
+                                            class="flex-1 min-w-0 rounded-md border border-gray-200 dark:border-cherry-700 bg-gray-100 dark:bg-cherry-900 px-3 py-2 text-sm text-gray-400 dark:text-slate-500 line-through focus:outline-none cursor-not-allowed"
+                                        />
+                                        <button
+                                            type="button"
+                                            class="primary-button shrink-0"
+                                            :disabled="isReauthorizing"
+                                            @click="reauthorize"
+                                        >
+                                            <span v-if="!isReauthorizing">@lang('dam::app.admin.dam.share.modal.reauthorize')</span>
+                                            <span v-else>@lang('dam::app.admin.dam.share.modal.reauthorizing')</span>
+                                        </button>
+                                    </div>
+                                </div>
 
-                        <!-- Advanced section -->
-                        <div
-                            v-if="showAdvanced"
-                            class="border border-gray-200 dark:border-cherry-700 rounded-md p-4 flex flex-col gap-4"
-                        >
-                            <!-- Custom name -->
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
-                                    @lang('dam::app.admin.dam.share.modal.name-label')
+                                <!-- ── No share: create button ── -->
+                                <div v-else>
+                                    <button
+                                        type="button"
+                                        class="primary-button"
+                                        :disabled="isCreating || !targetId"
+                                        @click="createShare"
+                                    >
+                                        <span v-if="!isCreating">@lang('dam::app.admin.dam.share.modal.create')</span>
+                                        <span v-else>@lang('dam::app.admin.dam.share.modal.creating')</span>
+                                    </button>
+                                </div>
+
+                                <!-- Advanced checkbox -->
+                                <label class="flex items-center gap-2 cursor-pointer select-none mt-1">
+                                    <input
+                                        type="checkbox"
+                                        class="peer hidden"
+                                        v-model="showAdvanced"
+                                    />
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
+                                    <span class="text-sm text-gray-600 dark:text-slate-300">
+                                        @lang('dam::app.admin.dam.share.modal.advanced')
+                                    </span>
                                 </label>
-                                <input
-                                    type="text"
-                                    v-model="advancedName"
-                                    :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
-                                    class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
-                                />
-                            </div>
 
-                            <!-- Expiry -->
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
-                                    @lang('dam::app.admin.dam.share.modal.expiry')
-                                </label>
-                                <v-multiselect
-                                    v-model="expiryOption"
-                                    :options="expiryOptions"
-                                    track-by="value"
-                                    label="label"
-                                    :allow-empty="false"
-                                    :close-on-select="true"
-                                    :clear-on-select="false"
-                                    :searchable="false"
-                                    :show-labels="false"
-                                    :placeholder="@js(trans('dam::app.admin.dam.share.modal.expiry'))"
-                                ></v-multiselect>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <!-- Save (active share) -->
-                                <button
-                                    v-if="currentShare && currentShare.status === 'active'"
-                                    type="button"
-                                    class="secondary-button"
-                                    :disabled="isSaving"
-                                    @click="saveAdvanced"
+                                <!-- Advanced section -->
+                                <div
+                                    v-if="showAdvanced"
+                                    class="border border-gray-200 dark:border-cherry-700 rounded-md p-4 flex flex-col gap-4"
                                 >
-                                    @lang('dam::app.admin.dam.share.modal.save')
-                                </button>
+                                    <!-- Custom name -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
+                                            @lang('dam::app.admin.dam.share.modal.name-label')
+                                        </label>
+                                        <input
+                                            type="text"
+                                            v-model="advancedName"
+                                            :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
+                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
+                                        />
+                                    </div>
 
-                                <!-- Create (no share yet) -->
-                                <button
-                                    v-if="!currentShare"
-                                    type="button"
-                                    class="primary-button"
-                                    :disabled="isCreating || !targetId"
-                                    @click="createShare"
-                                >
-                                    <span v-if="!isCreating">@lang('dam::app.admin.dam.share.modal.create')</span>
-                                    <span v-else>@lang('dam::app.admin.dam.share.modal.creating')</span>
-                                </button>
+                                    <!-- Expiry -->
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
+                                            @lang('dam::app.admin.dam.share.modal.expiry')
+                                        </label>
+                                        <v-multiselect
+                                            v-model="expiryOption"
+                                            :options="expiryOptions"
+                                            track-by="value"
+                                            label="label"
+                                            :allow-empty="false"
+                                            :close-on-select="true"
+                                            :clear-on-select="false"
+                                            :searchable="false"
+                                            :show-labels="false"
+                                            :placeholder="@js(trans('dam::app.admin.dam.share.modal.expiry'))"
+                                        ></v-multiselect>
+                                    </div>
 
-                                <!-- Reauthorize (revoked share) -->
-                                <button
-                                    v-if="currentShare && currentShare.status === 'revoked'"
-                                    type="button"
-                                    class="primary-button"
-                                    :disabled="isReauthorizing"
-                                    @click="reauthorize"
-                                >
-                                    <span v-if="!isReauthorizing">@lang('dam::app.admin.dam.share.modal.reauthorize')</span>
-                                    <span v-else>@lang('dam::app.admin.dam.share.modal.reauthorizing')</span>
-                                </button>
+                                    <!-- Actions -->
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <!-- Save (active share) -->
+                                        <button
+                                            v-if="currentShare && currentShare.status === 'active'"
+                                            type="button"
+                                            class="secondary-button"
+                                            :disabled="isSaving"
+                                            @click="saveAdvanced"
+                                        >
+                                            @lang('dam::app.admin.dam.share.modal.save')
+                                        </button>
 
-                                <!-- Revoke (active share) -->
-                                <button
-                                    v-if="currentShare && currentShare.status === 'active'"
-                                    type="button"
-                                    class="secondary-button !text-red-600 dark:!text-red-500"
-                                    :disabled="isRevoking"
-                                    @click="revoke(currentShare)"
-                                >
-                                    @lang('dam::app.admin.dam.share.modal.revoke')
-                                </button>
-                            </div>
+                                        <!-- Create (no share yet) -->
+                                        <button
+                                            v-if="!currentShare"
+                                            type="button"
+                                            class="primary-button"
+                                            :disabled="isCreating || !targetId"
+                                            @click="createShare"
+                                        >
+                                            <span v-if="!isCreating">@lang('dam::app.admin.dam.share.modal.create')</span>
+                                            <span v-else>@lang('dam::app.admin.dam.share.modal.creating')</span>
+                                        </button>
+
+                                        <!-- Reauthorize (revoked share) -->
+                                        <button
+                                            v-if="currentShare && currentShare.status === 'revoked'"
+                                            type="button"
+                                            class="primary-button"
+                                            :disabled="isReauthorizing"
+                                            @click="reauthorize"
+                                        >
+                                            <span v-if="!isReauthorizing">@lang('dam::app.admin.dam.share.modal.reauthorize')</span>
+                                            <span v-else>@lang('dam::app.admin.dam.share.modal.reauthorizing')</span>
+                                        </button>
+
+                                        <!-- Revoke (active share) -->
+                                        <button
+                                            v-if="currentShare && currentShare.status === 'active'"
+                                            type="button"
+                                            class="secondary-button !text-red-600 dark:!text-red-500"
+                                            :disabled="isRevoking"
+                                            @click="revoke(currentShare)"
+                                        >
+                                            @lang('dam::app.admin.dam.share.modal.revoke')
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
-                    </template>
-                </div>
-            </x-slot>
-        </x-admin::modal>
+                    </div>
+                </template>
+            </v-modal>
+        </div>
     </div>
 </script>
 
@@ -192,6 +202,7 @@
             return {
                 targetType: '',
                 targetId: null,
+                showModal: false,
                 isLoading: false,
                 isCreating: false,
                 isSaving: false,
@@ -224,14 +235,17 @@
 
             this.openHandler = ({ targetType, targetId } = {}) => {
                 if (!targetType || !targetId) return;
-                this.targetType = targetType;
+                this.targetType = (typeof targetType === 'string' ? targetType : '').toLowerCase();
                 this.targetId = Number(targetId);
                 this.currentShare = null;
                 this.showAdvanced = false;
                 this.advancedName = '';
                 this.expiryOption = this.expiryOptions[0];
-                this.$refs.shareModal.toggle();
-                this.loadShares();
+                this.showModal = false;
+                this.$nextTick(() => {
+                    this.showModal = true;
+                    this.loadShares();
+                });
             };
             this.$emitter.on('open-share-modal', this.openHandler);
         },
@@ -359,9 +373,9 @@
             revoke(share) {
                 if (this.isRevoking) return;
                 this.isRevoking = true;
-                const url = `{{ route('admin.dam.shares.destroy', ':id') }}`.replace(':id', share.id);
+                const url = `{{ route('admin.dam.shares.revoke', ':id') }}`.replace(':id', share.id);
 
-                this.$axios.delete(url)
+                this.$axios.patch(url)
                     .then(({ data }) => {
                         if (data?.success) {
                             // Keep currentShare so reauthorize is available; reload to get fresh status.
