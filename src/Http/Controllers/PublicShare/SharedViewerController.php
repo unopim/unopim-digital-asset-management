@@ -61,14 +61,19 @@ class SharedViewerController extends Controller
             ->push($directory->id)
             ->unique();
 
+        $perPage = in_array((int) request('per_page'), [50, 100, 150, 200, 250], true)
+            ? (int) request('per_page')
+            : 50;
+
         $assets = Asset::whereHas('directories', function ($q) use ($directoryIds) {
             $q->whereIn('dam_directories.id', $directoryIds);
-        })->orderByDesc('updated_at')->get();
+        })->orderByDesc('updated_at')->paginate($perPage);
 
         return view('dam::share.public.directory', [
             'share'     => $share,
             'directory' => $directory,
             'assets'    => $assets,
+            'perPage'   => $perPage,
         ]);
     }
 
@@ -111,9 +116,25 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
+        $directoryIds = Directory::descendantsOf($share->target_id)
+            ->pluck('id')
+            ->push($share->target_id)
+            ->unique();
+
+        $assetIds = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
+            ->orderByDesc('updated_at')
+            ->pluck('id')
+            ->toArray();
+
+        $currentIndex = array_search($assetId, $assetIds);
+        $prevAssetId = $currentIndex < count($assetIds) - 1 ? $assetIds[$currentIndex + 1] : null;
+        $nextAssetId = $currentIndex > 0 ? $assetIds[$currentIndex - 1] : null;
+
         return view('dam::share.public.asset', [
-            'share' => $share,
-            'asset' => $asset,
+            'share'       => $share,
+            'asset'       => $asset,
+            'prevAssetId' => $prevAssetId,
+            'nextAssetId' => $nextAssetId,
         ]);
     }
 
