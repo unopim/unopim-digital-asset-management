@@ -34,10 +34,23 @@ async function openShareModal(page) {
   const shareBtn = page.locator('button.transparent-button').filter({ hasText: /Share/ }).first();
   await shareBtn.waitFor({ state: 'visible', timeout: 15000 });
   await shareBtn.click();
-  await page.getByText('Create a new share link').waitFor({ state: 'visible', timeout: 15000 });
+  // Wait for the modal header ("Share asset") to confirm the modal opened.
+  await page.getByText(/Share asset/i).first().waitFor({ state: 'visible', timeout: 15000 });
 }
 
 async function generateShareLink(page) {
+  // Wait for modal loading state to resolve (loading text disappears).
+  await page.getByText('Loading…').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+  // If the modal already shows a share URL (active or revoked), return that URL directly
+  // so we don't try to create a duplicate.
+  const urlInput = page.locator('input[readonly]').first();
+  const alreadyHasShare = await urlInput.isVisible({ timeout: 8000 }).catch(() => false);
+  if (alreadyHasShare) {
+    const url = await urlInput.inputValue();
+    if (url) return url;
+  }
+
   const responsePromise = page.waitForResponse(
     (res) => /\/admin\/dam\/shares$/.test(res.url()) && res.request().method() === 'POST',
     { timeout: 15000 }
@@ -77,8 +90,12 @@ test.describe('DAM Share Links', () => {
       await guestContext.close();
     }
 
-    // Back on the admin side, the active links list should include our share —
-    // revoke it.
+    // Back on the admin side, expand Advanced section to reveal the Revoke button.
+    // The Advanced label wraps a hidden checkbox; clicking the label toggles showAdvanced.
+    const advancedLabel = adminPage.locator('label.cursor-pointer').filter({ hasText: 'Advanced' }).first();
+    await advancedLabel.waitFor({ state: 'visible', timeout: 15000 });
+    await advancedLabel.click();
+
     const revokeBtn = adminPage.getByRole('button', { name: /Revoke/i }).first();
     await revokeBtn.waitFor({ state: 'visible', timeout: 10000 });
 

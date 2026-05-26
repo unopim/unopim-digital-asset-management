@@ -465,11 +465,13 @@ return [
                 'target-not-found' => 'The asset or directory being shared could not be found.',
                 'not-found'        => 'Share link not found.',
                 'revoked'          => 'Share link revoked.',
+                'deleted'          => 'Share link deleted.',
                 'already-revoked'  => 'This share link is already revoked.',
                 'reauthorized'     => 'Share link reauthorized — the original URL is active again.',
                 'not-revoked'      => 'This share link is not revoked.',
                 'updated'          => 'Share link updated.',
                 'update-failed'    => 'Failed to update share link.',
+                'delete-failed'    => 'Failed to delete share link.',
 
                 'modal' => [
                     'title-asset'           => 'Share asset',
@@ -497,6 +499,7 @@ return [
                     'copy'                  => 'Copy',
                     'copied'                => 'Link copied to clipboard',
                     'revoke'                => 'Revoke',
+                    'delete'                => 'Delete',
                     'revoked'               => 'Share link revoked',
                     'revoke-failed'         => 'Failed to revoke share link.',
                     'expires-on'            => 'Expires on',
@@ -524,6 +527,7 @@ return [
                     'asset'           => 'Asset',
                     'directory'       => 'Directory',
                     'target'          => 'Target',
+                    'custom-name'     => 'Custom Name',
                     'created-by'      => 'Created by',
                     'expires-at'      => 'Expires at',
                     'never'           => 'Never',
@@ -537,6 +541,7 @@ return [
                     'edit'            => 'Edit',
                     'copy-link'       => 'Copy link',
                     'revoke'          => 'Revoke',
+                    'delete'          => 'Delete',
                 ],
             ],
         ],
@@ -583,6 +588,7 @@ return [
             'assets'                => 'Assets',
             'shares'                => 'Shared Links',
             'revoke'                => 'Revoke',
+            'delete'                => 'Delete',
         ],
 
         'permissions' => [
@@ -640,6 +646,7 @@ return [
             'not-found-title'       => 'Link not found',
             'not-found-message'     => 'The share link you opened does not exist. It may have been mistyped or removed.',
             'download-zip'          => 'Download all as ZIP',
+            'per-page'              => 'Per page',
         ],
     ],
 ];

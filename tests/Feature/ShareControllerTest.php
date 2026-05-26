@@ -86,13 +86,30 @@ it('revokes a share', function () {
     $asset = Asset::factory()->create();
     $share = Share::factory()->forAsset($asset->id)->create();
 
-    $response = $this->delete(route('admin.dam.shares.destroy', $share->id));
+    $response = $this->patch(route('admin.dam.shares.revoke', $share->id));
 
     $response->assertOk()->assertJsonPath('success', true);
     expect($share->fresh()->revoked_at)->not->toBeNull();
 });
 
 it('returns 404 when revoking a non-existent share', function () {
+    $this->patch(route('admin.dam.shares.revoke', 999999))
+        ->assertNotFound();
+});
+
+it('hard-deletes a share', function () {
+    $asset = Asset::factory()->create();
+    $share = Share::factory()->forAsset($asset->id)->create();
+
+    $this->delete(route('admin.dam.shares.destroy', $share->id))
+        ->assertOk()
+        ->assertJsonPath('success', true);
+
+    expect($share->fresh())->toBeNull();
+    $this->assertDatabaseMissing('dam_shares', ['id' => $share->id]);
+});
+
+it('returns 404 when hard-deleting a non-existent share', function () {
     $this->delete(route('admin.dam.shares.destroy', 999999))
         ->assertNotFound();
 });

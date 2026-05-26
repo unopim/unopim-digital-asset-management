@@ -19,7 +19,7 @@ it('has correct table name', function () {
 
 it('has correct fillable attributes', function () {
     $property = new AssetProperty;
-    expect($property->getFillable())->toBe(['name', 'type', 'language', 'value', 'dam_asset_id']);
+    expect($property->getFillable())->toBe(['name', 'type', 'language', 'value', 'dam_asset_id', 'is_filterable', 'sort_order']);
 });
 
 it('belongs to an asset', function () {
