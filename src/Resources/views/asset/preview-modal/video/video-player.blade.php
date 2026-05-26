@@ -11,7 +11,7 @@
             ref="videoEl"
             autoplay
             @contextmenu.prevent
-            class="max-w-full max-h-full"
+            class="absolute inset-0 w-full h-full object-contain"
             @timeupdate="videoOnTimeUpdate"
             @loadedmetadata="videoOnLoadedMeta"
             @progress="videoOnProgress"
@@ -63,6 +63,7 @@
                 ref="videoSeekContainer"
                 class="relative h-4 group cursor-pointer"
                 @mousedown="videoOnSeekDown"
+                @touchstart.prevent="videoOnSeekDown"
                 @mousemove="videoOnSeekHover"
                 @mouseleave="videoOnSeekLeave"
             >
@@ -113,7 +114,7 @@
             <!-- Skip back -->
             <button
                 type="button"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.back-10s')"
                 @click="videoSkip(-10)"
             >
@@ -126,7 +127,7 @@
             <!-- Skip forward -->
             <button
                 type="button"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.forward-10s')"
                 @click="videoSkip(10)"
             >
@@ -144,7 +145,7 @@
             <div class="flex-1"></div>
 
             <!-- Speed selector -->
-            <div class="flex items-center gap-1 shrink-0">
+            <div class="dam-ctrl-desktop items-center gap-1 shrink-0">
                 <span class="text-xs mr-1 opacity-50">@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')</span>
                 <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
                     <button
@@ -159,7 +160,7 @@
             <!-- Loop toggle -->
             <button
                 type="button"
-                class="flex items-center justify-center w-7 h-7 rounded transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center justify-center w-7 h-7 rounded transition-colors shrink-0"
                 :class="videoIsLooping ? 'bg-violet-600 text-white' : 'opacity-70 hover:opacity-100 hover:bg-white/10'"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.loop')"
                 @click="videoToggleLoop"
@@ -171,7 +172,7 @@
             </button>
 
             <!-- Volume -->
-            <div class="flex items-center gap-1.5 shrink-0">
+            <div class="dam-ctrl-desktop items-center gap-1.5 shrink-0">
                 <button
                     type="button"
                     class="opacity-70 hover:opacity-100 transition-opacity shrink-0"
@@ -203,7 +204,7 @@
             <button
                 v-if="videoSupportsPiP"
                 type="button"
-                class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/10 opacity-70 hover:opacity-100 transition-opacity shrink-0"
+                class="dam-ctrl-desktop items-center justify-center w-7 h-7 rounded hover:bg-white/10 opacity-70 hover:opacity-100 transition-opacity shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.picture-in-picture')"
                 @click="videoTogglePiP"
             >
@@ -239,13 +240,15 @@
 
                 <div
                     v-if="videoMenuOpen"
-                    class="fixed inset-0 z-[10015]"
+                    class="fixed inset-0"
+                    style="z-index: 10015"
                     @click="videoMenuOpen = false"
                 ></div>
 
                 <div
                     v-if="videoMenuOpen"
-                    class="absolute bottom-12 right-0 w-52 rounded-lg bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-2xl z-[10020] py-1 text-sm overflow-hidden"
+                    class="absolute bottom-12 right-0 w-52 rounded-lg bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-2xl py-1 text-sm overflow-hidden"
+                    style="z-index: 10020"
                 >
                     <a
                         :href="previewData.downloadUrl"
@@ -259,6 +262,7 @@
                     </a>
 
                     <a
+                        v-if="previewData.downloadCompressedUrl"
                         :href="previewData.downloadCompressedUrl"
                         class="flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors"
                         @click="videoMenuOpen = false"

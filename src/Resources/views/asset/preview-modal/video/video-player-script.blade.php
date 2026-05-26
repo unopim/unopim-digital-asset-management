@@ -154,22 +154,26 @@ window._damVideoPlayer = {
             e.preventDefault();
             this.videoIsSeeking = true;
             this._seekFromEvent(e);
-            const move = (ev) => { if (this.videoIsSeeking) this._seekFromEvent(ev); };
+            const isTouch = e.type === 'touchstart';
+            const moveEvt = isTouch ? 'touchmove' : 'mousemove';
+            const endEvt  = isTouch ? 'touchend'  : 'mouseup';
+            const move = (ev) => { if (this.videoIsSeeking) { ev.preventDefault(); this._seekFromEvent(ev); } };
             const up   = () => {
                 this.videoIsSeeking = false;
-                window.removeEventListener('mousemove', move);
-                window.removeEventListener('mouseup',   up);
+                window.removeEventListener(moveEvt, move);
+                window.removeEventListener(endEvt,  up);
             };
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup',   up);
+            window.addEventListener(moveEvt, move, { passive: false });
+            window.addEventListener(endEvt,  up);
         },
 
         _seekFromEvent(e) {
             const container = this.$refs.videoSeekContainer;
             if (!container || !this.videoDuration) return;
-            const rect = container.getBoundingClientRect();
-            const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const t    = pct * this.videoDuration;
+            const rect    = container.getBoundingClientRect();
+            const clientX = e.touches ? (e.touches[0] ?? e.changedTouches[0])?.clientX : e.clientX;
+            const pct     = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            const t       = pct * this.videoDuration;
             this.videoCurrentTime = t;
             if (this.$refs.videoEl) this.$refs.videoEl.currentTime = t;
         },

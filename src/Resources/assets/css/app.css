@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .image-card {
-    @apply h-[206px];
+    @apply aspect-square;
 }
 
 @font-face {

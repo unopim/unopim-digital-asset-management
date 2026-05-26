@@ -161,9 +161,20 @@
 
                 @if (bouncer()->hasPermission('dam.asset.view'))
                     <div
-                        :class="{ 'pointer-events-none opacity-60': isUploading || treeBusy }"
+                        class="relative"
+                        :class="{ 'pointer-events-none': isUploading || treeBusy }"
                         :aria-busy="isUploading || treeBusy"
                     >
+                        <!-- Semi-transparent overlay while uploading / tree loading.
+                             Uses a child absolute element so the parent stays at z:auto
+                             (no stacking context), keeping the filter drawer's fixed
+                             elements in the root stacking context above the sticky navbar. -->
+                        <div
+                            v-if="isUploading || treeBusy"
+                            class="absolute inset-0 bg-white/60 dark:bg-cherry-900/60 z-[1] rounded-lg"
+                            aria-hidden="true"
+                        ></div>
+
                         <x-dam::datagrid.dam
                             :src="route('admin.dam.assets.index')"
                             ref="datagrid"

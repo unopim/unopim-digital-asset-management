@@ -46,6 +46,10 @@
 }
 .audio-canvas-ring { transition: opacity 0.4s ease; }
 .audio-blob-rings  { transition: opacity 0.4s ease; }
+.dam-ctrl-desktop { display: none; }
+@media (min-width: 525px) {
+    .dam-ctrl-desktop { display: flex; }
+}
 </style>
 @endPushOnce
 
@@ -87,7 +91,7 @@
         </div>
     </div>
 
-    <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate max-w-xl text-center">@{{ previewData.file_name }}</p>
+    <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate w-full max-w-xl text-center">@{{ previewData.file_name }}</p>
 
     <!-- Hidden native audio element driven by Vue -->
     <audio
@@ -107,6 +111,7 @@
             ref="audioSeekContainer"
             class="relative h-4 group cursor-pointer"
             @mousedown="audioOnSeekDown"
+            @touchstart.prevent="audioOnSeekDown"
             @mousemove="audioOnSeekHover"
             @mouseleave="audioOnSeekLeave"
         >
@@ -161,21 +166,23 @@
                         </template>
                     </svg>
                 </button>
-                <input
-                    type="range"
-                    class="w-20 h-1 accent-violet-400 cursor-pointer"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    :value="audioIsMuted ? 0 : audioVolume"
-                    @input="audioOnVolume"
-                />
+                <div class="dam-ctrl-desktop">
+                    <input
+                        type="range"
+                        class="w-20 h-1 accent-violet-400 cursor-pointer"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        :value="audioIsMuted ? 0 : audioVolume"
+                        @input="audioOnVolume"
+                    />
+                </div>
             </div>
 
             <!-- Skip back 10s -->
             <button
                 type="button"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.back-10s')"
                 @click="audioSkip(-10)"
             >
@@ -202,7 +209,7 @@
             <!-- Skip forward 10s -->
             <button
                 type="button"
-                class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.forward-10s')"
                 @click="audioSkip(10)"
             >
@@ -228,7 +235,7 @@
         </div>
 
         <!-- Speed selector -->
-        <div class="flex items-center gap-1 justify-center mt-1">
+        <div class="dam-ctrl-desktop items-center gap-1 justify-center mt-1">
             <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')</span>
             <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
                 <button
