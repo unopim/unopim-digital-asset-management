@@ -147,7 +147,7 @@
                                 <label
                                     v-if="$parent.available.massActions.length"
                                     :for="`mass_action_select_record_${record[$parent.available.meta.primary_column]}`"
-                                    class="flex gap-1.5 items-center cursor-pointer min-w-0"
+                                    class="flex items-center cursor-pointer shrink-0"
                                 >
                                     <input
                                         type="checkbox"
@@ -160,18 +160,12 @@
                                     >
 
                                     <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl shrink-0"></span>
-
-                                    <span
-                                        class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate"
-                                        v-text="record.file_name"
-                                    ></span>
                                 </label>
 
-                                <span
-                                    v-else
-                                    class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate block"
+                                <h2
+                                    class="text-xs sm:text-sm font-normal text-gray-600 dark:text-gray-300 truncate"
                                     v-text="record.file_name"
-                                ></span>
+                                ></h2>
                             </div>
                         </div>
                     </template>
