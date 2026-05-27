@@ -195,13 +195,13 @@
             <!-- Play / Pause -->
             <button
                 type="button"
-                class="flex items-center justify-center w-14 h-14 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors shrink-0"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors shrink-0"
                 @click="audioTogglePlay"
             >
-                <svg v-if="audioIsPlaying" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <svg v-if="audioIsPlaying" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
                 </svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="5 3 19 12 5 21 5 3"/>
                 </svg>
             </button>
@@ -219,6 +219,49 @@
                 </svg>
             </button>
 
+            <!-- Speed selector dropdown -->
+            <div class="dam-ctrl-desktop relative items-center shrink-0">
+                <button
+                    ref="audioSpeedBtn"
+                    type="button"
+                    class="flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')"
+                    @click.stop="audioToggleSpeedMenu"
+                >
+                    @{{ audioSpeed }}×
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+
+                <template v-if="audioSpeedOpen">
+                    <div
+                        class="fixed inset-0"
+                        style="z-index: 10015"
+                        @click="audioSpeedOpen = false"
+                    ></div>
+                    <div
+                        class="fixed rounded-lg bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-2xl py-1 text-sm overflow-hidden whitespace-nowrap"
+                        :style="audioSpeedMenuStyle"
+                        style="z-index: 10020"
+                    >
+                        <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
+                            <button
+                                type="button"
+                                class="w-full flex items-center justify-between gap-4 px-4 py-2 text-xs font-semibold transition-colors"
+                                :class="audioSpeed === rate ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                @click="setAudioSpeed(rate); audioSpeedOpen = false"
+                            >
+                                <span>@{{ rate }}×</span>
+                                <svg v-if="audioSpeed === rate" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
             <!-- Loop toggle -->
             <button
                 type="button"
@@ -232,19 +275,6 @@
                     <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
                 </svg>
             </button>
-        </div>
-
-        <!-- Speed selector -->
-        <div class="dam-ctrl-desktop items-center gap-1 justify-center mt-1">
-            <span class="text-xs text-gray-400 dark:text-gray-500 mr-1">@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')</span>
-            <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
-                <button
-                    type="button"
-                    class="px-2 py-1 rounded text-xs font-semibold transition-colors"
-                    :class="audioSpeed === rate ? 'bg-violet-600 text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                    @click="setAudioSpeed(rate)"
-                >@{{ rate }}×</button>
-            </template>
         </div>
     </div>
 </div>
