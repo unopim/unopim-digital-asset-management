@@ -343,12 +343,7 @@
                                     </p>
                                 </x-slot>
                                 <x-slot:content>
-                                    @php
-                                        $pathParts = $directoryAncestors->pluck('name')->toArray();
-                                        $pathParts[] = $asset->file_name;
-                                        $fullPath = implode('/', $pathParts);
-                                    @endphp
-                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">{{ $fullPath }}</p>
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">@{{ displayAssetPath }}</p>
                                 </x-slot>
                             </x-admin::accordion>
 

@@ -877,10 +877,16 @@ class AssetController extends Controller
 
         $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
 
+        $showDirectory = $asset->directories()->first();
+        $showAncestors = $showDirectory
+            ? $showDirectory->ancestorsAndSelfAndDefaultOrder($showDirectory->id)
+            : collect();
+
         return response()->json([
             'success'               => true,
             'asset'                 => $asset,
             'assetPath'             => $asset->getPathWithOutFileSystemRoot() ?? '',
+            'directoryBreadcrumb'   => $showAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values()->toArray(),
             'mediaUrl'              => $mediaUrl,
             'previewPath'           => $asset->previewPath,
             'placeholderSvg'        => $placeholderSvg,
