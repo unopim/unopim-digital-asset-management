@@ -5,6 +5,7 @@
     :class="imgIsDragging ? 'cursor-grabbing' : (imgZoom > 1 ? 'cursor-grab' : 'cursor-default')"
 >
     <img
+        ref="previewImg"
         :src="previewData.previewPath"
         :alt="previewData.file_name"
         class="max-w-none max-h-none block pointer-events-none"
