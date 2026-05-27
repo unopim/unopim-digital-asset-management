@@ -5,6 +5,7 @@ namespace Webkul\DAM\Http\Controllers\Asset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -24,6 +25,7 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
@@ -43,6 +45,7 @@ class AssetController extends Controller
         protected DirectoryRepository $directoryRepository,
         protected MetadataExtractionService $metadataExtractionService,
         protected DirectoryPermissionService $permissionService,
+        protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -375,9 +378,11 @@ class AssetController extends Controller
                     : trans('dam::app.admin.dam.asset.datagrid.file-upload-success'),
             ], 201);
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
             ], 500);
         }
     }
@@ -408,6 +413,271 @@ class AssetController extends Controller
         }
 
         $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
+    }
+
+    /**
+     * Upload a folder: accepts files with their webkitRelativePath values and
+     * recreates the entire directory structure inside the given DAM directory.
+     *
+     * Expected request fields:
+     *   - files[]          : uploaded file objects
+     *   - relative_paths[] : parallel array of webkitRelativePath strings
+     *   - directory_id     : target DAM directory id
+     */
+    public function uploadFolder(Request $request): JsonResponse
+    {
+        set_time_limit(0);
+        ignore_user_abort(true);
+
+        $maxKb = AssetHelper::getMaxUploadSizeKb();
+        $sizeMessage = trans('dam::app.admin.dam.asset.datagrid.file-too-large', [
+            'size' => $this->humanReadableSize($maxKb),
+        ]);
+
+        $request->validate([
+            'files'           => 'required|array|min:1',
+            'files.*'         => 'file|max:'.$maxKb,
+            'relative_paths'  => 'required|array|min:1',
+            'relative_paths.*'=> 'string|max:500',
+            'directory_id'    => 'required|exists:dam_directories,id',
+        ], [
+            'files.*.max'      => $sizeMessage,
+            'files.*.uploaded' => $sizeMessage,
+            'files.*.file'     => $sizeMessage,
+        ]);
+
+        $files = $request->file('files');
+        $relativePaths = $request->input('relative_paths', []);
+        $directoryId = (int) $request->input('directory_id');
+        $preserveRoot = (bool) $request->input('preserve_root', false);
+
+        if (! $this->permissionService->canAccess($directoryId)) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $disk = Directory::getAssetDisk();
+        $uploadedAssets = [];
+        $skippedCount = 0;
+
+        // Cache for directory id lookups keyed by "parentId/segmentName" so we
+        // don't issue a redundant query for each file that shares a subdirectory.
+        $dirCache = [];
+
+        /**
+         * Recursively find or create a DAM directory by walking path segments
+         * under $rootDirectoryId.  Returns the leaf directory id.
+         *
+         * @param  int  $rootId  The DAM directory id to start under.
+         * @param  string[]  $segments  Directory name segments (no file name).
+         * @return int Leaf directory id.
+         */
+        $createdIds = [];
+
+        $resolveOrCreatePath = function (int $rootId, array $segments) use (&$resolveOrCreatePath, &$dirCache, &$createdIds): int {
+            if (empty($segments)) {
+                return $rootId;
+            }
+
+            $segment = array_shift($segments);
+            $cacheKey = $rootId.'/'.$segment;
+
+            if (! isset($dirCache[$cacheKey])) {
+                // Find existing child directory with this name.
+                $existing = Directory::where('parent_id', $rootId)
+                    ->where('name', $segment)
+                    ->first();
+
+                if ($existing) {
+                    $dirCache[$cacheKey] = $existing->id;
+                } else {
+                    // Create it — reuse the repository so storage is provisioned.
+                    $newDir = $this->directoryRepository->create([
+                        'name'      => $segment,
+                        'parent_id' => $rootId,
+                    ]);
+                    $dirCache[$cacheKey] = $newDir->id;
+                    $createdIds[] = $newDir->id;
+                }
+            }
+
+            return $resolveOrCreatePath($dirCache[$cacheKey], $segments);
+        };
+
+        // Group new asset ids per directory so we can batch-attach them to
+        // the pivot table rather than attaching one by one.
+        $assetsByDir = [];
+
+        try {
+            // Pass 1: resolve target directories and filter files so we can
+            // batch-fetch existing assets in a single query instead of one per file.
+            $fileJobs = [];
+
+            foreach ($files as $index => $file) {
+                if (! $file instanceof UploadedFile) {
+                    continue;
+                }
+
+                $relativePath = $relativePaths[$index] ?? $file->getClientOriginalName();
+
+                // webkitRelativePath looks like "FolderName/sub/file.jpg".
+                // Extract the directory segments (everything except the last
+                // component, which is the file name).
+                $parts = explode('/', ltrim(str_replace('\\', '/', $relativePath), '/'));
+                array_pop($parts); // remove the file name
+                // For webkitdirectory uploads the top-level segment is the
+                // selected folder name itself, which we do NOT want to
+                // recreate inside the target directory — strip it.
+                // For drag-drop uploads (preserve_root=true) the caller
+                // already includes the folder name as a desired path segment
+                // so we keep it intact.
+                if (! $preserveRoot && ! empty($parts)) {
+                    array_shift($parts);
+                }
+
+                $hasBadSegment = false;
+                $forbiddenRe = '/[\\\\\/\:\*\?\"\<\>\|]/u';
+
+                foreach ($parts as $seg) {
+                    if ($seg === '.' || $seg === '..' || mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
+                        $hasBadSegment = true;
+
+                        break;
+                    }
+                }
+
+                if ($hasBadSegment) {
+                    $skippedCount++;
+
+                    continue;
+                }
+
+                $extension = strtolower($file->getClientOriginalExtension());
+                $mimeType = $file->getMimeType();
+
+                if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+                    $skippedCount++;
+
+                    continue;
+                }
+
+                // Resolve (or create) the target directory inside $directoryId.
+                $targetDirId = $resolveOrCreatePath($directoryId, $parts);
+                $targetDirectory = $this->directoryRepository->find($targetDirId);
+                $targetDirPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $targetDirectory->generatePath());
+
+                if (! $targetDirectory->isWritable($targetDirPath)) {
+                    $skippedCount++;
+
+                    continue;
+                }
+
+                $originalName = $file->getClientOriginalName();
+
+                $fileJobs[] = [
+                    'file'            => $file,
+                    'mimeType'        => $mimeType,
+                    'targetDirId'     => $targetDirId,
+                    'targetDirectory' => $targetDirectory,
+                    'targetDirPath'   => $targetDirPath,
+                    'originalName'    => $originalName,
+                    'existingPath'    => $targetDirPath.'/'.$originalName,
+                ];
+            }
+
+            // Batch-fetch existing assets for all candidate paths — avoids N+1.
+            $candidatePaths = array_column($fileJobs, 'existingPath');
+            $existingByPath = $candidatePaths
+                ? Asset::whereIn('path', $candidatePaths)->get()->keyBy('path')
+                : collect();
+
+            // Pass 2: upload each file using the pre-fetched asset map.
+            foreach ($fileJobs as $job) {
+                $file = $job['file'];
+                $mimeType = $job['mimeType'];
+                $targetDirId = $job['targetDirId'];
+                $targetDirectory = $job['targetDirectory'];
+                $targetDirPath = $job['targetDirPath'];
+                $originalName = $job['originalName'];
+                $existingPath = $job['existingPath'];
+
+                $existingAsset = $existingByPath->get($existingPath);
+                $isOverwrite = (bool) $existingAsset;
+
+                if ($isOverwrite) {
+                    Storage::disk($disk)->delete($existingAsset->path);
+                    $this->clearAssetCache($existingAsset->path, $disk, $existingAsset->id);
+                    $fileName = $originalName;
+                } else {
+                    $fileName = $this->generateUniqueFileName($targetDirPath, $originalName);
+                }
+
+                $filePath = $this->fileStorer->store(
+                    path: $targetDirPath,
+                    file: $file,
+                    fileName: $fileName,
+                    options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
+                );
+
+                $localFilePath = $file->getRealPath();
+                $metaData = $this->metadataExtractionService->extractMetadata(
+                    $localFilePath,
+                    disk: 'local',
+                    originalFileName: $originalName
+                );
+
+                $payload = [
+                    'file_name' => $fileName,
+                    'file_type' => AssetHelper::getFileType($file),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'extension' => $file->getClientOriginalExtension(),
+                    'path'      => $filePath,
+                    'meta_data' => $metaData,
+                ];
+
+                if ($isOverwrite) {
+                    $existingAsset->update($payload);
+                    $asset = $existingAsset;
+                } else {
+                    $asset = Asset::create($payload);
+                    $assetsByDir[$targetDirId][] = $asset->id;
+                }
+
+                $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
+                $this->dispatchThumbnailJob($asset);
+
+                $uploadedAssets[] = $asset;
+            }
+
+            // Batch-attach new assets to their directories.
+            foreach ($assetsByDir as $dirId => $ids) {
+                $this->mappedWithDirectory($ids, $dirId);
+            }
+
+            foreach ($createdIds as $id) {
+                $this->autoGrantToCreator($id);
+            }
+
+            $message = $skippedCount > 0
+                ? trans('dam::app.admin.dam.index.directory.folder-upload-partial', ['count' => $skippedCount])
+                : trans('dam::app.admin.dam.index.directory.folder-upload-success');
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploadedAssets,
+                'message' => $message,
+            ], 201);
+        } catch (\Exception $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),
+            ], 500);
+        }
     }
 
     /**
@@ -784,8 +1054,10 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.mass-delete-success'),
             ]);
         } catch (\Exception $e) {
+            report($e);
+
             return new JsonResponse([
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.index.directory.error-operation'),
             ], 500);
         }
     }
@@ -1039,8 +1311,10 @@ class AssetController extends Controller
                 ], 404);
             }
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.index.directory.error-operation'),
             ], 500);
         }
     }
@@ -1160,5 +1434,27 @@ class AssetController extends Controller
         $directory->assets()->attach($assetIds);
 
         return $directory;
+    }
+
+    private function autoGrantToCreator(int $directoryId): void
+    {
+        $admin = auth()->guard('admin')->user();
+
+        if (! $admin) {
+            return;
+        }
+
+        $role = $admin->role;
+
+        if (! $role || $role->permission_type !== 'custom') {
+            return;
+        }
+
+        if (DB::table('dam_role_settings')->where('role_id', $role->id)->where('all_directories', true)->exists()) {
+            return;
+        }
+
+        $this->permissionRepository->addDirectoryToRole($role->id, $directoryId);
+        $this->permissionService->flush();
     }
 }

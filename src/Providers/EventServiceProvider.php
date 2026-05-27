@@ -108,10 +108,46 @@ class EventServiceProvider extends ServiceProvider
             }
 
             $allDirectories = request()->boolean('dam_all_directories');
+            $inheritChildren = request()->boolean('dam_inherit_children');
+
+            // When inherit_children is on, the blade pre-checks all descendants
+            // so submitted directories[] contains both explicit grants and
+            // inherit-expanded descendants. Strip only the expanded ones:
+            // keep items that were already an explicit grant in the DB (e.g.
+            // auto-granted by another admin's directory creation), and keep
+            // new root-level selections. This prevents accumulation of
+            // descendants in the DB while preserving intentional child grants.
+            if ($inheritChildren && count($directoryIds) > 1) {
+                $existingGrants = app(DirectoryRolePermissionRepository::class)
+                    ->getDirectoryIdsForRole((int) $role->id);
+
+                $directoryIds = DB::table('dam_directories as d')
+                    ->whereIn('d.id', $directoryIds)
+                    ->where(function ($q) use ($directoryIds, $existingGrants) {
+                        if (! empty($existingGrants)) {
+                            $q->whereIn('d.id', $existingGrants);
+                        }
+                        $q->orWhereNotExists(function ($sub) use ($directoryIds) {
+                            $sub->from('dam_directories as ancestor')
+                                ->whereIn('ancestor.id', $directoryIds)
+                                ->whereColumn('ancestor._lft', '<', 'd._lft')
+                                ->whereColumn('ancestor._rgt', '>', 'd._rgt');
+                        });
+                    })
+                    ->pluck('d.id')
+                    ->map(fn ($id) => (int) $id)
+                    ->values()
+                    ->all();
+            }
 
             DB::table('dam_role_settings')->updateOrInsert(
                 ['role_id' => (int) $role->id],
-                ['all_directories' => $allDirectories, 'created_at' => now(), 'updated_at' => now()]
+                [
+                    'all_directories'  => $allDirectories,
+                    'inherit_children' => $inheritChildren,
+                    'created_at'       => now(),
+                    'updated_at'       => now(),
+                ]
             );
 
             app(DirectoryRolePermissionRepository::class)

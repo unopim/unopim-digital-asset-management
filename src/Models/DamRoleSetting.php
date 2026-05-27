@@ -12,9 +12,10 @@ class DamRoleSetting extends Model
 
     public $incrementing = false;
 
-    protected $fillable = ['role_id', 'all_directories'];
+    protected $fillable = ['role_id', 'all_directories', 'inherit_children'];
 
     protected $casts = [
-        'all_directories' => 'boolean',
+        'all_directories'  => 'boolean',
+        'inherit_children' => 'boolean',
     ];
 }

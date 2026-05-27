@@ -86,21 +86,38 @@ class DAMServiceProvider extends ServiceProvider
             $roleId = request()->route('id');
             $role = $roleId ? Role::find($roleId) : null;
 
-            $allDirectories = $role
-                ? (bool) DB::table('dam_role_settings')
-                    ->where('role_id', $role->id)
-                    ->value('all_directories')
-                : false;
+            $settings = $role
+                ? DB::table('dam_role_settings')->where('role_id', $role->id)->first()
+                : null;
+
+            $grantedIds = $role
+                ? app(DirectoryRolePermissionRepository::class)->getDirectoryIdsForRole($role->id)
+                : [];
+            $inheritChildren = (bool) ($settings?->inherit_children ?? false);
+
+            if ($inheritChildren && ! empty($grantedIds)) {
+                $descendants = DB::table('dam_directories as ancestor')
+                    ->join('dam_directories as descendant', function ($join) {
+                        $join->whereColumn('descendant._lft', '>=', 'ancestor._lft')
+                            ->whereColumn('descendant._rgt', '<=', 'ancestor._rgt');
+                    })
+                    ->whereIn('ancestor.id', $grantedIds)
+                    ->distinct()
+                    ->pluck('descendant.id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+                $expandedGrantedIds = array_values(array_unique(array_merge($grantedIds, $descendants)));
+            } else {
+                $expandedGrantedIds = $grantedIds;
+            }
 
             $view->with([
-                'role'           => $role,
-                'directoryTree'  => app(DirectoryRepository::class)
-                    ->getFullDirectoryTreeOnly(),
-                'grantedIds'     => $role
-                    ? app(DirectoryRolePermissionRepository::class)
-                        ->getDirectoryIdsForRole($role->id)
-                    : [],
-                'allDirectories' => $allDirectories,
+                'role'               => $role,
+                'directoryTree'      => app(DirectoryRepository::class)->getFullDirectoryTreeOnly(),
+                'grantedIds'         => $grantedIds,
+                'expandedGrantedIds' => $expandedGrantedIds,
+                'allDirectories'     => (bool) ($settings?->all_directories ?? false),
+                'inheritChildren'    => $inheritChildren,
             ]);
         });
 

@@ -425,4 +425,87 @@ class DirectoryController
             return back()->with('error', trans('dam::app.admin.dam.index.directory.failed-download-directory'));
         }
     }
+
+    /**
+     * Create an empty directory structure under the given parent directory.
+     *
+     * Accepts an array of slash-separated relative paths (e.g. "FolderA/SubDir").
+     * Each path is walked and any missing segments are created via the repository.
+     */
+    public function createStructure(Request $request): JsonResponse
+    {
+        $request->validate([
+            'directory_id' => 'required|exists:dam_directories,id',
+            'paths'        => 'required|array|min:1',
+            'paths.*'      => 'string|max:500',
+        ]);
+
+        $directoryId = (int) $request->input('directory_id');
+        $paths = $request->input('paths');
+
+        if (! $this->permissionService->canAccess($directoryId)) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $forbiddenRe = '/[\\\\\/\:\*\?\"\<\>\|]/u';
+
+        foreach ($paths as $path) {
+            $segments = array_filter(explode('/', str_replace('\\', '/', trim((string) $path))), fn ($s) => $s !== '');
+            foreach ($segments as $seg) {
+                if ($seg === '.' || $seg === '..' || mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),
+                    ], 422);
+                }
+            }
+        }
+
+        $dirCache = [];
+        $createdIds = [];
+
+        $resolveOrCreate = function (int $parentId, array $segments) use (&$resolveOrCreate, &$dirCache, &$createdIds): void {
+            if (empty($segments)) {
+                return;
+            }
+
+            $segment = array_shift($segments);
+            $cacheKey = $parentId.'/'.$segment;
+
+            if (! isset($dirCache[$cacheKey])) {
+                $existing = Directory::where('parent_id', $parentId)
+                    ->where('name', $segment)
+                    ->first();
+
+                if ($existing) {
+                    $dirCache[$cacheKey] = $existing->id;
+                } else {
+                    $newId = $this->directoryRepository->create(['name' => $segment, 'parent_id' => $parentId])->id;
+                    $dirCache[$cacheKey] = $newId;
+                    $createdIds[] = $newId;
+                }
+            }
+
+            $resolveOrCreate($dirCache[$cacheKey], $segments);
+        };
+
+        foreach ($paths as $path) {
+            $segments = array_values(
+                array_filter(explode('/', str_replace('\\', '/', trim((string) $path))), fn ($s) => $s !== '')
+            );
+
+            if (! empty($segments)) {
+                $resolveOrCreate($directoryId, $segments);
+            }
+        }
+
+        foreach ($createdIds as $id) {
+            $this->autoGrantToCreator($id);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

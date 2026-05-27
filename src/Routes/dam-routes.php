@@ -30,6 +30,7 @@ Route::group([
             Route::put('update/{id}', 'update')->name('admin.dam.assets.update');
 
             Route::post('/upload', 'upload')->name('admin.dam.assets.upload');
+            Route::post('/upload-folder', 'uploadFolder')->name('admin.dam.assets.upload_folder');
             Route::post('/re-upload', 'reUpload')->name('admin.dam.assets.re_upload');
             Route::delete('/destroy/{id}', 'destroy')->name('admin.dam.assets.destroy');
             Route::post('/mass-update', 'massUpdate')->name('admin.dam.assets.mass_update');
@@ -120,6 +121,7 @@ Route::group([
         Route::get('zip-download/{id}', 'downloadArchive')->name('admin.dam.directory.zip_download');
         Route::post('/copy-structure', 'copyStructure')->name('admin.dam.directory.copy_structure');
         Route::post('/moved', 'moved')->name('admin.dam.directory.moved');
+        Route::post('/create-structure', 'createStructure')->name('admin.dam.directory.create_structure');
     });
 
     Route::controller(ActionRequestController::class)->prefix('action-request')->group(function () {
