@@ -3,7 +3,7 @@
 </template>
 
 <template v-else>
-    <div class="relative z-20 mt-7 flex items-center justify-between gap-4 max-md:flex-wrap">
+    <div class="relative mt-7 flex items-center justify-between gap-4 max-md:flex-wrap">
         <!-- Left Toolbar -->
         <div class="flex gap-x-1">
             <!-- Mass Actions Panel -->

@@ -1,8 +1,4 @@
 <x-admin::layouts>
-    @push('styles')
-    @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-    @endpush
-
     <x-slot:title>
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
