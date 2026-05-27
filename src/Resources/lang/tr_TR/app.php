@@ -565,6 +565,7 @@ return [
             'property'         => 'Özellik',
             'comment'          => 'Yorum',
             'linked_resources' => 'Bağlı kaynaklar',
+            'meta_data'        => 'Gömülü Meta Bilgisi',
             'directory'        => 'Dizin',
             'tag'              => 'Etiket',
             'create'           => 'Oluştur',

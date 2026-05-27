@@ -565,6 +565,7 @@ return [
             'property'         => 'Ominaisuus',
             'comment'          => 'Kommentti',
             'linked_resources' => 'Linkitetyt resurssit',
+            'meta_data'        => 'Upotettu metatiedot',
             'directory'        => 'Hakemisto',
             'tag'              => 'Tunniste',
             'create'           => 'Luo',

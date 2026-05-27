@@ -565,6 +565,7 @@ return [
             'property'         => 'Propriété',
             'comment'          => 'Commentaire',
             'linked_resources' => 'Ressources Liées',
+            'meta_data'        => 'Informations méta intégrées',
             'directory'        => 'Répertoire',
             'tag'              => 'Étiquette',
             'create'           => 'Créer',

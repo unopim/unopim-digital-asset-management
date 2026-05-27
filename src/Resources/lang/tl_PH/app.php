@@ -565,6 +565,7 @@ return [
             'property'         => 'Katangian',
             'comment'          => 'Komento',
             'linked_resources' => 'Mga Nakaugnay na Resource',
+            'meta_data'        => 'Naka-embed na Meta Info',
             'directory'        => 'Direktoryo',
             'tag'              => 'Tanda',
             'create'           => 'Gumawa',

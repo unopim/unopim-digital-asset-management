@@ -565,6 +565,7 @@ return [
             'property'         => 'Properti',
             'comment'          => 'Komentar',
             'linked_resources' => 'Sumber Daya Terkait',
+            'meta_data'        => 'Info Meta Tertanam',
             'directory'        => 'Direktori',
             'tag'              => 'Label',
             'create'           => 'Buat',

@@ -565,6 +565,7 @@ return [
             'property'         => 'خاصية',
             'comment'          => 'تعليق',
             'linked_resources' => 'الموارد المرتبطة',
+            'meta_data'        => 'معلومات البيانات الوصفية المضمنة',
             'directory'        => 'دليل',
             'tag'              => 'علامة',
             'create'           => 'إنشاء',

@@ -565,6 +565,7 @@ return [
             'property'         => 'Eigenschap',
             'comment'          => 'Opmerking',
             'linked_resources' => 'Gekoppelde Bronnen',
+            'meta_data'        => 'Ingesloten meta-informatie',
             'directory'        => 'Map',
             'tag'              => 'Tag',
             'create'           => 'Aanmaken',

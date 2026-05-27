@@ -142,6 +142,11 @@ return [
         'route' => 'admin.dam.asset.comment.delete',
         'sort'  => 4,
     ], [
+        'key'   => 'dam.asset.meta_data',
+        'name'  => 'dam::app.admin.acl.meta_data',
+        'route' => 'admin.dam.assets.metadata',
+        'sort'  => 16,
+    ], [
         'key'   => 'dam.asset.linked_resources',
         'name'  => 'dam::app.admin.acl.linked_resources',
         'route' => 'admin.dam.asset.linked_resources.index',

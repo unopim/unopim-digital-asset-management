@@ -565,6 +565,7 @@ return [
             'property'         => 'गुण',
             'comment'          => 'टिप्पणी',
             'linked_resources' => 'लिंक किए गए संसाधन',
+            'meta_data'        => 'एम्बेडेड मेटा जानकारी',
             'directory'        => 'निर्देशिका',
             'tag'              => 'टैग',
             'create'           => 'बनाएं',

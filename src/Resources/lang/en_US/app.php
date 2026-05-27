@@ -581,6 +581,7 @@ return [
             'property'              => 'Property',
             'comment'               => 'Comment',
             'linked_resources'      => 'Linked Resources',
+            'meta_data'             => 'Embedded Meta Info',
             'directory'             => 'Directory',
             'tag'                   => 'Tag',
             'create'                => 'Create',

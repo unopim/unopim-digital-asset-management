@@ -565,6 +565,7 @@ return [
             'property'         => 'Thuộc tính',
             'comment'          => 'Bình luận',
             'linked_resources' => 'Tài nguyên liên kết',
+            'meta_data'        => 'Thông tin meta nhúng',
             'directory'        => 'Thư mục',
             'tag'              => 'Thẻ',
             'create'           => 'Tạo',

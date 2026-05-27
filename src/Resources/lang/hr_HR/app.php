@@ -565,6 +565,7 @@ return [
             'property'         => 'Svojstvo',
             'comment'          => 'Komentar',
             'linked_resources' => 'Povezani resursi',
+            'meta_data'        => 'Ugrađeni meta podaci',
             'directory'        => 'Direktorij',
             'tag'              => 'Oznaka',
             'create'           => 'Stvori',

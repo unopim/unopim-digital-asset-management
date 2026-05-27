@@ -565,6 +565,7 @@ return [
             'property'         => '属性',
             'comment'          => '评论',
             'linked_resources' => '关联资源',
+            'meta_data'        => '嵌入式元数据信息',
             'directory'        => '目录',
             'tag'              => '标签',
             'create'           => '创建',

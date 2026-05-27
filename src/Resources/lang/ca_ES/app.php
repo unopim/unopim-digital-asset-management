@@ -565,6 +565,7 @@ return [
             'property'         => 'Propietat',
             'comment'          => 'Comentari',
             'linked_resources' => 'Recursos Vinculats',
+            'meta_data'        => 'Informació de metadades incrustada',
             'directory'        => 'Directori',
             'tag'              => 'Etiqueta',
             'create'           => 'Crear',

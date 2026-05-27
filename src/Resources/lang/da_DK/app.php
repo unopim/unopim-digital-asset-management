@@ -565,6 +565,7 @@ return [
             'property'         => 'Egenskab',
             'comment'          => 'Kommentar',
             'linked_resources' => 'Tilknyttede ressourcer',
+            'meta_data'        => 'Indlejret metainformation',
             'directory'        => 'Mappe',
             'tag'              => 'Tag',
             'create'           => 'Opret',

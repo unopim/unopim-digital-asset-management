@@ -565,6 +565,7 @@ return [
             'property'         => 'Proprietate',
             'comment'          => 'Comentariu',
             'linked_resources' => 'Resurse Asociate',
+            'meta_data'        => 'Informații meta încorporate',
             'directory'        => 'Director',
             'tag'              => 'Etichetă',
             'create'           => 'Creează',

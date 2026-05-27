@@ -565,6 +565,7 @@ return [
             'property'         => 'Шинж Чанар',
             'comment'          => 'Сэтгэгдэл',
             'linked_resources' => 'Холбогдсон Нөөцүүд',
+            'meta_data'        => 'Суулгасан мета мэдээлэл',
             'directory'        => 'Директор',
             'tag'              => 'Таг',
             'create'           => 'Үүсгэх',

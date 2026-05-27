@@ -565,6 +565,7 @@ return [
             'property'         => '속성',
             'comment'          => '댓글',
             'linked_resources' => '연결된 리소스',
+            'meta_data'        => '임베디드 메타 정보',
             'directory'        => '디렉터리',
             'tag'              => '태그',
             'create'           => '생성',

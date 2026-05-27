@@ -46,12 +46,14 @@
             ],
         ];
 
-        $items[] = [
-            'url' => '?meta-data',
-            'code' => 'meta-data',
-            'name' => 'dam::app.admin.dam.asset.edit.embedded_meta_info',
-            'icon' => 'icon-manage-column',
-        ];
+        if (bouncer()->hasPermission('dam.asset.meta_data')) {
+            $items[] = [
+                'url'  => '?meta-data',
+                'code' => 'meta-data',
+                'name' => 'dam::app.admin.dam.asset.edit.embedded_meta_info',
+                'icon' => 'icon-manage-column',
+            ];
+        }
 
         if (bouncer()->hasPermission('dam.asset.property')) {
             $items[] = [

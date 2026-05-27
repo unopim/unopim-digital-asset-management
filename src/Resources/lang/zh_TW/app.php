@@ -565,6 +565,7 @@ return [
             'property'         => '屬性',
             'comment'          => '留言',
             'linked_resources' => '連結的資源',
+            'meta_data'        => '嵌入式元數據信息',
             'directory'        => '目錄',
             'tag'              => '標籤',
             'create'           => '建立',

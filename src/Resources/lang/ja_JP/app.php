@@ -565,6 +565,7 @@ return [
             'property'         => 'プロパティ',
             'comment'          => 'コメント',
             'linked_resources' => 'リンクされたリソース',
+            'meta_data'        => '埋め込みメタ情報',
             'directory'        => 'ディレクトリ',
             'tag'              => 'タグ',
             'create'           => '作成',

@@ -565,6 +565,7 @@ return [
             'property'         => 'Egenskap',
             'comment'          => 'Kommentar',
             'linked_resources' => 'Länkade resurser',
+            'meta_data'        => 'Inbäddad metainformation',
             'directory'        => 'Katalog',
             'tag'              => 'Tagg',
             'create'           => 'Skapa',
