@@ -29,10 +29,11 @@
         $backUrl     = $share->share_type === \Webkul\DAM\Models\Share::TYPE_DIRECTORY
             ? route('dam.share.show', ['token' => $share->token])
             : null;
-        $prevUrl = isset($prevAssetId) && $prevAssetId
+        $isAssetShare = $share->share_type === \Webkul\DAM\Models\Share::TYPE_ASSET;
+        $prevUrl = (! $isAssetShare && isset($prevAssetId) && $prevAssetId)
             ? route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $prevAssetId])
             : null;
-        $nextUrl = isset($nextAssetId) && $nextAssetId
+        $nextUrl = (! $isAssetShare && isset($nextAssetId) && $nextAssetId)
             ? route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $nextAssetId])
             : null;
     @endphp
@@ -72,6 +73,7 @@
                 <div class="flex items-stretch">
 
                     {{-- Prev arrow (desktop only — mobile uses overlay) --}}
+                    @if (! $isAssetShare)
                     <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
                         @if ($prevUrl)
                             <a
@@ -88,6 +90,7 @@
                             </span>
                         @endif
                     </div>
+                    @endif
 
                 <div class="flex-1 min-w-0 relative flex items-center justify-center bg-gray-100 dark:bg-cherry-800">
                     @if ($isImage)
@@ -135,7 +138,7 @@
                         </div>
                     @endif
                     {{-- Mobile overlay prev/next (hidden sm+, where side panels take over) --}}
-                    {{-- Mobile overlay prev/next (hidden sm+, where side panels take over) --}}
+                    @if (! $isAssetShare)
                     @php
                         // Audio: place arrows at disc-center height (top of disc ≈ 40px + half disc 104px = 144px from flex-1 top)
                         $mobileNavStyle = $isAudio
@@ -181,9 +184,11 @@
                             <span class="text-2xl leading-none">&#8250;</span>
                         </span>
                     @endif
+                    @endif
                 </div>
 
                     {{-- Next arrow (desktop only — mobile uses overlay) --}}
+                    @if (! $isAssetShare)
                     <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
                         @if ($nextUrl)
                             <a
@@ -200,6 +205,7 @@
                             </span>
                         @endif
                     </div>
+                    @endif
 
                 </div>
 
