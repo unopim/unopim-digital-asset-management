@@ -100,7 +100,7 @@ test.describe('DAM Share Links', () => {
     await revokeBtn.waitFor({ state: 'visible', timeout: 10000 });
 
     const revokePromise = adminPage.waitForResponse(
-      (res) => /\/admin\/dam\/shares\/\d+$/.test(res.url()) && res.request().method() === 'DELETE',
+      (res) => /\/admin\/dam\/shares\/\d+\/revoke$/.test(res.url()) && res.request().method() === 'PATCH',
       { timeout: 15000 }
     );
     await revokeBtn.click();
