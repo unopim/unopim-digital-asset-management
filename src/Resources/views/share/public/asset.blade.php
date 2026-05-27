@@ -61,7 +61,7 @@
                     class="primary-button shrink-0"
                     download
                 >
-                    <span class="icon-dam-download text-lg"></span>
+                    <span class="icon-dam-download text-lg text-white"></span>
                     <span>@lang('dam::app.share.public.download')</span>
                 </a>
             </div>

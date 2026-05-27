@@ -35,12 +35,50 @@
                 </p>
 
                 <x-admin::datagrid src="{{ route('admin.dam.shares.index') }}" ref="datagrid">
+                    <template #header="{ columns, actions, applied, sortPage, isLoading }">
+                        <template v-if="isLoading">
+                            <x-admin::shimmer.datagrid.table.head />
+                        </template>
+
+                        <template v-else>
+                            <div
+                                class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900 font-semibold items-center"
+                                :style="`grid-template-columns: repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(160px, 1fr)`"
+                            >
+                                <p
+                                    v-for="column in columns.filter(c => c.visible !== false)"
+                                    class="flex gap-1.5 items-center min-w-0"
+                                    :class="{'cursor-pointer select-none hover:text-gray-800 dark:hover:text-white': column.sortable}"
+                                    @click="sortPage(column)"
+                                >
+                                    <span
+                                        class="block overflow-hidden text-ellipsis text-nowrap"
+                                        :title="column.label"
+                                        v-text="column.label"
+                                    ></span>
+
+                                    <i
+                                        class="text-base text-gray-600 dark:text-gray-300 align-text-bottom"
+                                        :class="[applied.sort.order === 'asc' ? 'icon-down-stat' : 'icon-up-stat']"
+                                        v-if="column.index == applied.sort.column"
+                                    ></i>
+                                </p>
+
+                                <div v-if="actions.length" class="flex gap-2.5 items-center justify-end select-none">
+                                    <p class="text-gray-600 dark:text-gray-300">
+                                        @lang('admin::app.components.datagrid.table.actions')
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
                     <template #body="{ columns, records, performAction }">
                         <div
                             v-for="record in records"
                             :key="record.id"
                             class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
-                            :style="`grid-template-columns: repeat(${gridsCount}, minmax(0, 1fr))`"
+                            :style="`grid-template-columns: repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(160px, 1fr)`"
                         >
                             <p v-html="record.share_type" class="truncate"></p>
                             <p v-html="record.target_name" class="truncate"></p>
@@ -52,7 +90,7 @@
                             <p v-html="record.download_count"></p>
                             <p v-html="record.created_at" class="truncate"></p>
 
-                            <div class="flex justify-end" @click.stop>
+                            <div class="flex justify-end whitespace-nowrap" @click.stop>
                                 <a
                                     v-if="record.actions.find(a => a.index === 'edit')"
                                     @click="editShare(record)"

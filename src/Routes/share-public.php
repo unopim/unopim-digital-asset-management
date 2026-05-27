@@ -38,4 +38,9 @@ Route::middleware('web')
             ->name('dam.share.download_zip')
             ->middleware('throttle:dam-share-download')
             ->where('token', '[A-Za-z0-9]{20,64}');
+
+        Route::get('{token}/assets', [SharedViewerController::class, 'listAssets'])
+            ->name('dam.share.list_assets')
+            ->middleware('throttle:dam-share-view')
+            ->where('token', '[A-Za-z0-9]{20,64}');
     });
