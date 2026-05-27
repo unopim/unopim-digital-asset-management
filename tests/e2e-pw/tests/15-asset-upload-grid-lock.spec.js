@@ -37,7 +37,10 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
 
     await expect(gridWrapper).toHaveAttribute('aria-busy', 'true');
     await expect(gridWrapper).toHaveClass(/pointer-events-none/);
-    await expect(gridWrapper).toHaveClass(/opacity-60/);
+    // Visual dimming is achieved via a child overlay div (no opacity class on outer wrapper,
+    // which avoids a stacking context that would trap fixed filter-drawer elements).
+    const overlay = gridWrapper.locator('div.absolute.inset-0').first();
+    await expect(overlay).toBeVisible();
 
     await closeApShell(adminPage);
     const cancelBtn = adminPage.getByRole('button', { name: 'Cancel' }).first();
