@@ -455,7 +455,7 @@ class DirectoryController
         foreach ($paths as $path) {
             $segments = array_filter(explode('/', str_replace('\\', '/', trim((string) $path))), fn ($s) => $s !== '');
             foreach ($segments as $seg) {
-                if (mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
+                if ($seg === '.' || $seg === '..' || mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
                     return response()->json([
                         'success' => false,
                         'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),

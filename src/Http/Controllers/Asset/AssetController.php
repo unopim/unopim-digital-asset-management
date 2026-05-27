@@ -378,9 +378,11 @@ class AssetController extends Controller
                     : trans('dam::app.admin.dam.asset.datagrid.file-upload-success'),
             ], 201);
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
             ], 500);
         }
     }
@@ -435,7 +437,7 @@ class AssetController extends Controller
         $request->validate([
             'files'           => 'required|array|min:1',
             'files.*'         => 'file|max:'.$maxKb,
-            'relative_paths'  => 'required|array',
+            'relative_paths'  => 'required|array|min:1',
             'relative_paths.*'=> 'string|max:500',
             'directory_id'    => 'required|exists:dam_directories,id',
         ], [
@@ -509,6 +511,10 @@ class AssetController extends Controller
         $assetsByDir = [];
 
         try {
+            // Pass 1: resolve target directories and filter files so we can
+            // batch-fetch existing assets in a single query instead of one per file.
+            $fileJobs = [];
+
             foreach ($files as $index => $file) {
                 if (! $file instanceof UploadedFile) {
                     continue;
@@ -529,6 +535,23 @@ class AssetController extends Controller
                 // so we keep it intact.
                 if (! $preserveRoot && ! empty($parts)) {
                     array_shift($parts);
+                }
+
+                $hasBadSegment = false;
+                $forbiddenRe = '/[\\\\\/\:\*\?\"\<\>\|]/u';
+
+                foreach ($parts as $seg) {
+                    if ($seg === '.' || $seg === '..' || mb_strlen($seg) > 255 || preg_match($forbiddenRe, $seg)) {
+                        $hasBadSegment = true;
+
+                        break;
+                    }
+                }
+
+                if ($hasBadSegment) {
+                    $skippedCount++;
+
+                    continue;
                 }
 
                 $extension = strtolower($file->getClientOriginalExtension());
@@ -552,8 +575,35 @@ class AssetController extends Controller
                 }
 
                 $originalName = $file->getClientOriginalName();
-                $existingPath = $targetDirPath.'/'.$originalName;
-                $existingAsset = Asset::where('path', $existingPath)->first();
+
+                $fileJobs[] = [
+                    'file'            => $file,
+                    'mimeType'        => $mimeType,
+                    'targetDirId'     => $targetDirId,
+                    'targetDirectory' => $targetDirectory,
+                    'targetDirPath'   => $targetDirPath,
+                    'originalName'    => $originalName,
+                    'existingPath'    => $targetDirPath.'/'.$originalName,
+                ];
+            }
+
+            // Batch-fetch existing assets for all candidate paths — avoids N+1.
+            $candidatePaths = array_column($fileJobs, 'existingPath');
+            $existingByPath = $candidatePaths
+                ? Asset::whereIn('path', $candidatePaths)->get()->keyBy('path')
+                : collect();
+
+            // Pass 2: upload each file using the pre-fetched asset map.
+            foreach ($fileJobs as $job) {
+                $file = $job['file'];
+                $mimeType = $job['mimeType'];
+                $targetDirId = $job['targetDirId'];
+                $targetDirectory = $job['targetDirectory'];
+                $targetDirPath = $job['targetDirPath'];
+                $originalName = $job['originalName'];
+                $existingPath = $job['existingPath'];
+
+                $existingAsset = $existingByPath->get($existingPath);
                 $isOverwrite = (bool) $existingAsset;
 
                 if ($isOverwrite) {
@@ -621,9 +671,11 @@ class AssetController extends Controller
                 'message' => $message,
             ], 201);
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.index.directory.creation-failed'),
             ], 500);
         }
     }
@@ -1002,8 +1054,10 @@ class AssetController extends Controller
                 'message' => trans('dam::app.admin.dam.asset.datagrid.mass-delete-success'),
             ]);
         } catch (\Exception $e) {
+            report($e);
+
             return new JsonResponse([
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.index.directory.error-operation'),
             ], 500);
         }
     }
@@ -1257,8 +1311,10 @@ class AssetController extends Controller
                 ], 404);
             }
         } catch (\Exception $e) {
+            report($e);
+
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => trans('dam::app.admin.dam.index.directory.error-operation'),
             ], 500);
         }
     }

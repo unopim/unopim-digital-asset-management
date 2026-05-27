@@ -1001,6 +1001,7 @@
                 gridBusy: false,
                 moveStatusLabel: '',
                 _folderAbortController: null,
+                _awaitingFolderFiles: false,
             };
         },
 
@@ -1657,7 +1658,7 @@
                     const dirHandle = await window.showDirectoryPicker();
                     await this.handleDirectoryPicker(dirHandle);
                 } catch (e) {
-                    if (e.name === 'AbortError') return;
+                    if (e.name === 'AbortError' || e.name === 'NotAllowedError') return;
                     this.$emitter.emit('add-flash', {
                         type: 'error',
                         message: @js(trans('dam::app.admin.dam.index.folder-upload-https-required')),
@@ -1835,6 +1836,11 @@
                     });
                     this.loadDirectories();
                     this.$emitter.emit('data-grid:refresh');
+                } else {
+                    this.$emitter.emit('add-flash', {
+                        type: 'warning',
+                        message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
+                    });
                 }
             },
 
