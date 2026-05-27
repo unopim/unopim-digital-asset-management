@@ -144,16 +144,46 @@
 
             <div class="flex-1"></div>
 
-            <!-- Speed selector -->
-            <div class="dam-ctrl-desktop items-center gap-1 shrink-0">
-                <span class="text-xs mr-1 opacity-50">@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')</span>
-                <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
-                    <button
-                        type="button"
-                        class="px-2 py-1 rounded text-xs font-semibold transition-colors"
-                        :class="videoSpeed === rate ? 'bg-violet-600 text-white' : 'opacity-70 hover:opacity-100 hover:bg-white/10'"
-                        @click="setVideoSpeed(rate)"
-                    >@{{ rate }}×</button>
+            <!-- Speed selector dropdown -->
+            <div class="dam-ctrl-desktop relative items-center shrink-0">
+                <button
+                    ref="videoSpeedBtn"
+                    type="button"
+                    class="flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold opacity-70 hover:opacity-100 hover:bg-white/10 transition-colors"
+                    title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.speed')"
+                    @click.stop="videoToggleSpeedMenu"
+                >
+                    @{{ videoSpeed }}×
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+
+                <template v-if="videoSpeedOpen">
+                    <div
+                        class="fixed inset-0"
+                        style="z-index: 10015"
+                        @click="videoSpeedOpen = false"
+                    ></div>
+                    <div
+                        class="fixed rounded-lg bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 shadow-2xl py-1 text-sm overflow-hidden whitespace-nowrap"
+                        :style="videoSpeedMenuStyle"
+                        style="z-index: 10020"
+                    >
+                        <template v-for="rate in [0.5, 0.75, 1, 1.25, 1.5, 2]" :key="rate">
+                            <button
+                                type="button"
+                                class="w-full flex items-center justify-between gap-4 px-4 py-2 text-xs font-semibold transition-colors"
+                                :class="videoSpeed === rate ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                @click="setVideoSpeed(rate); videoSpeedOpen = false"
+                            >
+                                <span>@{{ rate }}×</span>
+                                <svg v-if="videoSpeed === rate" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </button>
+                        </template>
+                    </div>
                 </template>
             </div>
 
@@ -199,19 +229,6 @@
                     @input="videoOnVolume"
                 />
             </div>
-
-            <!-- Picture-in-Picture -->
-            <button
-                v-if="videoSupportsPiP"
-                type="button"
-                class="dam-ctrl-desktop items-center justify-center w-7 h-7 rounded hover:bg-white/10 opacity-70 hover:opacity-100 transition-opacity shrink-0"
-                title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.picture-in-picture')"
-                @click="videoTogglePiP"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="11" width="9" height="7" rx="1"/>
-                </svg>
-            </button>
 
             <!-- Fullscreen -->
             <button
@@ -303,6 +320,18 @@
                         </svg>
                         @lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.open-in-new-tab')
                     </a>
+
+                    <button
+                        v-if="videoSupportsPiP"
+                        type="button"
+                        class="w-full flex items-center gap-2.5 px-4 py-2.5 text-gray-700 dark:text-gray-200 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-600 transition-colors text-left"
+                        @click="videoTogglePiP(); videoMenuOpen = false"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/><rect x="12" y="11" width="9" height="7" rx="1"/>
+                        </svg>
+                        @lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.picture-in-picture')
+                    </button>
                 </div>
             </div>
 
