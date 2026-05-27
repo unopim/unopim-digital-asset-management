@@ -58,7 +58,9 @@ class AssetDataGrid extends DataGrid
                 'dam_assets.updated_at',
                 DB::raw('MIN('.$prefix.'dam_asset_directory.asset_id) as directory_asset_id'),
             )
-            ->groupBy('dam_assets.id');
+            ->groupBy('dam_assets.id')
+            ->groupBy('dam_directories.id')
+            ->groupBy('dam_asset_directory.asset_id');
 
         $this->addFilter('id', 'dam_assets.id');
         $this->addFilter('file_name', 'dam_assets.file_name');
