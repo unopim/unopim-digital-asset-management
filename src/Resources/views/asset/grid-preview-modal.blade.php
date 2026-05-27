@@ -1,162 +1,32 @@
 {{--
-    Standalone fullscreen preview modal launched from the DAM grid's eye icon.
+    Fullscreen preview modal launched from the DAM grid's eye icon.
 
-    The eye icon on each gallery card emits `dam-open-preview` with the asset
-    id; this component fetches the asset's preview payload from
-    `admin.dam.assets.show` and opens a fullscreen viewer:
-      - image  → simple <img> with zoom / rotate / pan
-      - video  → native <video controls>
-      - audio  → native <audio controls>
-      - pdf    → native <iframe>
-      - other  → placeholder + filename
-
-    Self-contained: no dependency on the edit-page custom video/audio/image
-    players or any `window._dam*` globals. Safe to mount on the listing page.
+    The eye icon on each gallery card emits `dam-open-preview` with the asset id;
+    this component fetches the asset from `admin.dam.assets.show` and delegates
+    rendering to the same viewer-modal, video-player, audio-player, and image-viewer
+    used on the asset edit page — giving identical playback / zoom / rotate behaviour.
 --}}
 <v-dam-grid-preview-modal></v-dam-grid-preview-modal>
 
 @pushOnce('scripts')
+    @include('dam::asset.preview-modal.image.image-viewer-script')
+    @include('dam::asset.preview-modal.video.video-player-script')
+    @include('dam::asset.preview-modal.audio.audio-player-script')
+
     <script type="text/x-template" id="v-dam-grid-preview-modal-template">
+        {{-- Loading overlay --}}
         <div
-            v-if="isOpen"
-            class="fixed inset-0 z-[10010]"
+            v-if="isLoading"
+            class="fixed inset-0 z-[10010] flex items-center justify-center bg-white dark:bg-gray-900"
         >
-            {{-- Loading --}}
-            <div
-                v-if="isLoading"
-                class="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900"
-            >
-                <svg class="animate-spin h-10 w-10 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-            </div>
-
-            {{-- Fullscreen layout: image / video / pdf --}}
-            <div
-                v-else-if="asset && isLargeLayout"
-                class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900"
-            >
-                <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                    <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300" v-text="badge"></span>
-                    <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate" v-text="asset.file_name"></p>
-                    <span v-if="humanSize" class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block" v-text="humanSize"></span>
-                    <button
-                        type="button"
-                        class="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
-                        @click="close"
-                        aria-label="@lang('dam::app.admin.dam.asset.edit.preview-modal.close')"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="flex-1 min-h-0 overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                    {{-- Image viewer --}}
-                    <div
-                        v-if="asset.file_type === 'image'"
-                        class="relative w-full h-full overflow-hidden flex items-center justify-center select-none"
-                        :class="isDragging ? 'cursor-grabbing' : (zoom > 1 ? 'cursor-grab' : 'cursor-default')"
-                        @wheel.prevent="onWheel"
-                        @mousedown="onMouseDown"
-                    >
-                        <img
-                            :src="asset.preview_url"
-                            :alt="asset.file_name"
-                            class="max-w-none max-h-none block pointer-events-none"
-                            :style="{
-                                transform: transformStyle,
-                                transformOrigin: 'center center',
-                                transition: isDragging ? 'none' : 'transform 0.15s ease',
-                                maxHeight: '100%',
-                                maxWidth: '100%',
-                            }"
-                            draggable="false"
-                        />
-
-                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs shadow-lg z-10 select-none">
-                            <button type="button" class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/20 transition-colors" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.image-viewer.rotate-left')" @click="rotateLeft">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                            </button>
-                            <button type="button" class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/20 transition-colors" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.image-viewer.rotate-right')" @click="rotateRight">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                            </button>
-                            <span class="w-px h-4 bg-white/30 mx-1"></span>
-                            <button type="button" class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/20 transition-colors" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.image-viewer.zoom-out')" @click="zoomOut">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                            </button>
-                            <span class="min-w-[44px] text-center font-mono tabular-nums">@{{ zoomPercent }}%</span>
-                            <button type="button" class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/20 transition-colors" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.image-viewer.zoom-in')" @click="zoomIn">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                            </button>
-                            <span class="w-px h-4 bg-white/30 mx-1"></span>
-                            <button type="button" class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/20 transition-colors" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.image-viewer.reset-all')" @click="resetView">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Video --}}
-                    <video
-                        v-else-if="asset.file_type === 'video'"
-                        :src="asset.preview_url"
-                        controls
-                        controlslist="nodownload"
-                        class="max-w-full max-h-full"
-                    ></video>
-
-                    {{-- PDF --}}
-                    <iframe
-                        v-else
-                        :src="asset.preview_url"
-                        class="w-full h-full border-0"
-                        :title="asset.file_name"
-                    ></iframe>
-                </div>
-            </div>
-
-            {{-- Fullscreen layout: audio / fallback --}}
-            <div
-                v-else-if="asset"
-                class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900"
-            >
-                <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                    <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300" v-text="badge"></span>
-                    <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate" v-text="asset.file_name"></p>
-                    <span v-if="humanSize" class="shrink-0 text-xs text-gray-400 dark:text-gray-500 hidden sm:block" v-text="humanSize"></span>
-                    <button
-                        type="button"
-                        class="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
-                        @click="close"
-                        aria-label="@lang('dam::app.admin.dam.asset.edit.preview-modal.close')"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="flex flex-col items-center justify-center gap-4 p-8">
-                    <audio
-                        v-if="asset.file_type === 'audio'"
-                        :src="asset.preview_url"
-                        controls
-                        class="w-full"
-                    ></audio>
-
-                    <template v-else>
-                        <img :src="placeholder" :alt="asset.file_name" class="w-24 h-24 object-contain opacity-60" />
-                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
-                            @lang('dam::app.admin.dam.asset.edit.preview-modal.not-available')
-                        </p>
-                    </template>
-                </div>
-            </div>
+            <svg class="animate-spin h-10 w-10 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
         </div>
+
+        {{-- Full viewer — same template as edit page --}}
+        @include('dam::asset.preview-modal.viewer-modal')
     </script>
 
     <script type="module">
@@ -167,120 +37,116 @@
                 return {
                     isOpen:    false,
                     isLoading: false,
-                    asset:     null,
 
-                    // Image viewer state.
-                    zoom:        1,
-                    rotation:    0,
-                    panX:        0,
-                    panY:        0,
-                    isDragging:  false,
-                    dragStartX:  0,
-                    dragStartY:  0,
-                    panStartX:   0,
-                    panStartY:   0,
+                    previewData: {
+                        id:                    null,
+                        file_name:             '',
+                        extension:             '',
+                        extension_upper:       '',
+                        file_type:             '',
+                        mime_type:             '',
+                        path:                  '',
+                        width:                 '',
+                        height:                '',
+                        created_at:            '',
+                        updated_at:            '',
+                        mediaUrl:              '',
+                        previewPath:           '',
+                        placeholderSvg:        '',
+                        coverArtUrl:           null,
+                        typeColor:             'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+                        fileSize:              '',
+                        downloadUrl:           '',
+                        downloadCompressedUrl: '',
+                    },
 
                     showUrlTemplate: @js(route('admin.dam.assets.show', '__id__')),
-                    placeholders: {
-                        video:    @js(asset('storage/dam/preview/video.svg')),
-                        audio:    @js(asset('storage/dam/preview/audio.svg')),
-                        document: @js(asset('storage/dam/preview/file.svg')),
-                        default:  @js(asset('storage/dam/preview/unspecified.svg')),
-                    },
+
+                    ...window._damImageViewer.data,
+                    ...window._damVideoPlayer.data,
+                    ...window._damAudioPlayer.data,
                 };
             },
 
             computed: {
-                // Image, video and PDF use the wide modal; audio and every
-                // other type use the compact one.
-                isLargeLayout() {
-                    if (! this.asset) {
-                        return false;
-                    }
-
-                    return ['image', 'video'].includes(this.asset.file_type)
-                        || this.asset.extension === 'pdf';
-                },
-
-                badge() {
-                    return (this.asset?.extension || '').toUpperCase();
-                },
-
-                humanSize() {
-                    const bytes = this.asset?.file_size || 0;
-
-                    if (bytes >= 1048576) {
-                        return (bytes / 1048576).toFixed(2) + ' MB';
-                    }
-
-                    if (bytes >= 1024) {
-                        return (bytes / 1024).toFixed(1) + ' KB';
-                    }
-
-                    return bytes > 0 ? bytes + ' B' : '';
-                },
-
-                placeholder() {
-                    return this.placeholders[this.asset?.file_type] || this.placeholders.default;
-                },
-
-                transformStyle() {
-                    return `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom}) rotate(${this.rotation}deg)`;
-                },
-
-                zoomPercent() {
-                    return Math.round(this.zoom * 100);
-                },
+                ...window._damImageViewer.computed,
+                ...window._damVideoPlayer.computed,
+                ...window._damAudioPlayer.computed,
             },
 
             mounted() {
-                this.$emitter.on('dam-open-preview', this.open);
+                this.$emitter.on('dam-open-preview', this.openById);
 
                 window.addEventListener('keydown', this.handleEscape);
-                window.addEventListener('mousemove', this.onMouseMove);
-                window.addEventListener('mouseup', this.onMouseUp);
+
+                this.imgMounted();
+                this.videoMounted();
+                this.imgResetState();
+                this.videoResetState();
+                this.audioResetState();
+
+                this.$nextTick(() => {
+                    this.videoInitEl();
+                    this.audioInitEl();
+                });
             },
 
             beforeUnmount() {
                 window.removeEventListener('keydown', this.handleEscape);
-                window.removeEventListener('mousemove', this.onMouseMove);
-                window.removeEventListener('mouseup', this.onMouseUp);
+                this.imgBeforeUnmount();
+                this.videoBeforeUnmount();
                 document.body.style.overflow = '';
             },
 
             methods: {
-                /**
-                 * Open the modal and load the requested asset's preview data.
-                 * `admin.dam.assets.show` returns the asset under `data.asset`
-                 * plus `previewPath` (URL for the preview render). We flatten
-                 * it into a single `asset` object the template can consume.
-                 */
-                open(id) {
-                    this.asset     = null;
-                    this.isLoading = true;
-                    this.isOpen    = true;
-                    this.resetView();
+                ...window._damImageViewer.methods,
+                ...window._damVideoPlayer.methods,
+                ...window._damAudioPlayer.methods,
 
+                _formatTime(s) {
+                    if (!s || isNaN(s)) return '0:00';
+                    const m = Math.floor(s / 60);
+                    return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+                },
+
+                openById(id) {
+                    this.isLoading = true;
+                    this.imgResetState();
+                    this.videoResetState();
+                    this.audioResetState();
                     document.body.style.overflow = 'hidden';
 
                     this.$axios.get(this.showUrlTemplate.replace('__id__', id))
                         .then(response => {
                             const payload = response.data || {};
-                            const asset = payload.asset || {};
+                            const asset   = payload.asset || {};
 
-                            this.asset = {
-                                id:           asset.id,
-                                file_name:    asset.file_name,
-                                file_type:    asset.file_type,
-                                file_size:    asset.file_size,
-                                mime_type:    asset.mime_type,
-                                extension:    asset.extension,
-                                preview_url:  payload.previewPath || payload.mediaUrl || '',
+                            this.previewData = {
+                                id:                    asset.id,
+                                file_name:             asset.file_name,
+                                extension:             asset.extension || '',
+                                extension_upper:       (asset.extension || '').toUpperCase(),
+                                file_type:             asset.file_type,
+                                mime_type:             asset.mime_type,
+                                path:                  asset.path,
+                                width:                 payload.width ?? '',
+                                height:                payload.height ?? '',
+                                created_at:            payload.createdAtFormatted ?? '',
+                                updated_at:            payload.updatedAtFormatted ?? '',
+                                mediaUrl:              payload.mediaUrl || '',
+                                previewPath:           payload.previewPath || '',
+                                placeholderSvg:        payload.placeholderSvg || '',
+                                coverArtUrl:           payload.coverArtUrl || null,
+                                typeColor:             payload.typeColor || 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+                                fileSize:              payload.fileSize || '',
+                                downloadUrl:           payload.downloadUrl || '',
+                                downloadCompressedUrl: payload.downloadCompressedUrl || '',
                             };
+
+                            this.openPreview();
                         })
                         .catch(error => {
-                            this.close();
-
+                            document.body.style.overflow = '';
                             this.$emitter.emit('add-flash', {
                                 type:    'error',
                                 message: error.response?.data?.message || error.message,
@@ -291,60 +157,140 @@
                         });
                 },
 
-                close() {
+                openPreview() {
+                    this.isOpen = true;
+                    this.$nextTick(() => {
+                        this.videoInitEl();
+                        this.audioInitEl();
+                        this.autoplayMedia();
+                    });
+                },
+
+                autoplayMedia() {
+                    const tryPlay = (el) => {
+                        if (!el) return;
+                        const p = el.play();
+                        if (p && typeof p.catch === 'function') {
+                            p.catch(() => { el.muted = true; el.play().catch(() => {}); });
+                        }
+                    };
+
+                    if (this.previewData?.file_type === 'video') {
+                        tryPlay(this.$refs.videoEl);
+                        this.videoIsPlaying = true;
+                    } else if (this.previewData?.file_type === 'audio') {
+                        tryPlay(this.$refs.audioEl);
+                        this.audioIsPlaying = true;
+                    }
+                },
+
+                closePreview() {
+                    this.videoStopOnClose();
+                    this.audioStopOnClose();
                     this.isOpen = false;
-                    this.asset  = null;
                     document.body.style.overflow = '';
-                },
-
-                resetView() {
-                    this.zoom       = 1;
-                    this.rotation   = 0;
-                    this.panX       = 0;
-                    this.panY       = 0;
-                    this.isDragging = false;
-                },
-
-                zoomIn()      { this.zoom = Math.min(10,  parseFloat((this.zoom + 0.25).toFixed(2))); },
-                zoomOut()     { this.zoom = Math.max(0.1, parseFloat((this.zoom - 0.25).toFixed(2))); },
-                rotateRight() { this.rotation = (this.rotation + 90) % 360; },
-                rotateLeft()  { this.rotation = (this.rotation - 90 + 360) % 360; },
-
-                onWheel(e) {
-                    const factor = e.deltaY < 0 ? 1.1 : 0.9;
-                    this.zoom = Math.min(10, Math.max(0.1, parseFloat((this.zoom * factor).toFixed(3))));
-                },
-
-                onMouseDown(e) {
-                    if (e.button !== 0) {
-                        return;
-                    }
-
-                    this.isDragging = true;
-                    this.dragStartX = e.clientX;
-                    this.dragStartY = e.clientY;
-                    this.panStartX  = this.panX;
-                    this.panStartY  = this.panY;
-                    e.preventDefault();
-                },
-
-                onMouseMove(e) {
-                    if (! this.isDragging) {
-                        return;
-                    }
-
-                    this.panX = this.panStartX + (e.clientX - this.dragStartX);
-                    this.panY = this.panStartY + (e.clientY - this.dragStartY);
-                },
-
-                onMouseUp() {
-                    this.isDragging = false;
                 },
 
                 handleEscape(e) {
                     if (e.key === 'Escape' && this.isOpen) {
-                        this.close();
+                        this.closePreview();
+                        return;
                     }
+
+                    if (!this.isOpen) return;
+
+                    const target = e.target;
+                    const tag    = target && target.tagName;
+                    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+
+                    const isVideoKey = this.$refs.videoEl && [' ', 'f', 'F', 'm', 'M', 'l', 'L', '+', '=', '-', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key);
+
+                    switch (e.key) {
+                        case ' ':
+                            if (this.$refs.videoEl)      { e.preventDefault(); this.videoTogglePlay(); }
+                            else if (this.$refs.audioEl) { e.preventDefault(); this.audioTogglePlay(); }
+                            break;
+                        case 'f': case 'F':
+                            if (this.$refs.videoEl) { e.preventDefault(); this.videoToggleFullscreen(); }
+                            break;
+                        case 'm': case 'M':
+                            if (this.$refs.videoEl)      this.videoToggleMute();
+                            else if (this.$refs.audioEl) this.audioToggleMute();
+                            break;
+                        case 'ArrowLeft':
+                            if (this.$refs.videoEl)      { e.preventDefault(); this.videoSkip(-5); }
+                            else if (this.$refs.audioEl) { e.preventDefault(); this.audioSkip(-5); }
+                            break;
+                        case 'ArrowRight':
+                            if (this.$refs.videoEl)      { e.preventDefault(); this.videoSkip(5); }
+                            else if (this.$refs.audioEl) { e.preventDefault(); this.audioSkip(5); }
+                            break;
+                        case 'ArrowUp':
+                            if (this.$refs.videoEl) {
+                                e.preventDefault();
+                                this.videoVolume = Math.min(1, Math.round((this.videoVolume + 0.1) * 10) / 10);
+                                this.$refs.videoEl.volume = this.videoVolume;
+                                if (this.videoIsMuted && this.videoVolume > 0) { this.videoIsMuted = false; this.$refs.videoEl.muted = false; }
+                                try { localStorage.setItem('dam_video_volume', this.videoVolume); } catch (_) {}
+                            } else if (this.$refs.audioEl) {
+                                e.preventDefault();
+                                this.audioVolume = Math.min(1, Math.round((this.audioVolume + 0.1) * 10) / 10);
+                                this.$refs.audioEl.volume = this.audioVolume;
+                                if (this.audioIsMuted && this.audioVolume > 0) { this.audioIsMuted = false; this.$refs.audioEl.muted = false; }
+                                try { localStorage.setItem('dam_audio_volume', this.audioVolume); } catch (_) {}
+                            }
+                            break;
+                        case 'ArrowDown':
+                            if (this.$refs.videoEl) {
+                                e.preventDefault();
+                                this.videoVolume = Math.max(0, Math.round((this.videoVolume - 0.1) * 10) / 10);
+                                this.$refs.videoEl.volume = this.videoVolume;
+                                try { localStorage.setItem('dam_video_volume', this.videoVolume); } catch (_) {}
+                            } else if (this.$refs.audioEl) {
+                                e.preventDefault();
+                                this.audioVolume = Math.max(0, Math.round((this.audioVolume - 0.1) * 10) / 10);
+                                this.$refs.audioEl.volume = this.audioVolume;
+                                try { localStorage.setItem('dam_audio_volume', this.audioVolume); } catch (_) {}
+                            }
+                            break;
+                        case '+': case '=':
+                            e.preventDefault();
+                            if (this.$refs.videoEl) {
+                                const vRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                                const vIdx   = vRates.indexOf(this.videoSpeed);
+                                if (vIdx < vRates.length - 1) this.setVideoSpeed(vRates[vIdx + 1]);
+                            } else if (this.$refs.audioEl) {
+                                const aRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                                const aIdx   = aRates.indexOf(this.audioSpeed);
+                                if (aIdx < aRates.length - 1) this.setAudioSpeed(aRates[aIdx + 1]);
+                            } else {
+                                this.imgZoomIn();
+                            }
+                            break;
+                        case '-':
+                            e.preventDefault();
+                            if (this.$refs.videoEl) {
+                                const vRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                                const vIdx   = vRates.indexOf(this.videoSpeed);
+                                if (vIdx > 0) this.setVideoSpeed(vRates[vIdx - 1]);
+                            } else if (this.$refs.audioEl) {
+                                const aRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                                const aIdx   = aRates.indexOf(this.audioSpeed);
+                                if (aIdx > 0) this.setAudioSpeed(aRates[aIdx - 1]);
+                            } else {
+                                this.imgZoomOut();
+                            }
+                            break;
+                        case 'r': case 'R': this.imgRotateRight(); break;
+                        case 'l': case 'L':
+                            if (this.$refs.videoEl)      this.videoToggleLoop();
+                            else if (this.$refs.audioEl) this.audioToggleLoop();
+                            else                         this.imgRotateLeft();
+                            break;
+                        case '0': this.imgReset(); break;
+                    }
+
+                    if (isVideoKey) this.videoShowControls();
                 },
             },
         });
