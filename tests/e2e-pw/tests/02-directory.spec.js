@@ -86,14 +86,14 @@ test.describe('DAM Directory Management', () => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
     await expect(adminPage.getByText('Add Directory')).toBeVisible();
-    await expect(adminPage.getByText('Upload Files')).toBeVisible();
+    await expect(adminPage.getByText('Upload Files', { exact: true })).toBeVisible();
   });
 
   test('Context menu has all expected actions', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
     await expect(adminPage.getByText('Add Directory')).toBeVisible();
-    await expect(adminPage.getByText('Upload Files')).toBeVisible();
+    await expect(adminPage.getByText('Upload Files', { exact: true })).toBeVisible();
     await expect(adminPage.getByText('Rename', { exact: true })).toBeVisible();
     await expect(adminPage.getByText('Delete', { exact: true })).toBeVisible();
     await expect(adminPage.getByText('Copy Directory Structured')).toBeVisible();
@@ -213,9 +213,8 @@ test.describe('DAM Directory Management', () => {
     const downloadZip = adminPage.getByText('Download Zip');
     await expect(downloadZip).toBeVisible({ timeout: 5000 });
 
-    // Use evaluate to native-click so Playwright doesn't block on navigation wait.
-    // Promise.all with click({ force }) still hangs when no download fires because
-    // the click promise internally waits for navigation to settle.
+    // Use evaluate to native-click: avoids Playwright's post-click navigation wait,
+    // which times out when the click triggers a file download rather than navigation.
     const downloadPromise = adminPage.waitForEvent('download', { timeout: 10000 }).catch(() => null);
     await downloadZip.evaluate((el) => el.click());
     const download = await downloadPromise;
