@@ -12,6 +12,7 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Share;
@@ -19,6 +20,8 @@ use Webkul\DAM\Repositories\ShareRepository;
 
 class SharedViewerController extends Controller
 {
+    use StreamsZipDownload;
+
     public function __construct(
         protected ShareRepository $shareRepository,
     ) {}
@@ -292,48 +295,14 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        $directoryIds = Directory::descendantsOf($directory->id)
-            ->pluck('id')
-            ->push($directory->id)
-            ->unique();
-
-        $assets = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))->get();
-
+        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
+        $files = Storage::disk($disk)->allFiles($folderPath);
         $zipName = Str::slug($directory->name ?: 'download').'.zip';
-        $tmpPath = sys_get_temp_dir().'/'.uniqid('dam_zip_').'.zip';
-
-        $zip = new \ZipArchive;
-        if ($zip->open($tmpPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            return abort(500);
-        }
-
-        $usedNames = [];
-        foreach ($assets as $asset) {
-            if (! Storage::disk($disk)->exists($asset->path)) {
-                continue;
-            }
-            $filename = $asset->file_name;
-            if (in_array($filename, $usedNames, true)) {
-                $info = pathinfo($filename);
-                $base = $info['filename'] ?? 'file';
-                $ext = isset($info['extension']) ? '.'.$info['extension'] : '';
-                $counter = 1;
-                do {
-                    $filename = $base.'_'.$counter.$ext;
-                    $counter++;
-                } while (in_array($filename, $usedNames, true));
-            }
-            $usedNames[] = $filename;
-            $zip->addFromString($filename, Storage::disk($disk)->get($asset->path));
-        }
-
-        $zip->close();
 
         $this->shareRepository->incrementDownload($share);
 
-        return response()->download($tmpPath, $zipName, ['Content-Type' => 'application/zip'])
-            ->deleteFileAfterSend(true);
+        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
     }
 
     /**

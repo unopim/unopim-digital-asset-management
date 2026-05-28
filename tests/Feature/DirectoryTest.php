@@ -170,14 +170,8 @@ it('downloads a zip archive of the directory files and folders', function () {
     $response = $this->get(route('admin.dam.directory.zip_download', ['id' => $directory->id]));
 
     $response->assertSuccessful();
-    $response->assertHeader('content-disposition');
-
-    $zipFileName = sprintf('%s.zip', $directory->name);
-    $zipFilePath = public_path($zipFileName);
-
-    $this->assertFileExists($zipFilePath);
-
-    unlink($zipFilePath);
+    $response->assertHeader('content-type', 'application/zip');
+    $response->assertHeader('content-disposition', 'attachment; filename="TestDirectory.zip"');
 });
 
 it('dispatches copy job when directory is copyable', function () {
