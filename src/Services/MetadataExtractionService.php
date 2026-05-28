@@ -46,7 +46,7 @@ class MetadataExtractionService
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             \Log::info(sprintf('MetadataExtractionService: detected mime "%s" for %s', $mime, $path));
 
-            if (AssetHelper::isForbiddenFile($ext, $mime)) {
+            if (AssetHelper::isForbiddenFile($ext, $mime, $originalFileName)) {
                 \Log::info(sprintf('MetadataExtractionService: skipping forbidden file (ext="%s", mime="%s") for %s', $ext, $mime, $path));
 
                 return [];

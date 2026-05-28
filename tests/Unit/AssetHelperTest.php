@@ -101,6 +101,14 @@ it('should not truncate file names at exactly 29 characters', function () {
     expect(AssetHelper::getDisplayFileName($exactName))->toBe($exactName);
 });
 
+it('should block OS metadata files by filename', function () {
+    expect(AssetHelper::isForbiddenFile(null, null, '.DS_Store'))->toBeTrue();
+    expect(AssetHelper::isForbiddenFile(null, null, '._.DS_Store'))->toBeTrue();
+    expect(AssetHelper::isForbiddenFile(null, null, 'Thumbs.db'))->toBeTrue();
+    expect(AssetHelper::isForbiddenFile(null, null, 'desktop.ini'))->toBeTrue();
+    expect(AssetHelper::isForbiddenFile(null, null, 'photo.png'))->toBeFalse();
+});
+
 it('should identify forbidden file extensions', function () {
     expect(AssetHelper::isForbiddenFile('php', null))->toBeTrue();
     expect(AssetHelper::isForbiddenFile('js', null))->toBeTrue();

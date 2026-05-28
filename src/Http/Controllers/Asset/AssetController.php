@@ -317,7 +317,7 @@ class AssetController extends Controller
                 $extension = strtolower($file->getClientOriginalExtension());
                 $mimeType = $file->getMimeType();
 
-                if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+                if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
                     throw new \Exception(trans('dam::app.admin.dam.index.directory.not-allowed'));
                 }
 
@@ -557,7 +557,7 @@ class AssetController extends Controller
                 $extension = strtolower($file->getClientOriginalExtension());
                 $mimeType = $file->getMimeType();
 
-                if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+                if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
                     $skippedCount++;
 
                     continue;
@@ -729,7 +729,7 @@ class AssetController extends Controller
         if ($file instanceof UploadedFile) {
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
-            if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('dam::app.admin.dam.index.directory.not-allowed', ['fileName' => $file->getClientOriginalName()]),
