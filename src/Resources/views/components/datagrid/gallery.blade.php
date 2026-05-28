@@ -226,7 +226,7 @@
 
             methods: {
                 getAssetSrc(record) {
-                    if (record.file_type === 'image') {
+                    if (record.path) {
                         return record.path;
                     }
 
