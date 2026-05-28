@@ -221,6 +221,7 @@
                     abortController: null,
                     treeBusy: false,
                     dropActiveCount: 0,
+                    localAccessibleIds: [...(this.accessibleIds || [])],
                 }
             },
 
@@ -229,7 +230,7 @@
                     if (this.aclBypass) return true;
                     if (! this.currentDirectory) return false;
 
-                    return this.accessibleIds.map(Number).includes(Number(this.currentDirectory.id));
+                    return this.localAccessibleIds.map(Number).includes(Number(this.currentDirectory.id));
                 },
             },
 
@@ -289,6 +290,13 @@
 
                 this.$emitter.on('dam:tree-busy', (busy) => {
                     this.treeBusy = !! busy;
+                });
+
+                this.$emitter.on('dam:directory-granted', (id) => {
+                    const numId = Number(id);
+                    if (! this.localAccessibleIds.map(Number).includes(numId)) {
+                        this.localAccessibleIds.push(numId);
+                    }
                 });
 
                 this.$emitter.on('dam:upload-files', (formData) => {
