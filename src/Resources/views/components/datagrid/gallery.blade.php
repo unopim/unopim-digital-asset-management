@@ -75,7 +75,12 @@
                             :key="record.id"
                         >
                             <!-- Card -->
-                            <div class="image-card relative overflow-hidden rounded-lg border border-gray-200 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900 transition-colors group">
+                            <div
+                                class="image-card relative overflow-hidden rounded-lg border border-gray-200 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900 transition-colors group{{ bouncer()->hasPermission('dam.asset.view') ? ' cursor-pointer' : '' }}"
+                                @if (bouncer()->hasPermission('dam.asset.view'))
+                                    @click="previewImage(record.id)"
+                                @endif
+                            >
                                 <!-- Thumbnail -->
                                 <img
                                     :src="getAssetSrc(record)"
