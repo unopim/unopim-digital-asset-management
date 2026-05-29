@@ -132,41 +132,47 @@ class AssetController extends Controller
 
         $tags = $this->assetTagRepository->all();
 
-        $asset = $this->getNextAndPreviousAssets($asset, $id);
+        $directory = $asset->directories()->first();
+        $directoryAncestors = $directory
+            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
+            : collect();
+
+        $asset = $this->getNextAndPreviousAssets($asset, $id, $directory);
 
         $assetModel = $this->assetRepository->model();
-        $assetPosition = $assetModel::where('id', '<=', $id)->count();
-        $assetTotal = $assetModel::count();
+        $scopedQuery = $directory
+            ? $assetModel::whereHas('directories', fn ($q) => $q->where('dam_directories.id', $directory->id))
+            : $assetModel::whereDoesntHave('directories');
+
+        $assetPosition = (clone $scopedQuery)->where('id', '<=', $id)->count();
+        $assetTotal = (clone $scopedQuery)->count();
 
         $bytes = (int) ($asset->file_size ?? 0);
         $fileSize = $bytes >= 1048576
             ? number_format($bytes / 1048576, 2).' MB'
             : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
 
-        $directory = $asset->directories()->first();
-        $directoryAncestors = $directory
-            ? $directory->ancestorsAndSelfAndDefaultOrder($directory->id)
-            : collect();
-
         return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors'));
     }
 
     /**
-     * Get next and previous assets based on the current asset ID.
+     * Get next and previous assets scoped to the asset's directory.
      *
      * @param  Asset  $asset
      * @param  int  $id
      * @return Asset
      */
-    protected function getNextAndPreviousAssets($asset, $id)
+    protected function getNextAndPreviousAssets($asset, $id, ?Directory $directory = null)
     {
         $assetModel = $this->assetRepository->model();
+        $dir = $directory ?? $asset->directories()->first();
 
-        $nextAsset = $assetModel::where('id', '>', $id)->orderBy('id', 'asc')->first();
-        $asset->nextAssetId = $nextAsset ? $nextAsset->id : null;
+        $scopedQuery = $dir
+            ? $assetModel::whereHas('directories', fn ($q) => $q->where('dam_directories.id', $dir->id))
+            : $assetModel::whereDoesntHave('directories');
 
-        $previousAsset = $assetModel::where('id', '<', $id)->orderBy('id', 'desc')->first();
-        $asset->previousAssetId = $previousAsset ? $previousAsset->id : null;
+        $asset->nextAssetId = (clone $scopedQuery)->where('id', '>', $id)->orderBy('id', 'asc')->value('id');
+        $asset->previousAssetId = (clone $scopedQuery)->where('id', '<', $id)->orderBy('id', 'desc')->value('id');
 
         return $asset;
     }
@@ -870,17 +876,21 @@ class AssetController extends Controller
             : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
 
         $assetModel = $this->assetRepository->model();
-        $nextAsset = $assetModel::where('id', '>', $id)->orderBy('id', 'asc')->first();
-        $prevAsset = $assetModel::where('id', '<', $id)->orderBy('id', 'desc')->first();
-        $assetPosition = $assetModel::where('id', '<=', $id)->count();
-        $assetTotal = $assetModel::count();
-
-        $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
-
         $showDirectory = $asset->directories()->first();
         $showAncestors = $showDirectory
             ? $showDirectory->ancestorsAndSelfAndDefaultOrder($showDirectory->id)
             : collect();
+
+        $scopedQuery = $showDirectory
+            ? $assetModel::whereHas('directories', fn ($q) => $q->where('dam_directories.id', $showDirectory->id))
+            : $assetModel::whereDoesntHave('directories');
+
+        $nextAsset = (clone $scopedQuery)->where('id', '>', $id)->orderBy('id', 'asc')->first();
+        $prevAsset = (clone $scopedQuery)->where('id', '<', $id)->orderBy('id', 'desc')->first();
+        $assetPosition = (clone $scopedQuery)->where('id', '<=', $id)->count();
+        $assetTotal = (clone $scopedQuery)->count();
+
+        $tags = $asset->tags()->get(['dam_tags.id', 'dam_tags.name']);
 
         return response()->json([
             'success'               => true,
