@@ -1,6 +1,6 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## Version 2.1.0 - Features & Enhancements
+## **Version 2.1.0** - UnoPim v2.1.0 Compatibility
 
 ### Features & Enhancements
 
