@@ -9,6 +9,7 @@ use Webkul\DAM\Http\Controllers\Asset\PropertyController;
 use Webkul\DAM\Http\Controllers\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\Asset\TagController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
+use Webkul\DAM\Http\Controllers\ConfigurationController;
 use Webkul\DAM\Http\Controllers\DAMController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
@@ -133,5 +134,13 @@ Route::group([
 
         Route::get('/get', 'fetchAssets')->name('admin.dam.asset_picker.get_assets');
     });
+
+    Route::controller(ConfigurationController::class)
+        ->prefix('configuration')
+        ->name('admin.dam.configuration.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'update')->name('update');
+        });
 
 });

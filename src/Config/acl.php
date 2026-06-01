@@ -231,5 +231,20 @@ return [
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.dam.shares.destroy',
         'sort'  => 3,
+    ], [
+        'key'   => 'dam.configuration',
+        'name'  => 'dam::app.admin.acl.configuration',
+        'route' => 'admin.dam.configuration.index',
+        'sort'  => 6,
+    ], [
+        'key'   => 'dam.configuration.index',
+        'name'  => 'dam::app.admin.acl.view',
+        'route' => 'admin.dam.configuration.index',
+        'sort'  => 1,
+    ], [
+        'key'   => 'dam.configuration.update',
+        'name'  => 'dam::app.admin.acl.edit',
+        'route' => 'admin.dam.configuration.update',
+        'sort'  => 2,
     ],
 ];

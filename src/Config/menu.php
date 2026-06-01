@@ -22,4 +22,11 @@ return [
         'sort'  => 2,
         'icon'  => '',
     ],
+    [
+        'key'   => 'dam.configuration',
+        'name'  => 'dam::app.admin.components.layouts.sidebar.configuration',
+        'route' => 'admin.dam.configuration.index',
+        'sort'  => 3,
+        'icon'  => '',
+    ],
 ];
