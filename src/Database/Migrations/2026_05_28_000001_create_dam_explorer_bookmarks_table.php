@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('dam_explorer_bookmarks', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedInteger('user_id');
             $table->unsignedBigInteger('directory_id');
             $table->string('name', 255);
             $table->unsignedSmallInteger('sort_order')->default(0);
