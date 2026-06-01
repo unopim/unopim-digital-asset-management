@@ -17,9 +17,11 @@
             <div>
                 {!! view_render_event('dam.admin.main.form.before') !!}
                     <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
-                        <!-- left sub component -->
-                        <div class="flex flex-col max-w-[360px] gap-5 h-full max-sm:w-full p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
-                            
+                        <!-- left side: stacked cards -->
+                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full">
+
+                            <!-- directories card -->
+                            <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 {!! view_render_event('dam.admin.main.form.directory.before') !!}
                                 <div class="flex flex-col gap-2">
                                     <div class="flex justify-between items-center gap-2">
@@ -35,23 +37,40 @@
                                 <div class="dark:bg-cherry-700 border-b dark:border-cherry-800"></div>
                                 @if (bouncer()->hasPermission('dam.directory.index'))
                                     <div class="flex flex-col gap-5">
-                                        <p class="text-base	text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
+                                        <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
                                             @lang('dam::app.admin.dam.index.directory.title')
                                         </p>
                                         <x-dam::tree.damdirectories />
                                     </div>
                                 @endif
                                 {!! view_render_event('dam.admin.main.form.directory.after') !!}
+                            </div>
+
+                            <!-- bookmarks card (separate component below directories) -->
+                            @if (config('dam.explorer.bookmarks_enabled'))
+                            <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-[160px]">
+                                <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
+                                    @lang('dam::app.admin.explorer.bookmarks.title')
+                                </p>
+                                <div class="dark:bg-cherry-700 border-b dark:border-cherry-800"></div>
+                                <x-dam::explorer.bookmarks />
+                            </div>
+                            @endif
+
                         </div>
 
                         <!-- right sub-component -->
                         <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
-                            <v-dam-upload
-                        :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
-                        :accessible-ids='@json(dam_accessible_dir_ids())'
-                    ></v-dam-upload>
-                            {!! view_render_event('dam.admin.main.form.grid.before') !!}
+                            @if (config('dam.explorer.enabled'))
+                                <x-dam::explorer.index />
+                            @else
+                                <v-dam-upload
+                                    :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
+                                    :accessible-ids='@json(dam_accessible_dir_ids())'
+                                ></v-dam-upload>
+                            @endif
+                            {!! view_render_event('dam.admin.main.form.grid.after') !!}
                         </div>
                     </div>
                 {!! view_render_event('dam.admin.main.form.after') !!}
