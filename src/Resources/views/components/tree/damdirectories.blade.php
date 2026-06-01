@@ -1059,6 +1059,23 @@
                 this.revealDirectory(id, silent);
             });
 
+            // Explorer navigation → expand + select in tree without looping back.
+            // Uses the proven revealDirectory path. __explorerSync guards setFilters
+            // so it skips emitting current-directory (which would loop back).
+            this.$emitter.on('dam:explorer-tree-sync', ({ id } = {}) => {
+                if (id == null) return;
+                if (! this.formattedItems || ! this.formattedItems[0]) {
+                    // Tree not loaded yet — piggyback on _pendingReveal so it runs once ready.
+                    this._pendingReveal = { id, silent: true };
+                    this.__explorerSync = true;
+                    return;
+                }
+                this.__explorerSync = true;
+                this.revealDirectory(id, true).finally(() => {
+                    this.__explorerSync = false;
+                });
+            });
+
             this.loadDirectories();
         },
 
@@ -1187,8 +1204,8 @@
                     return;
                 }
 
-                // Expand every ancestor (all but the last node).
-                for (let i = 0; i < path.length - 1; i++) {
+                // Expand every ancestor AND the target itself so its children are visible.
+                for (let i = 0; i < path.length; i++) {
                     this.$emitter.emit('current-item-expanded', path[i]);
                 }
 
@@ -1219,7 +1236,9 @@
                 let column = type == 'directory' ? 'directory_id' : 'directory_asset_id';
                 let value = [this.selectedItem.id];
 
-                this.$emitter.emit('current-directory', this.parentItem);
+                if (! this.__explorerSync) {
+                    this.$emitter.emit('current-directory', this.parentItem);
+                }
                 this.emitBreadcrumb(this.parentItem);
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:filter', {
@@ -1962,7 +1981,9 @@
                                 if (this._pendingReveal) {
                                     const { id, silent } = this._pendingReveal;
                                     this._pendingReveal = null;
-                                    this.revealDirectory(id, silent);
+                                    this.revealDirectory(id, silent).finally(() => {
+                                        this.__explorerSync = false;
+                                    });
                                 }
                             });
                         })
