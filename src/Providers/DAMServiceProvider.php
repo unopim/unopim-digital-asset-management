@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
@@ -17,7 +16,6 @@ use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
-use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
@@ -63,21 +61,9 @@ class DAMServiceProvider extends ServiceProvider
             return Limit::perMinute(20)->by('dl|'.$request->ip());
         });
 
-        // Load admin DB overrides so config values reflect UI settings before routes register
-        if (Schema::hasTable('dam_configuration')) {
-            DamConfiguration::all()->each(function ($row) {
-                $path = DamConfiguration::KEY_MAP[$row->key] ?? null;
-                if ($path) {
-                    config([$path => filter_var($row->value, FILTER_VALIDATE_BOOLEAN)]);
-                }
-            });
-        }
-
-        if (config('dam.explorer.enabled')) {
-            Route::middleware(['web', 'admin', 'dam'])
-                ->prefix(config('app.admin_url').'/dam')
-                ->group(__DIR__.'/../Routes/explorer-routes.php');
-        }
+        Route::middleware(['web', 'admin', 'dam'])
+            ->prefix(config('app.admin_url').'/dam')
+            ->group(__DIR__.'/../Routes/explorer-routes.php');
 
         Route::middleware('web')->group(__DIR__.'/../Routes/web.php');
 
