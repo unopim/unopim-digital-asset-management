@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => 'Risorse',
-                    'shares' => 'Link condivisi',
+                    'dam'           => 'DAM',
+                    'assets'        => 'Risorse',
+                    'shares'        => 'Link condivisi',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -249,16 +250,16 @@ return [
                         'share'               => 'Condividi',
                     ],
                     'share' => [
-                        'title'      => 'Share asset',
-                        'link'       => 'Shareable link',
-                        'copy'       => 'Copy',
-                        'copied'     => 'Link copied to clipboard',
-                        'expiry'     => 'Link expires after',
-                        'expiry-1d'  => '1 day',
-                        'expiry-7d'  => '7 days',
-                        'expiry-30d' => '30 days',
-                        'expires-on' => 'Expires on',
-                        'failed'     => 'Failed to generate share link.',
+                        'title'      => 'Condividi risorsa',
+                        'link'       => 'Link condivisibile',
+                        'copy'       => 'Copia',
+                        'copied'     => 'Link copiato negli appunti',
+                        'expiry'     => 'Il link scade dopo',
+                        'expiry-1d'  => '1 giorno',
+                        'expiry-7d'  => '7 giorni',
+                        'expiry-30d' => '30 giorni',
+                        'expires-on' => 'Scade il',
+                        'failed'     => 'Impossibile generare il link di condivisione.',
                     ],
                     'preview-modal' => [
                         'not-available' => 'Anteprima non disponibile per questo tipo di file.',
@@ -403,18 +404,6 @@ return [
                         'error-provider-no-images' => 'Questo fornitore di IA non supporta la generazione di immagini.',
                         'error-no-image-platform'  => 'Nessuna piattaforma IA con supporto per la generazione di immagini trovata. Configura una piattaforma OpenAI, Gemini o xAI.',
                     ],
-                    'share' => [
-                        'title'      => 'Condividi risorsa',
-                        'link'       => 'Link condivisibile',
-                        'copy'       => 'Copia',
-                        'copied'     => 'Link copiato negli appunti',
-                        'expiry'     => 'Il link scade dopo',
-                        'expiry-1d'  => '1 giorno',
-                        'expiry-7d'  => '7 giorni',
-                        'expiry-30d' => '30 giorni',
-                        'expires-on' => 'Scade il',
-                        'failed'     => 'Impossibile generare il link di condivisione.',
-                    ],
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -471,7 +460,7 @@ return [
                 'not-found'        => 'Link di condivisione non trovato.',
                 'revoked'          => 'Link di condivisione revocato.',
                 'already-revoked'  => 'Questo link di condivisione è già revocato.',
-                'reauthorized'     => "Link di condivisione riautorizzato — l'URL originale è di nuovo attiva.",
+                'reauthorized'     => 'Link di condivisione riautorizzato — l\'URL originale è di nuovo attiva.',
                 'not-revoked'      => 'Questo collegamento di condivisione non è revocato.',
                 'deleted'          => 'Link di condivisione eliminato.',
                 'updated'          => 'Link di condivisione aggiornato.',
@@ -518,7 +507,7 @@ return [
                     'reauthorize-failed' => 'Impossibile riautorizzare il collegamento di condivisione.',
                     'reauthorizing'      => 'Riautorizzazione…',
                     'revoked-status'     => 'Collegamento revocato',
-                    'revoked-notice'     => "Questo link è revocato. Riautorizza per rendere l'URL originale nuovamente attiva.",
+                    'revoked-notice'     => 'Questo link è revocato. Riautorizza per rendere l\'URL originale nuovamente attiva.',
                 ],
                 'index' => [
                     'title'       => 'Link condivisi',
@@ -544,6 +533,26 @@ return [
                     'revoke'         => 'Revoca',
                     'custom-name'    => 'Custom Name',
                     'delete'         => 'Delete',
+                ],
+            ],
+        ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
                 ],
             ],
         ],
@@ -590,6 +599,7 @@ return [
             'assets'           => 'Risorse',
             'shares'           => 'Link condivisi',
             'revoke'           => 'Revoca',
+            'configuration'    => 'Configuration',
         ],
         'permissions' => [
             'title'            => 'Permessi della directory DAM',
@@ -617,7 +627,82 @@ return [
             ],
         ],
         'errors' => [
-            '401' => 'Questa azione non è autorizzata.',
+            401 => 'Questa azione non è autorizzata.',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
     'share' => [

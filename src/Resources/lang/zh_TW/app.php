@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => '資產',
-                    'shares' => '共享連結',
+                    'dam'           => 'DAM',
+                    'assets'        => '資產',
+                    'shares'        => '共享連結',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -249,16 +250,16 @@ return [
                         'share'               => '共享',
                     ],
                     'share' => [
-                        'title'      => 'Share asset',
-                        'link'       => 'Shareable link',
-                        'copy'       => 'Copy',
-                        'copied'     => 'Link copied to clipboard',
-                        'expiry'     => 'Link expires after',
-                        'expiry-1d'  => '1 day',
-                        'expiry-7d'  => '7 days',
-                        'expiry-30d' => '30 days',
-                        'expires-on' => 'Expires on',
-                        'failed'     => 'Failed to generate share link.',
+                        'title'      => '共享資產',
+                        'link'       => '共享連結',
+                        'copy'       => '複製',
+                        'copied'     => '連結已複製到剪貼簿',
+                        'expiry'     => '連結到期時間',
+                        'expiry-1d'  => '1天',
+                        'expiry-7d'  => '7天',
+                        'expiry-30d' => '30天',
+                        'expires-on' => '到期日期',
+                        'failed'     => '產生共享連結失敗。',
                     ],
                     'preview-modal' => [
                         'not-available' => '此檔案類型不支援預覽。',
@@ -403,18 +404,6 @@ return [
                         'error-provider-no-images' => '此AI提供商不支援圖像生成。',
                         'error-no-image-platform'  => '未找到支援圖像生成的AI平台。請設定OpenAI、Gemini或xAI平台。',
                     ],
-                    'share' => [
-                        'title'      => '共享資產',
-                        'link'       => '共享連結',
-                        'copy'       => '複製',
-                        'copied'     => '連結已複製到剪貼簿',
-                        'expiry'     => '連結到期時間',
-                        'expiry-1d'  => '1天',
-                        'expiry-7d'  => '7天',
-                        'expiry-30d' => '30天',
-                        'expires-on' => '到期日期',
-                        'failed'     => '產生共享連結失敗。',
-                    ],
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -547,6 +536,26 @@ return [
                 ],
             ],
         ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                ],
+            ],
+        ],
         'catalog' => [
             'attributes' => [
                 'type' => [
@@ -590,6 +599,7 @@ return [
             'assets'           => '資產',
             'shares'           => '共享連結',
             'revoke'           => '撤銷',
+            'configuration'    => 'Configuration',
         ],
         'permissions' => [
             'title'            => 'DAM目錄權限',
@@ -617,7 +627,82 @@ return [
             ],
         ],
         'errors' => [
-            '401' => '此操作未經授權。',
+            401 => '此操作未經授權。',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
     'share' => [

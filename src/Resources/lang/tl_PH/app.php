@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => 'Mga Asset',
-                    'shares' => 'Mga Shared na Link',
+                    'dam'           => 'DAM',
+                    'assets'        => 'Mga Asset',
+                    'shares'        => 'Mga Shared na Link',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -249,16 +250,16 @@ return [
                         'share'               => 'Ibahagi',
                     ],
                     'share' => [
-                        'title'      => 'Share asset',
-                        'link'       => 'Shareable link',
-                        'copy'       => 'Copy',
-                        'copied'     => 'Link copied to clipboard',
-                        'expiry'     => 'Link expires after',
-                        'expiry-1d'  => '1 day',
-                        'expiry-7d'  => '7 days',
-                        'expiry-30d' => '30 days',
-                        'expires-on' => 'Expires on',
-                        'failed'     => 'Failed to generate share link.',
+                        'title'      => 'Ibahagi ang asset',
+                        'link'       => 'Link para ibahagi',
+                        'copy'       => 'Kopyahin',
+                        'copied'     => 'Nakopya ang link sa clipboard',
+                        'expiry'     => 'Mag-expire ang link pagkatapos ng',
+                        'expiry-1d'  => '1 araw',
+                        'expiry-7d'  => '7 araw',
+                        'expiry-30d' => '30 araw',
+                        'expires-on' => 'Mag-e-expire sa',
+                        'failed'     => 'Nabigo ang paglikha ng share link.',
                     ],
                     'preview-modal' => [
                         'not-available' => 'Hindi available ang preview para sa uri ng file na ito.',
@@ -403,18 +404,6 @@ return [
                         'error-provider-no-images' => 'Hindi sinusuportahan ng AI provider na ito ang paglikha ng larawan.',
                         'error-no-image-platform'  => 'Walang AI platform na may suporta sa paglikha ng larawan ang natagpuan. Mag-configure ng OpenAI, Gemini, o xAI platform.',
                     ],
-                    'share' => [
-                        'title'      => 'Ibahagi ang asset',
-                        'link'       => 'Link para ibahagi',
-                        'copy'       => 'Kopyahin',
-                        'copied'     => 'Nakopya ang link sa clipboard',
-                        'expiry'     => 'Mag-expire ang link pagkatapos ng',
-                        'expiry-1d'  => '1 araw',
-                        'expiry-7d'  => '7 araw',
-                        'expiry-30d' => '30 araw',
-                        'expires-on' => 'Mag-e-expire sa',
-                        'failed'     => 'Nabigo ang paglikha ng share link.',
-                    ],
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -547,6 +536,26 @@ return [
                 ],
             ],
         ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                ],
+            ],
+        ],
         'catalog' => [
             'attributes' => [
                 'type' => [
@@ -590,6 +599,7 @@ return [
             'assets'           => 'Mga Asset',
             'shares'           => 'Mga Shared na Link',
             'revoke'           => 'Bawiin',
+            'configuration'    => 'Configuration',
         ],
         'permissions' => [
             'title'            => 'Mga Pahintulot sa DAM Direktoryo',
@@ -617,7 +627,82 @@ return [
             ],
         ],
         'errors' => [
-            '401' => 'Hindi awtorisado ang aksyong ito.',
+            401 => 'Hindi awtorisado ang aksyong ito.',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
     'share' => [

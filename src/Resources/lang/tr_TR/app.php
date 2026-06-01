@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => 'Varlıklar',
-                    'shares' => 'Paylaşılan Bağlantılar',
+                    'dam'           => 'DAM',
+                    'assets'        => 'Varlıklar',
+                    'shares'        => 'Paylaşılan Bağlantılar',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -249,16 +250,16 @@ return [
                         'share'               => 'Paylaş',
                     ],
                     'share' => [
-                        'title'      => 'Share asset',
-                        'link'       => 'Shareable link',
-                        'copy'       => 'Copy',
-                        'copied'     => 'Link copied to clipboard',
-                        'expiry'     => 'Link expires after',
-                        'expiry-1d'  => '1 day',
-                        'expiry-7d'  => '7 days',
-                        'expiry-30d' => '30 days',
-                        'expires-on' => 'Expires on',
-                        'failed'     => 'Failed to generate share link.',
+                        'title'      => 'Varlığı paylaş',
+                        'link'       => 'Paylaşılabilir bağlantı',
+                        'copy'       => 'Kopyala',
+                        'copied'     => 'Bağlantı panoya kopyalandı',
+                        'expiry'     => 'Bağlantı şu süre sonra sona erer',
+                        'expiry-1d'  => '1 gün',
+                        'expiry-7d'  => '7 gün',
+                        'expiry-30d' => '30 gün',
+                        'expires-on' => 'Son kullanma tarihi',
+                        'failed'     => 'Paylaşım bağlantısı oluşturulamadı.',
                     ],
                     'preview-modal' => [
                         'not-available' => 'Bu dosya türü için önizleme mevcut değil.',
@@ -403,18 +404,6 @@ return [
                         'error-provider-no-images' => 'Bu AI sağlayıcısı görüntü oluşturmayı desteklemiyor.',
                         'error-no-image-platform'  => 'Görüntü oluşturma desteği olan AI platformu bulunamadı. Bir OpenAI, Gemini veya xAI platformu yapılandırın.',
                     ],
-                    'share' => [
-                        'title'      => 'Varlığı paylaş',
-                        'link'       => 'Paylaşılabilir bağlantı',
-                        'copy'       => 'Kopyala',
-                        'copied'     => 'Bağlantı panoya kopyalandı',
-                        'expiry'     => 'Bağlantı şu süre sonra sona erer',
-                        'expiry-1d'  => '1 gün',
-                        'expiry-7d'  => '7 gün',
-                        'expiry-30d' => '30 gün',
-                        'expires-on' => 'Son kullanma tarihi',
-                        'failed'     => 'Paylaşım bağlantısı oluşturulamadı.',
-                    ],
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -518,7 +507,7 @@ return [
                     'reauthorize-failed' => 'Paylaşım bağlantısı yeniden yetkilendirilemedi.',
                     'reauthorizing'      => 'Yeniden yetkilendiriliyor…',
                     'revoked-status'     => 'Bağlantı iptal edildi',
-                    'revoked-notice'     => "Bu bağlantı iptal edildi. Orijinal URL'yi tekrar aktif hale getirmek için yeniden yetkilendirin.",
+                    'revoked-notice'     => 'Bu bağlantı iptal edildi. Orijinal URL\'yi tekrar aktif hale getirmek için yeniden yetkilendirin.',
                 ],
                 'index' => [
                     'title'       => 'Paylaşılan Bağlantılar',
@@ -544,6 +533,26 @@ return [
                     'revoke'         => 'İptal et',
                     'custom-name'    => 'Custom Name',
                     'delete'         => 'Delete',
+                ],
+            ],
+        ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
                 ],
             ],
         ],
@@ -590,6 +599,7 @@ return [
             'assets'           => 'Varlıklar',
             'shares'           => 'Paylaşılan Bağlantılar',
             'revoke'           => 'İptal et',
+            'configuration'    => 'Configuration',
         ],
         'permissions' => [
             'title'            => 'DAM Dizin İzinleri',
@@ -617,7 +627,82 @@ return [
             ],
         ],
         'errors' => [
-            '401' => 'Bu işlem için yetkiniz yok.',
+            401 => 'Bu işlem için yetkiniz yok.',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
     'share' => [

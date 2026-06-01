@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => '자산',
-                    'shares' => '공유 링크',
+                    'dam'           => 'DAM',
+                    'assets'        => '자산',
+                    'shares'        => '공유 링크',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -249,16 +250,16 @@ return [
                         'share'               => '공유',
                     ],
                     'share' => [
-                        'title'      => 'Share asset',
-                        'link'       => 'Shareable link',
-                        'copy'       => 'Copy',
-                        'copied'     => 'Link copied to clipboard',
-                        'expiry'     => 'Link expires after',
-                        'expiry-1d'  => '1 day',
-                        'expiry-7d'  => '7 days',
-                        'expiry-30d' => '30 days',
-                        'expires-on' => 'Expires on',
-                        'failed'     => 'Failed to generate share link.',
+                        'title'      => '자산 공유',
+                        'link'       => '공유 링크',
+                        'copy'       => '복사',
+                        'copied'     => '클립보드에 링크가 복사되었습니다',
+                        'expiry'     => '링크 만료 기간',
+                        'expiry-1d'  => '1일',
+                        'expiry-7d'  => '7일',
+                        'expiry-30d' => '30일',
+                        'expires-on' => '만료 날짜',
+                        'failed'     => '공유 링크 생성에 실패했습니다.',
                     ],
                     'preview-modal' => [
                         'not-available' => '이 파일 유형은 미리보기를 지원하지 않습니다.',
@@ -403,18 +404,6 @@ return [
                         'error-provider-no-images' => '이 AI 공급자는 이미지 생성을 지원하지 않습니다.',
                         'error-no-image-platform'  => '이미지 생성 지원이 있는 AI 플랫폼을 찾을 수 없습니다. OpenAI, Gemini 또는 xAI 플랫폼을 구성하십시오.',
                     ],
-                    'share' => [
-                        'title'      => '자산 공유',
-                        'link'       => '공유 링크',
-                        'copy'       => '복사',
-                        'copied'     => '클립보드에 링크가 복사되었습니다',
-                        'expiry'     => '링크 만료 기간',
-                        'expiry-1d'  => '1일',
-                        'expiry-7d'  => '7일',
-                        'expiry-30d' => '30일',
-                        'expires-on' => '만료 날짜',
-                        'failed'     => '공유 링크 생성에 실패했습니다.',
-                    ],
                 ],
                 'linked-resources' => [
                     'index' => [
@@ -547,6 +536,26 @@ return [
                 ],
             ],
         ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                ],
+            ],
+        ],
         'catalog' => [
             'attributes' => [
                 'type' => [
@@ -590,6 +599,7 @@ return [
             'assets'           => '자산',
             'shares'           => '공유 링크',
             'revoke'           => '취소',
+            'configuration'    => 'Configuration',
         ],
         'permissions' => [
             'title'            => 'DAM 디렉토리 권한',
@@ -617,7 +627,82 @@ return [
             ],
         ],
         'errors' => [
-            '401' => '이 작업은 권한이 없습니다.',
+            401 => '이 작업은 권한이 없습니다.',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
     'share' => [
