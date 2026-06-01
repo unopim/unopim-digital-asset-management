@@ -5,9 +5,10 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'    => 'DAM',
-                    'assets' => 'Assets',
-                    'shares' => 'Shared Links',
+                    'dam'           => 'DAM',
+                    'assets'        => 'Assets',
+                    'shares'        => 'Shared Links',
+                    'configuration' => 'Configuration',
                 ],
             ],
             'modal' => [
@@ -30,15 +31,12 @@ return [
                 'deleted'   => 'File deleted',
                 'not-found' => 'File not found',
             ],
-
             'image-edit' => [
                 'cannot-decode'  => 'Cannot decode image',
                 'preview-failed' => 'Preview failed',
             ],
-
             'index' => [
-                'title' => 'DAM',
-
+                'title'    => 'DAM',
                 'datagrid' => [
                     'file-name'      => 'File Name',
                     'tags'           => 'Tags',
@@ -49,17 +47,14 @@ return [
                     'extension'      => 'Extension',
                     'path'           => 'Path',
                 ],
-
                 'mass-action' => [
                     'deleting'   => 'Deleting :count assets…',
                     'processing' => 'Processing :count assets…',
                 ],
-
                 'move' => [
                     'directory' => 'Moving directory ":name"…',
                     'asset'     => 'Moving asset ":name"…',
                 ],
-
                 'directory' => [
                     'title'  => 'Directory',
                     'create' => [
@@ -68,11 +63,9 @@ return [
                         'file_name' => 'File Name',
                         'save-btn'  => 'Save Directory',
                     ],
-
                     'rename' => [
                         'title' => 'Rename Directory',
                     ],
-
                     'search' => [
                         'placeholder'     => 'Search directories...',
                         'no-matches'      => 'No matches',
@@ -81,14 +74,12 @@ return [
                         'count'           => ':shown of :total matches',
                         'count-total'     => ':total matches',
                     ],
-
                     'asset' => [
                         'rename' => [
                             'title'    => 'Rename Asset',
                             'save-btn' => 'Save Asset',
                         ],
                     ],
-
                     'actions' => [
                         'delete'                    => 'Delete',
                         'edit'                      => 'Edit',
@@ -108,11 +99,8 @@ return [
                         'get-by-id'                 => 'Get By Id',
                         'comment'                   => 'Comment',
                         'share'                     => 'Share Directory',
-
                     ],
-
                     'linked-resources'                          => 'Linked Resources',
-
                     'not-found'                                 => 'No directory found',
                     'created-success'                           => 'Directory created successfully',
                     'creation-failed'                           => 'Directory creation failed',
@@ -141,8 +129,6 @@ return [
                     'folder-upload-success'                     => 'Folder uploaded successfully.',
                     'folder-upload-partial'                     => 'Folder uploaded with :count file(s) skipped due to errors.',
                 ],
-
-                'title'                          => 'DAM',
                 'description'                    => 'Tool can help you organise, store, and manage all your media asset in one place',
                 'root'                           => 'Root',
                 'upload'                         => 'Upload',
@@ -166,8 +152,7 @@ return [
                     'index' => [
                         'title'      => 'Asset Properties',
                         'create-btn' => 'Create Property',
-
-                        'datagrid' => [
+                        'datagrid'   => [
                             'name'     => 'Name',
                             'type'     => 'Type',
                             'language' => 'Language',
@@ -175,7 +160,6 @@ return [
                             'edit'     => 'Edit',
                             'delete'   => 'Delete',
                         ],
-
                         'create' => [
                             'title'                  => 'Create Property',
                             'name'                   => 'Name',
@@ -192,13 +176,13 @@ return [
                         'edit' => [
                             'title' => 'Edit Property',
                         ],
-                        'delete-success'  => 'Asset Property Deleted Successfully',
-                        'delete-failed'   => 'Asset Property failed to delete',
-                        'create-success'  => 'Asset Property Created Successfully',
-                        'update-success'  => 'Asset Property Updated Successfully',
-                        'update-failure'  => 'Asset Property failed to update',
-                        'not-found'       => 'Property Not Found',
-                        'found-success'   => 'Property Found Successfully',
+                        'delete-success' => 'Asset Property Deleted Successfully',
+                        'delete-failed'  => 'Asset Property failed to delete',
+                        'create-success' => 'Asset Property Created Successfully',
+                        'update-success' => 'Asset Property Updated Successfully',
+                        'update-failure' => 'Asset Property failed to update',
+                        'not-found'      => 'Property Not Found',
+                        'found-success'  => 'Property Found Successfully',
                     ],
                 ],
                 'comments' => [
@@ -265,27 +249,25 @@ return [
                         'delete'              => 'Delete',
                         'share'               => 'Share',
                     ],
-
                     'share' => [
-                        'title'         => 'Share asset',
-                        'link'          => 'Shareable link',
-                        'copy'          => 'Copy',
-                        'copied'        => 'Link copied to clipboard',
-                        'expiry'        => 'Link expires after',
-                        'expiry-1d'     => '1 day',
-                        'expiry-7d'     => '7 days',
-                        'expiry-30d'    => '30 days',
-                        'expires-on'    => 'Expires on',
-                        'failed'        => 'Failed to generate share link.',
+                        'title'      => 'Share asset',
+                        'link'       => 'Shareable link',
+                        'copy'       => 'Copy',
+                        'copied'     => 'Link copied to clipboard',
+                        'expiry'     => 'Link expires after',
+                        'expiry-1d'  => '1 day',
+                        'expiry-7d'  => '7 days',
+                        'expiry-30d' => '30 days',
+                        'expires-on' => 'Expires on',
+                        'failed'     => 'Failed to generate share link.',
                     ],
-
                     'preview-modal' => [
-                        'not-available'   => 'Preview not available for this file type.',
-                        'download-file'   => 'Download File',
-                        'download-zip'    => 'Download as ZIP',
-                        'close'           => 'Close preview',
-                        'mime'            => 'MIME',
-                        'card'            => [
+                        'not-available' => 'Preview not available for this file type.',
+                        'download-file' => 'Download File',
+                        'download-zip'  => 'Download as ZIP',
+                        'close'         => 'Close preview',
+                        'mime'          => 'MIME',
+                        'card'          => [
                             'click-for-details' => 'Click for full details',
                             'preview'           => 'Preview',
                             'edit-image'        => 'Edit image',
@@ -314,7 +296,6 @@ return [
                             'open-in-new-tab'    => 'Open in New Tab',
                         ],
                     ],
-
                     'custom-download' => [
                         'title'              => 'Custom Download',
                         'format'             => 'Format',
@@ -323,8 +304,7 @@ return [
                         'height'             => 'Height (px)',
                         'height-placeholder' => '200',
                         'download-btn'       => 'Download',
-
-                        'extension-types' => [
+                        'extension-types'    => [
                             'jpg'      => 'JPG',
                             'png'      => 'PNG',
                             'jpeg'     => 'JPEG',
@@ -332,14 +312,12 @@ return [
                             'original' => 'Original',
                         ],
                     ],
-
                     'tag-already-exists'        => 'Tag already exists',
                     'image-source-not-readable' => 'Image source not readable',
                     'failed-to-read'            => 'Failed to read image metadata :exception',
                     'file-re-upload-success'    => 'Files Re-Uploaded Successfully.',
                     'image-processing-failed'   => 'Image processing failed: :message',
-
-                    'image-editor' => [
+                    'image-editor'              => [
                         'tools'                    => 'Tools',
                         'close'                    => 'Close editor',
                         'crop'                     => 'Crop & Resize',
@@ -477,7 +455,6 @@ return [
                     'download-link-ready'                 => 'Asset found. You can download the file from the provided link.',
                 ],
             ],
-
             'share' => [
                 'target-not-found' => 'The asset or directory being shared could not be found.',
                 'not-found'        => 'Share link not found.',
@@ -489,76 +466,93 @@ return [
                 'updated'          => 'Share link updated.',
                 'update-failed'    => 'Failed to update share link.',
                 'delete-failed'    => 'Failed to delete share link.',
-
-                'modal' => [
-                    'title-asset'           => 'Share asset',
-                    'title-directory'       => 'Share directory',
-                    'edit-title'            => 'Edit share link',
-                    'edit-name'             => 'Rename share',
-                    'unnamed-share'         => '(no custom name)',
-                    'name-label'            => 'Custom name',
-                    'name-hint'             => 'Leave blank to keep the original file / directory name as the label.',
-                    'save'                  => 'Save changes',
-                    'saving'                => 'Saving…',
-                    'cancel'                => 'Cancel',
-                    'create-new'            => 'Create a new share link',
-                    'expiry'                => 'Link expires after',
-                    'expiry-1d'             => '1 day',
-                    'expiry-7d'             => '7 days',
-                    'expiry-30d'            => '30 days',
-                    'expiry-365d'           => '1 year',
-                    'no-expiry'             => 'No expiry',
-                    'create'                => 'Generate link',
-                    'creating'              => 'Generating…',
-                    'active-links'          => 'Active links',
-                    'loading'               => 'Loading…',
-                    'no-active-links'       => 'No active share links for this item yet.',
-                    'copy'                  => 'Copy',
-                    'copied'                => 'Link copied to clipboard',
-                    'revoke'                => 'Revoke',
-                    'delete'                => 'Delete',
-                    'revoked'               => 'Share link revoked',
-                    'revoke-failed'         => 'Failed to revoke share link.',
-                    'expires-on'            => 'Expires on',
-                    'never-expires'         => 'Never expires',
-                    'views'                 => 'Views',
-                    'downloads'             => 'Downloads',
-                    'created'               => 'Share link created.',
-                    'create-failed'         => 'Failed to create share link.',
-                    'load-failed'           => 'Failed to load existing share links.',
-                    'advanced'              => 'Advanced',
-                    'revoked-status'        => 'Link revoked',
-                    'reauthorize'           => 'Reauthorize',
-                    'reauthorizing'         => 'Reauthorizing…',
-                    'reauthorize-failed'    => 'Failed to reauthorize share link.',
-                    'revoked-notice'        => 'This link is revoked. Reauthorize to make the original URL active again.',
+                'modal'            => [
+                    'title-asset'        => 'Share asset',
+                    'title-directory'    => 'Share directory',
+                    'edit-title'         => 'Edit share link',
+                    'edit-name'          => 'Rename share',
+                    'unnamed-share'      => '(no custom name)',
+                    'name-label'         => 'Custom name',
+                    'name-hint'          => 'Leave blank to keep the original file / directory name as the label.',
+                    'save'               => 'Save changes',
+                    'saving'             => 'Saving…',
+                    'cancel'             => 'Cancel',
+                    'create-new'         => 'Create a new share link',
+                    'expiry'             => 'Link expires after',
+                    'expiry-1d'          => '1 day',
+                    'expiry-7d'          => '7 days',
+                    'expiry-30d'         => '30 days',
+                    'expiry-365d'        => '1 year',
+                    'no-expiry'          => 'No expiry',
+                    'create'             => 'Generate link',
+                    'creating'           => 'Generating…',
+                    'active-links'       => 'Active links',
+                    'loading'            => 'Loading…',
+                    'no-active-links'    => 'No active share links for this item yet.',
+                    'copy'               => 'Copy',
+                    'copied'             => 'Link copied to clipboard',
+                    'revoke'             => 'Revoke',
+                    'delete'             => 'Delete',
+                    'revoked'            => 'Share link revoked',
+                    'revoke-failed'      => 'Failed to revoke share link.',
+                    'expires-on'         => 'Expires on',
+                    'never-expires'      => 'Never expires',
+                    'views'              => 'Views',
+                    'downloads'          => 'Downloads',
+                    'created'            => 'Share link created.',
+                    'create-failed'      => 'Failed to create share link.',
+                    'load-failed'        => 'Failed to load existing share links.',
+                    'advanced'           => 'Advanced',
+                    'revoked-status'     => 'Link revoked',
+                    'reauthorize'        => 'Reauthorize',
+                    'reauthorizing'      => 'Reauthorizing…',
+                    'reauthorize-failed' => 'Failed to reauthorize share link.',
+                    'revoked-notice'     => 'This link is revoked. Reauthorize to make the original URL active again.',
                 ],
-
                 'index' => [
                     'title'       => 'Shared Links',
                     'description' => 'All active and historical share links for assets and directories in the DAM.',
                 ],
-
                 'datagrid' => [
-                    'type'            => 'Type',
-                    'asset'           => 'Asset',
-                    'directory'       => 'Directory',
-                    'target'          => 'Target',
-                    'custom-name'     => 'Custom Name',
-                    'created-by'      => 'Created by',
-                    'expires-at'      => 'Expires at',
-                    'never'           => 'Never',
-                    'status'          => 'Status',
-                    'status-active'   => 'Active',
-                    'status-expired'  => 'Expired',
-                    'status-revoked'  => 'Revoked',
-                    'views'           => 'Views',
-                    'downloads'       => 'Downloads',
-                    'created-at'      => 'Created at',
-                    'edit'            => 'Edit',
-                    'copy-link'       => 'Copy link',
-                    'revoke'          => 'Revoke',
-                    'delete'          => 'Delete',
+                    'type'           => 'Type',
+                    'asset'          => 'Asset',
+                    'directory'      => 'Directory',
+                    'target'         => 'Target',
+                    'custom-name'    => 'Custom Name',
+                    'created-by'     => 'Created by',
+                    'expires-at'     => 'Expires at',
+                    'never'          => 'Never',
+                    'status'         => 'Status',
+                    'status-active'  => 'Active',
+                    'status-expired' => 'Expired',
+                    'status-revoked' => 'Revoked',
+                    'views'          => 'Views',
+                    'downloads'      => 'Downloads',
+                    'created-at'     => 'Created at',
+                    'edit'           => 'Edit',
+                    'copy-link'      => 'Copy link',
+                    'revoke'         => 'Revoke',
+                    'delete'         => 'Delete',
+                ],
+            ],
+        ],
+        'configuration' => [
+            'save-btn' => 'Save',
+            'title'    => 'DAM Configuration',
+            'saved'    => 'Configuration saved successfully.',
+            'general'  => [
+                'title'            => 'General Settings',
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
+                ],
+                'explorer-enabled' => [
+                    'label' => 'Enable Explorer View',
+                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                ],
+                'bookmarks-enabled' => [
+                    'label' => 'Enable Bookmarks Panel',
+                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
                 ],
             ],
         ],
@@ -574,41 +568,39 @@ return [
                 ],
             ],
         ],
-
         'acl' => [
-            'menu'                  => 'DAM',
-            'asset'                 => 'Asset',
-            'property'              => 'Property',
-            'comment'               => 'Comment',
-            'linked_resources'      => 'Linked Resources',
-            'meta_data'             => 'Embedded Meta Info',
-            'directory'             => 'Directory',
-            'tag'                   => 'Tag',
-            'create'                => 'Create',
-            'edit'                  => 'Edit',
-            'update'                => 'Update',
-            'delete'                => 'Delete',
-            'list'                  => 'List',
-            'view'                  => 'View',
-            'upload'                => 'Upload',
-            're_upload'             => 'Re-Upload',
-            'mass_update'           => 'Mass Update',
-            'mass_delete'           => 'Mass Delete',
-            'download'              => 'Download',
-            'custom_download'       => 'Custom Download',
-            'rename'                => 'Rename',
-            'move'                  => 'Move',
-            'copy'                  => 'Copy',
-            'copy-structure'        => 'Copy Directory Structure',
-            'download-zip'          => 'Download Zip',
-            'asset-assign'          => 'Assign Asset',
-            'share'                 => 'Share',
-            'assets'                => 'Assets',
-            'shares'                => 'Shared Links',
-            'revoke'                => 'Revoke',
-            'delete'                => 'Delete',
+            'menu'             => 'DAM',
+            'asset'            => 'Asset',
+            'property'         => 'Property',
+            'comment'          => 'Comment',
+            'linked_resources' => 'Linked Resources',
+            'meta_data'        => 'Embedded Meta Info',
+            'directory'        => 'Directory',
+            'tag'              => 'Tag',
+            'create'           => 'Create',
+            'edit'             => 'Edit',
+            'update'           => 'Update',
+            'delete'           => 'Delete',
+            'list'             => 'List',
+            'view'             => 'View',
+            'upload'           => 'Upload',
+            're_upload'        => 'Re-Upload',
+            'mass_update'      => 'Mass Update',
+            'mass_delete'      => 'Mass Delete',
+            'download'         => 'Download',
+            'custom_download'  => 'Custom Download',
+            'rename'           => 'Rename',
+            'move'             => 'Move',
+            'copy'             => 'Copy',
+            'copy-structure'   => 'Copy Directory Structure',
+            'download-zip'     => 'Download Zip',
+            'asset-assign'     => 'Assign Asset',
+            'share'            => 'Share',
+            'assets'           => 'Assets',
+            'shares'           => 'Shared Links',
+            'revoke'           => 'Revoke',
+            'configuration'    => 'Configuration',
         ],
-
         'permissions' => [
             'title'            => 'DAM Directory Permissions',
             'tab-subtitle'     => 'Directories this role can access.',
@@ -617,12 +609,10 @@ return [
             'all-directories'  => 'All Directories — grant access to every directory now and in the future',
             'inherit-children' => 'Inherit Sub-directories — automatically access all subdirectories within granted directories',
         ],
-
         'validation' => [
             'asset' => [
                 'required' => 'The :attribute field is required.',
             ],
-
             'comment' => [
                 'required' => 'The Comment message is required.',
             ],
@@ -636,12 +626,85 @@ return [
                 ],
             ],
         ],
-
         'errors' => [
-            '401' => 'This action is unauthorized.',
+            401 => 'This action is unauthorized.',
+        ],
+        'explorer' => [
+            'title'         => 'DAM Explorer',
+            'not-found'     => 'Directory not found.',
+            'access-denied' => 'You do not have access to this directory.',
+            'bookmarks'     => [
+                'title'     => 'Bookmarks',
+                'drag-hint' => 'Drag a folder here to bookmark it',
+                'max'       => 'Maximum 20 bookmarks reached.',
+                'stale'     => 'Folder no longer accessible — bookmark removed.',
+            ],
+            'tab' => [
+                'new'   => 'New Tab',
+                'close' => 'Close Tab',
+            ],
+            'sections' => [
+                'folders' => 'Folders',
+                'files'   => 'Files',
+                'folder'  => 'Folder',
+                'items'   => 'items',
+            ],
+            'view' => [
+                'grid' => 'Grid',
+                'list' => 'List',
+            ],
+            'folder-upload' => 'Upload Folder',
+            'clipboard'     => [
+                'ready'   => 'Ready to paste',
+                'dismiss' => 'Clear',
+            ],
+            'context' => [
+                'open'          => 'Open',
+                'open-new-tab'  => 'Open in new tab',
+                'bookmark'      => 'Add to Bookmarks',
+                'folder-upload' => 'Upload Folder',
+                'copy'          => 'Copy',
+                'paste'         => 'Paste',
+                'move-progress' => 'Move queued.',
+                'copy-progress' => 'Copy queued.',
+                'copy-done'     => 'Copied.',
+            ],
+            'folder' => [
+                'deleted' => 'This folder was deleted — returned to Root.',
+            ],
+            'search' => [
+                'placeholder' => 'Search files and folders…',
+            ],
+            'list' => [
+                'header' => [
+                    'name'     => 'Name',
+                    'type'     => 'Type',
+                    'size'     => 'Size',
+                    'modified' => 'Modified',
+                    'actions'  => 'Actions',
+                ],
+            ],
+            'pagination' => [
+                'per-page' => 'Per page:',
+            ],
+            'dialog' => [
+                'create-dir' => [
+                    'title'       => 'New Directory',
+                    'placeholder' => 'Directory name',
+                ],
+                'rename-dir' => [
+                    'title'       => 'Rename Directory',
+                    'placeholder' => 'New name',
+                ],
+                'rename-asset' => [
+                    'title'       => 'Rename File',
+                    'placeholder' => 'New name',
+                ],
+                'save'   => 'Save',
+                'cancel' => 'Cancel',
+            ],
         ],
     ],
-
     'share' => [
         'public' => [
             'app-name'              => 'DAM',
