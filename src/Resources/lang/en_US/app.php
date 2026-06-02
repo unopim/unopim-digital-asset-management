@@ -95,7 +95,7 @@ return [
                         'upload-folder'             => 'Upload Folder',
                         'upload-drop-hint'          => 'Drop files or folders here',
                         'upload-or'                 => 'or browse:',
-                        'copy-directory-structured' => 'Copy Directory Structured',
+                        'copy-directory-structured' => 'Copy Directory Structure',
                         'get-by-id'                 => 'Get By Id',
                         'comment'                   => 'Comment',
                         'share'                     => 'Share Directory',
