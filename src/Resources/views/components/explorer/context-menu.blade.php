@@ -209,7 +209,7 @@ app.component('v-dam-explorer-ctx', {
                 },
             });
         },
-        renameDir()   { this.$emitter.emit(`dam:explorer-rename-dir:${this.tabId}`, { dir: this.item }); this.close(); },
+        renameDir()   { this.$emitter.emit('dam:open-rename-dir', { item: this.item }); this.close(); },
         copyStructure() {
             const tabId = this.tabId;
             this.close();
@@ -238,7 +238,7 @@ app.component('v-dam-explorer-ctx', {
         share()       { this.close(); this.$emitter.emit('open-share-modal', { targetType:'directory', targetId: this.item.id }); },
         uploadHere()       { this.close(); this.$emitter.emit(`dam:explorer-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
         folderUploadHere() { this.close(); this.$emitter.emit(`dam:explorer-folder-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
-        createHere()       { this.close(); this.$emitter.emit(`dam:explorer-create-dir:${this.tabId}`, { parentId: this.item.id }); },
+        createHere()       { this.close(); this.$emitter.emit('dam:open-create-dir', { item: this.item }); },
         doCopy() {
             this.$emitter.emit(`dam:explorer-copy:${this.tabId}`, { item: this.item, type: this.itemType });
             this.close();
