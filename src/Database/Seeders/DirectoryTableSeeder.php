@@ -25,22 +25,22 @@ class DirectoryTableSeeder extends Seeder
     {
         $now = Carbon::now();
 
-        if (Directory::where('name', 'Root')->whereNull('parent_id')->exists()) {
-            return;
+        $rootExists = Directory::where('name', 'Root')->whereNull('parent_id')->exists();
+
+        if (! $rootExists) {
+            DB::table('dam_directories')->insert([
+                [
+                    '_lft'       => '1',
+                    '_rgt'       => '14',
+                    'name'       => 'Root',
+                    'parent_id'  => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            ]);
+
+            DatabaseSequenceHelper::fixSequence('dam_directories');
         }
-
-        DB::table('dam_directories')->insert([
-            [
-                '_lft'       => '1',
-                '_rgt'       => '14',
-                'name'       => 'Root',
-                'parent_id'  => null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ]);
-
-        DatabaseSequenceHelper::fixSequence('dam_directories');
 
         $newDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, 'Root');
         $disk = Directory::getAssetDisk();
@@ -49,11 +49,13 @@ class DirectoryTableSeeder extends Seeder
             Storage::disk($disk)->makeDirectory($newDirectory);
         }
 
-        // Back-fill root grants for every existing custom role. Runs here
-        // (in addition to the standalone back-fill migration) so fresh
-        // installs — where the back-fill migration runs BEFORE this seeder
-        // and finds no root — still get the grants created.
-        $this->backfillRootGrants();
+        if (! $rootExists) {
+            // Back-fill root grants for every existing custom role. Runs here
+            // (in addition to the standalone back-fill migration) so fresh
+            // installs — where the back-fill migration runs BEFORE this seeder
+            // and finds no root — still get the grants created.
+            $this->backfillRootGrants();
+        }
     }
 
     /**
