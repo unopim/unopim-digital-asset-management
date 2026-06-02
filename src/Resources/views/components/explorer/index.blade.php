@@ -1,3 +1,6 @@
+{{-- Ensure v-dam-drop-upload is registered before v-dam-tab mounts --}}
+<x-dam::asset.drop-upload />
+
 <v-dam-explorer
     :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
     :accessible-ids='@json(dam_accessible_dir_ids())'
@@ -17,142 +20,16 @@
 @endpush
 @endonce
 
-@once('v-dam-bookmarks')
-@push('scripts')
-<script type="text/x-template" id="v-dam-bookmarks-template">
-    <div
-        class="relative flex flex-col gap-1 h-full rounded-lg"
-        @dragover.prevent="dragOver = true"
-        @dragleave.self="dragOver = false"
-        @drop.prevent="onDrop($event)"
-    >
-        {{-- Root (always pinned, never removable) --}}
-        <div
-            class="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors"
-            :class="activeId === rootId ? 'bg-violet-50 dark:bg-violet-900/20' : 'hover:bg-gray-100 dark:hover:bg-cherry-800'"
-            @click="navigate({ id: rootId, name: rootName })"
-        >
-            <i class="icon-dam-folder text-lg text-violet-500"></i>
-            <span class="text-sm font-semibold text-violet-700 dark:text-violet-300 flex-1 truncate">@{{ rootName }}</span>
-            <span class="text-[10px] bg-violet-100 dark:bg-violet-900 text-violet-400 rounded-full px-1.5 py-px">pin</span>
-        </div>
-
-        {{-- User bookmarks --}}
-        <div
-            v-for="bm in bookmarks"
-            :key="bm.id"
-            class="group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors"
-            :class="activeId === bm.directory_id ? 'bg-violet-50 dark:bg-violet-900/20' : 'hover:bg-gray-100 dark:hover:bg-cherry-800'"
-            :data-bookmark-id="bm.id"
-            @click="navigate(bm)"
-        >
-            <i class="icon-dam-folder text-lg text-gray-400 dark:text-gray-300"></i>
-            <span class="text-sm text-gray-700 dark:text-gray-200 flex-1 truncate">@{{ bm.name }}</span>
-            <span
-                class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-base leading-none px-1 rounded transition-colors"
-                :data-remove-bookmark="bm.id"
-                @click.stop="remove(bm.id)"
-                title="Remove bookmark"
-            >×</span>
-        </div>
-
-        {{-- Drop overlay --}}
-        <div
-            v-if="dragOver"
-            class="absolute inset-0 rounded-lg border-2 border-dashed border-violet-400 bg-violet-50/80 dark:bg-violet-900/40 flex flex-col items-center justify-center gap-2 pointer-events-none"
-        >
-            <i class="icon-dam-folder text-3xl text-violet-400 dark:text-violet-500"></i>
-            <span class="text-xs font-semibold text-violet-600 dark:text-violet-300 text-center px-2">
-                @lang('dam::app.admin.explorer.bookmarks.drag-hint')
-            </span>
-        </div>
-    </div>
-</script>
-
-<script type="module">
-app.component('v-dam-bookmarks', {
-    template: '#v-dam-bookmarks-template',
-
-    data() {
-        return {
-            bookmarks: [],
-            rootId: null,
-            rootName: 'Root',
-            activeId: null,
-            dragOver: false,
-        };
-    },
-
-    mounted() {
-        this.loadBookmarks();
-        this.loadRoot();
-
-        this.$emitter.on('dam:explorer-navigate', ({ directoryId }) => {
-            this.activeId = directoryId;
-        });
-
-        this.$emitter.on('dam:add-bookmark', (dir) => {
-            this.add(dir);
-        });
-    },
-
-    methods: {
-        loadRoot() {
-            this.$axios.get("{{ route('admin.dam.directory.index') }}")
-                .then(({ data }) => {
-                    const root = Array.isArray(data.data) ? data.data[0] : null;
-                    if (root) { this.rootId = root.id; this.rootName = root.name; }
-                });
-        },
-
-        loadBookmarks() {
-            this.$axios.get("{{ route('admin.dam.explorer.bookmarks.index') }}")
-                .then(({ data }) => { this.bookmarks = data; })
-                .catch(() => { this.bookmarks = []; });
-        },
-
-        add(dir) {
-            if (dir.id === this.rootId || this.bookmarks.find(b => b.directory_id === dir.id)) return;
-            if (this.bookmarks.length >= 20) {
-                this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('dam::app.admin.explorer.bookmarks.max')" });
-                return;
-            }
-            this.$axios.post("{{ route('admin.dam.explorer.bookmarks.store') }}", { directory_id: dir.id, name: dir.name })
-                .then(({ data }) => { this.bookmarks.push(data); })
-                .catch(() => {});
-        },
-
-        remove(id) {
-            this.$axios.delete(`{{ route('admin.dam.explorer.bookmarks.destroy', ':id') }}`.replace(':id', id))
-                .then(() => { this.bookmarks = this.bookmarks.filter(b => b.id !== id); })
-                .catch(() => {});
-        },
-
-        navigate(bm) {
-            this.$emitter.emit('dam:explorer-navigate', { directoryId: bm.directory_id ?? bm.id, name: bm.name, source: 'bookmark' });
-        },
-
-        onDrop(event) {
-            this.dragOver = false;
-            try {
-                const data = JSON.parse(event.dataTransfer.getData('application/json'));
-                if (data.type === 'dam-folder') this.add({ id: data.id, name: data.name });
-            } catch {}
-        },
-    },
-});
-</script>
-@endpush
-@endonce
+{{-- v-dam-bookmarks is defined in bookmarks.blade.php — included below via asset/index.blade.php --}}
 
 @once('v-dam-explorer')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-template">
-    <div class="flex flex-col flex-1 min-h-0">
+    <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
 
         {{-- Tab bar --}}
         <div
-            class="flex items-end gap-0 bg-gray-100 dark:bg-cherry-950 border-b border-gray-200 dark:border-cherry-700 px-2 pt-1.5 overflow-x-auto flex-shrink-0"
+            class="flex items-end gap-0 bg-gray-100 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 px-2 pt-1.5 overflow-x-auto overflow-y-hidden flex-shrink-0"
             style="scrollbar-width: thin;"
         >
             <div
@@ -161,7 +38,7 @@ app.component('v-dam-bookmarks', {
                 class="flex items-center gap-1.5 px-3 py-1.5 min-w-[110px] max-w-[180px] flex-shrink-0 rounded-t-md border border-b-0 text-sm cursor-pointer select-none transition-colors"
                 :class="tab.id === activeTabId
                     ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
-                    : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800'"
+                    : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800 dark:text-white'"
                 @click="setActive(tab.id)"
             >
                 <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-violet-500' : 'text-gray-400'"></i>
@@ -188,7 +65,7 @@ app.component('v-dam-bookmarks', {
         {{-- this is inside a <script type="text/x-template"> — Blade cannot resolve --}}
         {{-- Blade component props that reference Vue runtime variables (tab.id etc.). --}}
         <template v-for="tab in tabs" :key="tab.id">
-            <div v-show="tab.id === activeTabId" class="flex flex-col flex-1 min-h-0">
+            <div v-show="tab.id === activeTabId" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <v-dam-tab
                     :tab-id="tab.id"
                     :initial-directory-id="tab.directoryId"
@@ -220,16 +97,11 @@ app.component('v-dam-explorer', {
     },
 
     mounted() {
-        this.restore();
-
-        // Handle ?directory_id=X deep-link: navigate first tab to specified directory
-        const params = new URLSearchParams(window.location.search);
-        const dirId  = params.get('directory_id');
-        if (dirId) {
-            this.$nextTick(() => {
-                this.$emitter.emit(`dam:tab-navigate:${this.activeTabId}`, { directoryId: Number(dirId) });
-            });
-        }
+        // Read the return-directory set by the asset edit page (stored in
+        // sessionStorage to avoid polluting the URL). Consumed once and cleared.
+        let dirId = null;
+        try { dirId = sessionStorage.getItem('dam_return_dir'); } catch {}
+        this.restore(dirId ? Number(dirId) : null);
 
         this.$emitter.on('dam:explorer-navigate', ({ directoryId, name, source }) => {
             if (source === 'bookmark') {
@@ -237,9 +109,14 @@ app.component('v-dam-explorer', {
             }
         });
 
+        this.$emitter.on('dam:suppress-nav-once', () => {
+            this._suppressNextNav = true;
+        });
+
         this.$emitter.on('current-directory', (item) => {
+            if (this._suppressNextNav) { this._suppressNextNav = false; return; }
             if (item && item.id != null) {
-                this.$emitter.emit(`dam:tab-navigate:${this.activeTabId}`, { directoryId: item.id, name: item.name });
+                this.$emitter.emit(`dam:tab-navigate:${this.activeTabId}`, { directoryId: item.id, name: item.name, fromTree: true });
             }
         });
 
@@ -273,8 +150,8 @@ app.component('v-dam-explorer', {
             return { id: this.uid(), directoryId, label, search: '', viewMode: 'grid', page: 1, perPage: 50 };
         },
 
-        restore() {
-            this.newTab();
+        restore(initialDirId = null) {
+            this.newTab(initialDirId);
         },
 
         newTab(directoryId = null, label = '…') {
@@ -313,7 +190,7 @@ app.component('v-dam-explorer', {
 @once('v-dam-tab')
 @push('scripts')
 <script type="text/x-template" id="v-dam-tab-template">
-    <div class="flex flex-col flex-1 min-h-0 p-4 gap-3">
+    <div class="flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
 
         {{-- Row 1: back/forward + breadcrumb + upload + new folder --}}
         <div class="flex items-center gap-2 flex-wrap">
@@ -357,70 +234,38 @@ app.component('v-dam-explorer', {
                 </template>
             </nav>
 
-            <div class="flex items-center gap-2 shrink-0">
-                @if (bouncer()->hasPermission('dam.asset.upload'))
-                <template v-if="canUploadHere">
-                    <input
-                        type="file" multiple name="files[]"
-                        :id="`explorer-upload-${tabId}`" class="hidden"
-                        :disabled="uploading"
-                        @change="onFileChange"
-                    />
-                    <label
-                        :for="`explorer-upload-${tabId}`"
-                        class="secondary-button cursor-pointer"
-                        :class="{ 'opacity-60 pointer-events-none': uploading }"
-                    >
-                        <svg v-if="uploading" class="animate-spin inline-block h-4 w-4 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                        <span v-else class="icon-dam-upload"></span>
-                        <span v-if="uploading">@lang('dam::app.admin.dam.index.uploading')</span>
-                        <span v-else>@lang('dam::app.admin.dam.index.upload')</span>
-                    </label>
-                    <button v-if="uploading" type="button" class="secondary-button" @click="cancelUpload">
-                        @lang('dam::app.admin.dam.index.cancel')
-                    </button>
-                </template>
-                @endif
-
-                @if (bouncer()->hasPermission('dam.asset.upload'))
-                <template v-if="canUploadHere">
-                    <input
-                        type="file" webkitdirectory multiple name="folder_files[]"
-                        :id="`explorer-folder-upload-${tabId}`" class="hidden"
-                        :disabled="folderUploading"
-                        @change="onFolderChange"
-                    />
-                    <label
-                        :for="`explorer-folder-upload-${tabId}`"
-                        class="secondary-button cursor-pointer"
-                        :class="{ 'opacity-60 pointer-events-none': folderUploading }"
-                    >
-                        <svg v-if="folderUploading" class="animate-spin inline-block h-4 w-4 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                        <span v-else class="icon-dam-add-folder"></span>
-                        <span v-if="folderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
-                        <span v-else>@lang('dam::app.admin.explorer.folder-upload')</span>
-                    </label>
-                    <button v-if="folderUploading" type="button" class="secondary-button" @click="cancelFolderUpload">
-                        @lang('dam::app.admin.dam.index.cancel')
-                    </button>
-                </template>
-                @endif
-
-                @if (bouncer()->hasPermission('dam.directory.store'))
-                <button
-                    v-if="canUploadHere"
-                    type="button"
-                    class="secondary-button"
-                    @click="openCreateDir"
-                >+ @lang('dam::app.admin.dam.index.directory.create.title')</button>
-                @endif
-            </div>
+            @if (bouncer()->hasPermission('dam.asset.upload'))
+            <template v-if="canUploadHere">
+                <input
+                    type="file" multiple name="files[]"
+                    :id="`explorer-upload-${tabId}`" class="hidden"
+                    :disabled="uploading"
+                    @change="onFileChange"
+                />
+                <input
+                    type="file" webkitdirectory multiple name="folder_files[]"
+                    :id="`explorer-folder-upload-${tabId}`" class="hidden"
+                    :disabled="folderUploading"
+                    @change="onFolderChange"
+                />
+                <label
+                    :for="`explorer-upload-${tabId}`"
+                    class="secondary-button cursor-pointer"
+                    :class="{ 'opacity-60 pointer-events-none': uploading || folderUploading }"
+                >
+                    <svg v-if="uploading || folderUploading" class="animate-spin inline-block h-4 w-4 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span v-else class="icon-dam-upload"></span>
+                    <span v-if="uploading || folderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
+                    <span v-else>@lang('dam::app.admin.dam.index.upload')</span>
+                </label>
+                <button v-if="uploading || folderUploading" type="button" class="secondary-button" @click="uploading ? cancelUpload() : cancelFolderUpload()">
+                    @lang('dam::app.admin.dam.index.cancel')
+                </button>
+            </template>
+            @endif
         </div>
 
         {{-- Row 2: search + filters button + view toggle --}}
@@ -479,26 +324,33 @@ app.component('v-dam-explorer', {
                 </x-slot:content>
             </x-admin::drawer>
 
+            <v-dam-explorer-pager
+                v-if="meta"
+                :current-page="meta.current_page ?? 1"
+                :last-page="meta.last_page ?? 1"
+                :per-page="perPage"
+                @page-change="onPage"
+                @per-page-change="onPerPage"
+            ></v-dam-explorer-pager>
+
             <div class="flex border border-gray-300 dark:border-cherry-600 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 shrink-0">
                 <button
                     type="button"
-                    class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors"
+                    class="flex items-center px-2.5 py-2 transition-colors"
                     :class="viewMode==='grid' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-cherry-800'"
                     @click="setView('grid')"
                     data-view="grid"
                 >
                     <svg width="13" height="13" viewBox="0 0 16 16" :fill="viewMode==='grid'?'#6d28d9':'#9ca3af'"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-                    @lang('dam::app.admin.explorer.view.grid')
                 </button>
                 <button
                     type="button"
-                    class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-l border-gray-200 dark:border-cherry-700 transition-colors"
+                    class="flex items-center px-2.5 py-2 border-l border-gray-200 dark:border-cherry-700 transition-colors"
                     :class="viewMode==='list' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-cherry-800'"
                     @click="setView('list')"
                     data-view="list"
                 >
                     <svg width="13" height="13" viewBox="0 0 16 16" :fill="viewMode==='list'?'#6d28d9':'#9ca3af'"><rect x="1" y="2" width="14" height="2.5" rx="1"/><rect x="1" y="6.75" width="14" height="2.5" rx="1"/><rect x="1" y="11.5" width="14" height="2.5" rx="1"/></svg>
-                    @lang('dam::app.admin.explorer.view.list')
                 </button>
             </div>
         </div>
@@ -559,47 +411,14 @@ app.component('v-dam-explorer', {
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
         </div>
 
-        {{-- Content area — drag zone wraps grid/list --}}
-        <div
-            class="flex-1 overflow-y-auto relative"
-            @dragenter.prevent="onDragEnter($event)"
-            @dragover.prevent
-            @dragleave="onDragLeave($event)"
-            @drop.prevent="onDrop($event)"
+        {{-- Content area — v-dam-drop-upload handles OS file/folder drops --}}
+        <v-dam-drop-upload
+            class="flex-1 overflow-y-auto"
+            :current-directory="currentDirId ? { id: currentDirId } : null"
+            :can-upload="canUploadHere"
+            @refresh-datagrid="fetch()"
         >
-            {{-- OS drop overlay (matches DAM's drop-upload style) --}}
-            <div
-                v-if="isDragOver"
-                class="absolute inset-0 z-50 backdrop-blur-sm border-2 border-dashed rounded-lg pointer-events-none"
-                :class="canUploadHere
-                    ? 'bg-white/90 dark:bg-cherry-800/95 border-violet-500 dark:border-violet-400'
-                    : 'bg-red-50/80 dark:bg-red-950/30 border-red-400 dark:border-red-500'"
-            ></div>
-            <div
-                v-if="isDragOver"
-                :style="hintCardStyle"
-                class="fixed z-[51] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 rounded-2xl px-10 py-8 shadow-lg pointer-events-none"
-                :class="canUploadHere
-                    ? 'bg-violet-50 dark:bg-violet-950/80 border border-violet-200 dark:border-violet-700'
-                    : 'bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-700'"
-            >
-                <template v-if="canUploadHere">
-                    <i class="icon-dam-upload text-6xl text-violet-500 dark:text-violet-400 block"></i>
-                    <p class="text-violet-700 dark:text-violet-300 font-semibold text-base text-center">
-                        @lang('dam::app.admin.dam.index.drop-zone-hint')
-                    </p>
-                </template>
-                <template v-else>
-                    <svg class="h-14 w-14 text-red-400 dark:text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                    </svg>
-                    <p class="text-red-600 dark:text-red-400 font-semibold text-base text-center">
-                        @lang('dam::app.admin.dam.index.drop-zone-no-permission')
-                    </p>
-                </template>
-            </div>
-
-            {{-- Upload blocking overlay (only for single-file button upload, not drop uploads which use the panel) --}}
+            {{-- Upload blocking overlay (button upload only) --}}
             <div
                 v-if="uploading"
                 class="absolute inset-0 z-40 bg-white/70 dark:bg-cherry-900/70 backdrop-blur-sm flex items-center justify-center rounded-lg pointer-events-all"
@@ -643,96 +462,7 @@ app.component('v-dam-explorer', {
                 @sort-change="onSort"
                 @refresh="fetch"
             ></v-dam-explorer-list>
-            <v-dam-explorer-pager
-                v-if="meta && meta.last_page > 1"
-                :current-page="meta.current_page"
-                :last-page="meta.last_page"
-                :per-page="meta.per_page"
-                @page-change="onPage"
-                @per-page-change="onPerPage"
-            ></v-dam-explorer-pager>
-        </div>
-
-        {{-- Upload progress panel (fixed bottom-right, mirrors DAM drop-upload style) --}}
-        <teleport to="body">
-            <div
-                v-if="dropUploads.length"
-                class="fixed bottom-4 ltr:right-8 rtl:left-8 z-[10005] w-[460px] rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600"
-            >
-                {{-- Header --}}
-                <div
-                    class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-violet-600 dark:bg-violet-700"
-                    @click="dropPanelMinimized = !dropPanelMinimized"
-                >
-                    <span class="text-sm font-semibold text-white truncate">@{{ dropPanelTitle }}</span>
-                    <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-                        <svg :class="dropPanelMinimized ? 'rotate-180' : ''" class="h-4 w-4 text-white/80 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                        <button type="button" class="p-1 text-white/80 hover:text-white rounded transition-colors" @click.stop="clearDropUploads">
-                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                {{-- Mini progress strip when minimized --}}
-                <div v-if="activeDropUploadCount > 0 && dropPanelMinimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
-                    <div class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300" :style="{ width: overallProgress + '%' }"></div>
-                </div>
-                {{-- Job rows --}}
-                <div v-if="!dropPanelMinimized" class="max-h-52 overflow-y-auto divide-y divide-gray-100 dark:divide-cherry-700 bg-white dark:bg-cherry-800">
-                    <div v-for="job in dropUploads" :key="job.id" class="flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-cherry-700/50 transition-colors">
-                        {{-- icon --}}
-                        <div class="flex-shrink-0 mt-0.5" v-html="dropJobIcon(job)"></div>
-                        {{-- name + path + progress --}}
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-800 dark:text-gray-100 truncate leading-snug">@{{ job.name }}</p>
-                            <p v-if="job.parentPath" class="text-xs text-gray-400 dark:text-gray-500 truncate leading-snug">@{{ job.parentPath }}</p>
-                            <p v-if="job.status === 'error'" class="text-xs text-red-500 truncate mt-0.5">@{{ job.error }}</p>
-                            <div v-else-if="job.status === 'uploading'" class="mt-1.5 h-1 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
-                                <div class="h-full bg-violet-600 dark:bg-violet-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
-                            </div>
-                            <p v-else-if="job.status === 'done'" class="text-xs text-gray-400 leading-snug">Upload complete</p>
-                            <p v-else-if="job.isFolder && job.status === 'creating'" class="text-xs text-gray-400 leading-snug">Creating…</p>
-                        </div>
-                        {{-- size --}}
-                        <div class="flex-shrink-0 text-xs text-gray-400 text-right pt-0.5 min-w-[52px]">
-                            <span v-if="!job.isFolder && job.fileSize && job.status !== 'error'">@{{ fmtDropSize(job.fileSize) }}</span>
-                        </div>
-                        {{-- status icon --}}
-                        <div class="flex-shrink-0 mt-0.5">
-                            <svg v-if="job.status === 'uploading' || job.status === 'creating'" class="animate-spin h-3.5 w-3.5 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                            </svg>
-                            <svg v-else-if="job.status === 'done'" class="h-3.5 w-3.5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <svg v-else-if="job.status === 'error'" class="h-3.5 w-3.5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                            </svg>
-                            <svg v-else class="h-3.5 w-3.5 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                {{-- Footer --}}
-                <div v-if="!dropPanelMinimized && fileJobCount > 0" class="px-4 py-2.5 border-t border-gray-100 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900/40">
-                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
-                        <span>@{{ uploadedCount }} of @{{ fileJobCount }} uploaded</span>
-                        <span>@{{ Math.round(overallProgress) }}%</span>
-                    </div>
-                    <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-300"
-                            :class="dropUploads.some(u => u.status === 'error') ? 'bg-red-500' : 'bg-violet-600 dark:bg-violet-500'"
-                            :style="{ width: overallProgress + '%' }"
-                        ></div>
-                    </div>
-                </div>
-            </div>
-        </teleport>
+        </v-dam-drop-upload>
     </div>
 </script>
 
@@ -770,22 +500,17 @@ app.component('v-dam-tab', {
             sortOrder:    'asc',
             page:         this.initialPage,
             perPage:      this.initialPerPage,
-            uploading:       false,
-            abort:           null,
-            folderUploading: false,
-            folderAbort:     null,
+            uploading:          false,
+            abort:              null,
+            folderUploading:    false,
+            folderAbort:        null,
+            localAccessibleIds: [...(this.accessibleIds || [])],
             debounce:        null,
             navHistory:   [],
             navIdx:       -1,
             dialog: { on: false, type: null, value: '', loading: false, extra: null },
             clipboard:          null,
             ctxTarget:          null,
-            isDragOver:         false,
-            dragCounter:        0,
-            hintCardStyle:      {},
-            dropUploads:        [],
-            dropPanelMinimized: false,
-            nextDropJobId:      1,
             available: {
                 id: 'dam-explorer',
                 columns: [
@@ -810,61 +535,16 @@ app.component('v-dam-tab', {
         canUploadHere() {
             if (this.aclBypass) return true;
             if (! this.currentDirId) return false;
-            return this.accessibleIds.map(Number).includes(Number(this.currentDirId));
+            return this.localAccessibleIds.map(Number).includes(Number(this.currentDirId));
         },
         canGoBack()    { return this.navIdx > 0; },
         canGoForward() { return this.navIdx < this.navHistory.length - 1; },
-        dialogTitle() {
-            const map = {
-                'create':       "@lang('dam::app.admin.explorer.dialog.create-dir.title')",
-                'rename-dir':   "@lang('dam::app.admin.explorer.dialog.rename-dir.title')",
-                'rename-asset': "@lang('dam::app.admin.explorer.dialog.rename-asset.title')",
-            };
-            return map[this.dialog.type] ?? '';
-        },
-        dialogPlaceholder() {
-            const map = {
-                'create':       "@lang('dam::app.admin.explorer.dialog.create-dir.placeholder')",
-                'rename-dir':   "@lang('dam::app.admin.explorer.dialog.rename-dir.placeholder')",
-                'rename-asset': "@lang('dam::app.admin.explorer.dialog.rename-asset.placeholder')",
-            };
-            return map[this.dialog.type] ?? '';
-        },
+        dialogTitle()       { return "@lang('dam::app.admin.explorer.dialog.rename-asset.title')"; },
+        dialogPlaceholder() { return "@lang('dam::app.admin.explorer.dialog.rename-asset.placeholder')"; },
         activeFilterCount() {
             return this.applied.filters.columns.filter(c =>
                 c.value && c.value.length > 0 && c.value.some(v => Array.isArray(v) ? v.some(Boolean) : Boolean(v))
             ).length;
-        },
-        activeDropUploadCount() {
-            return this.dropUploads.filter(u => u.status === 'uploading' || u.status === 'creating').length;
-        },
-        fileJobCount() {
-            return this.dropUploads.filter(u => ! u.isFolder).length;
-        },
-        overallProgress() {
-            const fileJobs = this.dropUploads.filter(u => ! u.isFolder);
-            if (fileJobs.length === 0) return 100;
-            const done     = fileJobs.filter(u => u.status === 'done').length;
-            const errors   = fileJobs.filter(u => u.status === 'error').length;
-            const active   = fileJobs.filter(u => u.status === 'uploading');
-            const progSum  = active.reduce((s, u) => s + u.progress, 0);
-            return Math.min(100, Math.round(((done + errors) * 100 + progSum) / fileJobs.length));
-        },
-        uploadedCount() {
-            return this.dropUploads.filter(u => ! u.isFolder && u.status === 'done').length;
-        },
-        dropPanelTitle() {
-            const fileJobs = this.dropUploads.filter(u => ! u.isFolder);
-            const total    = fileJobs.length;
-            const active   = this.activeDropUploadCount;
-            if (active > 0) {
-                const pct = this.dropPanelMinimized ? ` ${Math.round(this.overallProgress)}%` : '';
-                return `Uploading ${total} file${total !== 1 ? 's' : ''}…${pct}`;
-            }
-            const done    = fileJobs.filter(u => u.status === 'done').length;
-            const skipped = fileJobs.filter(u => u.status === 'error').length;
-            if (skipped > 0) return `${done} uploaded, ${skipped} failed`;
-            return `${done} of ${total} uploaded`;
         },
     },
 
@@ -885,9 +565,42 @@ app.component('v-dam-tab', {
             .catch(() => {});
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
+        this.$emitter.on(`dam:dir-deleted:${this.tabId}`, () => {
+            this.navHistory = this.navHistory.slice(0, this.navIdx + 1);
+        });
+        this.$emitter.on('dam:directory-mutated', () => this.fetch());
 
-        this.$emitter.on(`dam:tab-navigate:${this.tabId}`, ({ directoryId, name }) => {
-            this.goTo({ id: directoryId, name }, true);
+        // Tree "Upload files" → emit dam:upload-files with pre-built FormData
+        this.$emitter.on('dam:upload-files', (formData) => {
+            if (this.uploading) return;
+            this.uploading = true;
+            this.abort = new AbortController();
+            this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                signal: this.abort.signal,
+            }).then(() => {
+                this.fetch();
+                this.$emitter.emit('dam:tree-reload');
+                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
+            }).catch(err => {
+                if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
+                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
+                }
+            }).finally(() => { this.uploading = false; this.abort = null; });
+        });
+
+        // Tree folder upload state → mirror on explorer breadcrumb button
+        this.$emitter.on('dam:folder-upload-start', () => { this.folderUploading = true; });
+        this.$emitter.on('dam:folder-upload-end',   () => { this.folderUploading = false; });
+        this.$emitter.on('dam:directory-granted', (id) => {
+            const numId = Number(id);
+            if (! this.localAccessibleIds.map(Number).includes(numId)) {
+                this.localAccessibleIds.push(numId);
+            }
+        });
+
+        this.$emitter.on(`dam:tab-navigate:${this.tabId}`, ({ directoryId, name, fromTree }) => {
+            this.goTo({ id: directoryId, name }, true, false, fromTree);
         });
 
         this.$emitter.on(`dam:explorer-upload-here:${this.tabId}`, ({ directoryId }) => {
@@ -906,14 +619,6 @@ app.component('v-dam-tab', {
             this.$nextTick(() => {
                 document.getElementById(`explorer-folder-upload-${this.tabId}`)?.click();
             });
-        });
-
-        this.$emitter.on(`dam:explorer-create-dir:${this.tabId}`, ({ parentId }) => {
-            this.openDialog('create', '', { parentId });
-        });
-
-        this.$emitter.on(`dam:explorer-rename-dir:${this.tabId}`, ({ dir }) => {
-            this.openDialog('rename-dir', dir.name, { dir });
         });
 
         this.$emitter.on(`dam:explorer-rename-asset:${this.tabId}`, ({ asset }) => {
@@ -951,7 +656,14 @@ app.component('v-dam-tab', {
             this.executePaste(this.currentDirId);
         });
 
-        this.currentDirId ? this.fetch() : this.loadRoot();
+        if (this.currentDirId) {
+            // Sync tree to the current directory before it loads so that
+            // setDefaultSeletedItem (which navigates to root) is suppressed.
+            this.$emitter.emit('dam:explorer-tree-sync', { id: this.currentDirId });
+            this.fetch();
+        } else {
+            this.loadRoot();
+        }
     },
 
     methods: {
@@ -1024,12 +736,14 @@ app.component('v-dam-tab', {
                 const status = err?.response?.status;
                 if (status === 404 || status === 403) {
                     this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('dam::app.admin.explorer.folder.deleted')" });
+                    this.navHistory = [];
+                    this.navIdx = -1;
                     this.loadRoot();
                 }
             }).finally(() => { this.loading = false; });
         },
 
-        goTo(dir, isRoot = false, skipHistory = false) {
+        goTo(dir, isRoot = false, skipHistory = false, fromTree = false) {
             if (! dir?.id) return;
             this.currentDirId = dir.id;
             try { localStorage.setItem('dam_explorer_active_dir', dir.id); } catch {}
@@ -1060,7 +774,7 @@ app.component('v-dam-tab', {
             const label = this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
             this.$emit('tab-label-change', label);
             this.$emitter.emit('dam:explorer-navigate', { directoryId: dir.id });
-            this.$emitter.emit('dam:explorer-tree-sync', { id: dir.id });
+            this.$emitter.emit('dam:explorer-tree-sync', { id: dir.id, fromTree });
             this.fetch();
         },
 
@@ -1104,10 +818,6 @@ app.component('v-dam-tab', {
             this.$emitter.emit('dam:add-bookmark', { id: dir.id, name: dir.name });
         },
 
-        openCreateDir() {
-            this.openDialog('create', '', { parentId: this.currentDirId });
-        },
-
         openDialog(type, value, extra) {
             this.dialog = { on: true, type, value, loading: false, extra };
             this.$nextTick(() => { this.$refs.dialogInput?.focus(); });
@@ -1122,47 +832,18 @@ app.component('v-dam-tab', {
             if (! name || this.dialog.loading) return;
 
             this.dialog.loading = true;
-
-            if (this.dialog.type === 'create') {
-                const parentId = this.dialog.extra?.parentId ?? this.currentDirId;
-                this.$axios.post("{{ route('admin.dam.directory.store') }}", { name, parent_id: parentId })
-                    .then(({ data }) => {
-                        this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
-                        this.closeDialog();
-                        this.fetch();
-                    })
-                    .catch(err => {
-                        const msg = err?.response?.data?.errors?.name?.[0] ?? err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')";
-                        this.$emitter.emit('add-flash', { type: 'error', message: msg });
-                        this.dialog.loading = false;
-                    });
-            } else if (this.dialog.type === 'rename-dir') {
-                const dir = this.dialog.extra?.dir;
-                this.$axios.post("{{ route('admin.dam.directory.update') }}", { id: dir.id, name, parent_id: dir.parent_id ?? null })
-                    .then(({ data }) => {
-                        this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
-                        this.closeDialog();
-                        this.fetch();
-                    })
-                    .catch(err => {
-                        const msg = err?.response?.data?.errors?.name?.[0] ?? err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')";
-                        this.$emitter.emit('add-flash', { type: 'error', message: msg });
-                        this.dialog.loading = false;
-                    });
-            } else if (this.dialog.type === 'rename-asset') {
-                const asset = this.dialog.extra?.asset;
-                this.$axios.post("{{ route('admin.dam.assets.rename') }}", { id: asset.id, file_name: name })
-                    .then(({ data }) => {
-                        this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
-                        this.closeDialog();
-                        this.fetch();
-                    })
-                    .catch(err => {
-                        const msg = err?.response?.data?.errors?.file_name?.[0] ?? err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')";
-                        this.$emitter.emit('add-flash', { type: 'error', message: msg });
-                        this.dialog.loading = false;
-                    });
-            }
+            const asset = this.dialog.extra?.asset;
+            this.$axios.post("{{ route('admin.dam.assets.rename') }}", { id: asset.id, file_name: name })
+                .then(({ data }) => {
+                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
+                    this.closeDialog();
+                    this.fetch();
+                })
+                .catch(err => {
+                    const msg = err?.response?.data?.errors?.file_name?.[0] ?? err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')";
+                    this.$emitter.emit('add-flash', { type: 'error', message: msg });
+                    this.dialog.loading = false;
+                });
         },
 
         onSearch() {
@@ -1287,6 +968,7 @@ app.component('v-dam-tab', {
                 signal: this.abort.signal,
             }).then(() => {
                 this.fetch();
+                this.$emitter.emit('dam:tree-reload');
                 this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
             }).catch(err => {
                 if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
@@ -1297,194 +979,7 @@ app.component('v-dam-tab', {
 
         cancelUpload() { this.abort?.abort(); },
 
-        cancelFolderUpload() { this.folderAbort?.abort(); },
-
-        onDragEnter(e) {
-            if (! e.dataTransfer.types.includes('Files')) return;
-            this.dragCounter++;
-            this.isDragOver = true;
-            if (this.dragCounter === 1) {
-                const dragZone = e.currentTarget; // capture before nextTick — currentTarget becomes null after handler returns
-                this.$nextTick(() => {
-                    const el = dragZone || this.$el;
-                    if (! el) return;
-                    const rect   = el.getBoundingClientRect();
-                    const visTop = Math.max(rect.top, 0);
-                    const visBot = Math.min(rect.bottom, window.innerHeight);
-                    this.hintCardStyle = {
-                        top:  ((visTop + visBot) / 2) + 'px',
-                        left: (rect.left + rect.width / 2) + 'px',
-                    };
-                });
-            }
-        },
-
-        onDragLeave(e) {
-            if (! e.dataTransfer.types.includes('Files')) return;
-            this.dragCounter--;
-            if (this.dragCounter <= 0) { this.dragCounter = 0; this.isDragOver = false; }
-        },
-
-        onDrop(e) {
-            this.dragCounter = 0;
-            this.isDragOver  = false;
-            if (! e.dataTransfer.types.includes('Files')) return;
-            if (! this.canUploadHere || ! this.currentDirId) return;
-
-            const items = Array.from(e.dataTransfer.items ?? []);
-            if (! items.length) return;
-
-            const entry = items[0]?.webkitGetAsEntry?.();
-            if (entry?.isDirectory) {
-                // Folder drop — traverse then upload
-                const files    = [];
-                const relPaths = [];
-                let pending    = 0;
-                let settled    = false;
-                const trySubmit = () => { if (pending === 0 && settled) this._submitFolderDrop(files, relPaths); };
-                const traverse  = (ent, path) => {
-                    if (ent.isFile) {
-                        pending++;
-                        ent.file(file => { files.push(file); relPaths.push(path + file.name); pending--; trySubmit(); },
-                                 ()   => { pending--; trySubmit(); });
-                    } else if (ent.isDirectory) {
-                        const reader = ent.createReader();
-                        const readAll = () => reader.readEntries(batch => {
-                            if (! batch.length) return;
-                            batch.forEach(c => traverse(c, path + ent.name + '/'));
-                            readAll();
-                        });
-                        readAll();
-                    }
-                };
-                items.forEach(it => { const en = it.webkitGetAsEntry?.(); if (en) traverse(en, ''); });
-                settled = true;
-                trySubmit();
-            } else {
-                // Flat file drop
-                const files = Array.from(e.dataTransfer.files ?? []);
-                if (! files.length) return;
-                const fd = new FormData();
-                files.forEach(f => fd.append('files[]', f));
-                fd.append('directory_id', this.currentDirId);
-                this.uploading = true;
-                this.abort     = new AbortController();
-                this.$axios.post("{{ route('admin.dam.assets.upload') }}", fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    signal:  this.abort.signal,
-                }).then(() => {
-                    this.fetch();
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-                }).catch(err => {
-                    if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                        this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                    }
-                }).finally(() => { this.uploading = false; this.abort = null; });
-            }
-        },
-
-        async _submitFolderDrop(files, relPaths) {
-            this.dropPanelMinimized = false;
-
-            // Collect unique directory paths to create first
-            const uniqueDirPaths = new Set();
-            relPaths.forEach(p => {
-                const segs = p.split('/');
-                for (let i = 1; i < segs.length; i++) uniqueDirPaths.add(segs.slice(0, i).join('/'));
-            });
-
-            const folderJobIds = [];
-            for (const dirPath of [...uniqueDirPaths].sort()) {
-                const segs       = dirPath.split('/');
-                const name       = segs[segs.length - 1];
-                const parentPath = segs.length > 1 ? segs.slice(0, -1).join('/') + '/' : '';
-                const jobId      = this.nextDropJobId++;
-                this.dropUploads.push({ id: jobId, name, parentPath, fileSize: 0, isFolder: true, status: 'creating', progress: 0, error: null });
-                folderJobIds.push(jobId);
-            }
-
-            if (uniqueDirPaths.size > 0) {
-                try {
-                    await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
-                        directory_id: this.currentDirId,
-                        paths: [...uniqueDirPaths],
-                    });
-                    folderJobIds.forEach(jid => {
-                        const job = this.dropUploads.find(u => u.id === jid);
-                        if (job) job.status = 'done';
-                    });
-                    this.fetch();
-                } catch (e) {
-                    folderJobIds.forEach(jid => {
-                        const job = this.dropUploads.find(u => u.id === jid);
-                        if (job) { job.status = 'error'; job.error = e?.response?.data?.message ?? 'Failed'; }
-                    });
-                }
-            }
-
-            if (! files.length) return;
-
-            // Sequential per-file upload with progress tracking
-            const fileJobIds = files.map((f, i) => {
-                const segs       = relPaths[i] ? relPaths[i].split('/') : [f.name];
-                const parentPath = segs.length > 1 ? segs.slice(0, -1).join('/') + '/' : '';
-                const jobId      = this.nextDropJobId++;
-                this.dropUploads.push({ id: jobId, name: f.name, parentPath, fileSize: f.size, isFolder: false, status: 'uploading', progress: 0, error: null });
-                return jobId;
-            });
-
-            for (let i = 0; i < files.length; i++) {
-                const f     = files[i];
-                const jobId = fileJobIds[i];
-                const fd    = new FormData();
-                fd.append('directory_id', this.currentDirId);
-                fd.append('files[]', f);
-                if (relPaths[i]) {
-                    fd.append('preserve_root', '1');
-                    fd.append('relative_paths[]', relPaths[i]);
-                }
-                try {
-                    await this.$axios.post("{{ route('admin.dam.assets.upload_folder') }}", fd, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                        onUploadProgress: (e) => {
-                            if (e.total) {
-                                const job = this.dropUploads.find(u => u.id === jobId);
-                                if (job && job.status === 'uploading') job.progress = Math.min(99, Math.round((e.loaded / e.total) * 100));
-                            }
-                        },
-                    });
-                    const job = this.dropUploads.find(u => u.id === jobId);
-                    if (job) { job.status = 'done'; job.progress = 100; }
-                } catch (e) {
-                    const job = this.dropUploads.find(u => u.id === jobId);
-                    if (job) { job.status = 'error'; job.error = e?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')"; }
-                }
-            }
-            this.fetch();
-        },
-
-        clearDropUploads() {
-            this.dropUploads = this.dropUploads.filter(u => u.status === 'uploading' || u.status === 'creating');
-        },
-
-        fmtDropSize(bytes) {
-            if (! bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return Math.round(bytes / 1024) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        },
-
-        dropJobIcon(job) {
-            if (job.isFolder) return `<svg class="h-5 w-5 text-amber-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>`;
-            const ext = (job.name || '').split('.').pop().toLowerCase();
-            const isImage = ['jpg','jpeg','png','gif','webp','svg','bmp','avif'].includes(ext);
-            const isVideo = ['mp4','mov','avi','mkv','webm'].includes(ext);
-            const isAudio = ['mp3','wav','ogg','flac','aac'].includes(ext);
-            if (isImage) return `<svg class="h-5 w-5 text-blue-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>`;
-            if (isVideo) return `<svg class="h-5 w-5 text-violet-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>`;
-            if (isAudio) return `<svg class="h-5 w-5 text-pink-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>`;
-            return `<svg class="h-5 w-5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>`;
-        },
+        cancelFolderUpload() { this.folderAbort?.abort(); this.$emitter.emit('dam:cancel-folder-upload'); },
 
         onInternalDrop({ payload, targetDir }) {
             if (! this.aclBypass && ! this.accessibleIds.map(Number).includes(Number(targetDir.id))) {
@@ -1537,6 +1032,7 @@ app.component('v-dam-tab', {
                     signal: this.folderAbort.signal,
                 }).then(() => {
                     this.fetch();
+                    this.$emitter.emit('dam:tree-reload');
                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
                 }).catch(err => {
                     if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
@@ -1557,6 +1053,7 @@ app.component('v-dam-tab', {
                     paths,
                 }).then(() => {
                     this.fetch();
+                    this.$emitter.emit('dam:tree-reload');
                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
@@ -1632,7 +1129,6 @@ app.component('v-dam-tab', {
                     >
                         <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
                         <div class="text-xs font-semibold text-violet-700 dark:text-violet-300 truncate w-full">@{{ dir.name }}</div>
-                        <div class="text-[10px] text-violet-400">@{{ dir.assets_count }}</div>
                     </div>
                 </div>
             </template>
@@ -1830,7 +1326,7 @@ app.component('v-dam-explorer-grid', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });
@@ -1888,7 +1384,6 @@ app.component('v-dam-explorer-grid', {
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
                 <span class="text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
-                <span class="text-gray-400 text-xs">@{{ dir.assets_count }} @lang('dam::app.admin.explorer.sections.items')</span>
                 <span class="text-gray-400 text-xs">—</span>
                 <div class="flex gap-2">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
@@ -2019,12 +1514,12 @@ app.component('v-dam-explorer-list', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });
         },
-        renameDir(dir) { this.$emitter.emit(`dam:explorer-rename-dir:${this.tabId}`, { dir }); },
+        renameDir(dir) { this.$emitter.emit('dam:open-rename-dir', { item: dir }); },
         delDir(dir) {
             const tabId = this.tabId;
             this.$emitter.emit('open-delete-modal', {
@@ -2041,6 +1536,8 @@ app.component('v-dam-explorer-list', {
                                         if (d.status === 'completed') {
                                             this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                            this.$emitter.emit('dam:tree-reload');
+                                            this.$emitter.emit(`dam:dir-deleted:${tabId}`);
                                         } else if (d.status === 'failed') {
                                             this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
@@ -2254,12 +1751,12 @@ app.component('v-dam-explorer-ctx', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', this.item.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.dam.index.directory.actions.delete')" }); this.ctxRefresh(); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.dam.index.directory.actions.delete')" }); this.ctxRefresh(); this.$emitter.emit('dam:tree-reload'); })
                         .catch(e => this.$emitter.emit('add-flash', { type: 'error', message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" }));
                 },
             });
         },
-        renameDir()   { this.$emitter.emit(`dam:explorer-rename-dir:${this.tabId}`, { dir: this.item }); this.close(); },
+        renameDir()   { this.$emitter.emit('dam:open-rename-dir', { item: this.item }); this.close(); },
         copyStructure() {
             const tabId = this.tabId;
             this.close();
@@ -2288,7 +1785,7 @@ app.component('v-dam-explorer-ctx', {
         share()       { this.close(); this.$emitter.emit('open-share-modal', { targetType:'directory', targetId: this.item.id }); },
         uploadHere()       { this.close(); this.$emitter.emit(`dam:explorer-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
         folderUploadHere() { this.close(); this.$emitter.emit(`dam:explorer-folder-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
-        createHere()       { this.close(); this.$emitter.emit(`dam:explorer-create-dir:${this.tabId}`, { parentId: this.item.id }); },
+        createHere()       { this.close(); this.$emitter.emit('dam:open-create-dir', { item: this.item }); },
         doCopy() {
             this.$emitter.emit(`dam:explorer-copy:${this.tabId}`, { item: this.item, type: this.itemType });
             this.close();
@@ -2314,6 +1811,8 @@ app.component('v-dam-explorer-ctx', {
                                         if (d.status === 'completed') {
                                             this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                            this.$emitter.emit('dam:tree-reload');
+                                            this.$emitter.emit(`dam:dir-deleted:${tabId}`);
                                         } else if (d.status === 'failed') {
                                             this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
@@ -2335,28 +1834,53 @@ app.component('v-dam-explorer-ctx', {
 @once('v-dam-explorer-pager')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-pager-template">
-    <div class="flex items-center justify-between mt-4 text-sm text-gray-500 dark:text-gray-400">
-        <div class="flex items-center gap-2">
-            <span>@lang('dam::app.admin.explorer.pagination.per-page')</span>
-            <select
-                class="border border-gray-300 dark:border-cherry-700 rounded px-2 py-1 text-sm bg-white dark:bg-cherry-900"
-                :value="perPage" @change="$emit('per-page-change', Number($event.target.value))"
-            >
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
+    <div class="flex items-center gap-x-2">
+        <x-admin::dropdown>
+            <x-slot:toggle>
+                <button
+                    type="button"
+                    class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
+                >
+                    <span v-text="perPage"></span>
+                    <span class="icon-chevron-down text-2xl"></span>
+                </button>
+            </x-slot>
+            <x-slot:menu>
+                <x-admin::dropdown.menu.item v-for="opt in [50, 100, 150, 200, 250]" v-text="opt" @click="$emit('per-page-change', opt)"></x-admin::dropdown.menu.item>
+            </x-slot>
+        </x-admin::dropdown>
+
+        <p class="whitespace-nowrap text-gray-600 dark:text-gray-300 max-sm:hidden">
+            @lang('admin::app.components.datagrid.toolbar.per-page')
+        </p>
+
+        <input
+            type="text"
+            class="inline-flex min-h-[38px] max-w-[60px] appearance-none items-center justify-center gap-x-1 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-3 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-400 max-sm:hidden"
+            :value="currentPage"
+            @change="$emit('page-change', Math.max(1, Math.min(lastPage, parseInt($event.target.value) || 1)))"
+        >
+
+        <div class="flex items-center gap-1 whitespace-nowrap text-gray-600 dark:text-gray-300">
+            <span>@lang('admin::app.components.datagrid.toolbar.of')</span>
+            <span v-text="lastPage"></span>
         </div>
-        <div class="flex items-center gap-2">
-            <button
-                class="px-2 py-1 rounded border border-gray-300 dark:border-cherry-700 hover:bg-gray-100 dark:hover:bg-cherry-800 disabled:opacity-40"
-                :disabled="currentPage <= 1" @click="$emit('page-change', currentPage - 1)"
-            >←</button>
-            <span>Page @{{ currentPage }} of @{{ lastPage }}</span>
-            <button
-                class="px-2 py-1 rounded border border-gray-300 dark:border-cherry-700 hover:bg-gray-100 dark:hover:bg-cherry-800 disabled:opacity-40"
-                :disabled="currentPage >= lastPage" @click="$emit('page-change', currentPage + 1)"
-            >→</button>
+
+        <div class="flex items-center gap-1">
+            <div
+                class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                :class="{ 'opacity-40 pointer-events-none': currentPage <= 1 }"
+                @click="currentPage > 1 && $emit('page-change', currentPage - 1)"
+            >
+                <span class="icon-chevron-left text-2xl"></span>
+            </div>
+            <div
+                class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                :class="{ 'opacity-40 pointer-events-none': currentPage >= lastPage }"
+                @click="currentPage < lastPage && $emit('page-change', currentPage + 1)"
+            >
+                <span class="icon-chevron-right text-2xl"></span>
+            </div>
         </div>
     </div>
 </script>
