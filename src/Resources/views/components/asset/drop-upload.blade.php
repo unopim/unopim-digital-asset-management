@@ -320,7 +320,8 @@
                     this.dropUploads = [];
                 },
 
-                onDragEnter() {
+                onDragEnter(e) {
+                    if (! e.dataTransfer?.types?.includes('Files')) return;
                     this.dragCounter++;
                     this.isDragOver = true;
                     if (this.dragCounter === 1) {
@@ -336,7 +337,8 @@
                     }
                 },
 
-                onDragLeave() {
+                onDragLeave(e) {
+                    if (! e.dataTransfer?.types?.includes('Files')) return;
                     this.dragCounter--;
                     if (this.dragCounter <= 0) {
                         this.dragCounter = 0;
