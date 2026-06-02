@@ -1059,21 +1059,64 @@
                 this.revealDirectory(id, silent);
             });
 
-            // Explorer navigation → expand + select in tree without looping back.
-            // Uses the proven revealDirectory path. __explorerSync guards setFilters
-            // so it skips emitting current-directory (which would loop back).
-            this.$emitter.on('dam:explorer-tree-sync', ({ id } = {}) => {
+            // Explorer navigation → select in tree without looping back.
+            // __explorerSync guards setFilters so it skips emitting current-directory.
+            // fromTree=true: navigation was initiated by a tree click (toggle already
+            // ran), so only ancestors are expanded — the target's open state is left
+            // intact so collapse is not overridden by this roundtrip.
+            // fromTree=false: navigation from grid/bookmark/breadcrumb, so expand all
+            // including the target so its children become visible in the tree.
+            this.$emitter.on('dam:explorer-tree-sync', ({ id, fromTree } = {}) => {
                 if (id == null) return;
                 if (! this.formattedItems || ! this.formattedItems[0]) {
                     // Tree not loaded yet — piggyback on _pendingReveal so it runs once ready.
-                    this._pendingReveal = { id, silent: true };
+                    // fromExplorerSync=true tells the drain to apply .finally(__explorerSync=false).
+                    this._pendingReveal = { id, silent: true, fromExplorerSync: true };
                     this.__explorerSync = true;
                     return;
                 }
                 this.__explorerSync = true;
-                this.revealDirectory(id, true).finally(() => {
+                const path = this.findPathToDirectory(id);
+                if (! path) {
                     this.__explorerSync = false;
-                });
+                    return;
+                }
+                const expandCount = fromTree ? path.length - 1 : path.length;
+                for (let i = 0; i < expandCount; i++) {
+                    this.$emitter.emit('current-item-expanded', path[i]);
+                }
+                this.$nextTick().then(() => this.$nextTick().then(() => {
+                    const target = path[path.length - 1];
+                    const el = this.$refs.treeContainer
+                        && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
+                    if (el && typeof el.scrollIntoView === 'function') {
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                    this.setFilters(target);
+                    this.__explorerSync = false;
+                }));
+            });
+
+            // Explorer delete completed → reload tree to remove the deleted node.
+            this.$emitter.on('dam:tree-reload', () => {
+                this.loadDirectories();
+            });
+
+            // Explorer context menu → open tree's create modal with the target as parent.
+            this.$emitter.on('dam:open-create-dir', ({ item } = {}) => {
+                if (! item?.id) return;
+                this.selectedItem = item;
+                this.directoryCreate = true;
+                this.$refs.directoryCreateOrRenameModal.toggle();
+            });
+
+            // Explorer context menu → open tree's rename modal for the target dir.
+            this.$emitter.on('dam:open-rename-dir', ({ item } = {}) => {
+                if (! item?.id) return;
+                this.selectedItem = item;
+                this.directoryCreate = false;
+                this.__explorerTriggeredRename = true;
+                this.$refs.directoryCreateOrRenameModal.toggle();
             });
 
             this.loadDirectories();
@@ -1337,11 +1380,19 @@
                             this.parentItem = response.data.data;
                         } else {
                             this.selectedItem = response.data.data;
+                            // Rename triggered from explorer: tell explorer to skip
+                            // the next current-directory navigation so it doesn't
+                            // navigate INTO the renamed directory on tree reload.
+                            if (this.__explorerTriggeredRename) {
+                                this.$emitter.emit('dam:suppress-nav-once');
+                                this.__explorerTriggeredRename = false;
+                            }
                         }
 
                         this.loadDirectories();
 
                         this.$emitter.emit('current-item-expanded', this.selectedItem);
+                        this.$emitter.emit('dam:directory-mutated');
 
                         this.$emitter.emit('add-flash', {
                             type: 'success',
@@ -1752,6 +1803,7 @@
                         });
                         this.loadDirectories();
                         this.$emitter.emit('data-grid:refresh');
+                        this.$emitter.emit('dam:directory-mutated');
                     } else {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
@@ -1873,6 +1925,7 @@
                     });
                     this.loadDirectories();
                     this.$emitter.emit('data-grid:refresh');
+                    this.$emitter.emit('dam:directory-mutated');
                 } else {
                     this.$emitter.emit('add-flash', {
                         type: 'warning',
@@ -1968,7 +2021,13 @@
                                 if (this.selectedItem) {
                                     this.$emitter.emit('current-item-expanded', this.selectedItem);
                                     this.setFilters(this.selectedItem);
-                                } else {
+                                } else if (! this._pendingReveal) {
+                                    // Only set default selection when no pending reveal exists.
+                                    // If _pendingReveal is set, revealDirectory will handle
+                                    // selection and emit current-directory — calling
+                                    // setDefaultSeletedItem here too would emit a conflicting
+                                    // current-directory(root) that fights the reveal and can
+                                    // cause an infinite navigation loop via goTo → dam:explorer-tree-sync.
                                     this.setDefaultSeletedItem();
                                 }
 
@@ -1981,9 +2040,30 @@
                                 if (this._pendingReveal) {
                                     const { id, silent } = this._pendingReveal;
                                     this._pendingReveal = null;
-                                    this.revealDirectory(id, silent).finally(() => {
-                                        this.__explorerSync = false;
-                                    });
+                                    // Only reset __explorerSync in .finally() when it
+                                    // was pre-set by the dam:explorer-tree-sync branch
+                                    // (line 1074). If it was false (dam:reveal-directory
+                                    // branch), revealDirectory → setFilters → current-directory
+                                    // → goTo → dam:explorer-tree-sync will own the reset via
+                                    // its own $nextTick callback — resetting here first
+                                    // would let that callback emit current-directory again,
+                                    // creating an infinite navigation loop.
+                                    const reveal = this.revealDirectory(id, silent);
+                                    if (fromExplorerSync) {
+                                        // _pendingReveal was queued by dam:explorer-tree-sync
+                                        // which set __explorerSync=true. revealDirectory will
+                                        // call setFilters with __explorerSync=true → skips
+                                        // current-directory, so goTo is never called and no
+                                        // dam:explorer-tree-sync resets __explorerSync for us.
+                                        // Reset it here once revealDirectory completes.
+                                        reveal.finally(() => {
+                                            this.__explorerSync = false;
+                                        });
+                                    }
+                                    // When fromExplorerSync=false (dam:reveal-directory branch),
+                                    // revealDirectory → setFilters → current-directory → goTo →
+                                    // dam:explorer-tree-sync owns the __explorerSync reset via its
+                                    // own $nextTick callback. No .finally() needed here.
                                 }
                             });
                         })
