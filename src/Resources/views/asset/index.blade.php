@@ -3,6 +3,21 @@
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
 
+    @if (config('dam.explorer.enabled'))
+    @push('styles')
+    <style>
+        /* Explorer view: fix height chain so the grid scrolls internally, not the page. */
+        html, body { height: 100% !important; overflow: hidden !important; }
+        #app { display: flex !important; flex-direction: column !important; height: 100% !important; overflow: hidden !important; }
+        [class*="group/container"] { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
+        [class*="group/container"] > div.flex-1 {
+            display: flex !important; flex-direction: column !important;
+            overflow: hidden !important; min-height: 0 !important;
+        }
+    </style>
+    @endpush
+    @endif
+
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
     <v-dam-main></v-dam-main>
@@ -14,11 +29,11 @@
             type="text/x-template"
             id="v-dam-main-template"
         >
-            <div>
+            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col flex-1 min-h-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
-                    <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
+                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 flex-1 min-h-0 max-xl:flex-wrap' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap' }}">
                         <!-- left side: stacked cards -->
-                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full">
+                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full {{ config('dam.explorer.enabled') ? 'min-h-0 overflow-y-auto' : '' }}">
 
                             <!-- directories card -->
                             <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
@@ -48,7 +63,7 @@
 
                             <!-- bookmarks card (separate component below directories) -->
                             @if (config('dam.explorer.bookmarks_enabled'))
-                            <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-[160px]">
+                            <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
                                     @lang('dam::app.admin.explorer.bookmarks.title')
                                 </p>
@@ -60,7 +75,7 @@
                         </div>
 
                         <!-- right sub-component -->
-                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow {{ config('dam.explorer.enabled') ? 'min-h-0 overflow-hidden' : '' }}">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
                             @if (config('dam.explorer.enabled'))
                                 <x-dam::explorer.index />
@@ -93,8 +108,8 @@
                     // silent flag suppresses a flash if the directory turns
                     // out to be missing (e.g. it was deleted while we were
                     // away on the edit page).
-                    const params = new URLSearchParams(window.location.search);
-                    const dirId = params.get('directory_id');
+                    let dirId = null;
+                    try { dirId = sessionStorage.getItem('dam_return_dir'); sessionStorage.removeItem('dam_return_dir'); } catch {}
                     if (dirId) {
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }

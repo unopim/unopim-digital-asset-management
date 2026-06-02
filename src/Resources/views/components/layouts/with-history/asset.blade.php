@@ -1,3 +1,4 @@
+@props(['returnDirectoryId' => null])
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="ltr" class="{{ (request()->cookie('dark_mode') ?? 0) ? 'dark' : '' }}">
     <head>
@@ -284,6 +285,12 @@
         @endPushOnce
 
         @stack('scripts')
+
+        @if ($returnDirectoryId)
+        <script>
+            try { sessionStorage.setItem('dam_return_dir', '{{ (int) $returnDirectoryId }}'); } catch {}
+        </script>
+        @endif
 
         {!! view_render_event('unopim.admin.layout.vue-app-mount.before') !!}
 

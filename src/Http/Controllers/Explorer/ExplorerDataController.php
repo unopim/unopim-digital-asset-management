@@ -38,7 +38,7 @@ class ExplorerDataController extends Controller
             'directory_id'        => 'required|integer|min:1|exists:dam_directories,id',
             'search'              => 'nullable|string|max:255',
             'page'                => 'nullable|integer|min:1',
-            'per_page'            => 'nullable|integer|min:1|max:100',
+            'per_page'            => 'nullable|integer|min:1|max:250',
             'sort_by'             => 'nullable|in:name,size,updated_at',
             'sort_order'          => 'nullable|in:asc,desc',
             'filter_file_name'    => 'nullable|string|max:255',

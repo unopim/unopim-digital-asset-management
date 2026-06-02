@@ -152,7 +152,7 @@ class AssetController extends Controller
             ? number_format($bytes / 1048576, 2).' MB'
             : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
 
-        return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors'));
+        return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors', 'directory'));
     }
 
     /**
