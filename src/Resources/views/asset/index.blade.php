@@ -14,6 +14,11 @@
             display: flex !important; flex-direction: column !important;
             overflow: hidden !important; min-height: 0 !important;
         }
+        /* When panes wrap (zoom / narrow viewport) restore page scroll */
+        @media (max-width: 1280px) {
+            html, body { overflow-y: auto !important; height: auto !important; }
+            #app { overflow: visible !important; height: auto !important; }
+        }
     </style>
     @endpush
     @endif

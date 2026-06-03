@@ -136,8 +136,8 @@
         </div>
 
         {{-- Row 2: search + filters button + view toggle --}}
-        <div class="flex items-center gap-3">
-            <div class="flex-1 flex items-center gap-2 border border-gray-300 dark:border-cherry-600 rounded-lg px-3 py-2 bg-white dark:bg-cherry-900">
+        <div class="flex items-center gap-3 flex-wrap">
+            <div class="min-w-[44px] flex-1 max-w-[260px] flex items-center gap-2 border border-gray-300 dark:border-cherry-600 rounded-lg px-3 py-2 bg-white dark:bg-cherry-900">
                 <i class="icon-search text-gray-400 text-sm"></i>
                 <input
                     type="text"
@@ -1346,6 +1346,7 @@ app.component('v-dam-tab', {
             </template>
 
             {{-- Assets --}}
+            {{-- Assets --}}
             <template v-if="assets.length">
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.files')
@@ -1354,18 +1355,17 @@ app.component('v-dam-tab', {
                     <div
                         v-for="asset in assets"
                         :key="asset.id"
-                        class="group rounded-lg border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
-                        style="box-shadow:0 1px 3px rgba(0,0,0,.08);"
-                        draggable="true"
-                        @dragstart="onAssetDragStart($event, asset)"
-                        @dragend="onDragEnd($event)"
-                        @click="preview(asset.id)"
-                        @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                     >
-                        {{-- Thumbnail --}}
-                        <div class="image-card relative overflow-hidden">
+                        <div
+                            class="group image-card relative overflow-hidden rounded-lg border border-gray-200 dark:border-cherry-700 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
+                            draggable="true"
+                            @dragstart="onAssetDragStart($event, asset)"
+                            @dragend="onDragEnd($event)"
+                            @click="preview(asset.id)"
+                            @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
+                        >
                             <img
-                                :src="asset.path"
+                                :src="assetSrc(asset)"
                                 :alt="asset.file_name"
                                 class="w-full h-full object-cover object-center"
                                 @@error="onImgErr($event, asset)"
@@ -1395,7 +1395,7 @@ app.component('v-dam-tab', {
                                 ></span>
                             </div>
 
-                            {{-- Hover action overlay — pointer-events-none on dark bg; buttons only active on hover via .explorer-asset-actions CSS class --}}
+                            {{-- Hover action overlay --}}
                             <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                 <div class="flex gap-1 explorer-asset-actions">
                                     @if (bouncer()->hasPermission('dam.asset.view'))
@@ -1411,9 +1411,7 @@ app.component('v-dam-tab', {
                             </div>
                         </div>
 
-                        <div class="px-2 py-1.5">
-                            <p class="text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
-                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 truncate px-1 mt-1">@{{ asset.file_name }}</p>
                     </div>
                 </div>
             </template>
@@ -1478,6 +1476,7 @@ app.component('v-dam-explorer-grid', {
 
     methods: {
         onImgErr(e, a)   { e.target.src = this.placeholders[a.file_type] ?? this.fallback; e.target.className = 'w-full h-full object-contain p-4'; },
+        assetSrc(a)      { return a.path || this.placeholders[a.file_type] || this.fallback; },
         onDragStart(e, d) {
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'dam-folder',
