@@ -44,7 +44,7 @@ class DamInstaller extends Command
     protected function publishAssets(array $tags): void
     {
         foreach ($tags as $tag) {
-            $this->call('vendor:publish', ['--tag' => $tag]);
+            $this->call('vendor:publish', ['--tag' => $tag, '--force' => true]);
         }
     }
 }
