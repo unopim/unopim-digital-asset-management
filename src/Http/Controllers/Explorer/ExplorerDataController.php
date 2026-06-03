@@ -241,7 +241,7 @@ class ExplorerDataController extends Controller
                 'total_assets'      => $totalAssets,
                 'total_directories' => $directories->count(),
                 'current_page'      => $page,
-                'last_page'         => (int) ceil($totalAssets / max($perPage, 1)),
+                'last_page'         => max(1, (int) ceil($totalAssets / max($perPage, 1))),
                 'per_page'          => $perPage,
             ],
         ]);
