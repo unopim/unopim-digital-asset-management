@@ -1006,7 +1006,30 @@
             };
         },
 
+        beforeUnmount() {
+            this.$axios.interceptors.response.eject(this._csrfInterceptorId);
+        },
+
         mounted() {
+            this._csrfInterceptorId = this.$axios.interceptors.response.use(
+                undefined,
+                async (error) => {
+                    if (error.response?.status === 419 && ! error.config._csrfRetried) {
+                        error.config._csrfRetried = true;
+
+                        try {
+                            await this.$axios.get("{{ route('sanctum.csrf-cookie') }}");
+
+                            return await this.$axios(error.config);
+                        } catch (retryError) {
+                            return Promise.reject(retryError);
+                        }
+                    }
+
+                    return Promise.reject(error);
+                }
+            );
+
             this.$emitter.on('uploaded-assets', (data) => {
                 const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
                 if (uploadedCount > 0 && this.selectedItem) {
