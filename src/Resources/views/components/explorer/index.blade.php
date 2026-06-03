@@ -1,3 +1,5 @@
+@include('dam::components.explorer.context-menu')
+
 {{-- Ensure v-dam-drop-upload is registered before v-dam-tab mounts --}}
 <x-dam::asset.drop-upload />
 
@@ -269,8 +271,8 @@ app.component('v-dam-explorer', {
         </div>
 
         {{-- Row 2: search + filters button + view toggle --}}
-        <div class="flex items-center gap-3">
-            <div class="flex-1 flex items-center gap-2 border border-gray-300 dark:border-cherry-600 rounded-lg px-3 py-2 bg-white dark:bg-cherry-900">
+        <div class="flex items-center gap-3 flex-wrap">
+            <div class="min-w-[44px] flex-1 max-w-[260px] flex items-center gap-2 border border-gray-300 dark:border-cherry-600 rounded-lg px-3 py-2 bg-white dark:bg-cherry-900">
                 <i class="icon-search text-gray-400 text-sm"></i>
                 <input
                     type="text"
