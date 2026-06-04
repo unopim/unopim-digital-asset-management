@@ -220,19 +220,41 @@
 
                 <!-- Pagination -->
                 <div class="flex items-center gap-1">
-                    <div
+                    <button
+                        type="button"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
+                        @click="changePage('first')"
+                    >
+                        <span class="text-2xl" aria-hidden="true">&#171;</span>
+                    </button>
+
+                    <button
+                        type="button"
                         class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
                         @click="changePage('previous')"
                     >
-                        <span class="icon-chevron-left text-2xl"></span>
-                    </div>
+                        <span class="text-2xl" aria-hidden="true">&#8249;</span>
+                    </button>
 
-                    <div
+                    <button
+                        type="button"
                         class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
                         @click="changePage('next')"
                     >
-                        <span class="icon-chevron-right text-2xl"></span>
-                    </div>
+                        <span class="text-2xl" aria-hidden="true">&#8250;</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
+                        @click="changePage('last')"
+                    >
+                        <span class="text-2xl" aria-hidden="true">&#187;</span>
+                    </button>
                 </div>
             </div>
         </div>
