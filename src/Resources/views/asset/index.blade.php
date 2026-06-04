@@ -14,10 +14,14 @@
             display: flex !important; flex-direction: column !important;
             overflow: hidden !important; min-height: 0 !important;
         }
-        /* When panes wrap (zoom / narrow viewport) restore page scroll */
+        /* When panes wrap (zoom / narrow viewport) restore page scroll.
+           Keep height:100% on html/body so they remain proper scroll containers
+           (height:auto breaks position:sticky on the header). */
         @media (max-width: 1280px) {
-            html, body { overflow-y: auto !important; height: auto !important; }
-            #app { overflow: visible !important; height: auto !important; }
+            html, body { overflow-y: auto !important; height: 100% !important; }
+            #app { overflow: visible !important; height: auto !important; min-height: 100% !important; }
+            [class*="group/container"],
+            [class*="group/container"] > div.flex-1 { overflow: visible !important; }
         }
     </style>
     @endpush
