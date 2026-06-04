@@ -2038,7 +2038,7 @@
                                 // Drain any reveal request that arrived while
                                 // the tree was still fetching its directories.
                                 if (this._pendingReveal) {
-                                    const { id, silent } = this._pendingReveal;
+                                    const { id, silent, fromExplorerSync } = this._pendingReveal;
                                     this._pendingReveal = null;
                                     // Only reset __explorerSync in .finally() when it
                                     // was pre-set by the dam:explorer-tree-sync branch
