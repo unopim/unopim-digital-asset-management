@@ -397,9 +397,8 @@ class DirectoryController
         $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
         $files = Storage::disk($disk)->allFiles($folderPath);
-        $directories = Storage::disk($disk)->allDirectories($folderPath);
 
-        if (empty($directories) && empty($files)) {
+        if (empty($files)) {
             return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
         }
 

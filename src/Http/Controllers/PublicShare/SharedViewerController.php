@@ -298,6 +298,11 @@ class SharedViewerController extends Controller
         $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
         $files = Storage::disk($disk)->allFiles($folderPath);
+
+        if (empty($files)) {
+            return $this->renderNotFound();
+        }
+
         $zipName = Str::slug($directory->name ?: 'download').'.zip';
 
         $this->shareRepository->incrementDownload($share);
@@ -328,7 +333,7 @@ class SharedViewerController extends Controller
             : 'attachment';
 
         $filename = $asset->file_name;
-        $contentDisposition = $disposition.'; filename="'.addslashes($filename).'"';
+        $contentDisposition = $disposition.'; filename="'.str_replace(['"', "\r", "\n", "\0"], '', $filename).'"';
 
         if ($disk === Directory::ASSETS_DISK_AWS) {
             try {

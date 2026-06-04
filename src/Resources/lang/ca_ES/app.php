@@ -642,11 +642,8 @@ return [
             'revoked-message'       => 'Aquest enllaç de compartició ha estat revocat pel seu propietari i ja no és accessible.',
             'not-found-title'       => 'Enllaç no trobat',
             'not-found-message'     => "L'enllaç de compartició que heu obert no existeix. Pot haver estat escrit incorrectament o eliminat.",
-            'audio-not-supported'   => 'Your browser does not support the audio tag.',
             'download-zip'          => 'Descarregar tot com a ZIP',
-            'not-found-message'     => 'The share link you opened does not exist. It may have been mistyped or removed.',
             'per-page'              => 'Per pàgina',
-            'video-not-supported'   => 'Your browser does not support the video tag.',
         ],
     ],
 ];

@@ -32,7 +32,7 @@ trait StreamsZipDownload
 
         $headers = [
             'Content-Type'        => 'application/zip',
-            'Content-Disposition' => 'attachment; filename="'.addslashes($zipName).'"',
+            'Content-Disposition' => 'attachment; filename="'.str_replace(['"', "\r", "\n", "\0"], '', $zipName).'"',
             'Cache-Control'       => 'no-store',
         ];
 

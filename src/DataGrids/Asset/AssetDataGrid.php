@@ -23,6 +23,9 @@ class AssetDataGrid extends DataGrid
 
     protected $customFilterColumns = [];
 
+    /** Maps normalized prop index suffix → original DB name. */
+    protected array $propNameMap = [];
+
     /**
      * {@inheritDoc}
      */
@@ -170,8 +173,11 @@ class AssetDataGrid extends DataGrid
             ->get();
 
         foreach ($props as $prop) {
+            $normalizedName = preg_replace('/[^a-zA-Z0-9_]/', '_', $prop->name);
+            $this->propNameMap[$normalizedName] = $prop->name;
+
             $this->addColumn([
-                'index'      => 'prop_'.$prop->name,
+                'index'      => 'prop_'.$normalizedName,
                 'label'      => $prop->name,
                 'type'       => 'string',
                 'searchable' => false,
@@ -241,18 +247,21 @@ class AssetDataGrid extends DataGrid
                 }
 
                 if (str_starts_with($requestedColumn, 'prop_')) {
-                    $propName = substr($requestedColumn, 5);
+                    $normalizedName = substr($requestedColumn, 5);
+                    $propName = $this->propNameMap[$normalizedName] ?? $normalizedName;
                     $prefix = DB::getTablePrefix();
 
-                    foreach ($requestedValues as $value) {
-                        $this->queryBuilder->whereExists(function ($sub) use ($prefix, $propName, $value) {
-                            $sub->select(DB::raw(1))
-                                ->from('dam_asset_properties')
-                                ->whereRaw("{$prefix}dam_asset_properties.dam_asset_id = {$prefix}dam_assets.id")
-                                ->where('name', $propName)
-                                ->whereRaw('LOWER(value) LIKE ?', ['%'.strtolower($value).'%']);
-                        });
-                    }
+                    $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $propName, $requestedValues) {
+                        foreach ($requestedValues as $value) {
+                            $scopeQueryBuilder->orWhereExists(function ($sub) use ($prefix, $propName, $value) {
+                                $sub->select(DB::raw(1))
+                                    ->from('dam_asset_properties')
+                                    ->whereRaw("{$prefix}dam_asset_properties.dam_asset_id = {$prefix}dam_assets.id")
+                                    ->where('name', $propName)
+                                    ->whereRaw('LOWER(value) LIKE ?', ['%'.strtolower($value).'%']);
+                            });
+                        }
+                    });
 
                     continue;
                 }

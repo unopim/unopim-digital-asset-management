@@ -643,12 +643,7 @@ return [
             'not-found-title'       => 'Lien introuvable',
             'not-found-message'     => "Le lien de partage que vous avez ouvert n'existe pas. Il a peut-être été mal saisi ou supprimé.",
             'download-zip'          => 'Tout télécharger en ZIP',
-            'empty-directory'       => 'This shared directory has no files yet.',
-            'expired-message'       => 'This share link has expired and is no longer accessible. Please request a new link from the owner.',
-            'not-found-message'     => 'The share link you opened does not exist. It may have been mistyped or removed.',
             'per-page'              => 'Par page',
-            'preview-not-available' => 'Preview is not available for this file. Use the Download button above.',
-            'revoked-message'       => 'This share link has been revoked by its owner and is no longer accessible.',
         ],
     ],
 ];
