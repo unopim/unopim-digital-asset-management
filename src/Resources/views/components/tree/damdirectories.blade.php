@@ -777,6 +777,7 @@
             v-slot="{ meta, errors, handleSubmit }"
             as="div"
             ref="modalForm"
+            class="z-[10002]"
         >
             <form
                 @submit="handleSubmit($event, createOrRenameDirectory)"

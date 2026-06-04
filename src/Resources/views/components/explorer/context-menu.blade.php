@@ -2,8 +2,7 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-ctx-template">
     <div
-        class="fixed bg-white dark:bg-cherry-800 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-2xl py-1 min-w-[185px]"
-        style="z-index:9999;"
+        class="fixed bg-white dark:bg-cherry-800 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-2xl py-1 min-w-[185px] z-[10002]"
         :style="{ top: `${y}px`, left: `${x}px` }"
     >
         {{-- Directory actions --}}
@@ -187,7 +186,7 @@ app.component('v-dam-explorer-ctx', {
                 },
             });
         },
-        renameDir()   { this.$emitter.emit(`dam:explorer-rename-dir:${this.tabId}`, { dir: this.item }); this.close(); },
+        renameDir()   { this.$emitter.emit('dam:open-rename-dir', { item: this.item }); this.close(); },
         copyStructure() {
             const tabId = this.tabId;
             this.close();
@@ -216,7 +215,7 @@ app.component('v-dam-explorer-ctx', {
         share()       { this.close(); this.$emitter.emit('open-share-modal', { targetType:'directory', targetId: this.item.id }); },
         uploadHere()       { this.close(); this.$emitter.emit(`dam:explorer-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
         folderUploadHere() { this.close(); this.$emitter.emit(`dam:explorer-folder-upload-here:${this.tabId}`, { directoryId: this.item.id }); },
-        createHere()       { this.close(); this.$emitter.emit(`dam:explorer-create-dir:${this.tabId}`, { parentId: this.item.id }); },
+        createHere()       { this.close(); this.$emitter.emit('dam:open-create-dir', { item: this.item }); },
         doCopy() {
             this.$emitter.emit(`dam:explorer-copy:${this.tabId}`, { item: this.item, type: this.itemType });
             this.close();
