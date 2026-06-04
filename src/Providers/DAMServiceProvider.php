@@ -2,9 +2,11 @@
 
 namespace Webkul\DAM\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Attribute\Models\Attribute;
@@ -44,6 +46,20 @@ class DAMServiceProvider extends ServiceProvider
     public function boot(Router $router)
     {
         $router->aliasMiddleware('dam', DAM::class);
+
+        // Named rate limiters for public share routes — separate buckets per IP per route type
+        // so 200 thumbnail requests don't exhaust the bucket used by view/download routes.
+        RateLimiter::for('dam-share-thumb', function ($request) {
+            return Limit::perMinute(1200)->by('thumb|'.$request->ip());
+        });
+
+        RateLimiter::for('dam-share-view', function ($request) {
+            return Limit::perMinute(120)->by('view|'.$request->ip());
+        });
+
+        RateLimiter::for('dam-share-download', function ($request) {
+            return Limit::perMinute(20)->by('dl|'.$request->ip());
+        });
 
         Route::middleware('web')->group(__DIR__.'/../Routes/web.php');
 

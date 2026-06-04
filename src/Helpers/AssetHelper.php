@@ -181,7 +181,7 @@ class AssetHelper
     /**
      * Check if given extension or mime type is forbidden for upload
      */
-    public static function isForbiddenFile(?string $extension, ?string $mimeType): bool
+    public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null): bool
     {
         $forbiddenExtensions = [
             'php',
@@ -217,12 +217,23 @@ class AssetHelper
             'application/x-ruby',
         ];
 
+        $forbiddenFileNames = [
+            '.DS_Store',
+            '._.DS_Store',
+            'Thumbs.db',
+            'desktop.ini',
+        ];
+
         if ($extension) {
             $extension = strtolower($extension);
         }
 
         if ($mimeType) {
             $mimeType = strtolower($mimeType);
+        }
+
+        if ($fileName && in_array(basename($fileName), $forbiddenFileNames, true)) {
+            return true;
         }
 
         return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));

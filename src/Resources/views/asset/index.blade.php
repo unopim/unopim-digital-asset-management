@@ -1,8 +1,4 @@
 <x-admin::layouts>
-    @push('styles')
-    @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-    @endpush
-
     <x-slot:title>
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
@@ -167,9 +163,20 @@
 
                     @if (bouncer()->hasPermission('dam.asset.view'))
                         <div
-                            :class="{ 'pointer-events-none opacity-60': isUploading || isFolderUploading || dropActiveCount > 0 || treeBusy }"
+                            class="relative"
+                            :class="{ 'pointer-events-none': isUploading || isFolderUploading || dropActiveCount > 0 || treeBusy }"
                             :aria-busy="isUploading || isFolderUploading || dropActiveCount > 0 || treeBusy"
                         >
+                            <!-- Semi-transparent overlay while uploading / tree loading.
+                                 Uses a child absolute element so the parent stays at z:auto
+                                 (no stacking context), keeping the filter drawer's fixed
+                                 elements in the root stacking context above the sticky navbar. -->
+                            <div
+                                v-if="isUploading || isFolderUploading || treeBusy"
+                                class="absolute inset-0 bg-white/60 dark:bg-cherry-900/60 z-[1] rounded-lg"
+                                aria-hidden="true"
+                            ></div>
+
                             <x-dam::datagrid.dam
                                 :src="route('admin.dam.assets.index')"
                                 ref="datagrid"
@@ -214,6 +221,7 @@
                     abortController: null,
                     treeBusy: false,
                     dropActiveCount: 0,
+                    localAccessibleIds: [...(this.accessibleIds || [])],
                 }
             },
 
@@ -222,7 +230,7 @@
                     if (this.aclBypass) return true;
                     if (! this.currentDirectory) return false;
 
-                    return this.accessibleIds.map(Number).includes(Number(this.currentDirectory.id));
+                    return this.localAccessibleIds.map(Number).includes(Number(this.currentDirectory.id));
                 },
             },
 
@@ -282,6 +290,13 @@
 
                 this.$emitter.on('dam:tree-busy', (busy) => {
                     this.treeBusy = !! busy;
+                });
+
+                this.$emitter.on('dam:directory-granted', (id) => {
+                    const numId = Number(id);
+                    if (! this.localAccessibleIds.map(Number).includes(numId)) {
+                        this.localAccessibleIds.push(numId);
+                    }
                 });
 
                 this.$emitter.on('dam:upload-files', (formData) => {

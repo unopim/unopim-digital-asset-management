@@ -142,6 +142,11 @@ return [
         'route' => 'admin.dam.asset.comment.delete',
         'sort'  => 4,
     ], [
+        'key'   => 'dam.asset.meta_data',
+        'name'  => 'dam::app.admin.acl.meta_data',
+        'route' => 'admin.dam.assets.metadata',
+        'sort'  => 16,
+    ], [
         'key'   => 'dam.asset.linked_resources',
         'name'  => 'dam::app.admin.acl.linked_resources',
         'route' => 'admin.dam.asset.linked_resources.index',
@@ -219,7 +224,12 @@ return [
     ], [
         'key'   => 'dam.shares.revoke',
         'name'  => 'dam::app.admin.acl.revoke',
-        'route' => 'admin.dam.shares.destroy',
+        'route' => 'admin.dam.shares.revoke',
         'sort'  => 2,
+    ], [
+        'key'   => 'dam.shares.delete',
+        'name'  => 'dam::app.admin.acl.delete',
+        'route' => 'admin.dam.shares.destroy',
+        'sort'  => 3,
     ],
 ];

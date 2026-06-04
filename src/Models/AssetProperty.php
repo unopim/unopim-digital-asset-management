@@ -22,7 +22,12 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
 
     protected $table = 'dam_asset_properties';
 
-    protected $fillable = ['name', 'type', 'language', 'value', 'dam_asset_id'];
+    protected $fillable = ['name', 'type', 'language', 'value', 'dam_asset_id', 'is_filterable', 'sort_order'];
+
+    protected $casts = [
+        'is_filterable' => 'boolean',
+        'sort_order'    => 'integer',
+    ];
 
     /**
      * These columns history will not be generated

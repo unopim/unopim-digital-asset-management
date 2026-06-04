@@ -75,6 +75,8 @@
 
                 previewData: @json($initialPreviewData),
 
+                displayDirectoryBreadcrumb: @json($directoryAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values()->toArray()),
+
                 // Image
                 ...window._damImageViewer.data,
 
@@ -264,6 +266,8 @@
                     downloadUrl:           data.downloadUrl,
                     downloadCompressedUrl: data.downloadCompressedUrl,
                 };
+
+                this.displayDirectoryBreadcrumb = data.directoryBreadcrumb ?? [];
 
                 this.$nextTick(() => {
                     if (this.$refs.videoEl) {

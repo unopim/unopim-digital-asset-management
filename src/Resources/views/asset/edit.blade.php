@@ -46,12 +46,14 @@
             ],
         ];
 
-        $items[] = [
-            'url' => '?meta-data',
-            'code' => 'meta-data',
-            'name' => 'dam::app.admin.dam.asset.edit.embedded_meta_info',
-            'icon' => 'icon-manage-column',
-        ];
+        if (bouncer()->hasPermission('dam.asset.meta_data')) {
+            $items[] = [
+                'url'  => '?meta-data',
+                'code' => 'meta-data',
+                'name' => 'dam::app.admin.dam.asset.edit.embedded_meta_info',
+                'icon' => 'icon-manage-column',
+            ];
+        }
 
         if (bouncer()->hasPermission('dam.asset.property')) {
             $items[] = [
@@ -159,7 +161,7 @@
                             <div class="flex items-stretch flex-1 min-h-0">
 
                                 {{-- Prev arrow --}}
-                                <div class="flex items-center justify-center px-2 shrink-0">
+                                <div class="max-sm:hidden flex items-center justify-center px-2 shrink-0">
                                     <template v-if="prevAssetId">
                                         <button
                                             type="button"
@@ -181,7 +183,33 @@
                                 </div>
 
                                 {{-- Preview content --}}
-                                <div class="flex flex-col flex-1 gap-2 overflow-auto items-center justify-start py-2 min-w-0">
+                                <div class="relative flex flex-col flex-1 gap-2 overflow-y-auto overflow-x-hidden items-center justify-start py-2 min-w-0">
+                                    {{-- Mobile overlay: prev arrow --}}
+                                    <button
+                                        v-if="prevAssetId"
+                                        type="button"
+                                        class="flex sm:!hidden absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full bg-black/55 text-white shadow-md z-10"
+                                        :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                        title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
+                                        aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
+                                        @click.stop="navigateTo(prevAssetId)"
+                                    >
+                                        <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                                    </button>
+
+                                    {{-- Mobile overlay: next arrow --}}
+                                    <button
+                                        v-if="nextAssetId"
+                                        type="button"
+                                        class="flex sm:!hidden absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full bg-black/55 text-white shadow-md z-10"
+                                        :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                        title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
+                                        aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
+                                        @click.stop="navigateTo(nextAssetId)"
+                                    >
+                                        <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                                    </button>
+
                                     {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
 
                                     <v-asset-preview-modal></v-asset-preview-modal>
@@ -190,7 +218,7 @@
                                 </div>
 
                                 {{-- Next arrow --}}
-                                <div class="flex items-center justify-center px-2 shrink-0">
+                                <div class="max-sm:hidden flex items-center justify-center px-2 shrink-0">
                                     <template v-if="nextAssetId">
                                         <button
                                             type="button"
@@ -317,12 +345,7 @@
                                     </p>
                                 </x-slot>
                                 <x-slot:content>
-                                    @php
-                                        $pathParts = $directoryAncestors->pluck('name')->toArray();
-                                        $pathParts[] = $asset->file_name;
-                                        $fullPath = implode('/', $pathParts);
-                                    @endphp
-                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">{{ $fullPath }}</p>
+                                    <p class="text-sm text-zinc-600 !leading-normal dark:text-slate-300 break-all">@{{ displayAssetPath }}</p>
                                 </x-slot>
                             </x-admin::accordion>
 

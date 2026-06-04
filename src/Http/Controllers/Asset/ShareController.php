@@ -112,7 +112,7 @@ class ShareController extends Controller
         $data = request()->validate([
             'name'        => 'nullable|string|max:255',
             'no_expiry'   => 'sometimes|boolean',
-            'expiry_days' => 'sometimes|integer|min:1|max:365',
+            'expiry_days' => 'sometimes|nullable|integer|min:1|max:365',
         ]);
 
         $payload = [
@@ -135,9 +135,39 @@ class ShareController extends Controller
     }
 
     /**
-     * Revoke a share.
+     * Reauthorize a previously revoked share — clears revoked_at so the same
+     * token/URL becomes active again without generating a new link.
      */
-    public function destroy(int $id): JsonResponse
+    public function reauthorize(int $id): JsonResponse
+    {
+        $share = $this->shareRepository->find($id);
+
+        if (! $share) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.not-found'),
+            ], 404);
+        }
+
+        if (! $this->canRevoke($share)) {
+            return $this->unauthorized();
+        }
+
+        $reauthorized = $this->shareRepository->reauthorize($id);
+
+        return response()->json([
+            'success' => $reauthorized,
+            'share'   => $reauthorized ? $this->presentShare($share->fresh()) : null,
+            'message' => $reauthorized
+                ? trans('dam::app.admin.dam.share.reauthorized')
+                : trans('dam::app.admin.dam.share.not-revoked'),
+        ]);
+    }
+
+    /**
+     * Revoke a share (soft — sets revoked_at).
+     */
+    public function revoke(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
 
@@ -163,6 +193,34 @@ class ShareController extends Controller
     }
 
     /**
+     * Permanently delete a share record.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $share = $this->shareRepository->find($id);
+
+        if (! $share) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.share.not-found'),
+            ], 404);
+        }
+
+        if (! $this->canDelete($share)) {
+            return $this->unauthorized();
+        }
+
+        $deleted = $this->shareRepository->hardDelete($id);
+
+        return response()->json([
+            'success' => $deleted,
+            'message' => $deleted
+                ? trans('dam::app.admin.dam.share.deleted')
+                : trans('dam::app.admin.dam.share.delete-failed'),
+        ]);
+    }
+
+    /**
      * Return all active shares for a given target. Used by the share modal
      * to render the "Active links" list inline on asset / directory edit pages.
      */
@@ -183,11 +241,14 @@ class ShareController extends Controller
             }
         }
 
+        // Return the most recent share for the target (any status: active, revoked,
+        // expired) so the modal can offer reauthorize on a revoked share rather
+        // than forcing the user to create a brand-new link.
         $shares = Share::query()
             ->where('share_type', $type)
             ->where('target_id', $targetId)
-            ->active()
             ->orderByDesc('created_at')
+            ->limit(1)
             ->get()
             ->map(fn (Share $s) => $this->presentShare($s));
 
@@ -200,19 +261,20 @@ class ShareController extends Controller
     protected function presentShare(Share $share): array
     {
         return [
-            'id'             => $share->id,
-            'token'          => $share->token,
-            'name'           => $share->name,
-            'share_type'     => $share->share_type,
-            'target_id'      => $share->target_id,
-            'public_url'     => route('dam.share.show', ['token' => $share->token]),
-            'expires_at'     => $share->expires_at?->toIso8601String(),
-            'revoked_at'     => $share->revoked_at?->toIso8601String(),
-            'view_count'     => $share->view_count,
-            'download_count' => $share->download_count,
-            'status'         => $share->statusLabel(),
-            'created_at'     => $share->created_at?->toIso8601String(),
-            'update_url'     => route('admin.dam.shares.update', $share->id),
+            'id'              => $share->id,
+            'token'           => $share->token,
+            'name'            => $share->name,
+            'share_type'      => $share->share_type,
+            'target_id'       => $share->target_id,
+            'public_url'      => route('dam.share.show', ['token' => $share->token]),
+            'expires_at'      => $share->expires_at?->toIso8601String(),
+            'revoked_at'      => $share->revoked_at?->toIso8601String(),
+            'view_count'      => $share->view_count,
+            'download_count'  => $share->download_count,
+            'status'          => $share->statusLabel(),
+            'created_at'      => $share->created_at?->toIso8601String(),
+            'update_url'      => route('admin.dam.shares.update', $share->id),
+            'reauthorize_url' => route('admin.dam.shares.reauthorize', $share->id),
         ];
     }
 
@@ -242,6 +304,20 @@ class ShareController extends Controller
             return false;
         }
 
+        return $this->hasTargetAccess($share);
+    }
+
+    protected function canDelete(Share $share): bool
+    {
+        if (! bouncer()->hasPermission('dam.shares.delete')) {
+            return false;
+        }
+
+        return $this->hasTargetAccess($share);
+    }
+
+    protected function hasTargetAccess(Share $share): bool
+    {
         if ($this->permissionService->bypass()) {
             return true;
         }

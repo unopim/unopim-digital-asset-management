@@ -1,24 +1,16 @@
-@php
-    $crumbParts = $directoryAncestors->pluck('name')->toArray();
-@endphp
-
 <!-- Breadcrumb (left) + action icons (right) -->
 <div class="flex justify-between items-center gap-2 w-full px-2 py-1 border-b border-gray-100 dark:border-gray-700">
 
     <nav class="flex items-center gap-1 flex-wrap text-sm min-w-0" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
-        @foreach ($crumbParts as $i => $name)
-            @if ($i > 0)
-                <span class="text-gray-400 dark:text-gray-500">/</span>
-            @endif
+        <template v-for="(crumb, i) in displayDirectoryBreadcrumb" :key="crumb.id">
+            <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
             <a
-                href="{{ route('admin.dam.assets.index').'?directory_id='.($directoryAncestors[$i]->id ?? '') }}"
+                :href="'{{ route('admin.dam.assets.index') }}?directory_id=' + crumb.id"
                 class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
-            >{{ $name }}</a>
-        @endforeach
-        @if (count($crumbParts) > 0)
-            <span class="text-gray-400 dark:text-gray-500">/</span>
-        @endif
-        <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">{{ $asset->file_name }}</span>
+            >@{{ crumb.name }}</a>
+        </template>
+        <span v-if="displayDirectoryBreadcrumb.length > 0" class="text-gray-400 dark:text-gray-500">/</span>
+        <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">@{{ previewData.file_name }}</span>
     </nav>
 
     <div class="flex items-center gap-1 shrink-0">

@@ -1002,10 +1002,34 @@
                 moveStatusLabel: '',
                 _folderAbortController: null,
                 _awaitingFolderFiles: false,
+                localAccessibleIds: [...(this.accessibleIds || [])],
             };
         },
 
+        beforeUnmount() {
+            this.$axios.interceptors.response.eject(this._csrfInterceptorId);
+        },
+
         mounted() {
+            this._csrfInterceptorId = this.$axios.interceptors.response.use(
+                undefined,
+                async (error) => {
+                    if (error.response?.status === 419 && ! error.config._csrfRetried) {
+                        error.config._csrfRetried = true;
+
+                        try {
+                            await this.$axios.get("{{ route('sanctum.csrf-cookie') }}");
+
+                            return await this.$axios(error.config);
+                        } catch (retryError) {
+                            return Promise.reject(retryError);
+                        }
+                    }
+
+                    return Promise.reject(error);
+                }
+            );
+
             this.$emitter.on('uploaded-assets', (data) => {
                 const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
                 if (uploadedCount > 0 && this.selectedItem) {
@@ -1098,7 +1122,7 @@
                 if (this.aclBypass) return true;
                 if (! this.selectedItem || this.selectedItem.id == null) return false;
 
-                return this.accessibleIds.map(Number).includes(Number(this.selectedItem.id));
+                return this.localAccessibleIds.map(Number).includes(Number(this.selectedItem.id));
             },
 
             focusNameInput() {
@@ -1298,6 +1322,23 @@
 
                             this.selectedItem.children.push(response.data.data);
 
+                            // Grant the newly-created directory in the client-side
+                            // accessible list so canAccessSelected() passes immediately
+                            // without requiring a page reload. Also broadcast to
+                            // v-dam-upload so its canUploadHere / drag-drop check
+                            // reflects the new permission without a page reload.
+                            if (response.data.data && response.data.data.id) {
+                                const newId = Number(response.data.data.id);
+                                if (! this.localAccessibleIds.map(Number).includes(newId)) {
+                                    this.localAccessibleIds.push(newId);
+                                }
+                                this.$emitter.emit('dam:directory-granted', newId);
+                            }
+
+                            // Select the new directory so loadDirectories() restores
+                            // it as the active item instead of staying on the parent.
+                            this.selectedItem = response.data.data;
+                            this.parentItem = response.data.data;
                         } else {
                             this.selectedItem = response.data.data;
                         }
