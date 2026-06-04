@@ -1,16 +1,3 @@
-@props(['tabId'])
-
-<v-dam-explorer-list
-    :directories="directories" :assets="assets"
-    :is-loading="isLoading" :sort-by="sortBy" :sort-order="sortOrder"
-    tab-id="{{ $tabId }}"
-    @navigate="$emit('navigate', $event)"
-    @open-new-tab="$emit('open-new-tab', $event)"
-    @bookmark="$emit('bookmark', $event)"
-    @sort-change="$emit('sort-change', $event)"
-    @refresh="$emit('refresh')"
-></v-dam-explorer-list>
-
 @once('v-dam-explorer-list')
 @push('scripts')
 <style>
@@ -58,7 +45,6 @@
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
                 <span class="text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
-                <span class="text-gray-400 text-xs">@{{ dir.assets_count }} @lang('dam::app.admin.explorer.sections.items')</span>
                 <span class="text-gray-400 text-xs">—</span>
                 <div class="flex gap-2">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
@@ -67,6 +53,7 @@
                     @if (bouncer()->hasPermission('dam.directory.destroy'))
                     <button type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)"></button>
                     @endif
+                    @if (config('dam.explorer.bookmarks_enabled'))
                     <button
                         type="button"
                         class="text-gray-400 hover:text-violet-600 text-sm"
@@ -74,6 +61,7 @@
                         @click.stop="$emit('bookmark', dir)"
                         title="@lang('dam::app.admin.explorer.context.bookmark')"
                     >🔖</button>
+                    @endif
                 </div>
             </div>
 
@@ -187,12 +175,12 @@ app.component('v-dam-explorer-list', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });
         },
-        renameDir(dir) { this.$emitter.emit(`dam:explorer-rename-dir:${this.tabId}`, { dir }); },
+        renameDir(dir) { this.$emitter.emit('dam:open-rename-dir', { item: dir }); },
         delDir(dir) {
             const tabId = this.tabId;
             this.$emitter.emit('open-delete-modal', {
@@ -209,6 +197,8 @@ app.component('v-dam-explorer-list', {
                                         if (d.status === 'completed') {
                                             this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                            this.$emitter.emit('dam:tree-reload');
+                                            this.$emitter.emit(`dam:dir-deleted:${tabId}`);
                                         } else if (d.status === 'failed') {
                                             this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);

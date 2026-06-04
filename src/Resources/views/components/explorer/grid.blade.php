@@ -1,18 +1,3 @@
-@props(['tabId'])
-
-@include('dam::components.shared.asset-card')
-
-<v-dam-explorer-grid
-    :directories="directories"
-    :assets="assets"
-    :is-loading="isLoading"
-    tab-id="{{ $tabId }}"
-    @navigate="$emit('navigate', $event)"
-    @open-new-tab="$emit('open-new-tab', $event)"
-    @bookmark="$emit('bookmark', $event)"
-    @refresh="$emit('refresh')"
-></v-dam-explorer-grid>
-
 @once('v-dam-explorer-grid')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
@@ -49,7 +34,6 @@
                     >
                         <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
                         <div class="text-xs font-semibold text-violet-700 dark:text-violet-300 truncate w-full">@{{ dir.name }}</div>
-                        <div class="text-[10px] text-violet-400">@{{ dir.assets_count }}</div>
                     </div>
                 </div>
             </template>
@@ -63,26 +47,75 @@
                     <div
                         v-for="asset in assets"
                         :key="asset.id"
+                        class="group rounded-lg border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
+                        style="box-shadow:0 1px 3px rgba(0,0,0,.08);"
+                        draggable="true"
+                        @dragstart="onAssetDragStart($event, asset)"
+                        @dragend="onDragEnd($event)"
+                        @click="preview(asset.id)"
+                        @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                     >
-                        <v-dam-asset-card
-                            :asset="asset"
-                            :draggable="true"
-                            @preview="preview(asset.id)"
-                            @edit="edit(asset.id)"
-                            @delete="del(asset)"
-                            @dragstart="onAssetDragStart($event, asset)"
-                            @dragend="onDragEnd($event)"
-                            @contextmenu="showCtx($event, asset, 'asset')"
-                        ></v-dam-asset-card>
-                        <p class="text-xs text-gray-600 dark:text-gray-300 truncate px-1 mt-1">@{{ asset.file_name }}</p>
+                        {{-- Thumbnail --}}
+                        <div class="image-card relative overflow-hidden">
+                            <img
+                                :src="asset.path"
+                                :alt="asset.file_name"
+                                class="w-full h-full object-cover object-center"
+                                @@error="onImgErr($event, asset)"
+                            />
+
+                            {{-- Extension badge --}}
+                            <span
+                                v-if="asset.extension"
+                                class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase text-white shadow"
+                                style="z-index:2;"
+                                :class="{
+                                    'bg-violet-600': asset.file_type==='video'||asset.file_type==='audio',
+                                    'bg-red-600':    (asset.extension||'').toLowerCase()==='pdf',
+                                    'bg-gray-600':   asset.file_type!=='video'&&asset.file_type!=='audio'&&(asset.extension||'').toLowerCase()!=='pdf',
+                                }"
+                            >@{{ (asset.extension||'').toUpperCase() }}</span>
+
+                            {{-- Play / audio overlay --}}
+                            <div
+                                v-if="asset.file_type==='video'||asset.file_type==='audio'"
+                                class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                            >
+                                <span
+                                    class="flex items-center justify-center w-10 h-10 rounded-full bg-black/55 text-white text-xl shadow-lg"
+                                    :class="asset.file_type==='video' ? 'icon-play' : 'icon-information'"
+                                    aria-hidden="true"
+                                ></span>
+                            </div>
+
+                            {{-- Hover action overlay — pointer-events-none on dark bg; buttons only active on hover via .explorer-asset-actions CSS class --}}
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <div class="flex gap-1 explorer-asset-actions">
+                                    @if (bouncer()->hasPermission('dam.asset.view'))
+                                    <button type="button" class="icon-dam-preview text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors" @click.stop="preview(asset.id)"></button>
+                                    @endif
+                                    @if (bouncer()->hasPermission('dam.asset.edit'))
+                                    <button type="button" class="icon-edit text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors" @click.stop="edit(asset.id)"></button>
+                                    @endif
+                                    @if (bouncer()->hasPermission('dam.asset.destroy'))
+                                    <button type="button" class="icon-delete text-xl p-1.5 rounded-md text-white hover:bg-red-600 transition-colors" @click.stop="del(asset)"></button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-2 py-1.5">
+                            <p class="text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
+                        </div>
                     </div>
                 </div>
             </template>
 
             {{-- Empty --}}
-            <template v-if="!directories.length && !assets.length">
-                @include('dam::components.shared.empty-state')
-            </template>
+            <div v-if="!directories.length && !assets.length" class="flex flex-col items-center justify-center py-16 gap-4">
+                <img src="{{ unopim_asset('images/no-records-found.svg', 'dam') }}" class="w-32 h-32 opacity-60" alt="" />
+                <p class="text-lg font-bold text-gray-700 dark:text-slate-50">@lang('admin::app.components.datagrid.table.no-records-available')</p>
+            </div>
         </template>
 
         {{-- Context menu --}}
@@ -123,10 +156,21 @@ app.component('v-dam-explorer-grid', {
             _ctxClose: null,
             _springTimer: null,
             dropTargetId: null,
+            placeholders: {
+                video:       '{{ unopim_asset('images/grid/video.svg', 'dam') }}',
+                audio:       '{{ unopim_asset('images/grid/audio.svg', 'dam') }}',
+                pdf:         '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
+                spreadsheet: '{{ unopim_asset('images/grid/sheet.svg', 'dam') }}',
+                csv:         '{{ unopim_asset('images/grid/csv.svg', 'dam') }}',
+                document:    '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
+                image:       '{{ unopim_asset('images/grid/image.svg', 'dam') }}',
+            },
+            fallback: '{{ unopim_asset('images/grid/unspecified.svg', 'dam') }}',
         };
     },
 
     methods: {
+        onImgErr(e, a)   { e.target.src = this.placeholders[a.file_type] ?? this.fallback; e.target.className = 'w-full h-full object-contain p-4'; },
         onDragStart(e, d) {
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'dam-folder',
@@ -187,7 +231,7 @@ app.component('v-dam-explorer-grid', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });

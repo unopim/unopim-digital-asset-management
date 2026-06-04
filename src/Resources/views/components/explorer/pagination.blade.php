@@ -1,34 +1,53 @@
-<v-dam-explorer-pager
-    :current-page="currentPage" :last-page="lastPage" :per-page="perPage"
-    @page-change="$emit('page-change', $event)"
-    @per-page-change="$emit('per-page-change', $event)"
-></v-dam-explorer-pager>
-
 @once('v-dam-explorer-pager')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-pager-template">
-    <div class="flex items-center justify-between mt-4 text-sm text-gray-500 dark:text-gray-400">
-        <div class="flex items-center gap-2">
-            <span>@lang('dam::app.admin.explorer.pagination.per-page')</span>
-            <select
-                class="border border-gray-300 dark:border-cherry-700 rounded px-2 py-1 text-sm bg-white dark:bg-cherry-900"
-                :value="perPage" @change="$emit('per-page-change', Number($event.target.value))"
-            >
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
+    <div class="flex items-center gap-x-2">
+        <x-admin::dropdown>
+            <x-slot:toggle>
+                <button
+                    type="button"
+                    class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
+                >
+                    <span v-text="perPage"></span>
+                    <span class="icon-chevron-down text-2xl"></span>
+                </button>
+            </x-slot>
+            <x-slot:menu>
+                <x-admin::dropdown.menu.item v-for="opt in [50, 100, 150, 200, 250]" v-text="opt" @click="$emit('per-page-change', opt)"></x-admin::dropdown.menu.item>
+            </x-slot>
+        </x-admin::dropdown>
+
+        <p class="whitespace-nowrap text-gray-600 dark:text-gray-300 max-sm:hidden">
+            @lang('admin::app.components.datagrid.toolbar.per-page')
+        </p>
+
+        <input
+            type="text"
+            class="inline-flex min-h-[38px] max-w-[60px] appearance-none items-center justify-center gap-x-1 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-3 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-400 max-sm:hidden"
+            :value="currentPage"
+            @change="$emit('page-change', Math.max(1, Math.min(lastPage, parseInt($event.target.value) || 1)))"
+        >
+
+        <div class="flex items-center gap-1 whitespace-nowrap text-gray-600 dark:text-gray-300">
+            <span>@lang('admin::app.components.datagrid.toolbar.of')</span>
+            <span v-text="lastPage"></span>
         </div>
-        <div class="flex items-center gap-2">
-            <button
-                class="px-2 py-1 rounded border border-gray-300 dark:border-cherry-700 hover:bg-gray-100 dark:hover:bg-cherry-800 disabled:opacity-40"
-                :disabled="currentPage <= 1" @click="$emit('page-change', currentPage - 1)"
-            >←</button>
-            <span>Page @{{ currentPage }} of @{{ lastPage }}</span>
-            <button
-                class="px-2 py-1 rounded border border-gray-300 dark:border-cherry-700 hover:bg-gray-100 dark:hover:bg-cherry-800 disabled:opacity-40"
-                :disabled="currentPage >= lastPage" @click="$emit('page-change', currentPage + 1)"
-            >→</button>
+
+        <div class="flex items-center gap-1">
+            <div
+                class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                :class="{ 'opacity-40 pointer-events-none': currentPage <= 1 }"
+                @click="currentPage > 1 && $emit('page-change', currentPage - 1)"
+            >
+                <span class="icon-chevron-left text-2xl"></span>
+            </div>
+            <div
+                class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                :class="{ 'opacity-40 pointer-events-none': currentPage >= lastPage }"
+                @click="currentPage < lastPage && $emit('page-change', currentPage + 1)"
+            >
+                <span class="icon-chevron-right text-2xl"></span>
+            </div>
         </div>
     </div>
 </script>
