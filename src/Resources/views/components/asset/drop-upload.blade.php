@@ -352,6 +352,9 @@
 
                     if (! this.canUpload || ! this.currentDirectory) return;
 
+                    // Snapshot directory ID at drop time — prop may change if user navigates mid-upload
+                    const targetDirectoryId = this.currentDirectory.id;
+
                     const items = event.dataTransfer?.items;
                     if (! items || items.length === 0) return;
 
@@ -372,12 +375,12 @@
                     }
 
                     if (dirEntries.length === 0) {
-                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false);
+                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId);
                         return;
                     }
 
                     if (flatFiles.length > 0) {
-                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false);
+                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId);
                     }
 
                     const allFolderFiles = [];
@@ -413,13 +416,13 @@
                         try {
                             await this.$axios.post(
                                 "{{ route('admin.dam.directory.create_structure') }}",
-                                { directory_id: this.currentDirectory.id, paths: [...uniqueDirPaths] }
+                                { directory_id: targetDirectoryId, paths: [...uniqueDirPaths] }
                             );
                             folderJobIds.forEach(jid => {
                                 const job = this.dropUploads.find(u => u.id === jid);
                                 if (job) job.status = 'done';
                             });
-                            this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: this.currentDirectory.id, count: 0 });
+                            this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: targetDirectoryId, count: 0 });
                         } catch (e) {
                             folderJobIds.forEach(jid => {
                                 const job = this.dropUploads.find(u => u.id === jid);
@@ -430,7 +433,7 @@
 
                     if (allFolderFiles.length === 0) return;
 
-                    await this.runBatchUpload(allFolderFiles, true);
+                    await this.runBatchUpload(allFolderFiles, true, targetDirectoryId);
 
                     const anyError = this.dropUploads.some(u => u.status === 'error');
                     if (! anyError) {
@@ -474,7 +477,7 @@
                     return { files, emptyDirs };
                 },
 
-                async runBatchUpload(fileEntries, isFolderUpload) {
+                async runBatchUpload(fileEntries, isFolderUpload, directoryId) {
                     if (fileEntries.length === 0) return;
 
                     this.dropPanelMinimized = false;
@@ -500,7 +503,7 @@
                         const jobId = jobIds[i];
 
                         const formData = new FormData();
-                        formData.append('directory_id', this.currentDirectory.id);
+                        formData.append('directory_id', directoryId);
                         formData.append('files[]', entry.file);
                         if (isFolderUpload) {
                             formData.append('preserve_root', '1');
@@ -546,7 +549,7 @@
                         if (completedSinceLastRefresh >= refreshChunkSize) {
                             this.scheduleDatagridRefresh();
                             this.$emitter.emit('dam:folder-drop-uploaded', {
-                                directoryId: this.currentDirectory.id,
+                                directoryId: directoryId,
                                 count: successSinceLastEmit,
                             });
                             successSinceLastEmit = 0;
@@ -561,7 +564,7 @@
 
                     // Emit remainder count for tree
                     this.$emitter.emit('dam:folder-drop-uploaded', {
-                        directoryId: this.currentDirectory.id,
+                        directoryId: directoryId,
                         count: successSinceLastEmit,
                     });
                 },
