@@ -193,7 +193,7 @@ jobs:
         if: matrix.shard-index == 1
         working-directory: unopim
         run: |
-          [ -f storage/oauth-private.key ] || php artisan passport:keys --no-interaction
+          php artisan passport:keys --force --no-interaction
           php artisan tinker --execute='
           $provider = config("auth.guards.api.provider") ?: "users";
           $client = app(Laravel\Passport\ClientRepository::class)
