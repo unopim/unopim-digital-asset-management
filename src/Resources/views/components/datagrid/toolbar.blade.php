@@ -3,15 +3,16 @@
 </template>
 
 <template v-else>
-    <div class="relative mt-7 flex items-center justify-between gap-4 max-md:flex-wrap">
+    <div class="relative mt-7 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <!-- Left Toolbar -->
-        <div class="flex gap-x-1">
+        <div class="flex flex-1 min-w-[120px] gap-x-1">
             <!-- Mass Actions Panel -->
             <div
                 class="flex w-full items-center gap-x-1"
                 v-if="applied.massActions.indices.length"
             >
                 <!-- Mass Action Dropdown -->
+                <div class="relative z-20">
                 <x-admin::dropdown>
                     <!-- Dropdown Toggler -->
                     <x-slot:toggle>
@@ -84,6 +85,7 @@
                         </template>
                     </x-slot>
                 </x-admin::dropdown>
+                </div>
 
                 <div class="ltr:pl-2.5 rtl:pr-2.5">
                     <p class="text-sm font-light text-gray-800 dark:text-white">
@@ -177,6 +179,7 @@
             </x-admin::drawer>
 
             <div class="flex items-center gap-x-2">
+                <div class="relative z-20">
                 <x-admin::dropdown>
                     <!-- Dropdown Toggler -->
                     <x-slot:toggle>
@@ -200,8 +203,9 @@
                         </x-admin::dropdown.menu.item>
                     </x-slot>
                 </x-admin::dropdown>
+                </div>
 
-                <p class="whitespace-nowrap text-gray-600 dark:text-gray-300 max-sm:hidden">
+                <p class="whitespace-nowrap text-gray-600 dark:text-gray-300 hidden">
                     @lang('admin::app.components.datagrid.toolbar.per-page')
                 </p>
 

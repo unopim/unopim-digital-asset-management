@@ -77,6 +77,28 @@
                 </button>
             </template>
             @endif
+
+            {{-- Grid / List view toggle --}}
+            <div class="flex border border-gray-300 dark:border-cherry-600 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 shrink-0 ml-auto">
+                <button
+                    type="button"
+                    class="flex items-center px-2.5 py-2 transition-colors"
+                    :class="viewMode==='grid' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
+                    @click="setView('grid')"
+                    data-view="grid"
+                >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+                </button>
+                <button
+                    type="button"
+                    class="flex items-center px-2.5 py-2 border-l border-gray-200 dark:border-cherry-700 transition-colors"
+                    :class="viewMode==='list' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
+                    @click="setView('list')"
+                    data-view="list"
+                >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2.5" rx="1"/><rect x="1" y="6.75" width="14" height="2.5" rx="1"/><rect x="1" y="11.5" width="14" height="2.5" rx="1"/></svg>
+                </button>
+            </div>
         </div>
 
         @include('dam::components.explorer.toolbar')

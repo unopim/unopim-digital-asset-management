@@ -69,7 +69,7 @@
             </button>
             @if (bouncer()->hasPermission('dam.directory.destroy'))
             <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50" @click="delDir">
+            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-zinc-600 dark:text-white transition-colors hover:bg-red-600 hover:text-white" @click="delDir">
                 <i class="icon-dam-delete text-sm"></i>
                 @lang('dam::app.admin.dam.index.directory.actions.delete')
             </button>
@@ -137,7 +137,7 @@
             @endif
             @if (bouncer()->hasPermission('dam.asset.destroy'))
             <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50" @click="delAsset">
+            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-zinc-600 dark:text-white transition-colors hover:bg-red-600 hover:text-white" @click="delAsset">
                 <i class="icon-dam-delete text-sm"></i>
                 @lang('dam::app.admin.dam.index.directory.actions.delete')
             </button>
