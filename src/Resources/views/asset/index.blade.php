@@ -3,29 +3,6 @@
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
 
-    @if (config('dam.explorer.enabled'))
-    @push('styles')
-    <style>
-        /* Explorer view: fix height chain so the grid scrolls internally, not the page. */
-        html, body { height: 100% !important; overflow: hidden !important; }
-        #app { display: flex !important; flex-direction: column !important; height: 100% !important; overflow: hidden !important; }
-        [class*="group/container"] { flex: 1 !important; min-height: 0 !important; overflow: hidden !important; }
-        [class*="group/container"] > div.flex-1 {
-            display: flex !important; flex-direction: column !important;
-            overflow: hidden !important; min-height: 0 !important;
-        }
-        /* When panes wrap (zoom / narrow viewport) restore page scroll.
-           Keep height:100% on html/body so they remain proper scroll containers
-           (height:auto breaks position:sticky on the header). */
-        @media (max-width: 1280px) {
-            html, body { overflow-y: auto !important; height: 100% !important; }
-            #app { overflow: visible !important; height: auto !important; min-height: 100% !important; }
-            [class*="group/container"],
-            [class*="group/container"] > div.flex-1 { overflow: visible !important; }
-        }
-    </style>
-    @endpush
-    @endif
 
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
@@ -38,11 +15,11 @@
             type="text/x-template"
             id="v-dam-main-template"
         >
-            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col flex-1 min-h-0' : '' }}">
+            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
-                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 flex-1 min-h-0 max-xl:flex-wrap' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap' }}">
+                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap' }}">
                         <!-- left side: stacked cards -->
-                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full {{ config('dam.explorer.enabled') ? 'min-h-0 overflow-y-auto' : '' }}">
+                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full">
 
                             <!-- directories card -->
                             <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
@@ -84,7 +61,7 @@
                         </div>
 
                         <!-- right sub-component -->
-                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow {{ config('dam.explorer.enabled') ? 'min-h-0 overflow-hidden' : '' }}">
+                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
                             @if (config('dam.explorer.enabled'))
                                 <x-dam::explorer.index />
