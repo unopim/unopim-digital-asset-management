@@ -20,8 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard-index: [1, 2, 3, 4]
-        shard-total: [4]
+        shard-index: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard-total: [8]
 
     services:
       mysql:
@@ -120,6 +120,14 @@ jobs:
           key: ${{ runner.os }}-npm-dam-${{ hashFiles('dam-package/tests/e2e-pw/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm-dam-
 
+      - name: Cache DAM API npm dependencies
+        if: matrix.shard-index == 1
+        uses: actions/cache@v5
+        with:
+          path: unopim/packages/Webkul/DAM/tests/api-pw/node_modules
+          key: ${{ runner.os }}-npm-dam-api-${{ hashFiles('dam-package/tests/api-pw/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-dam-api-
+
       - name: Cache Playwright browsers
         uses: actions/cache@v5
         with:
@@ -138,6 +146,12 @@ jobs:
           cd unopim/packages/Webkul/DAM/tests/e2e-pw
           npm install --no-progress --prefer-offline
           npx playwright install --with-deps chromium
+
+      - name: Install npm (DAM API suite)
+        if: matrix.shard-index == 1
+        run: |
+          cd unopim/packages/Webkul/DAM/tests/api-pw
+          npm install --no-progress --prefer-offline
 
       - name: Install Composer dependencies
         working-directory: unopim
@@ -174,6 +188,25 @@ jobs:
           echo "Waiting for server..."
           timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || (cat /tmp/server.log && exit 1)
 
+      - name: Provision Passport password client for the DAM API suite
+        id: make_passport_client
+        if: matrix.shard-index == 1
+        working-directory: unopim
+        run: |
+          [ -f storage/oauth-private.key ] || php artisan passport:keys --no-interaction
+          php artisan tinker --execute='
+          $provider = config("auth.guards.api.provider") ?: "users";
+          $client = app(Laravel\Passport\ClientRepository::class)
+              ->createPasswordGrantClient(null, "DAM API Tests", "http://localhost", $provider);
+          $secret = $client->plainSecret ?? $client->secret;
+          file_put_contents(
+              getenv("GITHUB_ENV"),
+              "OAUTH_CLIENT_ID=" . $client->getKey() . PHP_EOL . "OAUTH_CLIENT_SECRET=" . $secret . PHP_EOL,
+              FILE_APPEND
+          );
+          fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " (provider: " . $provider . ")" . PHP_EOL);
+          '
+
       - name: Run UnoPim Playwright tests
         id: unopim_pw
         run: |
@@ -192,6 +225,16 @@ jobs:
           cd unopim/packages/Webkul/DAM/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
 
+      - name: Run DAM API Playwright tests
+        id: dam_api_pw
+        if: always() && matrix.shard-index == 1 && steps.make_passport_client.outcome == 'success'
+        working-directory: unopim/packages/Webkul/DAM/tests/api-pw
+        env:
+          BASE_URL: http://127.0.0.1:8000
+          OAUTH_TOKEN_URL: /oauth/token
+          API_LOCALE: en_US
+        run: npx playwright test
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v5
@@ -202,6 +245,8 @@ jobs:
             unopim/tests/e2e-pw/test-results
             unopim/packages/Webkul/DAM/tests/e2e-pw/playwright-report
             unopim/packages/Webkul/DAM/tests/e2e-pw/test-results
+            unopim/packages/Webkul/DAM/tests/api-pw/playwright-report
+            unopim/packages/Webkul/DAM/tests/api-pw/test-results
             unopim/storage/logs/laravel.log
             /tmp/server.log
             /tmp/queue.log
