@@ -6,20 +6,6 @@
     {{ $slot }}
 </v-gallery-table>
 
-@pushOnce('styles')
-    {{-- Responsive grid overrides pushed after admin CSS so they win the cascade --}}
-    <style>
-        @media (min-width: 768px) {
-            .dam-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1240px) {
-            .dam-gallery-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1920px) {
-            .dam-gallery-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-        }
-    </style>
-@endPushOnce
 
 @pushOnce('scripts')
     <script
@@ -63,7 +49,7 @@
 
             <!-- Records grid -->
             <div
-                class="dam-gallery-grid grid grid-cols-2 gap-4"
+                class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4"
                 v-if="$parent.available.records.length"
             >
                 <slot name="body">

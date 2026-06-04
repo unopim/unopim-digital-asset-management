@@ -2,9 +2,9 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
     {{-- Outer div catches right-click on empty space (item right-clicks use .stop) --}}
-    <div @contextmenu.prevent="showSpaceCtx($event)">
+    <div class="pr-4" @contextmenu.prevent="showSpaceCtx($event)">
         {{-- Shimmer --}}
-        <div v-if="isLoading" class="grid explorer-asset-grid grid-cols-2 gap-4 animate-pulse">
+        <div v-if="isLoading" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
         </div>
 
@@ -14,7 +14,7 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.folders')
                 </p>
-                <div class="grid explorer-folder-grid gap-3 mb-6">
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3 mb-6">
                     <div
                         v-for="dir in directories"
                         :key="dir.id"
@@ -43,7 +43,7 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.files')
                 </p>
-                <div class="grid explorer-asset-grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
                     <div
                         v-for="asset in assets"
                         :key="asset.id"
@@ -88,17 +88,17 @@
                                 ></span>
                             </div>
 
-                            {{-- Hover action overlay — pointer-events-none on dark bg; buttons only active on hover via .explorer-asset-actions CSS class --}}
+                            {{-- Hover action overlay — buttons enabled only when card is hovered --}}
                             <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                <div class="flex gap-1 explorer-asset-actions">
+                                <div class="flex gap-1">
                                     @if (bouncer()->hasPermission('dam.asset.view'))
-                                    <button type="button" class="icon-dam-preview text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors" @click.stop="preview(asset.id)"></button>
+                                    <button type="button" class="icon-dam-preview text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="preview(asset.id)"></button>
                                     @endif
                                     @if (bouncer()->hasPermission('dam.asset.edit'))
-                                    <button type="button" class="icon-edit text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors" @click.stop="edit(asset.id)"></button>
+                                    <button type="button" class="icon-edit text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="edit(asset.id)"></button>
                                     @endif
                                     @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                    <button type="button" class="icon-delete text-xl p-1.5 rounded-md text-white hover:bg-red-600 transition-colors" @click.stop="del(asset)"></button>
+                                    <button type="button" class="icon-delete text-xl p-1.5 rounded-md text-white hover:bg-red-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="del(asset)"></button>
                                     @endif
                                 </div>
                             </div>

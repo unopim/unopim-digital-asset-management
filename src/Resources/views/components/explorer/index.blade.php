@@ -8,26 +8,13 @@
     :accessible-ids='@json(dam_accessible_dir_ids())'
 ></v-dam-explorer>
 
-@once('explorer-styles')
-@push('styles')
-<style>
-.explorer-folder-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-@media (min-width: 640px)  { .explorer-asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .explorer-asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1280px) { .explorer-asset-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-/* Grid card hover-action buttons: non-interactive until the card is hovered */
-.explorer-asset-actions button { pointer-events: none; }
-.group:hover .explorer-asset-actions button { pointer-events: auto; }
-</style>
-@endpush
-@endonce
 
 {{-- v-dam-bookmarks is defined in bookmarks.blade.php — included below via asset/index.blade.php --}}
 
 @once('v-dam-explorer')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-template">
-    <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div class="flex flex-col flex-1 overflow-hidden">
 
         {{-- Tab bar --}}
         <div
@@ -195,6 +182,7 @@ app.component('v-dam-explorer', {
 {{-- because the USAGE of <v-dam-tab> inside the Vue x-template above passes Vue runtime --}}
 {{-- variables (tab.id, tab.directoryId) which Blade cannot resolve at render time. --}}
 
+@include('dam::components.explorer.toolbar')
 
 @include('dam::components.explorer.grid')
 

@@ -1,8 +1,5 @@
 @once('v-dam-explorer-list')
 @push('scripts')
-<style>
-.explorer-list-grid { grid-template-columns: 28px 1fr 110px 80px 110px 100px; }
-</style>
 
 <script type="text/x-template" id="v-dam-explorer-list-template">
     <div
@@ -19,7 +16,7 @@
 
         <template v-else>
             {{-- Header --}}
-            <div class="explorer-list-grid grid gap-0 px-4 py-2 bg-gray-50 dark:bg-cherry-950 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2 bg-gray-50 dark:bg-cherry-950 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 <span></span>
                 <span class="cursor-pointer hover:text-gray-600" @click="sort('name')">
                     @lang('dam::app.admin.explorer.list.header.name') <span v-if="sortBy==='name'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
@@ -37,7 +34,7 @@
             {{-- Folder rows --}}
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
-                class="explorer-list-grid grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 transition-colors"
+                class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 transition-colors"
                 :data-dir-id="dir.id"
                 @click="$emit('navigate', dir)"
                 @contextmenu.prevent.stop="showCtx($event, dir, 'directory')"
@@ -73,7 +70,7 @@
             {{-- Asset rows --}}
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
-                class="explorer-list-grid grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-gray-50 dark:hover:bg-cherry-800 transition-colors"
+                class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-gray-50 dark:hover:bg-cherry-800 transition-colors"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
             >
                 <i class="text-lg" :class="icon(asset.file_type)"></i>

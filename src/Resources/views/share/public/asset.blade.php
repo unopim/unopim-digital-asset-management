@@ -210,7 +210,7 @@
                 </div>
 
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-cherry-800">
-                    <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    <dl class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 text-sm">
                         <div>
                             <dt class="text-gray-500 dark:text-slate-400">@lang('dam::app.share.public.file-name')</dt>
                             <dd class="text-zinc-900 dark:text-slate-100 font-medium truncate">{{ $asset->file_name }}</dd>
