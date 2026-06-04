@@ -1,0 +1,16 @@
+{
+  "name": "dam-api-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright API automation suite for the UnoPim DAM REST API.",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:assets": "npx playwright test api/02-asset-crud.spec.js api/03-asset-list-search-filter.spec.js api/04-asset-files.spec.js",
+    "test:auth": "npx playwright test api/01-auth-access-control.spec.js",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@types/node": "^22.15.2"
+  }
+}
