@@ -79,10 +79,11 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
 
     test('1× speed button is active by default', async ({ adminPage }) => {
       await navigateToFirstAssetWithExt(adminPage, '.mp4');
-      const oneX = adminPage.locator('button').filter({ hasText: /^1×$/ }).first();
-      await oneX.waitFor({ state: 'visible', timeout: 10000 });
-      const cls = await oneX.evaluate(el => el.className);
-      expect(cls).toContain('bg-violet-600');
+      // Speed selector is a dropdown toggle that always shows the current speed.
+      // At 1× default, the toggle button text contains "1×".
+      const speedToggle = adminPage.locator('button').filter({ hasText: /1×/ }).first();
+      await speedToggle.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(speedToggle).toContainText('1×');
     });
 
   });
@@ -95,7 +96,7 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
 
     test('Play/pause button visible for inline audio', async ({ adminPage }) => {
       await navigateToFirstAssetWithExt(adminPage, '.wav');
-      await expect(adminPage.locator('button.w-14.h-14.rounded-full').first()).toBeVisible({ timeout: 10000 });
+      await expect(adminPage.locator('button.w-10.h-10.rounded-full').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('Seek bar visible for inline audio', async ({ adminPage }) => {

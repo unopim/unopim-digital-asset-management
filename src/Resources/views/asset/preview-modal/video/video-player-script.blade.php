@@ -23,12 +23,27 @@ window._damVideoPlayer = {
         videoSeekTooltipVisible: false,
         videoSupportsPiP:        typeof document !== 'undefined' && 'pictureInPictureEnabled' in document,
         videoMenuOpen:           false,
+        videoSpeedOpen:          false,
         videoLinkCopied:         false,
+        _videoSpeedBtnRect:      null,
     },
 
     computed: {
         videoCurrentTimeDisplay() { return this._formatTime(this.videoCurrentTime); },
         videoDurationDisplay()    { return this._formatTime(this.videoDuration); },
+
+        videoSpeedMenuStyle() {
+            const r = this._videoSpeedBtnRect;
+            if (!r) return {};
+            // 6 items × ~32px + 8px padding ≈ 200px menu height
+            const menuH = 208;
+            const top   = r.top - menuH - 8;
+            return {
+                top:  (top < 8 ? r.bottom + 8 : top) + 'px',
+                left: Math.round(r.left + r.width / 2) + 'px',
+                transform: 'translateX(-50%)',
+            };
+        },
     },
 
     methods: {
@@ -41,7 +56,7 @@ window._damVideoPlayer = {
             this.videoIsMuted = false; this.videoIsLooping = false;
             this.videoIsBuffering = false; this.videoBuffered = 0;
             this.videoClickFlash = false;
-            this.videoMenuOpen = false; this.videoLinkCopied = false;
+            this.videoMenuOpen = false; this.videoSpeedOpen = false; this.videoLinkCopied = false;
             try { const sv = parseFloat(localStorage.getItem('dam_video_volume')); if (!isNaN(sv)) this.videoVolume = sv; } catch(_) {}
         },
 
@@ -75,6 +90,16 @@ window._damVideoPlayer = {
         setVideoSpeed(rate) {
             this.videoSpeed = rate;
             if (this.$refs.videoEl) this.$refs.videoEl.playbackRate = rate;
+        },
+
+        videoToggleSpeedMenu() {
+            if (!this.videoSpeedOpen) {
+                this._videoSpeedBtnRect = this.$refs.videoSpeedBtn
+                    ? this.$refs.videoSpeedBtn.getBoundingClientRect()
+                    : null;
+                this.videoKeepControls();
+            }
+            this.videoSpeedOpen = !this.videoSpeedOpen;
         },
 
         videoSkip(sec) {
@@ -154,22 +179,26 @@ window._damVideoPlayer = {
             e.preventDefault();
             this.videoIsSeeking = true;
             this._seekFromEvent(e);
-            const move = (ev) => { if (this.videoIsSeeking) this._seekFromEvent(ev); };
+            const isTouch = e.type === 'touchstart';
+            const moveEvt = isTouch ? 'touchmove' : 'mousemove';
+            const endEvt  = isTouch ? 'touchend'  : 'mouseup';
+            const move = (ev) => { if (this.videoIsSeeking) { ev.preventDefault(); this._seekFromEvent(ev); } };
             const up   = () => {
                 this.videoIsSeeking = false;
-                window.removeEventListener('mousemove', move);
-                window.removeEventListener('mouseup',   up);
+                window.removeEventListener(moveEvt, move);
+                window.removeEventListener(endEvt,  up);
             };
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup',   up);
+            window.addEventListener(moveEvt, move, { passive: false });
+            window.addEventListener(endEvt,  up);
         },
 
         _seekFromEvent(e) {
             const container = this.$refs.videoSeekContainer;
             if (!container || !this.videoDuration) return;
-            const rect = container.getBoundingClientRect();
-            const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const t    = pct * this.videoDuration;
+            const rect    = container.getBoundingClientRect();
+            const clientX = e.touches ? (e.touches[0] ?? e.changedTouches[0])?.clientX : e.clientX;
+            const pct     = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            const t       = pct * this.videoDuration;
             this.videoCurrentTime = t;
             if (this.$refs.videoEl) this.$refs.videoEl.currentTime = t;
         },

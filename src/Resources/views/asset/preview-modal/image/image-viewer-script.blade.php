@@ -169,7 +169,15 @@ window._damImageViewer = {
         imgRotateRight() { this.imgRotation = (this.imgRotation + 90) % 360; },
         imgRotateLeft()  { this.imgRotation = (this.imgRotation - 90 + 360) % 360; },
         imgFitToScreen() { this.imgZoom = 1; this.imgPanX = 0; this.imgPanY = 0; },
-        imgActualSize()  { this.imgZoom = 1; this.imgPanX = 0; this.imgPanY = 0; },
+        imgActualSize() {
+            const img = this.$refs.previewImg;
+            if (!img || !img.naturalWidth || !img.offsetWidth) {
+                this.imgZoom = 1; this.imgPanX = 0; this.imgPanY = 0; return;
+            }
+            this.imgZoom = parseFloat(Math.max(0.1, Math.min(10, img.naturalWidth / img.offsetWidth)).toFixed(3));
+            this.imgPanX = 0;
+            this.imgPanY = 0;
+        },
         imgReset()       { this.imgZoom = 1; this.imgRotation = 0; this.imgPanX = 0; this.imgPanY = 0; },
 
         imgOnWheel(e) {

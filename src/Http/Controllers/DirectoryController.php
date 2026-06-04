@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
+use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Http\Requests\DirectorySearchRequest;
 use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
@@ -18,11 +19,11 @@ use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
-use ZipArchive;
 
 class DirectoryController
 {
     use ActionRequestTrait;
+    use StreamsZipDownload;
 
     public function __construct(
         protected DirectoryRepository $directoryRepository,
@@ -396,34 +397,14 @@ class DirectoryController
         $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
         $files = Storage::disk($disk)->allFiles($folderPath);
-        $directories = Storage::disk($disk)->allDirectories($folderPath);
 
-        if (empty($directories) && empty($files)) {
+        if (empty($files)) {
             return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
         }
 
-        $zip = new ZipArchive;
-        $zipFileName = sprintf('%s.zip', $directory->name);
-        if ($zip->open(public_path($zipFileName), ZipArchive::CREATE) === true) {
-            // Add files to the ZIP archive
-            foreach ($files as $file) {
-                $relativePath = str_replace($folderPath.'/', '', $file);
-                $fileContents = Storage::disk($disk)->get($file);
-                $zip->addFromString($relativePath, $fileContents);
-            }
+        $zipName = sprintf('%s.zip', $directory->name);
 
-            // Add directories to the ZIP archive
-            foreach ($directories as $directory) {
-                $relativePath = str_replace($folderPath.'/', '', $directory);
-                $zip->addEmptyDir($relativePath);
-            }
-
-            $zip->close();
-
-            return response()->download(public_path($zipFileName))->deleteFileAfterSend(true);
-        } else {
-            return back()->with('error', trans('dam::app.admin.dam.index.directory.failed-download-directory'));
-        }
+        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
     }
 
     /**

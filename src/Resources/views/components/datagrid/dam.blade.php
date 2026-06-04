@@ -12,9 +12,20 @@
         id="v-datagrid-template"
     >
         <div
-            :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': gridLocked }"
+            class="relative"
+            :class="{ 'pointer-events-none cursor-not-allowed': gridLocked }"
             :aria-busy="gridLocked"
         >
+            <!-- Dim overlay while grid is locked (tree busy / action in flight).
+                 Uses a child absolute element so the parent stays at z:auto
+                 (no stacking context), keeping the filter drawer's fixed
+                 elements in the root stacking context above the sticky navbar. -->
+            <div
+                v-if="gridLocked && !actionInFlight"
+                class="absolute inset-0 bg-white/60 dark:bg-cherry-900/60 z-[1] rounded-lg"
+                aria-hidden="true"
+            ></div>
+
             <!-- Action-in-flight overlay (mass delete / mass action) -->
             <div
                 v-if="actionInFlight"
@@ -218,7 +229,7 @@
 
                             this.applied.sort = currentDatagrid.applied.sort;
 
-                            // this.applied.filters = currentDatagrid.applied.filters;
+                            this.applied.filters = currentDatagrid.applied.filters;
 
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');

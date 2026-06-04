@@ -14,11 +14,25 @@ window._damAudioPlayer = {
         audioSeekTooltip:        '',
         audioSeekTooltipX:       0,
         audioSeekTooltipVisible: false,
+        audioSpeedOpen:          false,
+        _audioSpeedBtnRect:      null,
     },
 
     computed: {
         audioCurrentTimeDisplay() { return this._formatTime(this.audioCurrentTime); },
         audioDurationDisplay()    { return this._formatTime(this.audioDuration); },
+
+        audioSpeedMenuStyle() {
+            const r = this._audioSpeedBtnRect;
+            if (!r) return {};
+            const menuH = 208;
+            const top   = r.top - menuH - 8;
+            return {
+                top:  (top < 8 ? r.bottom + 8 : top) + 'px',
+                left: Math.round(r.left + r.width / 2) + 'px',
+                transform: 'translateX(-50%)',
+            };
+        },
     },
 
     methods: {
@@ -28,6 +42,7 @@ window._damAudioPlayer = {
             this.audioDuration = 0; this.audioVolume = 1; this.audioEnded = false;
             this.audioIsLooping = false; this.audioIsMuted = false; this.audioSpeed = 1;
             this.audioSeekTooltipVisible = false;
+            this.audioSpeedOpen = false;
             this.audioStopViz();
             try { const sa = parseFloat(localStorage.getItem('dam_audio_volume')); if (!isNaN(sa)) this.audioVolume = sa; } catch(_) {}
         },
@@ -74,6 +89,15 @@ window._damAudioPlayer = {
             if (this.$refs.audioEl) this.$refs.audioEl.playbackRate = rate;
         },
 
+        audioToggleSpeedMenu() {
+            if (!this.audioSpeedOpen) {
+                this._audioSpeedBtnRect = this.$refs.audioSpeedBtn
+                    ? this.$refs.audioSpeedBtn.getBoundingClientRect()
+                    : null;
+            }
+            this.audioSpeedOpen = !this.audioSpeedOpen;
+        },
+
         audioToggleLoop() {
             this.audioIsLooping = !this.audioIsLooping;
             if (this.$refs.audioEl) this.$refs.audioEl.loop = this.audioIsLooping;
@@ -100,22 +124,26 @@ window._damAudioPlayer = {
             e.preventDefault();
             this.audioIsSeeking = true;
             this._audioSeekFromEvent(e);
-            const move = (ev) => { if (this.audioIsSeeking) this._audioSeekFromEvent(ev); };
+            const isTouch = e.type === 'touchstart';
+            const moveEvt = isTouch ? 'touchmove' : 'mousemove';
+            const endEvt  = isTouch ? 'touchend'  : 'mouseup';
+            const move = (ev) => { if (this.audioIsSeeking) { ev.preventDefault(); this._audioSeekFromEvent(ev); } };
             const up   = () => {
                 this.audioIsSeeking = false;
-                window.removeEventListener('mousemove', move);
-                window.removeEventListener('mouseup',   up);
+                window.removeEventListener(moveEvt, move);
+                window.removeEventListener(endEvt,  up);
             };
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup',   up);
+            window.addEventListener(moveEvt, move, { passive: false });
+            window.addEventListener(endEvt,  up);
         },
 
         _audioSeekFromEvent(e) {
             const container = this.$refs.audioSeekContainer;
             if (!container || !this.audioDuration) return;
-            const rect = container.getBoundingClientRect();
-            const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const t    = pct * this.audioDuration;
+            const rect    = container.getBoundingClientRect();
+            const clientX = e.touches ? (e.touches[0] ?? e.changedTouches[0])?.clientX : e.clientX;
+            const pct     = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+            const t       = pct * this.audioDuration;
             this.audioCurrentTime = t;
             if (this.$refs.audioEl) this.$refs.audioEl.currentTime = t;
         },

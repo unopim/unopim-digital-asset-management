@@ -3,6 +3,18 @@
         {{ $asset->file_name }} · @lang('dam::app.share.public.app-name')
     </x-slot:title>
 
+    @push('styles')
+        @unoPimVite(['src/Resources/assets/css/app.css'], 'dam')
+    <style>
+        .dam-desktop-nav { display: none; }
+        .dam-mobile-nav  { display: flex; }
+        @media (min-width: 525px) {
+            .dam-desktop-nav { display: flex; }
+            .dam-mobile-nav  { display: none; }
+        }
+    </style>
+    @endpush
+
     @php
         $mime = $asset->mime_type ?? '';
         $isImage = \Illuminate\Support\Str::startsWith($mime, 'image/');
@@ -14,8 +26,15 @@
             : route('dam.share.asset_download', ['token' => $share->token, 'assetId' => $asset->id]);
         $inlineUrl = $downloadUrl.'?disposition=inline';
         $thumbnailUrl = route('dam.share.thumbnail', ['token' => $share->token, 'assetId' => $asset->id]);
-        $backUrl = $share->share_type === \Webkul\DAM\Models\Share::TYPE_DIRECTORY
+        $backUrl     = $share->share_type === \Webkul\DAM\Models\Share::TYPE_DIRECTORY
             ? route('dam.share.show', ['token' => $share->token])
+            : null;
+        $isAssetShare = $share->share_type === \Webkul\DAM\Models\Share::TYPE_ASSET;
+        $prevUrl = (! $isAssetShare && isset($prevAssetId) && $prevAssetId)
+            ? route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $prevAssetId])
+            : null;
+        $nextUrl = (! $isAssetShare && isset($nextAssetId) && $nextAssetId)
+            ? route('dam.share.asset_view', ['token' => $share->token, 'assetId' => $nextAssetId])
             : null;
     @endphp
 
@@ -26,11 +45,11 @@
                     @if ($backUrl)
                         <a
                             href="{{ $backUrl }}"
-                            class="secondary-button"
+                            class="transparent-button"
                             title="@lang('dam::app.share.public.back-to-gallery')"
                         >
-                            <span class="icon-back text-lg"></span>
-                            <span class="hidden sm:inline">@lang('dam::app.share.public.back')</span>
+                            <i class="icon-left text-xl -mt-px" aria-hidden="true"></i>
+                            @lang('dam::app.share.public.back')
                         </a>
                     @endif
                     <h1 class="text-lg font-semibold text-zinc-900 dark:text-slate-50 truncate" title="{{ $asset->file_name }}">
@@ -43,7 +62,7 @@
                     class="primary-button shrink-0"
                     download
                 >
-                    <span class="icon-dam-download text-lg"></span>
+                    <span class="icon-dam-download text-lg text-white"></span>
                     <span>@lang('dam::app.share.public.download')</span>
                 </a>
             </div>
@@ -51,7 +70,29 @@
 
         <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
             <div class="bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden">
-                <div class="flex items-center justify-center bg-gray-100 dark:bg-cherry-800" style="min-height: 320px">
+                <div class="flex items-stretch">
+
+                    {{-- Prev arrow (desktop only — mobile uses overlay) --}}
+                    @if (! $isAssetShare)
+                    <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
+                        @if ($prevUrl)
+                            <a
+                                href="{{ $prevUrl }}"
+                                class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
+                                title="@lang('dam::app.admin.dam.asset.edit.previous')"
+                                aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
+                            >
+                                <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                            </a>
+                        @else
+                            <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60">
+                                <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                            </span>
+                        @endif
+                    </div>
+                    @endif
+
+                <div class="flex-1 min-w-0 relative flex items-center justify-center bg-gray-100 dark:bg-cherry-800">
                     @if ($isImage)
                         <div class="w-full" style="height: 70vh;">
                             <v-zoomable-image
@@ -60,21 +101,26 @@
                             ></v-zoomable-image>
                         </div>
                     @elseif ($isVideo)
-                        <video
-                            controls
-                            preload="metadata"
-                            class="max-w-full max-h-[70vh]"
-                        >
-                            <source src="{{ $inlineUrl }}" type="{{ $mime }}">
-                            @lang('dam::app.share.public.video-not-supported')
-                        </video>
+                        <div class="w-full relative" style="aspect-ratio: 16/9; max-height: 70vh;">
+                            <v-dam-public-player
+                                media-url="{{ $inlineUrl }}"
+                                mime-type="{{ $mime }}"
+                                file-type="video"
+                                file-name="{{ $asset->file_name }}"
+                                download-url="{{ $downloadUrl }}"
+                            ></v-dam-public-player>
+                        </div>
                     @elseif ($isAudio)
-                        <div class="w-full p-8 flex flex-col items-center gap-4">
-                            <img src="{{ $thumbnailUrl }}" alt="" class="w-40 h-40 object-cover rounded" />
-                            <audio controls class="w-full max-w-md">
-                                <source src="{{ $inlineUrl }}" type="{{ $mime }}">
-                                @lang('dam::app.share.public.audio-not-supported')
-                            </audio>
+                        <div class="w-full" style="min-height: 420px;">
+                            <v-dam-public-player
+                                media-url="{{ $inlineUrl }}"
+                                mime-type="{{ $mime }}"
+                                file-type="audio"
+                                file-name="{{ $asset->file_name }}"
+                                download-url="{{ $downloadUrl }}"
+                                cover-art-url="{{ $thumbnailUrl }}"
+                                placeholder-svg="{{ asset('storage/dam/grid/audio.svg') }}"
+                            ></v-dam-public-player>
                         </div>
                     @elseif ($isPdf)
                         <iframe
@@ -91,6 +137,76 @@
                             </p>
                         </div>
                     @endif
+                    {{-- Mobile overlay prev/next (hidden sm+, where side panels take over) --}}
+                    @if (! $isAssetShare)
+                    @php
+                        // Audio: place arrows at disc-center height (top of disc ≈ 40px + half disc 104px = 144px from flex-1 top)
+                        $mobileNavStyle = $isAudio
+                            ? 'background:rgba(0,0,0,0.5);top:144px;transform:none;'
+                            : 'background:rgba(0,0,0,0.5);';
+                        $mobileNavDisabledStyle = $isAudio
+                            ? 'background:rgba(0,0,0,0.35);top:144px;transform:none;'
+                            : 'background:rgba(0,0,0,0.35);';
+                    @endphp
+                    @if ($prevUrl)
+                        <a
+                            href="{{ $prevUrl }}"
+                            class="dam-mobile-nav absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20"
+                            style="{{ $mobileNavStyle }}"
+                            aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
+                        >
+                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                        </a>
+                    @else
+                        <span
+                            class="dam-mobile-nav absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20 opacity-30 cursor-not-allowed select-none"
+                            style="{{ $mobileNavDisabledStyle }}"
+                            aria-hidden="true"
+                        >
+                            <span class="text-2xl leading-none">&#8249;</span>
+                        </span>
+                    @endif
+                    @if ($nextUrl)
+                        <a
+                            href="{{ $nextUrl }}"
+                            class="dam-mobile-nav absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20"
+                            style="{{ $mobileNavStyle }}"
+                            aria-label="@lang('dam::app.admin.dam.asset.edit.next')"
+                        >
+                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                        </a>
+                    @else
+                        <span
+                            class="dam-mobile-nav absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20 opacity-30 cursor-not-allowed select-none"
+                            style="{{ $mobileNavDisabledStyle }}"
+                            aria-hidden="true"
+                        >
+                            <span class="text-2xl leading-none">&#8250;</span>
+                        </span>
+                    @endif
+                    @endif
+                </div>
+
+                    {{-- Next arrow (desktop only — mobile uses overlay) --}}
+                    @if (! $isAssetShare)
+                    <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
+                        @if ($nextUrl)
+                            <a
+                                href="{{ $nextUrl }}"
+                                class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
+                                title="@lang('dam::app.admin.dam.asset.edit.next')"
+                                aria-label="@lang('dam::app.admin.dam.asset.edit.next')"
+                            >
+                                <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                            </a>
+                        @else
+                            <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60">
+                                <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
+                            </span>
+                        @endif
+                    </div>
+                    @endif
+
                 </div>
 
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-cherry-800">
@@ -128,4 +244,6 @@
     @pushOnce('scripts')
         @include('dam::share.components.zoomable-image')
     @endPushOnce
+
+    @include('dam::share.components.media-player')
 </x-admin::layouts.anonymous>

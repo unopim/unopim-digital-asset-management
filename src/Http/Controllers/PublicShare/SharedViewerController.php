@@ -2,14 +2,17 @@
 
 namespace Webkul\DAM\Http\Controllers\PublicShare;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Share;
@@ -17,6 +20,8 @@ use Webkul\DAM\Repositories\ShareRepository;
 
 class SharedViewerController extends Controller
 {
+    use StreamsZipDownload;
+
     public function __construct(
         protected ShareRepository $shareRepository,
     ) {}
@@ -56,14 +61,75 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        $assets = $directory->assets()
-            ->orderByDesc('dam_assets.updated_at')
-            ->get();
+        $directoryIds = Directory::descendantsOf($directory->id)
+            ->pluck('id')
+            ->push($directory->id)
+            ->unique();
+
+        $assets = Asset::whereHas('directories', function ($q) use ($directoryIds) {
+            $q->whereIn('dam_directories.id', $directoryIds);
+        })->orderByDesc('updated_at')->paginate(24);
 
         return view('dam::share.public.directory', [
             'share'     => $share,
             'directory' => $directory,
             'assets'    => $assets,
+        ]);
+    }
+
+    /**
+     * JSON endpoint for infinite-scroll pages 2+.
+     */
+    public function listAssets(string $token): JsonResponse
+    {
+        $share = $this->shareRepository->findActiveByToken($token);
+
+        if (! $share || $share->share_type !== Share::TYPE_DIRECTORY) {
+            return response()->json(['error' => 'not_found'], 404);
+        }
+
+        $directory = $share->directory;
+        if (! $directory) {
+            return response()->json(['error' => 'not_found'], 404);
+        }
+
+        $directoryIds = Directory::descendantsOf($directory->id)
+            ->pluck('id')
+            ->push($directory->id)
+            ->unique();
+
+        $page = max(1, (int) request('page', 1));
+        $perPage = 24;
+
+        $paginator = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds)
+        )->orderByDesc('updated_at')->paginate($perPage, ['*'], 'page', $page);
+
+        $data = $paginator->getCollection()->map(fn (Asset $asset) => [
+            'id'                  => $asset->id,
+            'file_name'           => $asset->file_name,
+            'file_type'           => $asset->file_type,
+            'extension'           => strtolower((string) $asset->extension),
+            'file_size_formatted' => $asset->file_size
+                ? Number::fileSize((int) $asset->file_size, precision: 1)
+                : '',
+            'thumbnail_url'      => route('dam.share.thumbnail', ['token' => $token, 'assetId' => $asset->id]),
+            'view_url'           => route('dam.share.asset_view', ['token' => $token, 'assetId' => $asset->id]),
+            'placeholder_svg'    => asset('storage/dam/grid/'.match ($asset->file_type) {
+                'image'    => 'image.svg',
+                'video'    => 'video.svg',
+                'audio'    => 'audio.svg',
+                'document' => 'file.svg',
+                default    => 'unspecified.svg',
+            }),
+        ])->values();
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page'    => $paginator->lastPage(),
+                'has_more'     => $paginator->hasMorePages(),
+            ],
         ]);
     }
 
@@ -106,9 +172,25 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
+        $directoryIds = Directory::descendantsOf($share->target_id)
+            ->pluck('id')
+            ->push($share->target_id)
+            ->unique();
+
+        $assetIds = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
+            ->orderByDesc('updated_at')
+            ->pluck('id')
+            ->toArray();
+
+        $currentIndex = array_search($assetId, $assetIds);
+        $prevAssetId = $currentIndex < count($assetIds) - 1 ? $assetIds[$currentIndex + 1] : null;
+        $nextAssetId = $currentIndex > 0 ? $assetIds[$currentIndex - 1] : null;
+
         return view('dam::share.public.asset', [
-            'share' => $share,
-            'asset' => $asset,
+            'share'       => $share,
+            'asset'       => $asset,
+            'prevAssetId' => $prevAssetId,
+            'nextAssetId' => $nextAssetId,
         ]);
     }
 
@@ -198,6 +280,37 @@ class SharedViewerController extends Controller
     }
 
     /**
+     * Download all assets in a shared directory (and its subdirectories) as a ZIP archive.
+     */
+    public function downloadZip(string $token)
+    {
+        $share = $this->shareRepository->findActiveByToken($token);
+
+        if (! $share || $share->share_type !== Share::TYPE_DIRECTORY) {
+            return $this->renderExpiredOrNotFound($token);
+        }
+
+        $directory = $share->directory;
+        if (! $directory) {
+            return $this->renderNotFound();
+        }
+
+        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
+        $disk = Directory::getAssetDisk();
+        $files = Storage::disk($disk)->allFiles($folderPath);
+
+        if (empty($files)) {
+            return $this->renderNotFound();
+        }
+
+        $zipName = Str::slug($directory->name ?: 'download').'.zip';
+
+        $this->shareRepository->incrementDownload($share);
+
+        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
+    }
+
+    /**
      * Stream a file. For S3, redirect to a short-lived presigned URL; for the
      * local/private disk, response()->file() handles range requests so video
      * scrubbing in the public viewer works.
@@ -220,7 +333,7 @@ class SharedViewerController extends Controller
             : 'attachment';
 
         $filename = $asset->file_name;
-        $contentDisposition = $disposition.'; filename="'.addslashes($filename).'"';
+        $contentDisposition = $disposition.'; filename="'.str_replace(['"', "\r", "\n", "\0"], '', $filename).'"';
 
         if ($disk === Directory::ASSETS_DISK_AWS) {
             try {
@@ -248,13 +361,18 @@ class SharedViewerController extends Controller
     }
 
     /**
-     * Look up an asset that must be a DIRECT child of the share's directory.
-     * Subdirectory traversal is rejected with null (caller returns 404).
+     * Look up an asset that lives within the share's directory tree
+     * (direct child or any descendant subdirectory).
      */
     protected function resolveDirectoryAsset(Share $share, int $assetId): ?Asset
     {
+        $directoryIds = Directory::descendantsOf($share->target_id)
+            ->pluck('id')
+            ->push($share->target_id)
+            ->unique();
+
         return Asset::query()
-            ->whereHas('directories', fn ($q) => $q->where('dam_directories.id', $share->target_id))
+            ->whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
             ->where('id', $assetId)
             ->first();
     }

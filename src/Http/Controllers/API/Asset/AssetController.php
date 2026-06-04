@@ -197,7 +197,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
                 $errors[] = trans('dam::app.admin.dam.asset.datagrid.file-forbidden-type').': '.$file->getClientOriginalName();
 
                 continue;
@@ -327,7 +327,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (AssetHelper::isForbiddenFile($extension, $mimeType)) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('dam::app.admin.dam.index.directory.not-allowed'),
