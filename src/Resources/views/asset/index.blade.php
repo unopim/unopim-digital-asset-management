@@ -15,9 +15,9 @@
             type="text/x-template"
             id="v-dam-main-template"
         >
-            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col' : '' }}">
+            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col min-w-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
-                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap' }}">
+                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap min-w-0' }}">
                         <!-- left side: stacked cards -->
                         <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full">
 
@@ -61,7 +61,7 @@
                         </div>
 
                         <!-- right sub-component -->
-                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto min-w-0 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
                             @if (config('dam.explorer.enabled'))
                                 <x-dam::explorer.index />
