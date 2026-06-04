@@ -2,9 +2,8 @@
     v-dam-drop-upload component
     Handles drag-and-drop file/folder uploads:
     - Drag overlay + hint card
-    - Session-based batch history (completed batches stack above active one)
-    - Compact progress strip visible even when minimized
-    - File-only counts in footer tracker
+    - Each drop creates its own session with its own progress panel
+    - Completed sessions stack above active ones in history
 --}}
 @pushOnce('scripts')
     <script type="text/x-template" id="v-dam-drop-upload-template">
@@ -52,12 +51,12 @@
             <!-- Default slot: breadcrumb + upload button + datagrid -->
             <slot></slot>
 
-            <!-- Upload panel -->
+            <!-- Upload panel (history + active sessions) -->
             <div
-                v-if="dropUploads.length || sessions.length"
+                v-if="activeSessions.length || sessions.length"
                 class="fixed bottom-4 ltr:right-8 rtl:left-8 z-[10005] w-[460px] rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600"
             >
-                <!-- Previous completed sessions (stacked above, collapsed by default) -->
+                <!-- Completed sessions history (stacked above, collapsed by default) -->
                 <div
                     v-for="session in sessions"
                     :key="session.id"
@@ -89,7 +88,6 @@
                             </button>
                         </div>
                     </div>
-                    <!-- Expandable history row list -->
                     <div v-if="!session.minimized" class="max-h-40 overflow-y-auto divide-y divide-gray-100 dark:divide-cherry-700">
                         <div
                             v-for="job in session.jobs"
@@ -113,17 +111,21 @@
                     </div>
                 </div>
 
-                <!-- Active session -->
-                <div v-if="dropUploads.length" class="bg-white dark:bg-cherry-800">
+                <!-- Active sessions — one panel per drop -->
+                <div
+                    v-for="session in activeSessions"
+                    :key="session.id"
+                    class="bg-white dark:bg-cherry-800 border-b-2 border-gray-100 dark:border-cherry-700 last:border-b-0"
+                >
                     <!-- Header -->
                     <div
                         class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-violet-600 dark:bg-violet-700"
-                        @click="dropPanelMinimized = !dropPanelMinimized"
+                        @click="session.minimized = !session.minimized"
                     >
-                        <span class="text-sm font-semibold text-white truncate">@{{ dropPanelTitle }}</span>
+                        <span class="text-sm font-semibold text-white truncate">@{{ sessionTitle(session) }}</span>
                         <div class="flex items-center gap-1 flex-shrink-0 ml-2">
                             <svg
-                                :class="dropPanelMinimized ? 'rotate-180' : ''"
+                                :class="session.minimized ? 'rotate-180' : ''"
                                 class="h-4 w-4 text-white/80 transition-transform"
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 20 20"
@@ -134,7 +136,7 @@
                             <button
                                 type="button"
                                 class="p-1 text-white/80 hover:text-white rounded transition-colors"
-                                @click.stop="clearDropUploads"
+                                @click.stop="clearSession(session)"
                             >
                                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -143,25 +145,22 @@
                         </div>
                     </div>
 
-                    <!-- Compact progress strip — only visible when minimized -->
-                    <div v-if="activeDropUploadCount > 0 && dropPanelMinimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
+                    <!-- Compact progress strip — only when minimized and still uploading -->
+                    <div v-if="sessionActiveCount(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
                         <div
                             class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300"
-                            :style="{ width: overallProgress + '%' }"
+                            :style="{ width: sessionProgress(session) + '%' }"
                         ></div>
                     </div>
 
                     <!-- Row list -->
-                    <div v-if="!dropPanelMinimized" class="max-h-52 overflow-y-auto divide-y divide-gray-100 dark:divide-cherry-700">
+                    <div v-if="!session.minimized" class="max-h-52 overflow-y-auto divide-y divide-gray-100 dark:divide-cherry-700">
                         <div
-                            v-for="job in dropUploads"
+                            v-for="job in session.jobs"
                             :key="job.id"
                             class="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-cherry-700/50"
                         >
-                            <!-- file-type icon -->
                             <div v-html="jobIconHtml(job)" class="flex-shrink-0 mt-0.5"></div>
-
-                            <!-- name + parent path + inline progress bar -->
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-800 dark:text-gray-100 truncate leading-snug">@{{ job.name }}</p>
                                 <p v-if="job.parentPath" class="text-xs text-gray-400 dark:text-gray-500 truncate leading-snug">@{{ job.parentPath }}</p>
@@ -170,14 +169,10 @@
                                     <div class="h-full bg-violet-600 dark:bg-violet-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
                                 </div>
                             </div>
-
-                            <!-- size / Creating… label -->
                             <div class="flex-shrink-0 text-xs text-gray-400 dark:text-gray-400 text-right pt-0.5 min-w-[52px]">
                                 <span v-if="job.isFolder && job.status === 'creating'">Creating…</span>
                                 <span v-else-if="!job.isFolder && job.fileSize && job.status !== 'error'">@{{ formatFileSize(job.fileSize) }}</span>
                             </div>
-
-                            <!-- status indicator -->
                             <div class="flex-shrink-0 mt-0.5">
                                 <svg v-if="job.status === 'uploading' || job.status === 'creating'" class="animate-spin h-3.5 w-3.5 text-violet-500 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -196,17 +191,17 @@
                         </div>
                     </div>
 
-                    <!-- Footer: file-only counts -->
-                    <div v-if="!dropPanelMinimized" class="px-4 py-2.5 border-t border-gray-100 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900/40">
+                    <!-- Footer: file-only counts + overall bar -->
+                    <div v-if="!session.minimized" class="px-4 py-2.5 border-t border-gray-100 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900/40">
                         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
-                            <span>@{{ uploadedCount }} of @{{ fileJobCount }} uploaded</span>
-                            <span>@{{ Math.round(overallProgress) }}%</span>
+                            <span>@{{ sessionUploadedCount(session) }} of @{{ sessionFileJobCount(session) }} uploaded</span>
+                            <span>@{{ Math.round(sessionProgress(session)) }}%</span>
                         </div>
                         <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
                             <div
                                 class="h-full rounded-full transition-all duration-300"
-                                :class="dropUploads.some(u => u.status === 'error') ? 'bg-red-500 dark:bg-red-600' : 'bg-violet-600 dark:bg-violet-500'"
-                                :style="{ width: overallProgress + '%' }"
+                                :class="session.jobs.some(u => u.status === 'error') ? 'bg-red-500 dark:bg-red-600' : 'bg-violet-600 dark:bg-violet-500'"
+                                :style="{ width: sessionProgress(session) + '%' }"
                             ></div>
                         </div>
                     </div>
@@ -242,26 +237,43 @@
                     isDragOver: false,
                     dragCounter: 0,
                     hintCardStyle: {},
-                    dropUploads: [],       // jobs for the active (current) session
-                    sessions: [],          // completed session history: [{ id, jobs[], minimized }]
+                    activeSessions: [],    // in-progress: [{ id, jobs[], minimized }]
+                    sessions: [],          // completed history: [{ id, jobs[], minimized }]
                     nextSessionId: 1,
-                    dropPanelMinimized: false,
                     nextDropJobId: 1,
                     _datagridRefreshTimer: null,
                 }
             },
 
             computed: {
-                activeDropUploadCount() {
-                    return this.dropUploads.filter(u => u.status === 'uploading' || u.status === 'creating').length;
+                totalActiveCount() {
+                    return this.activeSessions.reduce((sum, s) => sum + this.sessionActiveCount(s), 0);
+                },
+            },
+
+            watch: {
+                totalActiveCount(count) {
+                    this.$emitter.emit('dam:drop-upload-active', count);
+                },
+            },
+
+            methods: {
+                // ── Per-session helpers ───────────────────────────────────────
+
+                sessionActiveCount(session) {
+                    return session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating').length;
                 },
 
-                fileJobCount() {
-                    return this.dropUploads.filter(u => ! u.isFolder).length;
+                sessionFileJobCount(session) {
+                    return session.jobs.filter(u => ! u.isFolder).length;
                 },
 
-                overallProgress() {
-                    const fileJobs = this.dropUploads.filter(u => ! u.isFolder);
+                sessionUploadedCount(session) {
+                    return session.jobs.filter(u => ! u.isFolder && u.status === 'done').length;
+                },
+
+                sessionProgress(session) {
+                    const fileJobs = session.jobs.filter(u => ! u.isFolder);
                     if (fileJobs.length === 0) return 100;
                     const done    = fileJobs.filter(u => u.status === 'done').length;
                     const errors  = fileJobs.filter(u => u.status === 'error').length;
@@ -270,33 +282,21 @@
                     return Math.min(100, Math.round(((done + errors) * 100 + progSum) / fileJobs.length));
                 },
 
-                uploadedCount() {
-                    return this.dropUploads.filter(u => ! u.isFolder && u.status === 'done').length;
-                },
-
-                dropPanelTitle() {
-                    const fileJobs = this.dropUploads.filter(u => ! u.isFolder);
+                sessionTitle(session) {
+                    const fileJobs = session.jobs.filter(u => ! u.isFolder);
                     const total    = fileJobs.length;
                     const done     = fileJobs.filter(u => u.status === 'done').length;
                     const skipped  = fileJobs.filter(u => u.status === 'error').length;
-                    const active   = this.activeDropUploadCount;
+                    const active   = this.sessionActiveCount(session);
 
                     if (active > 0) {
-                        const pct = this.dropPanelMinimized ? ` ${Math.round(this.overallProgress)}%` : '';
+                        const pct = session.minimized ? ` ${Math.round(this.sessionProgress(session))}%` : '';
                         return `Uploading ${total} file${total !== 1 ? 's' : ''}…${pct}`;
                     }
                     if (skipped > 0) return `${done} uploaded, ${skipped} skipped`;
                     return `${done} of ${total} uploaded`;
                 },
-            },
 
-            watch: {
-                activeDropUploadCount(count) {
-                    this.$emitter.emit('dam:drop-upload-active', count);
-                },
-            },
-
-            methods: {
                 sessionSummary(session) {
                     const fileJobs = session.jobs.filter(u => ! u.isFolder);
                     const done     = fileJobs.filter(u => u.status === 'done').length;
@@ -305,20 +305,25 @@
                     return `${done} of ${fileJobs.length} uploaded`;
                 },
 
+                archiveSession(session) {
+                    this.activeSessions = this.activeSessions.filter(s => s.id !== session.id);
+                    this.sessions.push({ ...session, minimized: true });
+                },
+
+                clearSession(session) {
+                    if (this.sessionActiveCount(session) > 0) {
+                        // Keep only in-progress jobs, discard done/error
+                        session.jobs = session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating');
+                    } else {
+                        this.activeSessions = this.activeSessions.filter(s => s.id !== session.id);
+                    }
+                },
+
                 removeSession(sessionId) {
                     this.sessions = this.sessions.filter(s => s.id !== sessionId);
                 },
 
-                archiveCurrentIfDone() {
-                    if (this.dropUploads.length === 0) return;
-                    if (this.activeDropUploadCount > 0) return;
-                    this.sessions.push({
-                        id: this.nextSessionId++,
-                        jobs: [...this.dropUploads],
-                        minimized: true,
-                    });
-                    this.dropUploads = [];
-                },
+                // ── Drag events ───────────────────────────────────────────────
 
                 onDragEnter(e) {
                     if (! e.dataTransfer?.types?.includes('Files')) return;
@@ -358,8 +363,9 @@
                     const items = event.dataTransfer?.items;
                     if (! items || items.length === 0) return;
 
-                    // Archive the previous completed session before starting fresh
-                    this.archiveCurrentIfDone();
+                    // Each drop gets its own session with its own progress panel
+                    const session = { id: this.nextSessionId++, jobs: [], minimized: false };
+                    this.activeSessions.push(session);
 
                     const flatFiles  = [];
                     const dirEntries = [];
@@ -375,13 +381,15 @@
                     }
 
                     if (dirEntries.length === 0) {
-                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId);
+                        await this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId, session);
+                        this.archiveSession(session);
                         return;
                     }
 
-                    if (flatFiles.length > 0) {
-                        this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId);
-                    }
+                    // Start flat file upload concurrently with folder scanning
+                    const flatUploadPromise = flatFiles.length > 0
+                        ? this.runBatchUpload(flatFiles.map(f => ({ file: f, relativePath: f.name })), false, targetDirectoryId, session)
+                        : Promise.resolve();
 
                     const allFolderFiles = [];
                     const allEmptyDirs   = [];
@@ -400,15 +408,13 @@
                         }
                     }
 
-                    this.dropPanelMinimized = false;
-
                     const folderJobIds = [];
                     for (const dirPath of [...uniqueDirPaths].sort()) {
                         const segs       = dirPath.split('/');
                         const name       = segs[segs.length - 1];
                         const parentPath = segs.length > 1 ? segs.slice(0, -1).join('/') + '/' : '';
                         const jobId      = this.nextDropJobId++;
-                        this.dropUploads.push({ id: jobId, name, parentPath, fileSize: 0, isFolder: true, status: 'creating', progress: 0, error: null });
+                        session.jobs.push({ id: jobId, name, parentPath, fileSize: 0, isFolder: true, status: 'creating', progress: 0, error: null });
                         folderJobIds.push(jobId);
                     }
 
@@ -419,26 +425,31 @@
                                 { directory_id: targetDirectoryId, paths: [...uniqueDirPaths] }
                             );
                             folderJobIds.forEach(jid => {
-                                const job = this.dropUploads.find(u => u.id === jid);
+                                const job = session.jobs.find(u => u.id === jid);
                                 if (job) job.status = 'done';
                             });
                             this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: targetDirectoryId, count: 0 });
                         } catch (e) {
                             folderJobIds.forEach(jid => {
-                                const job = this.dropUploads.find(u => u.id === jid);
+                                const job = session.jobs.find(u => u.id === jid);
                                 if (job) { job.status = 'error'; job.error = 'Failed to create folder'; }
                             });
                         }
                     }
 
-                    if (allFolderFiles.length === 0) return;
+                    if (allFolderFiles.length > 0) {
+                        await this.runBatchUpload(allFolderFiles, true, targetDirectoryId, session);
+                    }
 
-                    await this.runBatchUpload(allFolderFiles, true, targetDirectoryId);
+                    // Wait for flat files to finish too before archiving
+                    await flatUploadPromise;
 
-                    const anyError = this.dropUploads.some(u => u.status === 'error');
+                    const anyError = session.jobs.some(u => u.status === 'error');
                     if (! anyError) {
                         this.$emitter.emit('add-flash', { type: 'success', message: damDropUploadCompleteMsg });
                     }
+
+                    this.archiveSession(session);
                 },
 
                 async readFolderEntries(entries) {
@@ -477,16 +488,14 @@
                     return { files, emptyDirs };
                 },
 
-                async runBatchUpload(fileEntries, isFolderUpload, directoryId) {
+                async runBatchUpload(fileEntries, isFolderUpload, directoryId, session) {
                     if (fileEntries.length === 0) return;
-
-                    this.dropPanelMinimized = false;
 
                     const jobIds = fileEntries.map(({ file, relativePath }) => {
                         const jobId      = this.nextDropJobId++;
                         const segs       = relativePath ? relativePath.split('/') : [file.name];
                         const parentPath = segs.length > 1 ? segs.slice(0, -1).join('/') + '/' : '';
-                        this.dropUploads.push({ id: jobId, name: file.name, parentPath, fileSize: file.size, isFolder: false, status: 'uploading', progress: 0, error: null });
+                        session.jobs.push({ id: jobId, name: file.name, parentPath, fileSize: file.size, isFolder: false, status: 'uploading', progress: 0, error: null });
                         return jobId;
                     });
 
@@ -515,7 +524,7 @@
                                 headers: { 'Content-Type': 'multipart/form-data' },
                                 onUploadProgress: (e) => {
                                     if (e.total) {
-                                        const job = this.dropUploads.find(u => u.id === jobId);
+                                        const job = session.jobs.find(u => u.id === jobId);
                                         if (job && job.status === 'uploading') {
                                             job.progress = Math.min(99, Math.round((e.loaded / e.total) * 100));
                                         }
@@ -523,7 +532,7 @@
                                 },
                             });
 
-                            const job = this.dropUploads.find(u => u.id === jobId);
+                            const job = session.jobs.find(u => u.id === jobId);
                             if (! job) continue;
 
                             if (response.data?.success === false) {
@@ -538,7 +547,7 @@
                                 successSinceLastEmit++;
                             }
                         } catch (error) {
-                            const job = this.dropUploads.find(u => u.id === jobId);
+                            const job = session.jobs.find(u => u.id === jobId);
                             if (job) {
                                 job.status = 'error';
                                 job.error  = error?.response?.data?.message ?? damDropUploadFailedMsg;
@@ -562,7 +571,6 @@
                     this._datagridRefreshTimer = null;
                     this.$emit('refresh-datagrid');
 
-                    // Emit remainder count for tree
                     this.$emitter.emit('dam:folder-drop-uploaded', {
                         directoryId: directoryId,
                         count: successSinceLastEmit,
@@ -600,14 +608,6 @@
                     if (bytes < 1024) return bytes + ' B';
                     if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
                     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-                },
-
-                clearDropUploads() {
-                    if (this.dropUploads.some(u => u.status === 'uploading' || u.status === 'creating')) {
-                        this.dropUploads = this.dropUploads.filter(u => u.status === 'uploading' || u.status === 'creating');
-                    } else {
-                        this.dropUploads = [];
-                    }
                 },
             },
 
