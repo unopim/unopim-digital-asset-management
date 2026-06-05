@@ -45,19 +45,23 @@ trait AssetAccessControl
      */
     protected function damCanAccessAsset(int $assetId): bool
     {
-        $service = $this->damPermissionService();
+        try {
+            $service = $this->damPermissionService();
 
-        if ($service->bypass()) {
-            return true;
-        }
+            if ($service->bypass()) {
+                return true;
+            }
 
-        $dirId = $this->damAssetDirectoryId(Asset::find($assetId));
+            $dirId = $this->damAssetDirectoryId(Asset::find($assetId));
 
-        if ($dirId === null) {
+            if ($dirId === null) {
+                return false;
+            }
+
+            return $service->canAccess($dirId);
+        } catch (\Throwable $e) {
             return false;
         }
-
-        return $service->canAccess($dirId);
     }
 
     /**
@@ -66,7 +70,10 @@ trait AssetAccessControl
     protected function damAuthorizeAsset(int $assetId): void
     {
         if (! $this->damCanAccessAsset($assetId)) {
-            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+            abort(response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403));
         }
     }
 }
