@@ -1,5 +1,4 @@
 name: Playwright Tests
-
 on: [push, pull_request]
 
 concurrency:
