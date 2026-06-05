@@ -369,6 +369,13 @@ jobs:
           API_LOCALE: en_US
         run: npx playwright test
 
+      - name: Dump laravel.log on DAM API suite failure
+        if: always() && matrix.shard-index == 1 && steps.dam_api_pw.outcome == 'failure'
+        working-directory: unopim
+        run: |
+          echo "================ tail of storage/logs/laravel.log ================"
+          tail -n 400 storage/logs/laravel.log || echo "no laravel.log found"
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v5
