@@ -1090,8 +1090,12 @@
                     const target = path[path.length - 1];
                     const el = this.$refs.treeContainer
                         && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
-                    if (el && typeof el.scrollIntoView === 'function') {
-                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    if (el) {
+                        const container = this.$refs.treeContainer;
+                        const containerRect = container.getBoundingClientRect();
+                        const elRect = el.getBoundingClientRect();
+                        const scrollTop = container.scrollTop + elRect.top - containerRect.top - (containerRect.height / 2 - el.offsetHeight / 2);
+                        container.scrollTo({ top: scrollTop, behavior: 'smooth' });
                     }
                     this.setFilters(target);
                     this.__explorerSync = false;
@@ -1262,8 +1266,12 @@
                 const target = path[path.length - 1];
                 const el = this.$refs.treeContainer
                     && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
-                if (el && typeof el.scrollIntoView === 'function') {
-                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                if (el) {
+                    const container = this.$refs.treeContainer;
+                    const containerRect = container.getBoundingClientRect();
+                    const elRect = el.getBoundingClientRect();
+                    const scrollTop = container.scrollTop + elRect.top - containerRect.top - (containerRect.height / 2 - el.offsetHeight / 2);
+                    container.scrollTo({ top: scrollTop, behavior: 'smooth' });
                 }
 
                 this.setFilters(target);
