@@ -55,7 +55,6 @@ test.describe('Upload — validation & edge cases', () => {
 
   test('large file upload', async ({ api }) => {
     const res = await assetHelper.upload(api, { file: testData.syntheticFile.large('large.bin', 12), directoryId });
-    // Accept (200/201), or reject with a payload/validation status — never a 500.
     expect(res.status).not.toBe(STATUS.SERVER_ERROR);
     expect([STATUS.OK, STATUS.CREATED, STATUS.UNPROCESSABLE_ENTITY, STATUS.BAD_REQUEST, 413]).toContain(res.status);
   });
@@ -88,9 +87,6 @@ test.describe('Download (signed-URL flow)', () => {
 
   test('signed download route rejects a tampered signature', async ({ anonApi }) => {
     const res = await anonApi.get(`${ENDPOINTS.assets.signedDownload(1)}?expires=9999999999&signature=deadbeef`);
-    // A tampered signature must never serve the file. Laravel's signed middleware
-    // rejects it; the exact error status varies by stack (403/404/500), so the
-    // invariant asserted here is simply that the file is not returned (not 200).
     expect(res.status).not.toBe(STATUS.OK);
     expect(res.status).toBeGreaterThanOrEqual(STATUS.BAD_REQUEST);
   });

@@ -32,10 +32,6 @@ trait AssetAccessControl
             return null;
         }
 
-        // Read the pivot directly rather than $asset->directories()->value(...):
-        // the directories() relation resolves Directory models through the
-        // nested-set query builder, and resolving a single column that way blows
-        // up for non-bypass (directory-scoped) users.
         $dirId = DB::table('dam_asset_directory')
             ->where('asset_id', $asset->id)
             ->value('directory_id');

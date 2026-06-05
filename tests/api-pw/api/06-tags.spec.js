@@ -107,9 +107,6 @@ test.describe('Tag — detach (delete)', () => {
     expect(res.status).toBe(STATUS.CREATED);
     expect(res.body.success).toBe(true);
 
-    // Detached state is observable by re-attaching: it succeeds (201) because the
-    // tag is no longer on the asset — an already-attached tag would return 404.
-    // (Detach itself is keyed on the tag name existing, so re-detach stays 201.)
     const reattach = await tagHelper.add(api, { tag, assetId });
     expect(reattach.status).toBe(STATUS.CREATED);
     expect(reattach.body.success).toBe(true);
