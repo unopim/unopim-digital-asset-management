@@ -188,25 +188,6 @@ jobs:
           echo "Waiting for server..."
           timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || (cat /tmp/server.log && exit 1)
 
-      - name: Provision Passport password client for the DAM API suite
-        id: make_passport_client
-        if: matrix.shard-index == 1
-        working-directory: unopim
-        run: |
-          php artisan passport:keys --force --no-interaction
-          php artisan tinker --execute='
-          $provider = config("auth.guards.api.provider") ?: "users";
-          $client = app(Laravel\Passport\ClientRepository::class)
-              ->createPasswordGrantClient(null, "DAM API Tests", "http://localhost", $provider);
-          $secret = $client->plainSecret ?? $client->secret;
-          file_put_contents(
-              getenv("GITHUB_ENV"),
-              "OAUTH_CLIENT_ID=" . $client->getKey() . PHP_EOL . "OAUTH_CLIENT_SECRET=" . $secret . PHP_EOL,
-              FILE_APPEND
-          );
-          fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " (provider: " . $provider . ")" . PHP_EOL);
-          '
-
       - name: Run UnoPim Playwright tests
         id: unopim_pw
         run: |
@@ -224,6 +205,53 @@ jobs:
         run: |
           cd unopim/packages/Webkul/DAM/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
+
+      - name: Provision Passport client & mint token for the DAM API suite
+        id: make_passport_client
+        if: always() && matrix.shard-index == 1 && steps.unopim_pw.conclusion != 'skipped'
+        working-directory: unopim
+        env:
+          BASE_URL: http://127.0.0.1:8000
+        run: |
+          # Provision the password-grant client and mint a token HERE — right
+          # before the API suite — so neither the client nor the token can be
+          # disturbed by the e2e suites or expire while they run. We mint the
+          # token in this step and hand it to the suite via API_TOKEN, so the
+          # suite never re-runs the password grant (no cross-step credential
+          # hand-off to get wrong).
+          php artisan passport:keys --force --no-interaction
+          php artisan tinker --execute='
+          $provider = config("auth.guards.api.provider") ?: "users";
+          $client = app(Laravel\Passport\ClientRepository::class)
+              ->createPasswordGrantClient(null, "DAM API Tests", "http://localhost", $provider);
+          file_put_contents("/tmp/pp.env",
+              "CLIENT_ID=" . $client->getKey() . PHP_EOL .
+              "CLIENT_SECRET=" . ($client->plainSecret ?? $client->secret) . PHP_EOL);
+          fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " (provider: " . $provider . ")" . PHP_EOL);
+          '
+          . /tmp/pp.env
+          # Mint a token now; fail loudly with the real response if the password
+          # grant rejects the client or the admin credentials.
+          TOKEN_JSON=$(curl -sS -X POST "${BASE_URL}/oauth/token" \
+            -H "Accept: application/json" \
+            --data-urlencode "grant_type=password" \
+            --data-urlencode "client_id=${CLIENT_ID}" \
+            --data-urlencode "client_secret=${CLIENT_SECRET}" \
+            --data-urlencode "username=${ADMIN_USERNAME}" \
+            --data-urlencode "password=${ADMIN_PASSWORD}" \
+            --data-urlencode "scope=*")
+          ACCESS_TOKEN=$(printf '%s' "$TOKEN_JSON" | php -r '$d=json_decode(stream_get_contents(STDIN), true); echo $d["access_token"] ?? "";')
+          if [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to mint OAuth token for the DAM API suite."
+            echo "Response: $TOKEN_JSON"
+            exit 1
+          fi
+          echo "Minted DAM API access token (client_id=${CLIENT_ID})."
+          {
+            echo "OAUTH_CLIENT_ID=${CLIENT_ID}"
+            echo "OAUTH_CLIENT_SECRET=${CLIENT_SECRET}"
+            echo "API_TOKEN=${ACCESS_TOKEN}"
+          } >> "$GITHUB_ENV"
 
       - name: Run DAM API Playwright tests
         id: dam_api_pw
