@@ -217,17 +217,25 @@ jobs:
           # before the API suite — so neither the client nor the token can be
           # disturbed by the e2e suites or expire while they run. We mint the
           # token in this step and hand it to the suite via API_TOKEN, so the
-          # suite never re-runs the password grant (no cross-step credential
-          # hand-off to get wrong).
+          # suite never re-runs the password grant.
+          #
+          # UnoPim overrides Passport's ClientRepository::find() so that, for a
+          # password-grant request, the client must be OWNED by the admin whose
+          # email matches the request's `username` (client.user_id -> admins).
+          # So the client has to be created with the admin's id as user_id, or
+          # token minting fails with invalid_client.
           php artisan passport:keys --force --no-interaction
           php artisan tinker --execute='
-          $provider = config("auth.guards.api.provider") ?: "users";
+          $provider = config("auth.guards.api.provider") ?: "admins";
+          $email = getenv("ADMIN_USERNAME");
+          $admin = app(Webkul\User\Repositories\AdminRepository::class)->findByField("email", $email)->first();
+          if (! $admin) { fwrite(STDERR, "No admin user found for " . $email . PHP_EOL); exit(1); }
           $client = app(Laravel\Passport\ClientRepository::class)
-              ->createPasswordGrantClient(null, "DAM API Tests", "http://localhost", $provider);
+              ->createPasswordGrantClient($admin->id, "DAM API Tests", "http://localhost", $provider);
           file_put_contents("/tmp/pp.env",
               "CLIENT_ID=" . $client->getKey() . PHP_EOL .
               "CLIENT_SECRET=" . ($client->plainSecret ?? $client->secret) . PHP_EOL);
-          fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " (provider: " . $provider . ")" . PHP_EOL);
+          fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " for admin #" . $admin->id . " (provider: " . $provider . ")" . PHP_EOL);
           '
           . /tmp/pp.env
           # Mint a token now; fail loudly with the real response if the password
