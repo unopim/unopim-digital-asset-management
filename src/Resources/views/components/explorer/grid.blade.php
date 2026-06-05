@@ -121,6 +121,7 @@
         {{-- Context menu --}}
         <v-dam-explorer-ctx
             v-if="ctx.on"
+            :key="ctxKey"
             :x="ctx.x"
             :y="ctx.y"
             :item="ctx.item"
@@ -153,6 +154,7 @@ app.component('v-dam-explorer-grid', {
     data() {
         return {
             ctx: { on: false, x: 0, y: 0, item: null, type: null },
+            ctxKey: 0,
             _ctxClose: null,
             _springTimer: null,
             dropTargetId: null,
@@ -216,6 +218,7 @@ app.component('v-dam-explorer-grid', {
         },
         showCtx(e, item, type) {
             if (this._ctxClose) { document.removeEventListener('click', this._ctxClose); }
+            this.ctxKey++;
             this.ctx = { on: true, x: e.clientX, y: e.clientY, item, type };
             this._ctxClose = () => { this.ctx.on = false; this._ctxClose = null; };
             document.addEventListener('click', this._ctxClose, { once: true });

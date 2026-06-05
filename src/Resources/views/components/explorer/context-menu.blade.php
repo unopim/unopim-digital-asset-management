@@ -3,7 +3,7 @@
 <script type="text/x-template" id="v-dam-explorer-ctx-template">
     <div
         class="fixed bg-white dark:bg-cherry-800 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-2xl py-1 min-w-[185px] z-[10002]"
-        :style="{ top: `${y}px`, left: `${x}px` }"
+        :style="{ top: finalTop + 'px', left: finalLeft + 'px', visibility: ready ? 'visible' : 'hidden' }"
     >
         {{-- Directory actions --}}
         <template v-if="itemType === 'directory'">
@@ -58,11 +58,13 @@
                 @lang('dam::app.admin.dam.index.directory.actions.share')
             </button>
             @endif
+            @if (config('dam.explorer.bookmarks_enabled'))
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doBookmark">
-                <span class="text-sm">🔖</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                 @lang('dam::app.admin.explorer.context.bookmark')
             </button>
             <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+            @endif
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doCopy">
                 <i class="icon-copy text-sm text-zinc-600 dark:text-white"></i>
                 @lang('dam::app.admin.explorer.context.copy')
@@ -152,13 +154,38 @@ app.component('v-dam-explorer-ctx', {
     emits: ['close','navigate','open-new-tab','bookmark','refresh'],
     props: { x: Number, y: Number, item: Object, itemType: String, tabId: { type: String, required: true }, clipboard: { type: Object, default: null } },
 
+    data() {
+        return { finalTop: this.y, finalLeft: this.x, ready: false };
+    },
+
     mounted() {
         this.$nextTick(() => {
             const el = this.$el;
             if (! el) return;
-            const r = el.getBoundingClientRect();
-            if (r.bottom > window.innerHeight) el.style.top  = Math.max(4, window.innerHeight - r.height - 8) + 'px';
-            if (r.right  > window.innerWidth)  el.style.left = Math.max(4, window.innerWidth  - r.width  - 8) + 'px';
+            const r  = el.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const pad = 6;
+
+            // Vertical: prefer below cursor; flip above if overflow; clamp if neither fits
+            if (this.y + r.height + pad <= vh) {
+                this.finalTop = this.y;
+            } else if (this.y - r.height - pad >= 0) {
+                this.finalTop = this.y - r.height;
+            } else {
+                this.finalTop = Math.max(pad, vh - r.height - pad);
+            }
+
+            // Horizontal: prefer right of cursor; flip left if overflow; clamp if neither fits
+            if (this.x + r.width + pad <= vw) {
+                this.finalLeft = this.x;
+            } else if (this.x - r.width - pad >= 0) {
+                this.finalLeft = this.x - r.width;
+            } else {
+                this.finalLeft = Math.max(pad, vw - r.width - pad);
+            }
+
+            this.ready = true;
         });
     },
 

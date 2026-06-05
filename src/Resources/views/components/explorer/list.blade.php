@@ -42,22 +42,29 @@
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
                 <span class="text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
-                <span class="text-gray-400 text-xs">—</span>
-                <div class="flex gap-2">
+                <span class="text-gray-400 text-xs">@{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}</span>
+                <span class="text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
+                <div class="flex gap-2 items-center">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
-                    <button type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)"></button>
+                    <button type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.directory.destroy'))
-                    <button type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)"></button>
+                    <button type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     @if (config('dam.explorer.bookmarks_enabled'))
-                    <button
-                        type="button"
-                        class="text-gray-400 hover:text-violet-600 text-sm"
-                        :data-bookmark-dir="dir.id"
-                        @click.stop="$emit('bookmark', dir)"
-                        title="@lang('dam::app.admin.explorer.context.bookmark')"
-                    >🔖</button>
+                    <div class="relative group/bm">
+                        <button
+                            type="button"
+                            class="text-gray-400 hover:text-violet-600 flex items-center"
+                            :data-bookmark-dir="dir.id"
+                            @click.stop="$emit('bookmark', dir)"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        </button>
+                        <span class="pointer-events-none absolute bottom-full right-0 mb-1 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-600 rounded whitespace-nowrap opacity-0 group-hover/bm:opacity-100 transition-opacity z-10">
+                            @lang('dam::app.admin.explorer.context.bookmark')
+                        </span>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -80,13 +87,13 @@
                 <span class="text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
                 <div class="flex gap-2">
                     @if (bouncer()->hasPermission('dam.asset.view'))
-                    <button type="button" class="icon-dam-preview text-gray-400 hover:text-violet-600 text-base" @click="preview(asset.id)"></button>
+                    <button type="button" class="icon-dam-preview text-gray-400 hover:text-violet-600 text-base" @click="preview(asset.id)" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.asset.edit'))
-                    <button type="button" class="icon-edit text-gray-400 hover:text-violet-600 text-base" @click="edit(asset.id)"></button>
+                    <button type="button" class="icon-edit text-gray-400 hover:text-violet-600 text-base" @click="edit(asset.id)" title="@lang('dam::app.admin.dam.index.directory.actions.edit')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.asset.destroy'))
-                    <button type="button" class="icon-delete text-gray-400 hover:text-red-500 text-base" @click="del(asset)"></button>
+                    <button type="button" class="icon-delete text-gray-400 hover:text-red-500 text-base" @click="del(asset)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                 </div>
             </div>
@@ -101,6 +108,7 @@
         {{-- Context menu --}}
         <v-dam-explorer-ctx
             v-if="ctx.on"
+            :key="ctxKey"
             :x="ctx.x"
             :y="ctx.y"
             :item="ctx.item"
@@ -132,7 +140,7 @@ app.component('v-dam-explorer-list', {
         clipboard:    { type: Object, default: null },
     },
 
-    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, _ctxClose: null }; },
+    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null }; },
 
     methods: {
         sort(col) {
@@ -157,6 +165,7 @@ app.component('v-dam-explorer-list', {
         },
         showCtx(e, item, type) {
             if (this._ctxClose) { document.removeEventListener('click', this._ctxClose); }
+            this.ctxKey++;
             this.ctx = { on: true, x: e.clientX, y: e.clientY, item, type };
             this._ctxClose = () => { this.ctx.on = false; this._ctxClose = null; };
             document.addEventListener('click', this._ctxClose, { once: true });
