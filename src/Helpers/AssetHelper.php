@@ -82,9 +82,20 @@ class AssetHelper
             return 'video';
         } elseif (str_contains($mimeType, 'audio')) {
             return 'audio';
-        } else {
-            return 'document';
         }
+
+        // Generic MIME (e.g. application/octet-stream) — fall back to extension
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($ext, ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma'])) {
+            return 'audio';
+        }
+
+        if (in_array($ext, ['mp4', 'mkv', 'avi', 'mov', 'flv', 'webm', 'wmv'])) {
+            return 'video';
+        }
+
+        return 'document';
     }
 
     /**
