@@ -182,7 +182,7 @@
 
             <v-dam-explorer-grid
                 v-if="viewMode === 'grid'"
-                :directories="dirs"
+                :directories="page === 1 ? dirs : []"
                 :assets="assets"
                 :is-loading="loading"
                 :tab-id="tabId"
@@ -196,7 +196,7 @@
             ></v-dam-explorer-grid>
             <v-dam-explorer-list
                 v-else
-                :directories="dirs"
+                :directories="page === 1 ? dirs : []"
                 :assets="assets"
                 :is-loading="loading"
                 :sort-by="sortBy"
