@@ -70,10 +70,7 @@ trait AssetAccessControl
     protected function damAuthorizeAsset(int $assetId): void
     {
         if (! $this->damCanAccessAsset($assetId)) {
-            abort(response()->json([
-                'success' => false,
-                'message' => trans('dam::app.admin.permissions.unauthorized'),
-            ], 403));
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
         }
     }
 }
