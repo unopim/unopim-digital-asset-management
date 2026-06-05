@@ -683,6 +683,7 @@ return [
                     'modified' => 'Modified',
                     'actions'  => 'Actions',
                 ],
+                'items-count' => ':count kohdetta',
             ],
             'pagination' => [
                 'per-page' => 'Per page:',

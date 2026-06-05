@@ -683,6 +683,7 @@ return [
                     'modified' => 'Modified',
                     'actions'  => 'Actions',
                 ],
+                'items-count' => ':count elements',
             ],
             'pagination' => [
                 'per-page' => 'Per page:',

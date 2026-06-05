@@ -683,6 +683,7 @@ return [
                     'modified' => 'Modified',
                     'actions'  => 'Actions',
                 ],
+                'items-count' => ':count 个项目',
             ],
             'pagination' => [
                 'per-page' => 'Per page:',
