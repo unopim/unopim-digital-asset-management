@@ -232,10 +232,22 @@ jobs:
           if (! $admin) { fwrite(STDERR, "No admin user found for " . $email . PHP_EOL); exit(1); }
           $client = app(Laravel\Passport\ClientRepository::class)
               ->createPasswordGrantClient($admin->id, "DAM API Tests", "http://localhost", $provider);
+          // UnoPim gates every DAM API route through ScopeMiddleware, which reads
+          // auth("api")->user()->apiKey->permission_type. The Passport client alone
+          // is not enough: without a matching api_keys row that relation is null and
+          // every authenticated request 500s. Create one with permission_type=all so
+          // the admin token clears the scope check.
+          app(Webkul\AdminApi\Repositories\ApiKeyRepository::class)->create([
+              "name"            => "DAM API Tests",
+              "admin_id"        => $admin->id,
+              "oauth_client_id" => $client->getKey(),
+              "permission_type" => "all",
+          ]);
           file_put_contents("/tmp/pp.env",
               "CLIENT_ID=" . $client->getKey() . PHP_EOL .
               "CLIENT_SECRET=" . ($client->plainSecret ?? $client->secret) . PHP_EOL);
           fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " for admin #" . $admin->id . " (provider: " . $provider . ")" . PHP_EOL);
+          fwrite(STDERR, "Created api_keys row (permission_type=all) for admin #" . $admin->id . PHP_EOL);
           '
           . /tmp/pp.env
           # Mint a token now; fail loudly with the real response if the password

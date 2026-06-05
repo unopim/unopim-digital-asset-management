@@ -50,11 +50,22 @@ generated in memory by `test-data/testData.js`.
 ## Prerequisites
 
 1. A running UnoPim instance with the DAM package installed and reachable.
-2. A **Passport password-grant client** (the DAM API uses `auth:api`):
-   ```bash
-   php artisan passport:client --password
-   ```
-   Note the printed **client id** and **secret**.
+2. **API credentials for an admin user.** The DAM API is guarded by Passport
+   (`auth:api`) *and* UnoPim's API-scope middleware, which reads the calling
+   admin's **API Key** permission. A bare Passport client is **not** enough:
+   without a matching `api_keys` row every authenticated request returns **500**,
+   and a client not owned by the admin fails token mint with `invalid_client`.
+
+   Create credentials the canonical way, in the UnoPim admin:
+
+   > **Configuration → Integrations → API Keys → Create**
+   > - assign it to an admin user,
+   > - set **Permission Type = All** (so the token clears the scope check),
+   > - **Save**, then **Generate** to reveal the **client id** and **secret**.
+
+   (CLI alternative: `php artisan unopim:passport:client` creates the admin-owned
+   password-grant client, but you must **still** create an API Key integration for
+   that admin — otherwise authenticated requests 500.)
 3. Node 18+.
 
 ## Setup
