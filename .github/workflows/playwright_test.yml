@@ -206,6 +206,18 @@ jobs:
           cd unopim/packages/Webkul/DAM/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
 
+      - name: Stop background queue worker before the DAM API suite
+        if: always() && matrix.shard-index == 1 && steps.unopim_pw.conclusion != 'skipped'
+        run: |
+          # Directory deletes run in the DeleteDirectory queue job, which mutates
+          # the nested-set tree (_lft/_rgt). If the worker processes those jobs
+          # while the API suite is creating folders, the concurrent tree
+          # rewrites corrupt the lineage and folder creates 500 with a stale
+          # "not writable" path. The API suite needs no async jobs (asset delete
+          # is synchronous; the directory-delete test only asserts the 202
+          # enqueue), so stop the worker to keep folder operations race-free.
+          pkill -f 'artisan queue:work' || true
+
       - name: Provision Passport client & mint token for the DAM API suite
         id: make_passport_client
         if: always() && matrix.shard-index == 1 && steps.unopim_pw.conclusion != 'skipped'
@@ -213,11 +225,11 @@ jobs:
         env:
           BASE_URL: http://127.0.0.1:8000
         run: |
-          # Provision the password-grant client and mint a token HERE — right
-          # before the API suite — so neither the client nor the token can be
-          # disturbed by the e2e suites or expire while they run. We mint the
-          # token in this step and hand it to the suite via API_TOKEN, so the
-          # suite never re-runs the password grant.
+          # Provision the password-grant client(s) HERE — right before the API
+          # suite — so the e2e suites can't disturb them. We export the client
+          # id/secret (not a pre-minted API_TOKEN) so the suite's global-setup
+          # mints its own token once AND the OAuth password-grant lifecycle tests
+          # in 01 actually run instead of skipping.
           #
           # UnoPim overrides Passport's ClientRepository::find() so that, for a
           # password-grant request, the client must be OWNED by the admin whose
@@ -248,6 +260,70 @@ jobs:
               "CLIENT_SECRET=" . ($client->plainSecret ?? $client->secret) . PHP_EOL);
           fwrite(STDERR, "Created DAM API password client " . $client->getKey() . " for admin #" . $admin->id . " (provider: " . $provider . ")" . PHP_EOL);
           fwrite(STDERR, "Created api_keys row (permission_type=all) for admin #" . $admin->id . PHP_EOL);
+
+          // --- Scoped custom-role user for the directory-ACL (403) tests ---
+          // A role with permission_type=custom and NO directory grants cannot
+          // see/act on any directory, so it gets 403 on the denied dir/asset and
+          // an empty asset list. The api_keys(all) row lets it clear the API
+          // scope middleware so the request reaches the directory ACL.
+          $scopedEmail = "dam-scoped@example.com";
+          $scopedPassword = "scoped123";
+          $role = app(Webkul\User\Repositories\RoleRepository::class)->create([
+              "name"            => "DAM Scoped " . uniqid(),
+              "description"     => "Custom role, no directory grants, for API ACL tests",
+              "permission_type" => "custom",
+              "permissions"     => [],
+          ]);
+          $scoped = app(Webkul\User\Repositories\AdminRepository::class)->create([
+              "name"         => "DAM Scoped",
+              "email"        => $scopedEmail,
+              "password"     => bcrypt($scopedPassword),
+              "role_id"      => $role->id,
+              "status"       => 1,
+              "ui_locale_id" => $admin->ui_locale_id,
+          ]);
+          $scopedClient = app(Laravel\Passport\ClientRepository::class)
+              ->createPasswordGrantClient($scoped->id, "DAM Scoped API", "http://localhost", $provider);
+          app(Webkul\AdminApi\Repositories\ApiKeyRepository::class)->create([
+              "name"            => "DAM Scoped API",
+              "admin_id"        => $scoped->id,
+              "oauth_client_id" => $scopedClient->getKey(),
+              "permission_type" => "all",
+          ]);
+          $root = Webkul\DAM\Models\Directory::find(1);
+          $deniedDir = new Webkul\DAM\Models\Directory(["name" => "Denied " . uniqid()]);
+          $deniedDir->appendToNode($root)->save();
+          $deniedAsset = Webkul\DAM\Models\Asset::create([
+              "file_name" => "denied-" . uniqid() . ".png",
+              "file_type" => "image",
+              "file_size" => 1,
+              "mime_type" => "image/png",
+              "extension" => "png",
+              "path"      => "assets/Root/denied.png",
+          ]);
+          $deniedAsset->directories()->attach($deniedDir->id);
+
+          // Known tag + linked-resource mapping so the positive fetch-by-id
+          // tests in 06/09 run instead of skipping (the REST API has no endpoint
+          // to create these, so they are seeded here).
+          $knownTag = Webkul\DAM\Models\Tag::create(["name" => "api-known-tag-" . uniqid()]);
+          $mapping = Webkul\DAM\Models\AssetResourceMapping::create([
+              "type"          => "product",
+              "related_field" => "images",
+              "dam_asset_id"  => $deniedAsset->id,
+          ]);
+
+          file_put_contents("/tmp/pp.env",
+              "SCOPED_CLIENT_ID=" . $scopedClient->getKey() . PHP_EOL .
+              "SCOPED_CLIENT_SECRET=" . ($scopedClient->plainSecret ?? $scopedClient->secret) . PHP_EOL .
+              "SCOPED_USERNAME=" . $scopedEmail . PHP_EOL .
+              "SCOPED_PASSWORD=" . $scopedPassword . PHP_EOL .
+              "DENIED_DIR_ID=" . $deniedDir->id . PHP_EOL .
+              "DENIED_ASSET_ID=" . $deniedAsset->id . PHP_EOL .
+              "TAG_ID=" . $knownTag->id . PHP_EOL .
+              "LINKED_RESOURCE_ID=" . $mapping->id . PHP_EOL,
+              FILE_APPEND);
+          fwrite(STDERR, "Created scoped admin #" . $scoped->id . ", denied dir #" . $deniedDir->id . ", denied asset #" . $deniedAsset->id . ", tag #" . $knownTag->id . ", mapping #" . $mapping->id . PHP_EOL);
           '
           . /tmp/pp.env
           # Mint a token now; fail loudly with the real response if the password
@@ -267,10 +343,33 @@ jobs:
             exit 1
           fi
           echo "Minted DAM API access token (client_id=${CLIENT_ID})."
+          # Mint the scoped (custom-role) token used by the directory-ACL 403 tests.
+          SCOPED_JSON=$(curl -sS -X POST "${BASE_URL}/oauth/token" \
+            -H "Accept: application/json" \
+            --data-urlencode "grant_type=password" \
+            --data-urlencode "client_id=${SCOPED_CLIENT_ID}" \
+            --data-urlencode "client_secret=${SCOPED_CLIENT_SECRET}" \
+            --data-urlencode "username=${SCOPED_USERNAME}" \
+            --data-urlencode "password=${SCOPED_PASSWORD}" \
+            --data-urlencode "scope=*")
+          SCOPED_TOKEN=$(printf '%s' "$SCOPED_JSON" | php -r '$d=json_decode(stream_get_contents(STDIN), true); echo $d["access_token"] ?? "";')
+          if [ -z "$SCOPED_TOKEN" ]; then
+            echo "Failed to mint scoped OAuth token for the DAM API permission tests."
+            echo "Response: $SCOPED_JSON"
+            exit 1
+          fi
+          echo "Minted scoped DAM API access token (client_id=${SCOPED_CLIENT_ID})."
+          # Export client creds (suite mints its own token + runs the lifecycle
+          # tests) plus the scoped token and denied ids for the 403 tests. No
+          # API_TOKEN is exported on purpose.
           {
             echo "OAUTH_CLIENT_ID=${CLIENT_ID}"
             echo "OAUTH_CLIENT_SECRET=${CLIENT_SECRET}"
-            echo "API_TOKEN=${ACCESS_TOKEN}"
+            echo "SCOPED_API_TOKEN=${SCOPED_TOKEN}"
+            echo "DENIED_DIR_ID=${DENIED_DIR_ID}"
+            echo "DENIED_ASSET_ID=${DENIED_ASSET_ID}"
+            echo "TAG_ID=${TAG_ID}"
+            echo "LINKED_RESOURCE_ID=${LINKED_RESOURCE_ID}"
           } >> "$GITHUB_ENV"
 
       - name: Run DAM API Playwright tests

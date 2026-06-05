@@ -34,6 +34,20 @@ class AssetDataSource extends ApiDataSource
      */
     public function prepareApiQueryBuilder()
     {
+        // Register the columns the REST list endpoint can filter on. Without
+        // these, the base ApiDataSource rejects every filter with 422. Passing
+        // the real table ('dam_assets') as filterTable also makes
+        // operatorByFilter prefix columns correctly instead of a bogus
+        // 'assets.' alias (which otherwise throws "unknown column" → 500).
+        $this->addFilter('file_type', ['='], 'dam_assets');
+        $this->addFilter('mime_type', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('extension', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('file_size', ['=', '<', '>', '<=', '>='], 'dam_assets');
+        $this->addFilter('file_name', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('code', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('created_at', ['=', '>=', '<='], 'dam_assets');
+        $this->addFilter('updated_at', ['=', '>=', '<='], 'dam_assets');
+
         return $this->assetRepository->queryBuilder();
     }
 
@@ -135,6 +149,11 @@ class AssetDataSource extends ApiDataSource
 
             case 'extension':
                 $scopeQueryBuilder->where($filterTable.'extension', 'LIKE', "%{$value['value']}%");
+                break;
+
+            case 'code':
+                // Free-text name search maps onto the file_name column.
+                $scopeQueryBuilder->where($filterTable.'file_name', 'LIKE', "%{$value['value']}%");
                 break;
 
             case 'file_size':

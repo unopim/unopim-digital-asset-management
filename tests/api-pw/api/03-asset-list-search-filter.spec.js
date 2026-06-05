@@ -169,8 +169,7 @@ test.describe('Asset — filtering & search', () => {
 
   test('accepts a combination filter (file_type + extension) without error', async ({ api }) => {
     const res = await assetHelper.list(api, {
-      ...q.filter('file_type', 'image'),
-      ...q.filter('extension', 'jpg', 'LIKE'),
+      ...q.filters(q.criteria('file_type', 'image'), q.criteria('extension', 'jpg', 'LIKE')),
       ...q.paginate(1, 10),
     });
     expect(res.status).toBe(STATUS.OK);

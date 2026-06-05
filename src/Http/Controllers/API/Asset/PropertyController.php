@@ -71,8 +71,17 @@ class PropertyController extends Controller
                 'max:100',
                 Rule::unique('dam_asset_properties')
                     ->where(function ($query) use ($id) {
+                        // Properties persist the locale id in the `language`
+                        // column, so the uniqueness check must compare against
+                        // that id — not the request's locale code — or
+                        // duplicates slip through.
+                        $locale = $this->localeRepository
+                            ->where('code', request()->get('language'))
+                            ->where('status', 1)
+                            ->first();
+
                         return $query->where('dam_asset_id', $id)
-                            ->where('language', request()->get('language'));
+                            ->where('language', $locale?->id ?? 0);
                     }),
             ],
         ], $messages);
