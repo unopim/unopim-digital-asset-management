@@ -98,13 +98,14 @@ class ExplorerDataController extends Controller
 
         $directories = $dirQuery->withCount(['assets', 'children'])
             ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'parent_id'])
+            ->get(['id', 'name', 'parent_id', 'updated_at'])
             ->map(fn (Directory $d) => [
                 'id'             => $d->id,
                 'name'           => $d->name,
                 'parent_id'      => $d->parent_id,
                 'assets_count'   => $d->assets_count ?? 0,
                 'children_count' => $d->children_count ?? 0,
+                'updated_at'     => $d->updated_at,
             ]);
 
         // --- Assets ---
