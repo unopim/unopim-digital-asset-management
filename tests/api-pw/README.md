@@ -84,7 +84,7 @@ explicitly guarded against).
 - **validation:** upload with no `files` field → 422
 - **download:** returns a signed `download_url` that streams the file
 - **download:** download of a non-existent asset → 404
-- **download:** signed download route rejects a tampered signature → 403
+- **download:** signed download route rejects a tampered signature (file not served)
 - **reupload:** replaces an existing asset binary → 201
 - **reupload:** reupload to a non-existent asset is rejected
 </details>
@@ -335,8 +335,9 @@ The suite targets exactly the endpoints the DAM package exposes
 - **Tags** are asset-scoped: attach/detach a tag by name to/from an asset, and
   fetch a single tag by its id. There is no "list an asset's tags" or standalone
   tag-CRUD endpoint, so "Create/List/Delete Tag" map onto attach / fetch-by-id /
-  detach. Attach & detach return **201**; a duplicate attach or a detach of an
-  unattached tag returns **404**.
+  detach. Attach & detach return **201**; re-attaching an already-attached tag
+  returns **404**. Detach is keyed on the tag name existing, so detachment is
+  observed by re-attaching (which succeeds once the tag is off the asset).
 - **Metadata** is modelled by the **asset properties** API.
 - **Folder assignment** happens at **upload** time via `directory_id`; there is
   no separate assign/detach endpoint.

@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Traits;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
@@ -31,7 +32,13 @@ trait AssetAccessControl
             return null;
         }
 
-        $dirId = $asset->directories()->value('dam_directories.id');
+        // Read the pivot directly rather than $asset->directories()->value(...):
+        // the directories() relation resolves Directory models through the
+        // nested-set query builder, and resolving a single column that way blows
+        // up for non-bypass (directory-scoped) users.
+        $dirId = DB::table('dam_asset_directory')
+            ->where('asset_id', $asset->id)
+            ->value('directory_id');
 
         return $dirId ? (int) $dirId : null;
     }
