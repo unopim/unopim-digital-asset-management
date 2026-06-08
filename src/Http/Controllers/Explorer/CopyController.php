@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
@@ -43,7 +42,10 @@ class CopyController extends Controller
         $ext = $asset->extension ? '.'.$asset->extension : '';
         $newName = $this->uniqueAssetName($baseName, $ext, $targetId);
 
-        $newStoragePath = Directory::ASSETS_DIRECTORY.'/'.Str::uuid().$ext;
+        $targetDirectory = Directory::findOrFail($targetId);
+        $targetDirStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $targetDirectory->generatePath());
+        Storage::disk($disk)->makeDirectory($targetDirStoragePath);
+        $newStoragePath = $targetDirStoragePath.'/'.$newName;
         Storage::disk($disk)->copy($asset->path, $newStoragePath);
 
         $newAsset = Asset::create([
@@ -53,6 +55,7 @@ class CopyController extends Controller
             'file_size' => $asset->file_size,
             'path'      => $newStoragePath,
             'mime_type' => $asset->mime_type,
+            'meta_data' => $asset->meta_data,
         ]);
 
         $newAsset->directories()->attach($targetId);
@@ -180,10 +183,11 @@ class CopyController extends Controller
         $source->loadMissing(['assets', 'children']);
 
         $disk = Directory::getAssetDisk();
+        $newParentStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newParent->generatePath());
+        Storage::disk($disk)->makeDirectory($newParentStoragePath);
 
         foreach ($source->assets as $asset) {
-            $ext = $asset->extension ? '.'.$asset->extension : '';
-            $newStoragePath = Directory::ASSETS_DIRECTORY.'/'.Str::uuid().$ext;
+            $newStoragePath = $newParentStoragePath.'/'.$asset->file_name;
             Storage::disk($disk)->copy($asset->path, $newStoragePath);
 
             $newAsset = Asset::create([
@@ -193,6 +197,7 @@ class CopyController extends Controller
                 'file_size' => $asset->file_size,
                 'path'      => $newStoragePath,
                 'mime_type' => $asset->mime_type,
+                'meta_data' => $asset->meta_data,
             ]);
             $newAsset->directories()->attach($newParent->id);
         }
