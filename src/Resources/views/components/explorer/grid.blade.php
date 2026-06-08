@@ -1,8 +1,8 @@
 @once('v-dam-explorer-grid')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
-    {{-- Outer div catches right-click on empty space (item right-clicks use .stop) --}}
-    <div class="pr-4" @contextmenu.prevent="showSpaceCtx($event)">
+    {{-- Outer div catches right-click and drops on empty space (item events use .stop) --}}
+    <div class="pr-4" @contextmenu.prevent="showSpaceCtx($event)" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
         {{-- Shimmer --}}
         <div v-if="isLoading" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
@@ -33,7 +33,7 @@
                         @contextmenu.prevent.stop="showCtx($event, dir, 'directory')"
                     >
                         <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
-                        <div class="text-xs font-semibold text-violet-700 dark:text-violet-300 truncate w-full">@{{ dir.name }}</div>
+                        <div class="text-xs font-semibold text-violet-700 dark:text-violet-300 line-clamp-2 break-all w-full min-h-8" :title="dir.name">@{{ dir.name }}</div>
                     </div>
                 </div>
             </template>
@@ -61,6 +61,7 @@
                                 :src="asset.path"
                                 :alt="asset.file_name"
                                 class="w-full h-full object-cover object-center"
+                                draggable="false"
                                 @@error="onImgErr($event, asset)"
                             />
 
@@ -179,6 +180,7 @@ app.component('v-dam-explorer-grid', {
                 id: d.id,
                 name: d.name,
                 assetsCount: d.assets_count ?? 0,
+                tabId: this.tabId,
             }));
             e.currentTarget.style.opacity = '0.4';
         },
@@ -188,6 +190,7 @@ app.component('v-dam-explorer-grid', {
                 type: 'dam-asset',
                 id: asset.id,
                 name: asset.file_name,
+                tabId: this.tabId,
             }));
             e.currentTarget.style.opacity = '0.4';
         },
@@ -238,6 +241,18 @@ app.component('v-dam-explorer-grid', {
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });
+        },
+
+        onSpaceDrop(e) {
+            if (e.dataTransfer?.types?.includes('Files')) return;
+            if (! this.currentDirId) return;
+            let payload;
+            try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
+            if (! payload?.type) return;
+            // Item already lives in this directory — drop is a no-op
+            if (payload.type === 'dam-folder' && this.directories.some(d => d.id === payload.id)) return;
+            if (payload.type === 'dam-asset'  && this.assets.some(a => a.id === payload.id)) return;
+            this.$emit('internal-drop', { payload, targetDir: { id: this.currentDirId } });
         },
     },
 });

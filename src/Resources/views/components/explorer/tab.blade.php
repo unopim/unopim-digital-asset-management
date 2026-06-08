@@ -38,15 +38,20 @@
                         class="px-1 py-0.5 rounded transition-colors max-w-[120px] truncate"
                         :class="i === breadcrumb.length - 1
                             ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                            : 'text-gray-500 dark:text-gray-300 hover:text-violet-700 hover:underline cursor-pointer'"
-                        :disabled="i === breadcrumb.length - 1"
+                            : crumbDropTarget === crumb.id
+                                ? 'text-violet-700 dark:text-violet-300 cursor-pointer bg-violet-100 dark:bg-violet-900/40 ring-1 ring-violet-400'
+                                : 'text-gray-500 dark:text-gray-300 hover:text-violet-700 hover:underline cursor-pointer'"
                         @click="i < breadcrumb.length - 1 ? goTo(crumb) : null"
+                        @contextmenu.prevent.stop="showCrumbCtx($event, crumb)"
+                        @dragover.prevent="onCrumbDragOver($event, crumb, i)"
+                        @dragleave="onCrumbDragLeave($event, crumb)"
+                        @drop.prevent="onCrumbDrop($event, crumb, i)"
                     >@{{ crumb.name }}</button>
                 </template>
             </nav>
 
             @if (bouncer()->hasPermission('dam.asset.upload'))
-            <template v-if="canUploadHere">
+            <!-- <template v-if="canUploadHere">
                 <input
                     type="file" multiple name="files[]"
                     :id="`explorer-upload-${tabId}`" class="hidden"
@@ -75,7 +80,7 @@
                 <button v-if="uploading || folderUploading" type="button" class="secondary-button" @click="uploading ? cancelUpload() : cancelFolderUpload()">
                     @lang('dam::app.admin.dam.index.cancel')
                 </button>
-            </template>
+            </template> -->
             @endif
 
             {{-- Grid / List view toggle --}}
@@ -87,7 +92,7 @@
                     @click="setView('grid')"
                     data-view="grid"
                 >
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
                 </button>
                 <button
                     type="button"
@@ -96,7 +101,7 @@
                     @click="setView('list')"
                     data-view="list"
                 >
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2.5" rx="1"/><rect x="1" y="6.75" width="14" height="2.5" rx="1"/><rect x="1" y="11.5" width="14" height="2.5" rx="1"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2.5" rx="1"/><rect x="1" y="6.75" width="14" height="2.5" rx="1"/><rect x="1" y="11.5" width="14" height="2.5" rx="1"/></svg>
                 </button>
             </div>
         </div>
@@ -145,6 +150,22 @@
             </div>
         </teleport>
 
+        {{-- Breadcrumb right-click menu --}}
+        <teleport to="body">
+            <div
+                v-if="crumbCtx.on"
+                class="fixed bg-white dark:bg-cherry-900 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-lg py-1"
+                style="z-index:10001;"
+                :style="{ left: crumbCtx.x + 'px', top: crumbCtx.y + 'px' }"
+            >
+                <button
+                    type="button"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-cherry-800 whitespace-nowrap"
+                    @click="openCrumbInNewTab"
+                >@lang('dam::app.admin.explorer.context.open-new-tab')</button>
+            </div>
+        </teleport>
+
         {{-- Clipboard banner --}}
         <div
             v-if="clipboard"
@@ -161,7 +182,7 @@
 
         {{-- Content area — v-dam-drop-upload handles OS file/folder drops --}}
         <v-dam-drop-upload
-            class="flex-1 overflow-y-auto"
+            class="flex-1 overflow-y-auto flex flex-col"
             :current-directory="currentDirId ? { id: currentDirId } : null"
             :can-upload="canUploadHere"
             @refresh-datagrid="fetch()"
@@ -182,6 +203,7 @@
 
             <v-dam-explorer-grid
                 v-if="viewMode === 'grid'"
+                class="flex-1"
                 :directories="page === 1 ? dirs : []"
                 :assets="assets"
                 :is-loading="loading"
@@ -259,6 +281,8 @@ app.component('v-dam-tab', {
             dialog: { on: false, type: null, value: '', loading: false, extra: null },
             clipboard:          null,
             ctxTarget:          null,
+            crumbDropTarget:    null,
+            crumbCtx:           { on: false, x: 0, y: 0, crumb: null },
             available: {
                 id: 'dam-explorer',
                 columns: [
@@ -736,26 +760,99 @@ app.component('v-dam-tab', {
                 return;
             }
             if (payload.type === 'dam-asset') {
+                const originTabId = payload.tabId;
+                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-asset-started')" });
                 this.$axios.post("{{ route('admin.dam.assets.moved') }}", {
                     move_item_id:  payload.id,
                     new_parent_id: targetDir.id,
                 }).then(() => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-progress')" });
+                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-asset-done')" });
                     this.fetch();
+                    if (originTabId && originTabId !== this.tabId) {
+                        this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
+                    }
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
                 });
             } else if (payload.type === 'dam-folder') {
+                const tabId = this.tabId;
+                const originTabId = payload.tabId;
+                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-folder-started')" });
                 this.$axios.post("{{ route('admin.dam.directory.moved') }}", {
                     move_item_id:  payload.id,
                     new_parent_id: targetDir.id,
                 }).then(() => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-progress')" });
-                    this.fetch();
+                    let attempts = 0;
+                    const poll = () => {
+                        if (++attempts > 15) return;
+                        this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'move_directory_structure'))
+                            .then(({ data: d }) => {
+                                if (d.status === 'completed') {
+                                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-done')" });
+                                    this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                    if (originTabId && originTabId !== tabId) {
+                                        this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
+                                    }
+                                } else if (d.status === 'failed') {
+                                    this.$emitter.emit('add-flash', { type: 'error', message: d.message });
+                                    this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                    if (originTabId && originTabId !== tabId) {
+                                        this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
+                                    }
+                                } else { setTimeout(poll, 2000); }
+                            }).catch(() => {});
+                    };
+                    setTimeout(poll, 1000);
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
                 });
             }
+        },
+
+        showCrumbCtx(e, crumb) {
+            this.crumbCtx = { on: true, x: e.clientX, y: e.clientY, crumb };
+            const close = () => { this.crumbCtx = { on: false, x: 0, y: 0, crumb: null }; };
+            document.addEventListener('click', close, { once: true });
+        },
+
+        openCrumbInNewTab() {
+            const crumb = this.crumbCtx.crumb;
+            this.crumbCtx = { on: false, x: 0, y: 0, crumb: null };
+            if (crumb) this.$emitter.emit('dam:open-in-new-tab', { directoryId: crumb.id, name: crumb.name });
+        },
+
+        onCrumbDragOver(e, crumb, i) {
+            if (! e.dataTransfer.types.includes('application/json')) return;
+            this.crumbDropTarget = crumb.id;
+            if (crumb.id === this.currentDirId) return; // already here, skip spring-load
+            if (this._crumbSpringTimer?.id === crumb.id) return;
+            clearTimeout(this._crumbSpringTimer?.timerId);
+            const timerId = setTimeout(() => {
+                if (this.crumbDropTarget === crumb.id) {
+                    this.goTo(crumb);
+                    this._crumbSpringTimer = null;
+                }
+            }, 700);
+            this._crumbSpringTimer = { id: crumb.id, timerId };
+        },
+
+        onCrumbDragLeave(e, crumb) {
+            if (this.crumbDropTarget === crumb.id && ! e.currentTarget.contains(e.relatedTarget)) {
+                this.crumbDropTarget = null;
+                clearTimeout(this._crumbSpringTimer?.timerId);
+                this._crumbSpringTimer = null;
+            }
+        },
+
+        onCrumbDrop(e, crumb, i) {
+            this.crumbDropTarget = null;
+            clearTimeout(this._crumbSpringTimer?.timerId);
+            this._crumbSpringTimer = null;
+            if (e.dataTransfer?.types?.includes('Files')) return;
+            let payload;
+            try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
+            if (! payload?.type) return;
+            this.onInternalDrop({ payload, targetDir: crumb });
         },
 
         onFolderChange(e) {
@@ -815,21 +912,23 @@ app.component('v-dam-tab', {
             const cb = this.clipboard;
 
             if (cb.type === 'asset') {
+                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-file-started')" });
                 this.$axios.post("{{ route('admin.dam.explorer.copy.asset') }}", {
                     asset_id:            cb.id,
                     target_directory_id: targetDirId,
-                }).then(({ data }) => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.context.copy-done')" });
+                }).then(() => {
+                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-done')" });
                     this.fetch();
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message });
                 });
             } else {
+                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-folder-started')" });
                 this.$axios.post("{{ route('admin.dam.explorer.copy.directory') }}", {
                     directory_id:        cb.id,
                     target_directory_id: targetDirId,
-                }).then(({ data }) => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.context.copy-progress')" });
+                }).then(() => {
+                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-done')" });
                     this.fetch();
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message });

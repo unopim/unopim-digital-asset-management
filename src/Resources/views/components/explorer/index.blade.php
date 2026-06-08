@@ -25,10 +25,15 @@
                 v-for="tab in tabs"
                 :key="tab.id"
                 class="flex items-center gap-1.5 px-3 py-1.5 min-w-[110px] max-w-[180px] flex-shrink-0 rounded-t-md border border-b-0 text-sm cursor-pointer select-none transition-colors"
-                :class="tab.id === activeTabId
-                    ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
-                    : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800 dark:text-white'"
+                :class="[
+                    tab.id === activeTabId
+                        ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
+                        : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800 dark:text-white',
+                    tabDragHover === tab.id ? 'ring-2 ring-inset ring-violet-400' : ''
+                ]"
                 @click="setActive(tab.id)"
+                @dragover.prevent="onTabDragOver($event, tab.id)"
+                @dragleave="onTabDragLeave($event, tab.id)"
             >
                 <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-violet-500' : 'text-gray-400'"></i>
                 <span class="truncate flex-1 text-sm">@{{ tab.label }}</span>
@@ -41,7 +46,7 @@
             </div>
 
             <button
-                v-if="tabs.length < 8"
+                v-if="tabs.length < 20"
                 type="button"
                 class="w-7 h-7 mb-0.5 ml-1 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 dark:hover:bg-cherry-800 hover:text-gray-700 text-lg font-light shrink-0"
                 @click="newTab()"
@@ -82,7 +87,7 @@ app.component('v-dam-explorer', {
     },
 
     data() {
-        return { tabs: [], activeTabId: null, _kbHandler: null };
+        return { tabs: [], activeTabId: null, _kbHandler: null, tabDragHover: null };
     },
 
     mounted() {
@@ -144,7 +149,7 @@ app.component('v-dam-explorer', {
         },
 
         newTab(directoryId = null, label = '…') {
-            if (this.tabs.length >= 8) return;
+            if (this.tabs.length >= 20) return;
             const tab = this.makeTab(directoryId, label);
             this.tabs.push(tab);
             this.activeTabId = tab.id;
@@ -169,6 +174,31 @@ app.component('v-dam-explorer', {
         onLabelChange(id, label) {
             const tab = this.tabs.find(t => t.id === id);
             if (tab) tab.label = label;
+        },
+
+        onTabDragOver(e, tabId) {
+            if (tabId === this.activeTabId) return;
+            if (! e.dataTransfer.types.includes('application/json')) return;
+            this.tabDragHover = tabId;
+            if (this._tabSpringTimer?.tabId === tabId) return;
+            clearTimeout(this._tabSpringTimer?.id);
+            const timerId = setTimeout(() => {
+                if (this._tabSpringTimer?.tabId === tabId) {
+                    this.setActive(tabId);
+                    this._tabSpringTimer = null;
+                    this.tabDragHover = null;
+                }
+            }, 1200);
+            this._tabSpringTimer = { tabId, id: timerId };
+        },
+
+        onTabDragLeave(e, tabId) {
+            if (this._tabSpringTimer?.tabId !== tabId) return;
+            if (! e.currentTarget.contains(e.relatedTarget)) {
+                clearTimeout(this._tabSpringTimer?.id);
+                this._tabSpringTimer = null;
+                this.tabDragHover = null;
+            }
         },
     },
 });
