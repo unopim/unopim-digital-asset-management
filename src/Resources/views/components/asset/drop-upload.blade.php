@@ -355,6 +355,8 @@
                     this.dragCounter = 0;
                     this.isDragOver = false;
 
+                    if (! event.dataTransfer?.types?.includes('Files')) return;
+
                     if (! this.canUpload || ! this.currentDirectory) return;
 
                     // Snapshot directory ID at drop time — prop may change if user navigates mid-upload
