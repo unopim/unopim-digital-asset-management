@@ -1112,6 +1112,7 @@
                 if (! item?.id) return;
                 this.selectedItem = item;
                 this.directoryCreate = true;
+                this.__explorerTriggeredCreate = true;
                 this.$refs.directoryCreateOrRenameModal.toggle();
             });
 
@@ -1387,6 +1388,13 @@
                             // it as the active item instead of staying on the parent.
                             this.selectedItem = response.data.data;
                             this.parentItem = response.data.data;
+
+                            // Create triggered from explorer: suppress navigation into
+                            // the new directory — explorer should stay on the parent.
+                            if (this.__explorerTriggeredCreate) {
+                                this.$emitter.emit('dam:suppress-nav-once');
+                                this.__explorerTriggeredCreate = false;
+                            }
                         } else {
                             this.selectedItem = response.data.data;
                             // Rename triggered from explorer: tell explorer to skip
