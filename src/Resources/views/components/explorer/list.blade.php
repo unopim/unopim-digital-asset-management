@@ -3,7 +3,7 @@
 
 <script type="text/x-template" id="v-dam-explorer-list-template">
     <div
-        class="border border-gray-200 dark:border-cherry-700 rounded-lg overflow-hidden bg-white dark:bg-cherry-900"
+        class="border border-gray-200 dark:border-cherry-700 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 min-h-72"
         @contextmenu.prevent="showSpaceCtx($event)"
     >
 

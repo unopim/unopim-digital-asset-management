@@ -2,7 +2,7 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
     {{-- Outer div catches right-click and drops on empty space (item events use .stop) --}}
-    <div class="pr-4" @contextmenu.prevent="showSpaceCtx($event)" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
+    <div class="pr-4 min-h-72" @contextmenu.prevent="showSpaceCtx($event)" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
         {{-- Shimmer --}}
         <div v-if="isLoading" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
@@ -14,27 +14,21 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.folders')
                 </p>
-                <div class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3 mb-6">
-                    <div
+                <div class="grid grid-cols-[repeat(auto-fill,96px)] gap-1 mb-6">
+                    <v-dam-explorer-folder-card
                         v-for="dir in directories"
                         :key="dir.id"
-                        class="group flex flex-col items-center gap-1 p-2 rounded-lg border text-center cursor-pointer transition-colors select-none min-w-0"
-                        :class="dropTargetId === dir.id
-                            ? 'border-violet-500 bg-violet-200 dark:bg-violet-900/60 ring-2 ring-violet-400'
-                            : 'border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40'"
+                        :dir="dir"
+                        :is-drop-target="dropTargetId === dir.id"
                         :data-dir-id="dir.id"
-                        draggable="true"
-                        @dragstart="onDragStart($event, dir)"
-                        @dragend="onDragEnd($event)"
-                        @dragover.prevent="onFolderDragOver($event, dir)"
-                        @dragleave="onFolderDragLeave($event, dir)"
-                        @drop.prevent.stop="onInternalDrop($event, dir)"
-                        @click="$emit('navigate', dir)"
-                        @contextmenu.prevent.stop="showCtx($event, dir, 'directory')"
-                    >
-                        <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
-                        <div class="text-xs font-semibold text-violet-700 dark:text-violet-300 line-clamp-2 break-all w-full min-h-8" :title="dir.name">@{{ dir.name }}</div>
-                    </div>
+                        @navigate="$emit('navigate', $event)"
+                        @ctx="showCtx($event.event, $event.dir, 'directory')"
+                        @drag-start="onDragStart($event, dir)"
+                        @drag-end="onDragEnd"
+                        @drag-over="onFolderDragOver($event, dir)"
+                        @drag-leave="onFolderDragLeave($event, dir)"
+                        @drop="onInternalDrop($event, dir)"
+                    ></v-dam-explorer-folder-card>
                 </div>
             </template>
 
@@ -44,71 +38,16 @@
                     @lang('dam::app.admin.explorer.sections.files')
                 </p>
                 <div class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
-                    <div
+                    <v-dam-asset-card
                         v-for="asset in assets"
                         :key="asset.id"
-                        class="group rounded-lg border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
-                        style="box-shadow:0 1px 3px rgba(0,0,0,.08);"
-                        draggable="true"
-                        @dragstart="onAssetDragStart($event, asset)"
-                        @dragend="onDragEnd($event)"
-                        @click="preview(asset.id)"
-                        @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
-                    >
-                        {{-- Thumbnail --}}
-                        <div class="image-card relative overflow-hidden">
-                            <img
-                                :src="asset.path"
-                                :alt="asset.file_name"
-                                class="w-full h-full object-cover object-center"
-                                draggable="false"
-                                @@error="onImgErr($event, asset)"
-                            />
-
-                            {{-- Extension badge --}}
-                            <span
-                                v-if="asset.extension"
-                                class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase text-white shadow"
-                                style="z-index:2;"
-                                :class="{
-                                    'bg-violet-600': asset.file_type==='video'||asset.file_type==='audio',
-                                    'bg-red-600':    (asset.extension||'').toLowerCase()==='pdf',
-                                    'bg-gray-600':   asset.file_type!=='video'&&asset.file_type!=='audio'&&(asset.extension||'').toLowerCase()!=='pdf',
-                                }"
-                            >@{{ (asset.extension||'').toUpperCase() }}</span>
-
-                            {{-- Play / audio overlay --}}
-                            <div
-                                v-if="asset.file_type==='video'||asset.file_type==='audio'"
-                                class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                            >
-                                <span
-                                    class="flex items-center justify-center w-10 h-10 rounded-full bg-black/55 text-white text-xl shadow-lg"
-                                    :class="asset.file_type==='video' ? 'icon-play' : 'icon-information'"
-                                    aria-hidden="true"
-                                ></span>
-                            </div>
-
-                            {{-- Hover action overlay — buttons enabled only when card is hovered --}}
-                            <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                <div class="flex gap-1">
-                                    @if (bouncer()->hasPermission('dam.asset.view'))
-                                    <button type="button" class="icon-dam-preview text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="preview(asset.id)"></button>
-                                    @endif
-                                    @if (bouncer()->hasPermission('dam.asset.edit'))
-                                    <button type="button" class="icon-edit text-xl p-1.5 rounded-md text-white hover:bg-violet-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="edit(asset.id)"></button>
-                                    @endif
-                                    @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                    <button type="button" class="icon-delete text-xl p-1.5 rounded-md text-white hover:bg-red-600 transition-colors pointer-events-none group-hover:pointer-events-auto" @click.stop="del(asset)"></button>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="px-2 py-1.5">
-                            <p class="text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
-                        </div>
-                    </div>
+                        :asset="asset"
+                        :tab-id="tabId"
+                        @preview="preview"
+                        @edit="edit"
+                        @delete="del"
+                        @ctx="showCtx($event.event, $event.asset, 'asset')"
+                    ></v-dam-asset-card>
                 </div>
             </template>
 
@@ -159,21 +98,10 @@ app.component('v-dam-explorer-grid', {
             _ctxClose: null,
             _springTimer: null,
             dropTargetId: null,
-            placeholders: {
-                video:       '{{ unopim_asset('images/grid/video.svg', 'dam') }}',
-                audio:       '{{ unopim_asset('images/grid/audio.svg', 'dam') }}',
-                pdf:         '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
-                spreadsheet: '{{ unopim_asset('images/grid/sheet.svg', 'dam') }}',
-                csv:         '{{ unopim_asset('images/grid/csv.svg', 'dam') }}',
-                document:    '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
-                image:       '{{ unopim_asset('images/grid/image.svg', 'dam') }}',
-            },
-            fallback: '{{ unopim_asset('images/grid/unspecified.svg', 'dam') }}',
         };
     },
 
     methods: {
-        onImgErr(e, a)   { e.target.src = this.placeholders[a.file_type] ?? this.fallback; e.target.className = 'w-full h-full object-contain p-4'; },
         onDragStart(e, d) {
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'dam-folder',
@@ -182,17 +110,7 @@ app.component('v-dam-explorer-grid', {
                 assetsCount: d.assets_count ?? 0,
                 tabId: this.tabId,
             }));
-            e.currentTarget.style.opacity = '0.4';
-        },
-        onDragEnd(e) { e.currentTarget.style.opacity = ''; },
-        onAssetDragStart(e, asset) {
-            e.dataTransfer.setData('application/json', JSON.stringify({
-                type: 'dam-asset',
-                id: asset.id,
-                name: asset.file_name,
-                tabId: this.tabId,
-            }));
-            e.currentTarget.style.opacity = '0.4';
+            // opacity handled by v-dam-explorer-folder-card
         },
         onFolderDragOver(e, dir) {
             this.dropTargetId = dir.id;
@@ -204,7 +122,8 @@ app.component('v-dam-explorer-grid', {
             this._springTimer = { dirId: dir.id, id: timerId };
         },
         onFolderDragLeave(e, dir) {
-            if (! e.currentTarget.contains(e.relatedTarget) && this.dropTargetId === dir.id) {
+            // card already filters child dragleaves — any emission here means truly left
+            if (this.dropTargetId === dir.id) {
                 this.dropTargetId = null;
                 clearTimeout(this._springTimer?.id);
                 this._springTimer = null;

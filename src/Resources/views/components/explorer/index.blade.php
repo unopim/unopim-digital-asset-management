@@ -214,6 +214,16 @@ app.component('v-dam-explorer', {
 
 @include('dam::components.explorer.toolbar')
 
+@include('dam::components.explorer.view-toggle')
+
+@include('dam::components.explorer.breadcrumb')
+
+@include('dam::components.explorer.input-dialog')
+
+@include('dam::components.explorer.folder-card')
+
+@include('dam::components.explorer.asset-card')
+
 @include('dam::components.explorer.grid')
 
 @include('dam::components.explorer.list')

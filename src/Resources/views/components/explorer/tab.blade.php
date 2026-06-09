@@ -3,67 +3,77 @@
 <script type="text/x-template" id="v-dam-tab-template">
     <div class="flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
 
-        {{-- Row 1: back/forward + breadcrumb + upload + new folder --}}
+        {{-- Row 1: sidebar toggle + back/forward + breadcrumb + actions --}}
         <div class="flex items-center gap-2 flex-wrap">
-            {{-- History navigation --}}
-            <div class="flex items-center gap-0.5 shrink-0">
-                <button
-                    type="button"
-                    class="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                    :class="canGoBack ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'"
-                    :disabled="!canGoBack"
-                    @click="goBack"
+            {{-- Sidebar collapse toggle — only when at least one sidebar component is enabled --}}
+            @if (config('dam.explorer.show_tree') || config('dam.explorer.bookmarks_enabled'))
+            <button
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors shrink-0"
+                :class="sidebarVisible ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
+                title="@lang('dam::app.admin.explorer.toolbar.toggle-sidebar')"
+                @click="toggleSidebar"
+            >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                    class="transition-transform duration-200"
+                    :style="sidebarVisible ? '' : 'transform:scaleX(-1)'"
                 >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <button
-                    type="button"
-                    class="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                    :class="canGoForward ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'"
-                    :disabled="!canGoForward"
-                    @click="goForward"
-                >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-            </div>
-            <nav class="flex items-center gap-1 text-sm flex-1 flex-wrap min-w-0">
-                <template v-for="(crumb, i) in breadcrumb" :key="crumb.id">
-                    <span v-if="i > 0" class="text-gray-300 dark:text-gray-600">/</span>
-                    <button
-                        type="button"
-                        class="px-1 py-0.5 rounded transition-colors max-w-[120px] truncate"
-                        :class="i === breadcrumb.length - 1
-                            ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                            : crumbDropTarget === crumb.id
-                                ? 'text-violet-700 dark:text-violet-300 cursor-pointer bg-violet-100 dark:bg-violet-900/40 ring-1 ring-violet-400'
-                                : 'text-gray-500 dark:text-gray-300 hover:text-violet-700 hover:underline cursor-pointer'"
-                        @click="i < breadcrumb.length - 1 ? goTo(crumb) : null"
-                        @contextmenu.prevent.stop="showCrumbCtx($event, crumb)"
-                        @dragover.prevent="onCrumbDragOver($event, crumb, i)"
-                        @dragleave="onCrumbDragLeave($event, crumb)"
-                        @drop.prevent="onCrumbDrop($event, crumb, i)"
-                    >@{{ crumb.name }}</button>
-                </template>
-            </nav>
+                    <polyline points="11 17 6 12 11 7"></polyline>
+                    <polyline points="18 17 13 12 18 7"></polyline>
+                </svg>
+            </button>
+            @endif
+
+            <v-dam-explorer-breadcrumb
+                :breadcrumbs="breadcrumb"
+                :can-go-back="canGoBack"
+                :can-go-forward="canGoForward"
+                :current-dir-id="currentDirId"
+                @back="goBack"
+                @forward="goForward"
+                @navigate="goTo"
+                @open-new-tab="openNewTab"
+                @drop="onInternalDrop"
+            ></v-dam-explorer-breadcrumb>
+
+            {{-- Current directory actions: Download Zip + Share --}}
+            @if (bouncer()->hasPermission('dam.directory.download_zip'))
+            <button
+                v-if="currentDirId"
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer shrink-0"
+                title="@lang('dam::app.admin.dam.index.directory.actions.download-zip')"
+                @click="downloadCurrentDir"
+            >
+                <i class="icon-dam-download text-xl"></i>
+            </button>
+            @endif
+            @if (bouncer()->hasPermission('dam.directory.share'))
+            <button
+                v-if="currentDirId"
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer shrink-0"
+                title="@lang('dam::app.admin.dam.index.directory.actions.share')"
+                @click="shareCurrentDir"
+            >
+                <i class="icon-dam-link text-xl"></i>
+            </button>
+            @endif
 
             @if (bouncer()->hasPermission('dam.asset.upload'))
+            <input
+                type="file" multiple name="files[]"
+                :id="`explorer-upload-${tabId}`" class="hidden"
+                :disabled="uploading"
+                @change="onFileChange"
+            />
+            <input
+                type="file" webkitdirectory multiple name="folder_files[]"
+                :id="`explorer-folder-upload-${tabId}`" class="hidden"
+                :disabled="folderUploading"
+                @change="onFolderChange"
+            />
             <!-- <template v-if="canUploadHere">
-                <input
-                    type="file" multiple name="files[]"
-                    :id="`explorer-upload-${tabId}`" class="hidden"
-                    :disabled="uploading"
-                    @change="onFileChange"
-                />
-                <input
-                    type="file" webkitdirectory multiple name="folder_files[]"
-                    :id="`explorer-folder-upload-${tabId}`" class="hidden"
-                    :disabled="folderUploading"
-                    @change="onFolderChange"
-                />
                 <label
                     :for="`explorer-upload-${tabId}`"
                     class="secondary-button cursor-pointer"
@@ -84,87 +94,21 @@
             @endif
 
             {{-- Grid / List view toggle --}}
-            <div class="flex border border-gray-300 dark:border-cherry-600 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 shrink-0 ml-auto">
-                <button
-                    type="button"
-                    class="flex items-center px-2.5 py-2 transition-colors"
-                    :class="viewMode==='grid' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
-                    @click="setView('grid')"
-                    data-view="grid"
-                >
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-                </button>
-                <button
-                    type="button"
-                    class="flex items-center px-2.5 py-2 border-l border-gray-200 dark:border-cherry-700 transition-colors"
-                    :class="viewMode==='list' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
-                    @click="setView('list')"
-                    data-view="list"
-                >
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2.5" rx="1"/><rect x="1" y="6.75" width="14" height="2.5" rx="1"/><rect x="1" y="11.5" width="14" height="2.5" rx="1"/></svg>
-                </button>
-            </div>
+            <v-dam-explorer-view-toggle :model-value="viewMode" @update:model-value="setView($event)"></v-dam-explorer-view-toggle>
         </div>
 
         @include('dam::components.explorer.toolbar')
 
-        {{-- Inline dialog for create/rename operations (teleported to body to escape overflow-hidden ancestors) --}}
-        <teleport to="body">
-            <div
-                v-if="dialog.on"
-                class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50"
-                style="z-index:10000;"
-                @click.self="closeDialog"
-            >
-                <div class="bg-white dark:bg-cherry-900 rounded-xl border border-gray-200 dark:border-cherry-600 w-full mx-4 p-6" style="max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-                    <h3 class="text-base font-bold text-gray-800 dark:text-white mb-4">@{{ dialogTitle }}</h3>
-                    <input
-                        ref="dialogInput"
-                        v-model="dialog.value"
-                        type="text"
-                        class="w-full border border-gray-300 dark:border-cherry-600 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-cherry-800 outline-none mb-4"
-                        :placeholder="dialogPlaceholder"
-                        @keydown.enter.prevent="submitDialog"
-                        @keydown.escape="closeDialog"
-                    />
-                    <div class="flex gap-2 justify-end">
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            @click="closeDialog"
-                        >@lang('dam::app.admin.explorer.dialog.cancel')</button>
-                        <button
-                            type="button"
-                            class="primary-button"
-                            :disabled="dialog.loading || !dialog.value.trim()"
-                            @click="submitDialog"
-                        >
-                            <svg v-if="dialog.loading" class="animate-spin inline-block h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                            </svg>
-                            @lang('dam::app.admin.explorer.dialog.save')
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </teleport>
-
-        {{-- Breadcrumb right-click menu --}}
-        <teleport to="body">
-            <div
-                v-if="crumbCtx.on"
-                class="fixed bg-white dark:bg-cherry-900 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-lg py-1"
-                style="z-index:10001;"
-                :style="{ left: crumbCtx.x + 'px', top: crumbCtx.y + 'px' }"
-            >
-                <button
-                    type="button"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-cherry-800 whitespace-nowrap"
-                    @click="openCrumbInNewTab"
-                >@lang('dam::app.admin.explorer.context.open-new-tab')</button>
-            </div>
-        </teleport>
+        {{-- Rename / create dialog --}}
+        <v-dam-input-dialog
+            :is-open="dialog.on"
+            :title="dialogTitle"
+            :placeholder="dialogPlaceholder"
+            :initial-value="dialog.value"
+            :is-loading="dialog.loading"
+            @submit="onDialogSubmit"
+            @close="closeDialog"
+        ></v-dam-input-dialog>
 
         {{-- Clipboard banner --}}
         <div
@@ -253,9 +197,10 @@ app.component('v-dam-tab', {
     },
 
     data() {
-        const storedView = typeof localStorage !== 'undefined' ? localStorage.getItem('dam_explorer_view_mode') : null;
+        const storedView    = typeof localStorage !== 'undefined' ? localStorage.getItem('dam_explorer_view_mode') : null;
         const storedDir     = typeof localStorage !== 'undefined' ? localStorage.getItem('dam_explorer_active_dir') : null;
         const storedFilters = typeof localStorage !== 'undefined' ? localStorage.getItem('dam_explorer_filter_state') : null;
+        const storedSidebar = typeof localStorage !== 'undefined' ? localStorage.getItem('dam_show_sidebar') : null;
         return {
             currentDirId: this.initialDirectoryId ?? (storedDir ? Number(storedDir) : null),
             breadcrumb:   [],
@@ -274,6 +219,7 @@ app.component('v-dam-tab', {
             abort:              null,
             folderUploading:    false,
             folderAbort:        null,
+            uploadTargetDirId:  null,
             localAccessibleIds: [...(this.accessibleIds || [])],
             debounce:        null,
             navHistory:   [],
@@ -281,8 +227,7 @@ app.component('v-dam-tab', {
             dialog: { on: false, type: null, value: '', loading: false, extra: null },
             clipboard:          null,
             ctxTarget:          null,
-            crumbDropTarget:    null,
-            crumbCtx:           { on: false, x: 0, y: 0, crumb: null },
+            sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
             available: {
                 id: 'dam-explorer',
                 columns: [
@@ -336,6 +281,9 @@ app.component('v-dam-tab', {
             })
             .catch(() => {});
 
+        this._onSidebarVisibility = (visible) => { this.sidebarVisible = visible; };
+        this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
+
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
         this.$emitter.on(`dam:dir-deleted:${this.tabId}`, () => {
             this.navHistory = this.navHistory.slice(0, this.navIdx + 1);
@@ -376,18 +324,14 @@ app.component('v-dam-tab', {
         });
 
         this.$emitter.on(`dam:explorer-upload-here:${this.tabId}`, ({ directoryId }) => {
-            if (directoryId !== this.currentDirId) {
-                this.goTo({ id: directoryId });
-            }
+            this.uploadTargetDirId = directoryId ?? this.currentDirId;
             this.$nextTick(() => {
                 document.getElementById(`explorer-upload-${this.tabId}`)?.click();
             });
         });
 
         this.$emitter.on(`dam:explorer-folder-upload-here:${this.tabId}`, ({ directoryId }) => {
-            if (directoryId !== this.currentDirId) {
-                this.goTo({ id: directoryId });
-            }
+            this.uploadTargetDirId = directoryId ?? this.currentDirId;
             this.$nextTick(() => {
                 document.getElementById(`explorer-folder-upload-${this.tabId}`)?.click();
             });
@@ -396,7 +340,6 @@ app.component('v-dam-tab', {
         this.$emitter.on(`dam:explorer-rename-asset:${this.tabId}`, ({ asset }) => {
             this.openDialog('rename-asset', asset.file_name, { asset });
         });
-
 
         this.$emitter.on(`dam:ctx-open:${this.tabId}`, ({ item, type }) => {
             this.ctxTarget = { item, type };
@@ -433,13 +376,25 @@ app.component('v-dam-tab', {
             // Sync tree to the current directory before it loads so that
             // setDefaultSeletedItem (which navigates to root) is suppressed.
             this.$emitter.emit('dam:explorer-tree-sync', { id: this.currentDirId });
+            // Seed history so the first navigation after reload has a valid Back state.
+            // fetch() will backfill the breadcrumb once the API responds.
+            this.navHistory.push({ dirId: this.currentDirId, breadcrumb: [] });
+            this.navIdx = 0;
             this.fetch();
         } else {
             this.loadRoot();
         }
     },
 
+    beforeUnmount() {
+        if (this._onSidebarVisibility) this.$emitter.off('dam:sidebar-visibility-changed', this._onSidebarVisibility);
+    },
+
     methods: {
+        toggleSidebar() {
+            this.$emitter.emit('dam:toggle-sidebar');
+        },
+
         loadRoot() {
             this.$axios.get("{{ route('admin.dam.directory.index') }}")
                 .then(({ data }) => {
@@ -591,19 +546,26 @@ app.component('v-dam-tab', {
             this.$emitter.emit('dam:add-bookmark', { id: dir.id, name: dir.name });
         },
 
+        downloadCurrentDir() {
+            if (! this.currentDirId) return;
+            window.open(`{{ route('admin.dam.directory.zip_download', ':id') }}`.replace(':id', this.currentDirId), '_self');
+        },
+
+        shareCurrentDir() {
+            if (! this.currentDirId) return;
+            this.$emitter.emit('open-share-modal', { targetType: 'directory', targetId: this.currentDirId });
+        },
+
         openDialog(type, value, extra) {
             this.dialog = { on: true, type, value, loading: false, extra };
-            this.$nextTick(() => { this.$refs.dialogInput?.focus(); });
         },
 
         closeDialog() {
             this.dialog = { on: false, type: null, value: '', loading: false, extra: null };
         },
 
-        submitDialog() {
-            const name = this.dialog.value.trim();
+        onDialogSubmit(name) {
             if (! name || this.dialog.loading) return;
-
             this.dialog.loading = true;
             const asset = this.dialog.extra?.asset;
             this.$axios.post("{{ route('admin.dam.assets.rename') }}", { id: asset.id, file_name: name })
@@ -731,9 +693,11 @@ app.component('v-dam-tab', {
         onFileChange(e) {
             const files = e.target.files;
             if (! files?.length) return;
+            const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
+            this.uploadTargetDirId = null;
             const fd = new FormData();
             Array.from(files).forEach(f => fd.append('files[]', f));
-            fd.append('directory_id', this.currentDirId);
+            fd.append('directory_id', targetDirId);
             this.uploading = true;
             this.abort     = new AbortController();
             this.$axios.post("{{ route('admin.dam.assets.upload') }}", fd, {
@@ -809,55 +773,11 @@ app.component('v-dam-tab', {
             }
         },
 
-        showCrumbCtx(e, crumb) {
-            this.crumbCtx = { on: true, x: e.clientX, y: e.clientY, crumb };
-            const close = () => { this.crumbCtx = { on: false, x: 0, y: 0, crumb: null }; };
-            document.addEventListener('click', close, { once: true });
-        },
-
-        openCrumbInNewTab() {
-            const crumb = this.crumbCtx.crumb;
-            this.crumbCtx = { on: false, x: 0, y: 0, crumb: null };
-            if (crumb) this.$emitter.emit('dam:open-in-new-tab', { directoryId: crumb.id, name: crumb.name });
-        },
-
-        onCrumbDragOver(e, crumb, i) {
-            if (! e.dataTransfer.types.includes('application/json')) return;
-            this.crumbDropTarget = crumb.id;
-            if (crumb.id === this.currentDirId) return; // already here, skip spring-load
-            if (this._crumbSpringTimer?.id === crumb.id) return;
-            clearTimeout(this._crumbSpringTimer?.timerId);
-            const timerId = setTimeout(() => {
-                if (this.crumbDropTarget === crumb.id) {
-                    this.goTo(crumb);
-                    this._crumbSpringTimer = null;
-                }
-            }, 700);
-            this._crumbSpringTimer = { id: crumb.id, timerId };
-        },
-
-        onCrumbDragLeave(e, crumb) {
-            if (this.crumbDropTarget === crumb.id && ! e.currentTarget.contains(e.relatedTarget)) {
-                this.crumbDropTarget = null;
-                clearTimeout(this._crumbSpringTimer?.timerId);
-                this._crumbSpringTimer = null;
-            }
-        },
-
-        onCrumbDrop(e, crumb, i) {
-            this.crumbDropTarget = null;
-            clearTimeout(this._crumbSpringTimer?.timerId);
-            this._crumbSpringTimer = null;
-            if (e.dataTransfer?.types?.includes('Files')) return;
-            let payload;
-            try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
-            if (! payload?.type) return;
-            this.onInternalDrop({ payload, targetDir: crumb });
-        },
-
         onFolderChange(e) {
             const files = Array.from(e.target.files ?? []);
             if (! files.length) return;
+            const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
+            this.uploadTargetDirId = null;
 
             const hasFiles = files.some(f => f.size > 0);
 
@@ -867,7 +787,7 @@ app.component('v-dam-tab', {
                     fd.append('files[]', f);
                     fd.append('relative_paths[]', f.webkitRelativePath || f.name);
                 });
-                fd.append('directory_id', this.currentDirId);
+                fd.append('directory_id', targetDirId);
                 fd.append('preserve_root', '1');
 
                 this.folderUploading = true;
@@ -895,7 +815,7 @@ app.component('v-dam-tab', {
                 if (! paths.length) { e.target.value = ''; return; }
 
                 this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
-                    directory_id: this.currentDirId,
+                    directory_id: targetDirId,
                     paths,
                 }).then(() => {
                     this.fetch();
