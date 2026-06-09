@@ -115,7 +115,7 @@
             :item-type="ctx.type"
             :tab-id="tabId"
             :clipboard="clipboard"
-            @close="ctx.on=false"
+            @close="closeCtx"
             @navigate="$emit('navigate', $event)"
             @open-new-tab="$emit('open-new-tab', $event)"
             @bookmark="$emit('bookmark', $event)"
@@ -140,7 +140,7 @@ app.component('v-dam-explorer-list', {
         clipboard:    { type: Object, default: null },
     },
 
-    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null }; },
+    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null }; },
 
     methods: {
         sort(col) {
@@ -164,12 +164,24 @@ app.component('v-dam-explorer-list', {
             return new Date(iso).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
         },
         showCtx(e, item, type) {
-            if (this._ctxClose) { document.removeEventListener('click', this._ctxClose); }
+            this.closeCtx();
             this.ctxKey++;
             this.ctx = { on: true, x: e.clientX, y: e.clientY, item, type };
-            this._ctxClose = () => { this.ctx.on = false; this._ctxClose = null; };
-            document.addEventListener('click', this._ctxClose, { once: true });
+            let lastScrollY = window.scrollY, lastScrollX = window.scrollX;
+            this._ctxScroll = () => {
+                const dy = window.scrollY - lastScrollY, dx = window.scrollX - lastScrollX;
+                lastScrollY = window.scrollY; lastScrollX = window.scrollX;
+                this.ctx = { ...this.ctx, y: this.ctx.y - dy, x: this.ctx.x - dx };
+            };
+            this._ctxClose = () => this.closeCtx();
+            document.addEventListener('click',  this._ctxClose, { once: true });
+            window.addEventListener('scroll', this._ctxScroll, { capture: true });
             this.$emitter.emit(`dam:ctx-open:${this.tabId}`, { item, type });
+        },
+        closeCtx() {
+            this.ctx.on = false;
+            if (this._ctxClose)  { document.removeEventListener('click',  this._ctxClose); this._ctxClose  = null; }
+            if (this._ctxScroll) { window.removeEventListener('scroll', this._ctxScroll, { capture: true }); this._ctxScroll = null; }
         },
         showSpaceCtx(e) {
             if (! this.currentDirId) return;

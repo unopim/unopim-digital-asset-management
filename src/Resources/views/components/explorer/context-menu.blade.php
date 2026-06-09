@@ -12,7 +12,7 @@
                 @lang('dam::app.admin.explorer.context.open')
             </button>
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doOpenNewTab">
-                <i class="icon-link text-sm text-zinc-600 dark:text-white"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                 @lang('dam::app.admin.explorer.context.open-new-tab')
             </button>
             <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
@@ -101,7 +101,7 @@
             <template v-if="clipboard">
                 <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
                 <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doPaste">
-                    <i class="icon-paste text-sm text-zinc-600 dark:text-white"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                     @lang('dam::app.admin.explorer.context.paste')
                 </button>
             </template>
@@ -155,7 +155,12 @@ app.component('v-dam-explorer-ctx', {
     props: { x: Number, y: Number, item: Object, itemType: String, tabId: { type: String, required: true }, clipboard: { type: Object, default: null } },
 
     data() {
-        return { finalTop: this.y, finalLeft: this.x, ready: false };
+        return { offsetTop: 0, offsetLeft: 0, ready: false };
+    },
+
+    computed: {
+        finalTop()  { return this.y + this.offsetTop; },
+        finalLeft() { return this.x + this.offsetLeft; },
     },
 
     mounted() {
@@ -166,25 +171,26 @@ app.component('v-dam-explorer-ctx', {
             const vw = window.innerWidth;
             const vh = window.innerHeight;
             const pad = 6;
+            let top, left;
 
-            // Vertical: prefer below cursor; flip above if overflow; clamp if neither fits
             if (this.y + r.height + pad <= vh) {
-                this.finalTop = this.y;
+                top = this.y;
             } else if (this.y - r.height - pad >= 0) {
-                this.finalTop = this.y - r.height;
+                top = this.y - r.height;
             } else {
-                this.finalTop = Math.max(pad, vh - r.height - pad);
+                top = Math.max(pad, vh - r.height - pad);
             }
 
-            // Horizontal: prefer right of cursor; flip left if overflow; clamp if neither fits
             if (this.x + r.width + pad <= vw) {
-                this.finalLeft = this.x;
+                left = this.x;
             } else if (this.x - r.width - pad >= 0) {
-                this.finalLeft = this.x - r.width;
+                left = this.x - r.width;
             } else {
-                this.finalLeft = Math.max(pad, vw - r.width - pad);
+                left = Math.max(pad, vw - r.width - pad);
             }
 
+            this.offsetTop  = top  - this.y;
+            this.offsetLeft = left - this.x;
             this.ready = true;
         });
     },
