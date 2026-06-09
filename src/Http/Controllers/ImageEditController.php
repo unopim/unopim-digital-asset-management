@@ -23,6 +23,8 @@ class ImageEditController
 
     public function resize(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -84,6 +86,8 @@ class ImageEditController
 
     public function adjust(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -119,6 +123,8 @@ class ImageEditController
 
     public function filters(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -150,6 +156,8 @@ class ImageEditController
 
     public function transform(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -184,6 +192,8 @@ class ImageEditController
 
     public function bgColor(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -206,6 +216,8 @@ class ImageEditController
 
     public function bgUpload(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -229,6 +241,8 @@ class ImageEditController
 
     public function bgAi(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -250,6 +264,8 @@ class ImageEditController
 
     public function bgColorNormal(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 
@@ -302,6 +318,8 @@ class ImageEditController
 
     public function bgPreview(Request $request, int $id): JsonResponse
     {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
         $this->damAuthorizeAsset($id);
         $asset = Asset::findOrFail($id);
 

@@ -91,6 +91,12 @@ class FileController
      */
     public function createFile(Request $request)
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $disk = Directory::getAssetDisk();
         $directory = Str::random(10).'/files';
         $path = Storage::disk($disk)->put($directory, $request->file);
@@ -106,9 +112,21 @@ class FileController
      */
     public function deleteFile(Request $request)
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.destroy'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
+        $path = (string) $request->path;
+
+        if (! $path || str_contains($path, '..')) {
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
+        }
+
         $disk = Directory::getAssetDisk();
-        if (Storage::disk($disk)->exists($request->path)) {
-            Storage::disk($disk)->delete($request->path);
+        if (Storage::disk($disk)->exists($path)) {
+            Storage::disk($disk)->delete($path);
 
             return response()->json(['status' => trans('dam::app.admin.dam.file.deleted')]);
         } else {
@@ -126,10 +144,22 @@ class FileController
      */
     public function updateFile(Request $request)
     {
-        $disk = Directory::getAssetDisk();
-        if (Storage::disk($disk)->exists($request->path)) {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.re_upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
 
-            Storage::disk($disk)->delete($request->path);
+        $path = (string) $request->path;
+
+        if (! $path || str_contains($path, '..')) {
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
+        }
+
+        $disk = Directory::getAssetDisk();
+        if (Storage::disk($disk)->exists($path)) {
+
+            Storage::disk($disk)->delete($path);
 
             $directory = Str::random(10).'/files';
 
@@ -150,13 +180,25 @@ class FileController
      */
     public function fetchFile(string $path)
     {
+        if (! Auth::check()) {
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
         $this->assertPathAllowed($path);
 
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
             $mimeType = Storage::disk($disk)->mimeType($path);
 
-            return response(Storage::disk($disk)->get($path), 200)->header('Content-Type', $mimeType);
+            $response = response(Storage::disk($disk)->get($path), 200)
+                ->header('Content-Type', $mimeType);
+
+            // Prevent script execution inside SVG files served inline.
+            if ($mimeType === 'image/svg+xml') {
+                $response->header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline';");
+            }
+
+            return $response;
         } else {
             return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }

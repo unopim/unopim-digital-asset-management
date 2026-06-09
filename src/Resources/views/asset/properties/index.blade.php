@@ -79,25 +79,13 @@
                         @endif
                         
 
-                        <p 
-                            v-html="record.name"
-                            class="break-words"
-                        ></p>
+                        <p class="break-words">@{{ record.name }}</p>
 
-                        <p 
-                            v-html="record.type"
-                            class="break-words"
-                        ></p>
+                        <p class="break-words">@{{ record.type }}</p>
 
-                        <p 
-                            v-html="record.language"
-                            class="break-words"
-                        ></p>
+                        <p class="break-words">@{{ record.language }}</p>
 
-                        <p 
-                            v-html="record.value"
-                            class="break-words"
-                        ></p>
+                        <p class="break-words">@{{ record.value }}</p>
 
                         <div class="flex justify-end">
                             @if (bouncer()->hasPermission('dam.asset.property.update'))
