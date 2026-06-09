@@ -23,6 +23,7 @@ class ConfigurationController extends Controller
                 'DAM_TREE_SHOW_ASSETS'            => config('dam.tree.show_assets'),
                 'DAM_EXPLORER_ENABLED'            => config('dam.explorer.enabled'),
                 'DAM_EXPLORER_BOOKMARKS_ENABLED'  => config('dam.explorer.bookmarks_enabled'),
+                'DAM_EXPLORER_SHOW_TREE'          => config('dam.explorer.show_tree'),
             ],
         ]);
     }
@@ -33,7 +34,7 @@ class ConfigurationController extends Controller
             abort(403);
         }
 
-        $keys = ['DAM_TREE_SHOW_ASSETS', 'DAM_EXPLORER_ENABLED', 'DAM_EXPLORER_BOOKMARKS_ENABLED'];
+        $keys = ['DAM_TREE_SHOW_ASSETS', 'DAM_EXPLORER_ENABLED', 'DAM_EXPLORER_BOOKMARKS_ENABLED', 'DAM_EXPLORER_SHOW_TREE'];
 
         foreach ($keys as $key) {
             DamConfiguration::updateOrCreate(

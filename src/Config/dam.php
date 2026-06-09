@@ -21,6 +21,7 @@ return [
     'explorer' => [
         'enabled'           => env('DAM_EXPLORER_ENABLED', false),
         'bookmarks_enabled' => env('DAM_EXPLORER_BOOKMARKS_ENABLED', false),
+        'show_tree'         => env('DAM_EXPLORER_SHOW_TREE', true),
     ],
 
 ];

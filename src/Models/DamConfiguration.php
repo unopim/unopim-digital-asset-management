@@ -24,5 +24,6 @@ class DamConfiguration extends Model
         'DAM_TREE_SHOW_ASSETS'           => 'dam.tree.show_assets',
         'DAM_EXPLORER_ENABLED'           => 'dam.explorer.enabled',
         'DAM_EXPLORER_BOOKMARKS_ENABLED' => 'dam.explorer.bookmarks_enabled',
+        'DAM_EXPLORER_SHOW_TREE'         => 'dam.explorer.show_tree',
     ];
 }
