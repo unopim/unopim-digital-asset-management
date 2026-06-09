@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfiguration gemt.',
             'general'  => [
                 'title'            => 'Generelle indstillinger',
+                'description'      => 'Konfigurer synlighed af mappetræ, udforskningsvisning og bogmærkepanel for DAM-mediebiblioteket.',
                 'tree-show-assets' => [
                     'label' => 'Vis aktiver i mappetræet',
                     'hint'  => 'Når aktiveret, vises aktivfiler som bladnoder i mappetræet.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Aktivér bogmærkepanel',
                     'hint'  => 'Viser et bogmærkepanel under mappetræet til hurtig navigation.',
+                ],
+                'show-tree' => [
+                    'label' => 'Vis mappetræ',
+                    'hint'  => 'Når aktiveret vises mappetræet i sidebjælken ved siden af udforskeren.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Gem',
                 'cancel' => 'Annuller',
+            ],
+            'view' => [
+                'grid' => 'Gittervisning',
+                'list' => 'Listevisning',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Skift mappetræ',
+                'toggle-sidebar' => 'Skift sidebjælke',
             ],
         ],
     ],

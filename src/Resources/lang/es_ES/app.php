@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuración guardada correctamente.',
             'general'  => [
                 'title'            => 'Ajustes generales',
+                'description'      => 'Configure la visibilidad del árbol de directorios, la vista del explorador y el panel de marcadores para la biblioteca multimedia DAM.',
                 'tree-show-assets' => [
                     'label' => 'Mostrar recursos en el árbol de directorios',
                     'hint'  => 'Cuando está activado, los archivos de recursos aparecen como nodos hoja dentro del árbol de directorios.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Activar panel de marcadores',
                     'hint'  => 'Muestra un panel de marcadores debajo del árbol de directorios para una navegación rápida.',
+                ],
+                'show-tree' => [
+                    'label' => 'Mostrar árbol de directorios',
+                    'hint'  => 'Cuando está habilitado, la barra lateral del árbol de directorios se muestra junto al explorador.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Guardar',
                 'cancel' => 'Cancelar',
+            ],
+            'view' => [
+                'grid' => 'Vista de cuadrícula',
+                'list' => 'Vista de lista',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Alternar árbol de directorios',
+                'toggle-sidebar' => 'Alternar barra lateral',
             ],
         ],
     ],

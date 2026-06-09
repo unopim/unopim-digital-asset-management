@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configurazione salvata con successo.',
             'general'  => [
                 'title'            => 'Impostazioni generali',
+                'description'      => 'Configura la visibilità dell\'albero directory, la vista explorer e il pannello segnalibri per la libreria multimediale DAM.',
                 'tree-show-assets' => [
                     'label' => 'Mostra asset nell\'albero delle directory',
                     'hint'  => 'Se abilitato, i file asset vengono visualizzati come nodi foglia all\'interno dell\'albero delle directory.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Abilita pannello Segnalibri',
                     'hint'  => 'Mostra un pannello segnalibri sotto l\'albero delle directory per una navigazione rapida.',
+                ],
+                'show-tree' => [
+                    'label' => 'Mostra albero directory',
+                    'hint'  => 'Se abilitato, la barra laterale dell\'albero directory viene mostrata accanto all\'explorer.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Salva',
                 'cancel' => 'Annulla',
+            ],
+            'view' => [
+                'grid' => 'Vista griglia',
+                'list' => 'Vista elenco',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Mostra/nascondi albero directory',
+                'toggle-sidebar' => 'Mostra/nascondi barra laterale',
             ],
         ],
     ],

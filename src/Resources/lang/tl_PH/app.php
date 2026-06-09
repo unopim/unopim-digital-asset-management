@@ -510,6 +510,7 @@ return [
             'saved'    => 'Matagumpay na nai-save ang pagsasaayos.',
             'general'  => [
                 'title'            => 'Pangkalahatang Mga Setting',
+                'description'      => 'I-configure ang visibility ng direktoryo tree, explorer view, at bookmarks panel para sa DAM media library.',
                 'tree-show-assets' => [
                     'label' => 'Ipakita ang mga Asset sa Directory Tree',
                     'hint'  => 'Kapag pinagana, ang mga file ng asset ay lilitaw bilang mga leaf node sa loob ng directory tree.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'I-enable ang Bookmarks Panel',
                     'hint'  => 'Nagpapakita ng bookmarks panel sa ibaba ng directory tree para sa mabilis na nabigasyon.',
                 ],
+                'show-tree' => [
+                    'label' => 'Ipakita ang direktoryo tree',
+                    'hint'  => 'Kapag pinagana, ang sidebar ng direktoryo tree ay ipinapakita kasabay ng explorer.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'I-save',
                 'cancel' => 'Kanselahin',
+            ],
+            'view' => [
+                'grid' => 'Grid na Pagtingin',
+                'list' => 'Listahan na Pagtingin',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'I-toggle ang direktoryo tree',
+                'toggle-sidebar' => 'I-toggle ang sidebar',
             ],
         ],
     ],

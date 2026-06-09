@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuração salva com sucesso.',
             'general'  => [
                 'title'            => 'Configurações Gerais',
+                'description'      => 'Configure a visibilidade da árvore de diretórios, a visualização do explorador e o painel de favoritos para a biblioteca de mídia DAM.',
                 'tree-show-assets' => [
                     'label' => 'Exibir Ativos na Árvore de Diretórios',
                     'hint'  => 'Quando habilitado, os arquivos de ativos aparecem como nós folha dentro da árvore de diretórios.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Habilitar Painel de Favoritos',
                     'hint'  => 'Exibe um painel de favoritos abaixo da árvore de diretórios para navegação rápida.',
                 ],
+                'show-tree' => [
+                    'label' => 'Mostrar árvore de diretórios',
+                    'hint'  => 'Quando habilitado, a barra lateral da árvore de diretórios é exibida ao lado do explorador.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Salvar',
                 'cancel' => 'Cancelar',
+            ],
+            'view' => [
+                'grid' => 'Visualização em grade',
+                'list' => 'Visualização em lista',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Alternar árvore de diretórios',
+                'toggle-sidebar' => 'Alternar barra lateral',
             ],
         ],
     ],

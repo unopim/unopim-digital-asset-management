@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuratie succesvol opgeslagen.',
             'general'  => [
                 'title'            => 'Algemene instellingen',
+                'description'      => 'Configureer de zichtbaarheid van de mappenstructuur, verkennerweergave en bladwijzerpaneel voor de DAM-mediabibliotheek.',
                 'tree-show-assets' => [
                     'label' => 'Assets weergeven in mappenstructuur',
                     'hint'  => 'Wanneer ingeschakeld, worden assetbestanden als bladknooppunten in de mappenstructuur weergegeven.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Bladwijzerspaneel inschakelen',
                     'hint'  => 'Toont een bladwijzerspaneel onder de mappenstructuur voor snelle navigatie.',
+                ],
+                'show-tree' => [
+                    'label' => 'Mappenstructuur weergeven',
+                    'hint'  => 'Als ingeschakeld wordt de mappenstructuur naast de verkenner getoond.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Opslaan',
                 'cancel' => 'Annuleren',
+            ],
+            'view' => [
+                'grid' => 'Rasterweergave',
+                'list' => 'Lijstweergave',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Mappenstructuur in-/uitschakelen',
+                'toggle-sidebar' => 'Zijbalk in-/uitschakelen',
             ],
         ],
     ],

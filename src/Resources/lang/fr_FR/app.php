@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuration enregistrée avec succès.',
             'general'  => [
                 'title'            => 'Paramètres généraux',
+                'description'      => 'Configurez la visibilité de l\'arborescence, la vue explorateur et le panneau de favoris pour la bibliothèque multimédia DAM.',
                 'tree-show-assets' => [
                     'label' => 'Afficher les ressources dans l\'arborescence',
                     'hint'  => 'Lorsque cette option est activée, les fichiers de ressources apparaissent comme nœuds feuilles dans l\'arborescence.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Activer le panneau Signets',
                     'hint'  => 'Affiche un panneau de signets sous l\'arborescence pour une navigation rapide.',
+                ],
+                'show-tree' => [
+                    'label' => 'Afficher l\'arborescence',
+                    'hint'  => 'Lorsqu\'activée, la barre latérale de l\'arborescence est affichée à côté de l\'explorateur.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Enregistrer',
                 'cancel' => 'Annuler',
+            ],
+            'view' => [
+                'grid' => 'Vue en grille',
+                'list' => 'Vue en liste',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Afficher/masquer l\'arborescence',
+                'toggle-sidebar' => 'Afficher/masquer la barre latérale',
             ],
         ],
     ],

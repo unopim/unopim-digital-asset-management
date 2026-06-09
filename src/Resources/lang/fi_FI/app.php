@@ -510,6 +510,7 @@ return [
             'saved'    => 'Asetukset tallennettu onnistuneesti.',
             'general'  => [
                 'title'            => 'Yleiset asetukset',
+                'description'      => 'Määritä hakemistopuun näkyvyys, selailunäkymä ja kirjanmerkkipaneeli DAM-mediakirjastolle.',
                 'tree-show-assets' => [
                     'label' => 'Näytä resurssit hakemistopuussa',
                     'hint'  => 'Kun käytössä, resurssitiedostot näkyvät lehtisolmuina hakemistopuussa.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Ota kirjanmerkkilohko käyttöön',
                     'hint'  => 'Näyttää kirjanmerkkilohkon hakemistopuun alla nopeaa navigointia varten.',
+                ],
+                'show-tree' => [
+                    'label' => 'Näytä hakemistopuu',
+                    'hint'  => 'Kun käytössä, hakemistopuun sivupalkki näytetään selailijan rinnalla.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Tallenna',
                 'cancel' => 'Peruuta',
+            ],
+            'view' => [
+                'grid' => 'Ruudukkonäkymä',
+                'list' => 'Listanäkymä',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Vaihda hakemistopuun näkyvyys',
+                'toggle-sidebar' => 'Vaihda sivupalkki',
             ],
         ],
     ],

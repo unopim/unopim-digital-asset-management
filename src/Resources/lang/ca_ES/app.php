@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuració desada correctament.',
             'general'  => [
                 'title'            => 'Configuració general',
+                'description'      => 'Configureu la visibilitat de l\'arbre de directoris, la vista d\'explorador i el panell de marcadors per a la biblioteca multimèdia DAM.',
                 'tree-show-assets' => [
                     'label' => 'Mostra els recursos a l\'arbre de directoris',
                     'hint'  => 'Quan està activat, els fitxers de recursos apareixen com a nodes fulla dins l\'arbre de directoris.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Activa el tauler de marcadors',
                     'hint'  => 'Mostra un tauler de marcadors sota l\'arbre de directoris per a una navegació ràpida.',
+                ],
+                'show-tree' => [
+                    'label' => 'Mostra l\'arbre de directoris',
+                    'hint'  => 'Quan s\'activa, la barra lateral de l\'arbre de directoris es mostra al costat de l\'explorador.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Desa',
                 'cancel' => 'Cancel·la',
+            ],
+            'view' => [
+                'grid' => 'Vista de quadrícula',
+                'list' => 'Vista de llista',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Commuta l\'arbre de directoris',
+                'toggle-sidebar' => 'Commuta la barra lateral',
             ],
         ],
     ],

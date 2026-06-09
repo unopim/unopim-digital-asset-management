@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfiguracija uspješno spremljena.',
             'general'  => [
                 'title'            => 'Opće postavke',
+                'description'      => 'Konfigurirajte vidljivost stabla direktorija, prikaz preglednika i ploču oznaka za DAM medijsku biblioteku.',
                 'tree-show-assets' => [
                     'label' => 'Prikaži resurse u stablu direktorija',
                     'hint'  => 'Kada je omogućeno, datoteke resursa prikazuju se kao lisni čvorovi unutar stabla direktorija.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Omogući ploču oznaka',
                     'hint'  => 'Prikazuje ploču oznaka ispod stabla direktorija za brzu navigaciju.',
+                ],
+                'show-tree' => [
+                    'label' => 'Prikaži stablo direktorija',
+                    'hint'  => 'Kada je omogućeno, bočna traka stabla direktorija prikazuje se uz explorer.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Spremi',
                 'cancel' => 'Odustani',
+            ],
+            'view' => [
+                'grid' => 'Prikaz rešetke',
+                'list' => 'Prikaz popisa',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Preklopi stablo direktorija',
+                'toggle-sidebar' => 'Preklopi bočnu traku',
             ],
         ],
     ],

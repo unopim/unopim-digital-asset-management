@@ -510,6 +510,7 @@ return [
             'saved'    => 'Đã lưu cấu hình thành công.',
             'general'  => [
                 'title'            => 'Cài đặt chung',
+                'description'      => 'Cấu hình khả năng hiển thị cây thư mục, chế độ xem khám phá và bảng đánh dấu cho thư viện media DAM.',
                 'tree-show-assets' => [
                     'label' => 'Hiển thị tài nguyên trong cây thư mục',
                     'hint'  => 'Khi bật, các tệp tài nguyên sẽ xuất hiện dưới dạng nút lá bên trong cây thư mục.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Bật bảng Dấu trang',
                     'hint'  => 'Hiển thị bảng dấu trang bên dưới cây thư mục để điều hướng nhanh.',
                 ],
+                'show-tree' => [
+                    'label' => 'Hiển thị cây thư mục',
+                    'hint'  => 'Khi bật, thanh bên cây thư mục được hiển thị cùng với trình khám phá.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Lưu',
                 'cancel' => 'Hủy',
+            ],
+            'view' => [
+                'grid' => 'Chế độ xem lưới',
+                'list' => 'Chế độ xem danh sách',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Bật/tắt cây thư mục',
+                'toggle-sidebar' => 'Bật/tắt thanh bên',
             ],
         ],
     ],

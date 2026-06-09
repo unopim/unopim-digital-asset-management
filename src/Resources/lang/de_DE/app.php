@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfiguration erfolgreich gespeichert.',
             'general'  => [
                 'title'            => 'Allgemeine Einstellungen',
+                'description'      => 'Konfigurieren Sie die Verzeichnisbaum-Sichtbarkeit, die Explorer-Ansicht und das Lesezeichen-Panel für die DAM-Medienbibliothek.',
                 'tree-show-assets' => [
                     'label' => 'Assets im Verzeichnisbaum anzeigen',
                     'hint'  => 'Wenn aktiviert, werden Asset-Dateien als Blattknoten im Verzeichnisbaum angezeigt.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Lesezeichen-Panel aktivieren',
                     'hint'  => 'Zeigt ein Lesezeichen-Panel unterhalb des Verzeichnisbaums für die schnelle Navigation an.',
+                ],
+                'show-tree' => [
+                    'label' => 'Verzeichnisbaum anzeigen',
+                    'hint'  => 'Wenn aktiviert, wird die Verzeichnisbaum-Seitenleiste neben dem Explorer angezeigt.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Speichern',
                 'cancel' => 'Abbrechen',
+            ],
+            'view' => [
+                'grid' => 'Rasteransicht',
+                'list' => 'Listenansicht',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Verzeichnisbaum ein-/ausblenden',
+                'toggle-sidebar' => 'Seitenleiste ein-/ausblenden',
             ],
         ],
     ],

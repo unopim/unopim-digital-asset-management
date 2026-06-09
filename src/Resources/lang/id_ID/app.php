@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfigurasi berhasil disimpan.',
             'general'  => [
                 'title'            => 'Pengaturan Umum',
+                'description'      => 'Konfigurasikan visibilitas pohon direktori, tampilan penjelajah, dan panel bookmark untuk perpustakaan media DAM.',
                 'tree-show-assets' => [
                     'label' => 'Tampilkan Aset di Pohon Direktori',
                     'hint'  => 'Jika diaktifkan, file aset akan muncul sebagai node daun di dalam pohon direktori.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Aktifkan Panel Bookmark',
                     'hint'  => 'Menampilkan panel bookmark di bawah pohon direktori untuk navigasi cepat.',
+                ],
+                'show-tree' => [
+                    'label' => 'Tampilkan pohon direktori',
+                    'hint'  => 'Jika diaktifkan, bilah sisi pohon direktori ditampilkan bersama penjelajah.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Simpan',
                 'cancel' => 'Batal',
+            ],
+            'view' => [
+                'grid' => 'Tampilan Kisi',
+                'list' => 'Tampilan Daftar',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Tampilkan/sembunyikan pohon direktori',
+                'toggle-sidebar' => 'Tampilkan/sembunyikan bilah sisi',
             ],
         ],
     ],

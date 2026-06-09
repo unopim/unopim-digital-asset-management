@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configurarea a fost salvată cu succes.',
             'general'  => [
                 'title'            => 'Setări generale',
+                'description'      => 'Configurați vizibilitatea arborelui de directoare, vizualizarea explorator și panoul de marcaje pentru biblioteca media DAM.',
                 'tree-show-assets' => [
                     'label' => 'Afișează resursele în arborele de directoare',
                     'hint'  => 'Când este activat, fișierele de resurse apar ca noduri frunză în arborele de directoare.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Activează panoul de marcaje',
                     'hint'  => 'Afișează un panou de marcaje sub arborele de directoare pentru navigare rapidă.',
                 ],
+                'show-tree' => [
+                    'label' => 'Afișați arborele de directoare',
+                    'hint'  => 'Când este activat, bara laterală cu arborele de directoare este afișată lângă explorator.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Salvează',
                 'cancel' => 'Anulează',
+            ],
+            'view' => [
+                'grid' => 'Vizualizare grilă',
+                'list' => 'Vizualizare listă',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Comutați arborele de directoare',
+                'toggle-sidebar' => 'Comutați bara laterală',
             ],
         ],
     ],

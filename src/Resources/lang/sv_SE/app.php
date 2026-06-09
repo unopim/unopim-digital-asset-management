@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfigurationen sparades.',
             'general'  => [
                 'title'            => 'Allmänna inställningar',
+                'description'      => 'Konfigurera synlighet för katalogträd, utforskarvy och bokmärkespanel för DAM-mediebiblioteket.',
                 'tree-show-assets' => [
                     'label' => 'Visa resurser i katalogträdet',
                     'hint'  => 'När aktiverat visas resursfiler som lövnoder i katalogträdet.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Aktivera bokmärkespanel',
                     'hint'  => 'Visar en bokmärkespanel under katalogträdet för snabb navigering.',
                 ],
+                'show-tree' => [
+                    'label' => 'Visa katalogträd',
+                    'hint'  => 'När aktiverat visas katalogträdets sidopanel bredvid utforskaren.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Spara',
                 'cancel' => 'Avbryt',
+            ],
+            'view' => [
+                'grid' => 'Rutnätsvy',
+                'list' => 'Listvy',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Växla katalogträd',
+                'toggle-sidebar' => 'Växla sidopanel',
             ],
         ],
     ],

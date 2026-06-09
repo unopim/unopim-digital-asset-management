@@ -510,6 +510,7 @@ return [
             'saved'    => 'Yapılandırma başarıyla kaydedildi.',
             'general'  => [
                 'title'            => 'Genel Ayarlar',
+                'description'      => 'DAM medya kütüphanesi için dizin ağacı görünürlüğünü, gezgin görünümünü ve yer işaretleri panelini yapılandırın.',
                 'tree-show-assets' => [
                     'label' => 'Dizin Ağacında Varlıkları Göster',
                     'hint'  => 'Etkinleştirildiğinde, varlık dosyaları dizin ağacında yaprak düğümler olarak görünür.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Yer İşaretleri Panelini Etkinleştir',
                     'hint'  => 'Hızlı gezinme için dizin ağacının altında bir yer işaretleri paneli gösterir.',
                 ],
+                'show-tree' => [
+                    'label' => 'Dizin ağacını göster',
+                    'hint'  => 'Etkinleştirildiğinde, dizin ağacı kenar çubuğu gezgininin yanında görüntülenir.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Kaydet',
                 'cancel' => 'İptal',
+            ],
+            'view' => [
+                'grid' => 'Izgara Görünümü',
+                'list' => 'Liste Görünümü',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Dizin ağacını aç/kapat',
+                'toggle-sidebar' => 'Kenar çubuğunu aç/kapat',
             ],
         ],
     ],

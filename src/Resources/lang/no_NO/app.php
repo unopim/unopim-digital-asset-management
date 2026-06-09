@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfigurasjon lagret.',
             'general'  => [
                 'title'            => 'Generelle innstillinger',
+                'description'      => 'Konfigurer mappetre-synlighet, utforskervisning og bokmerke-panel for DAM-mediebiblioteket.',
                 'tree-show-assets' => [
                     'label' => 'Vis ressurser i mappetre',
                     'hint'  => 'Når aktivert, vises ressursfiler som bladnoder i mappetreet.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Aktiver Bokmerker-panel',
                     'hint'  => 'Viser et bokmerkepanel under mappetreet for rask navigasjon.',
+                ],
+                'show-tree' => [
+                    'label' => 'Vis mappetre',
+                    'hint'  => 'Når aktivert vises mappetreet i sidepanelet ved siden av utforskeren.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Lagre',
                 'cancel' => 'Avbryt',
+            ],
+            'view' => [
+                'grid' => 'Rutenettvisning',
+                'list' => 'Listevisning',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Slå mappestruktur av/på',
+                'toggle-sidebar' => 'Slå sidepanel av/på',
             ],
         ],
     ],

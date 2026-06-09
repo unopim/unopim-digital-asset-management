@@ -510,6 +510,7 @@ return [
             'saved'    => 'Configuration saved successfully.',
             'general'  => [
                 'title'            => 'General Settings',
+                'description'      => 'Configure directory tree visibility, explorer view, and bookmarks panel for the DAM media library.',
                 'tree-show-assets' => [
                     'label' => 'Show Assets in Directory Tree',
                     'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
@@ -521,6 +522,10 @@ return [
                 'bookmarks-enabled' => [
                     'label' => 'Enable Bookmarks Panel',
                     'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                ],
+                'show-tree' => [
+                    'label' => 'Show Directory Tree',
+                    'hint'  => 'When enabled, the directory tree sidebar is shown alongside the explorer.',
                 ],
             ],
         ],
@@ -655,6 +660,14 @@ return [
                 ],
                 'save'   => 'Save',
                 'cancel' => 'Cancel',
+            ],
+            'view' => [
+                'grid' => 'Grid View',
+                'list' => 'List View',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Toggle directory tree',
+                'toggle-sidebar' => 'Toggle sidebar',
             ],
         ],
     ],

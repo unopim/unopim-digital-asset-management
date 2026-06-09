@@ -510,6 +510,7 @@ return [
             'saved'    => 'Konfiguracja została pomyślnie zapisana.',
             'general'  => [
                 'title'            => 'Ustawienia ogólne',
+                'description'      => 'Skonfiguruj widoczność drzewa katalogów, widok eksploratora i panel zakładek dla biblioteki multimediów DAM.',
                 'tree-show-assets' => [
                     'label' => 'Pokaż zasoby w drzewie katalogów',
                     'hint'  => 'Po włączeniu pliki zasobów są wyświetlane jako węzły liściowe w drzewie katalogów.',
@@ -522,6 +523,11 @@ return [
                     'label' => 'Włącz panel zakładek',
                     'hint'  => 'Wyświetla panel zakładek poniżej drzewa katalogów umożliwiający szybką nawigację.',
                 ],
+                'show-tree' => [
+                    'label' => 'Pokaż drzewo katalogów',
+                    'hint'  => 'Gdy włączone, pasek boczny drzewa katalogów jest widoczny obok eksploratora.',
+                ],
+
             ],
         ],
         'catalog' => [
@@ -655,6 +661,14 @@ return [
                 ],
                 'save'   => 'Zapisz',
                 'cancel' => 'Anuluj',
+            ],
+            'view' => [
+                'grid' => 'Widok siatki',
+                'list' => 'Widok listy',
+            ],
+            'toolbar' => [
+                'toggle-tree'    => 'Przełącz drzewo katalogów',
+                'toggle-sidebar' => 'Przełącz pasek boczny',
             ],
         ],
     ],
