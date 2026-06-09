@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => '打开',
                 'open-new-tab'         => '在新标签页中打开',
-                'bookmark'             => '添加到书签',
+                'bookmark'             => '收藏目录',
                 'folder-upload'        => '上传文件夹',
                 'copy'                 => '复制',
                 'paste'                => '粘贴',

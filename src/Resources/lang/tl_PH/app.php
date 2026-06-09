@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Buksan',
                 'open-new-tab'         => 'Buksan sa bagong tab',
-                'bookmark'             => 'Idagdag sa Mga Bookmark',
+                'bookmark'             => 'I-bookmark ang Direktoryo',
                 'folder-upload'        => 'Mag-angkat ng Folder',
                 'copy'                 => 'Kopyahin',
                 'paste'                => 'I-paste',

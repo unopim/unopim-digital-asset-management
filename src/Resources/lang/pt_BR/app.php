@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Abrir',
                 'open-new-tab'         => 'Abrir em nova aba',
-                'bookmark'             => 'Adicionar aos Favoritos',
+                'bookmark'             => 'Marcar Diretório',
                 'folder-upload'        => 'Enviar Pasta',
                 'copy'                 => 'Copiar',
                 'paste'                => 'Colar',

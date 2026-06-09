@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Åbn',
                 'open-new-tab'         => 'Åbn i ny fane',
-                'bookmark'             => 'Tilføj til bogmærker',
+                'bookmark'             => 'Sæt mappe som bogmærke',
                 'folder-upload'        => 'Upload mappe',
                 'copy'                 => 'Kopiér',
                 'paste'                => 'Indsæt',

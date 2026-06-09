@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Open',
                 'open-new-tab'         => 'Open in new tab',
-                'bookmark'             => 'Add to Bookmarks',
+                'bookmark'             => 'Bookmark Directory',
                 'folder-upload'        => 'Upload Folder',
                 'copy'                 => 'Copy',
                 'paste'                => 'Paste',

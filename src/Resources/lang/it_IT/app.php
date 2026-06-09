@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Apri',
                 'open-new-tab'         => 'Apri in una nuova scheda',
-                'bookmark'             => 'Aggiungi ai segnalibri',
+                'bookmark'             => 'Aggiungi directory ai segnalibri',
                 'folder-upload'        => 'Carica cartella',
                 'copy'                 => 'Copia',
                 'paste'                => 'Incolla',

@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => '開啟',
                 'open-new-tab'         => '在新分頁中開啟',
-                'bookmark'             => '加入書籤',
+                'bookmark'             => '將目錄加入書籤',
                 'folder-upload'        => '上傳資料夾',
                 'copy'                 => '複製',
                 'paste'                => '貼上',

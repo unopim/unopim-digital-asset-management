@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Obre',
                 'open-new-tab'         => 'Obre en una pestanya nova',
-                'bookmark'             => 'Afegeix als marcadors',
+                'bookmark'             => 'Afegeix directori als marcadors',
                 'folder-upload'        => 'Carrega carpeta',
                 'copy'                 => 'Copia',
                 'paste'                => 'Enganxa',

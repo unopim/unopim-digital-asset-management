@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => '열기',
                 'open-new-tab'         => '새 탭에서 열기',
-                'bookmark'             => '북마크에 추가',
+                'bookmark'             => '디렉토리 북마크',
                 'folder-upload'        => '폴더 업로드',
                 'copy'                 => '복사',
                 'paste'                => '붙여넣기',

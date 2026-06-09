@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Ouvrir',
                 'open-new-tab'         => 'Ouvrir dans un nouvel onglet',
-                'bookmark'             => 'Ajouter aux signets',
+                'bookmark'             => 'Marquer le répertoire',
                 'folder-upload'        => 'Téléverser un dossier',
                 'copy'                 => 'Copier',
                 'paste'                => 'Coller',

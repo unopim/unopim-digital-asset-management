@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Buka',
                 'open-new-tab'         => 'Buka di tab baru',
-                'bookmark'             => 'Tambahkan ke Bookmark',
+                'bookmark'             => 'Tandai Direktori',
                 'folder-upload'        => 'Unggah Folder',
                 'copy'                 => 'Salin',
                 'paste'                => 'Tempel',

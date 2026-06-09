@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Avaa',
                 'open-new-tab'         => 'Avaa uudessa välilehdessä',
-                'bookmark'             => 'Lisää kirjanmerkkeihin',
+                'bookmark'             => 'Lisää hakemisto kirjanmerkkeihin',
                 'folder-upload'        => 'Lataa kansio',
                 'copy'                 => 'Kopioi',
                 'paste'                => 'Liitä',

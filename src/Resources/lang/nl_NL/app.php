@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Openen',
                 'open-new-tab'         => 'Openen in nieuw tabblad',
-                'bookmark'             => 'Toevoegen aan bladwijzers',
+                'bookmark'             => 'Map als bladwijzer',
                 'folder-upload'        => 'Map uploaden',
                 'copy'                 => 'Kopiëren',
                 'paste'                => 'Plakken',

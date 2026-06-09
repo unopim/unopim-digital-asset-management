@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Deschide',
                 'open-new-tab'         => 'Deschide în filă nouă',
-                'bookmark'             => 'Adaugă la marcaje',
+                'bookmark'             => 'Adaugă director la marcaje',
                 'folder-upload'        => 'Încarcă dosar',
                 'copy'                 => 'Copiază',
                 'paste'                => 'Lipește',

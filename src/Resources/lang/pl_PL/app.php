@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Otwórz',
                 'open-new-tab'         => 'Otwórz w nowej karcie',
-                'bookmark'             => 'Dodaj do zakładek',
+                'bookmark'             => 'Dodaj katalog do zakładek',
                 'folder-upload'        => 'Prześlij folder',
                 'copy'                 => 'Kopiuj',
                 'paste'                => 'Wklej',

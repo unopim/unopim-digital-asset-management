@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Otvori',
                 'open-new-tab'         => 'Otvori u novoj kartici',
-                'bookmark'             => 'Dodaj u oznake',
+                'bookmark'             => 'Označi direktorij',
                 'folder-upload'        => 'Učitaj mapu',
                 'copy'                 => 'Kopiraj',
                 'paste'                => 'Zalijepi',

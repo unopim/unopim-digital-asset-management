@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => '開く',
                 'open-new-tab'         => '新しいタブで開く',
-                'bookmark'             => 'ブックマークに追加',
+                'bookmark'             => 'ディレクトリをブックマーク',
                 'folder-upload'        => 'フォルダーをアップロード',
                 'copy'                 => 'コピー',
                 'paste'                => '貼り付け',

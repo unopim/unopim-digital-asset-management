@@ -623,7 +623,7 @@ return [
             'context' => [
                 'open'                 => 'Öffnen',
                 'open-new-tab'         => 'In neuem Tab öffnen',
-                'bookmark'             => 'Zu Lesezeichen hinzufügen',
+                'bookmark'             => 'Verzeichnis mit Lesezeichen',
                 'folder-upload'        => 'Ordner hochladen',
                 'copy'                 => 'Kopieren',
                 'paste'                => 'Einfügen',

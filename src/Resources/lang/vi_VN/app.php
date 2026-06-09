@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Mở',
                 'open-new-tab'         => 'Mở trong tab mới',
-                'bookmark'             => 'Thêm vào Dấu trang',
+                'bookmark'             => 'Đánh dấu thư mục',
                 'folder-upload'        => 'Tải lên thư mục',
                 'copy'                 => 'Sao chép',
                 'paste'                => 'Dán',

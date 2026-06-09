@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Öppna',
                 'open-new-tab'         => 'Öppna i ny flik',
-                'bookmark'             => 'Lägg till i bokmärken',
+                'bookmark'             => 'Bokmärk mapp',
                 'folder-upload'        => 'Ladda upp mapp',
                 'copy'                 => 'Kopiera',
                 'paste'                => 'Klistra in',

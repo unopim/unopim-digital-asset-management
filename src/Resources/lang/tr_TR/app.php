@@ -624,7 +624,7 @@ return [
             'context' => [
                 'open'                 => 'Aç',
                 'open-new-tab'         => 'Yeni sekmede aç',
-                'bookmark'             => 'Yer İşaretlerine Ekle',
+                'bookmark'             => 'Dizini Yer İşaretine Ekle',
                 'folder-upload'        => 'Klasör Yükle',
                 'copy'                 => 'Kopyala',
                 'paste'                => 'Yapıştır',
