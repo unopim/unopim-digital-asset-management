@@ -9,7 +9,7 @@
         @csrf
 
         {{-- Sticky header --}}
-        <div class="sticky top-[60px] z-10 bg-white dark:bg-cherry-800 -mx-4 pb-2.5">
+        <div class="bg-white dark:bg-cherry-800 -mx-4 px-4 pb-2.5">
             <div class="flex gap-4 justify-between items-center max-sm:flex-wrap">
                 <p class="text-xl font-bold dark:text-white text-gray-800">
                     @lang('dam::app.admin.configuration.title')
