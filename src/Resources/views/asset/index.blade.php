@@ -18,10 +18,17 @@
             <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col min-w-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
                     <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap min-w-0' }}">
-                        <!-- left side: stacked cards -->
-                        <div class="flex flex-col gap-3 max-w-[360px] max-sm:w-full">
+                        <!-- left side: stacked cards (visible when tree or bookmarks should appear) -->
+                        @php
+                            $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
+                            $showBookmarks = config('dam.explorer.bookmarks_enabled');
+                            $showSidebar   = $showTree || $showBookmarks;
+                        @endphp
+                        @if ($showSidebar)
+                        <div class="flex flex-col gap-3 w-[360px] max-w-full max-sm:w-full shrink-0" {!! config('dam.explorer.enabled') ? 'v-show="showSidebar"' : '' !!}>
 
                             <!-- directories card -->
+                            @if ($showTree)
                             <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 {!! view_render_event('dam.admin.main.form.directory.before') !!}
                                 <div class="flex flex-col gap-2">
@@ -46,9 +53,10 @@
                                 @endif
                                 {!! view_render_event('dam.admin.main.form.directory.after') !!}
                             </div>
+                            @endif
 
                             <!-- bookmarks card (separate component below directories) -->
-                            @if (config('dam.explorer.bookmarks_enabled'))
+                            @if ($showBookmarks)
                             <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
                                     @lang('dam::app.admin.explorer.bookmarks.title')
@@ -59,6 +67,15 @@
                             @endif
 
                         </div>
+                        @endif
+
+                        {{-- Hidden tree mount: keeps Vue component (and its modal listeners) alive
+                             when explorer is enabled but show_tree is off. Modals teleport to body. --}}
+                        @if (config('dam.explorer.enabled') && !$showTree && bouncer()->hasPermission('dam.directory.index'))
+                        <div class="hidden" aria-hidden="true">
+                            <x-dam::tree.damdirectories />
+                        </div>
+                        @endif
 
                         <!-- right sub-component -->
                         <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto min-w-0 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
@@ -83,7 +100,12 @@
                 template: '#v-dam-main-template',
 
                 data() {
-                    return {}
+                    let showSidebar = true;
+                    try {
+                        const s = localStorage.getItem('dam_show_sidebar');
+                        if (s !== null) showSidebar = s !== 'false';
+                    } catch {}
+                    return { showSidebar };
                 },
 
                 mounted() {
@@ -99,6 +121,12 @@
                     if (dirId) {
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
+
+                    this.$emitter.on('dam:toggle-sidebar', () => {
+                        this.showSidebar = !this.showSidebar;
+                        try { localStorage.setItem('dam_show_sidebar', this.showSidebar); } catch {}
+                        this.$emitter.emit('dam:sidebar-visibility-changed', this.showSidebar);
+                    });
                 },
 
                 methods: {

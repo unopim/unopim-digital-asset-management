@@ -63,6 +63,7 @@
                                             class="flex-1 min-w-0 rounded-md border border-gray-200 dark:border-cherry-700 bg-gray-100 dark:bg-cherry-900 px-3 py-2 text-sm text-gray-400 dark:text-slate-500 line-through focus:outline-none cursor-not-allowed"
                                         />
                                         <button
+                                            v-if="!showAdvanced"
                                             type="button"
                                             class="primary-button shrink-0"
                                             :disabled="isReauthorizing"
@@ -77,6 +78,7 @@
                                 <!-- ── No share: create button ── -->
                                 <div v-else>
                                     <button
+                                        v-if="!showAdvanced"
                                         type="button"
                                         class="primary-button"
                                         :disabled="isCreating || !targetId"

@@ -773,6 +773,7 @@
         
 
         <!-- Create And Rename Directory Modal Form -->
+        <teleport to="body">
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"
             as="div"
@@ -873,8 +874,10 @@
                 </x-admin::modal>
             </form>
         </x-admin::form>
+        </teleport>
 
         <!-- Asset Rename -->
+        <teleport to="body">
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"
             as="div"
@@ -941,6 +944,7 @@
                 </x-admin::modal>
             </form>
         </x-admin::form>
+        </teleport>
 
     </script>
 <script type="module">

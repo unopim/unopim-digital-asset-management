@@ -96,8 +96,13 @@ class ExplorerDataController extends Controller
             $dirQuery->whereIn('id', $this->permissionService->directlyGrantedIds());
         }
 
+        $dirSortColumn = match ($sortBy) {
+            'updated_at' => 'updated_at',
+            default      => 'name',
+        };
+
         $directories = $dirQuery->withCount(['assets', 'children'])
-            ->orderBy('name', 'asc')
+            ->orderBy($dirSortColumn, $sortOrder)
             ->get(['id', 'name', 'parent_id', 'updated_at'])
             ->map(fn (Directory $d) => [
                 'id'             => $d->id,
