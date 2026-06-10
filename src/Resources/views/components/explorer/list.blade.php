@@ -5,6 +5,8 @@
     <div
         class="border border-gray-200 dark:border-cherry-700 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 min-h-72"
         @contextmenu.prevent="showSpaceCtx($event)"
+        @dragover.prevent
+        @drop.prevent="onSpaceDrop($event)"
     >
 
         <div v-if="isLoading" class="flex justify-center py-12">
@@ -35,9 +37,16 @@
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
                 class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 transition-colors"
+                :class="{ 'ring-2 ring-inset ring-violet-400': dropTargetId === dir.id }"
                 :data-dir-id="dir.id"
+                draggable="true"
                 @click="$emit('navigate', dir)"
                 @contextmenu.prevent.stop="showCtx($event, dir, 'directory')"
+                @dragstart="onDirDragStart($event, dir)"
+                @dragend="onDragEnd"
+                @dragover.prevent="onDirDragOver($event, dir)"
+                @dragleave="onDirDragLeave($event, dir)"
+                @drop.prevent.stop="onDirDrop($event, dir)"
             >
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
@@ -72,7 +81,10 @@
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
                 class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-gray-50 dark:hover:bg-cherry-800 transition-colors"
+                draggable="true"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
+                @dragstart="onAssetDragStart($event, asset)"
+                @dragend="onDragEnd"
             >
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
                 <span class="text-gray-700 dark:text-gray-200 truncate">@{{ asset.file_name }}</span>
@@ -121,7 +133,7 @@
 <script type="module">
 app.component('v-dam-explorer-list', {
     template: '#v-dam-explorer-list-template',
-    emits: ['navigate','open-new-tab','bookmark','sort-change','refresh'],
+    emits: ['navigate','open-new-tab','bookmark','sort-change','refresh','internal-drop'],
 
     props: {
         directories:  { type: Array, default: () => [] },
@@ -134,7 +146,7 @@ app.component('v-dam-explorer-list', {
         clipboard:    { type: Object, default: null },
     },
 
-    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null }; },
+    data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null, dropTargetId: null }; },
 
     methods: {
         sort(col) {
@@ -192,6 +204,105 @@ app.component('v-dam-explorer-list', {
                 },
             });
         },
+        _makeFolderDragGhost(name) {
+            const ghost = document.createElement('div');
+            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            const icon = document.createElement('i');
+            icon.className = 'icon-dam-folder';
+            icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
+            const label = document.createElement('span');
+            label.style.cssText = 'font-size:11px;color:#374151;word-break:break-all;text-align:center;line-height:1.2;max-width:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;';
+            label.textContent = name;
+            ghost.appendChild(icon);
+            ghost.appendChild(label);
+            document.body.appendChild(ghost);
+            setTimeout(() => ghost.remove(), 0);
+            return ghost;
+        },
+        _makeAssetDragGhost(fileName, iconClass) {
+            const ghost = document.createElement('div');
+            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
+            const label = document.createElement('span');
+            label.style.cssText = 'font-size:11px;color:#374151;text-align:center;line-height:1.2;max-width:80px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;width:100%;';
+            label.textContent = fileName;
+            ghost.appendChild(icon);
+            ghost.appendChild(label);
+            document.body.appendChild(ghost);
+            setTimeout(() => ghost.remove(), 0);
+            return ghost;
+        },
+        onDirDragStart(e, dir) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'dam-folder', id: dir.id, name: dir.name,
+                assetsCount: dir.assets_count ?? 0, tabId: this.tabId,
+            }));
+            e.dataTransfer.setDragImage(this._makeFolderDragGhost(dir.name), 48, 50);
+            this._draggingPayload = { type: 'dam-folder', id: dir.id };
+            e.currentTarget.style.opacity = '0.4';
+        },
+        onAssetDragStart(e, asset) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'dam-asset', id: asset.id, name: asset.file_name, tabId: this.tabId,
+            }));
+            const iconMap = { image: 'icon-dam-image', video: 'icon-dam-video', audio: 'icon-dam-audio', document: 'icon-dam-doc' };
+            e.dataTransfer.setDragImage(this._makeAssetDragGhost(asset.file_name, iconMap[asset.file_type] ?? 'icon-dam-image'), 48, 50);
+            this._draggingPayload = { type: 'dam-asset', id: asset.id };
+            e.currentTarget.style.opacity = '0.4';
+        },
+        onDragEnd(e) {
+            e.currentTarget.style.opacity = '';
+            this.dropTargetId = null;
+            this._draggingPayload = null;
+            clearTimeout(this._springTimer?.id);
+            this._springTimer = null;
+        },
+        onDirDragOver(e, dir) {
+            if (this._draggingPayload?.type === 'dam-folder' && this._draggingPayload?.id === dir.id) return;
+            this.dropTargetId = dir.id;
+            if (this._springTimer?.dirId === dir.id) return;
+            clearTimeout(this._springTimer?.id);
+            const timerId = setTimeout(() => {
+                if (this._springTimer?.dirId === dir.id) {
+                    this.$emit('navigate', dir);
+                    this._springTimer = null;
+                    this.dropTargetId = null;
+                }
+            }, 1200);
+            this._springTimer = { dirId: dir.id, id: timerId };
+        },
+        onDirDragLeave(e, dir) {
+            if (this._springTimer?.dirId !== dir.id) return;
+            if (! e.currentTarget.contains(e.relatedTarget)) {
+                clearTimeout(this._springTimer?.id);
+                this._springTimer = null;
+                this.dropTargetId = null;
+            }
+        },
+        onDirDrop(e, dir) {
+            this.dropTargetId = null;
+            clearTimeout(this._springTimer?.id);
+            this._springTimer = null;
+            let payload;
+            try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
+            if (! payload?.type) return;
+            if (payload.type === 'dam-folder' && payload.id === dir.id) return;
+            this.$emit('internal-drop', { payload, targetDir: dir });
+        },
+        onSpaceDrop(e) {
+            if (e.dataTransfer?.types?.includes('Files')) return;
+            if (! this.currentDirId) return;
+            let payload;
+            try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
+            if (! payload?.type) return;
+            if (payload.type === 'dam-folder' && this.directories.some(d => d.id === payload.id)) return;
+            if (payload.type === 'dam-asset' && this.assets.some(a => a.id === payload.id)) return;
+            this.$emit('internal-drop', { payload, targetDir: { id: this.currentDirId } });
+        },
         renameDir(dir) { this.$emitter.emit('dam:open-rename-dir', { item: dir }); },
         delDir(dir) {
             const tabId = this.tabId;
@@ -208,6 +319,7 @@ app.component('v-dam-explorer-list', {
                                     .then(({ data: d }) => {
                                         if (d.status === 'completed') {
                                             this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
+                                            this.$emitter.emit('dam:directory-deleted', { id: dir.id });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                             this.$emitter.emit('dam:tree-reload');
                                             this.$emitter.emit(`dam:dir-deleted:${tabId}`);
