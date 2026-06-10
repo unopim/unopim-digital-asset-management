@@ -53,6 +53,9 @@ return [
                     'directory' => 'جاري نقل المجلد ":name"…',
                     'asset'     => 'جاري نقل العنصر ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'جاري نسخ المجلد ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'الدليل',
                     'create' => [

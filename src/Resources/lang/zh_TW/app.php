@@ -53,6 +53,9 @@ return [
                     'directory' => '正在移動目錄 ":name"…',
                     'asset'     => '正在移動資產 ":name"…',
                 ],
+                'copy' => [
+                    'directory' => '正在複製目錄 ":name"…',
+                ],
                 'directory' => [
                     'title'  => '目錄',
                     'create' => [

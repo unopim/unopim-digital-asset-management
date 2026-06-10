@@ -53,6 +53,9 @@ return [
                     'directory' => 'Flytter mappe ":name"…',
                     'asset'     => 'Flytter ressurs ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopierer mappe ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Mappe',
                     'create' => [

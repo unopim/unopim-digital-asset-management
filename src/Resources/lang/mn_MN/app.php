@@ -53,6 +53,9 @@ return [
                     'directory' => 'Лавлах ":name"-ыг шилжүүлж байна…',
                     'asset'     => 'Хөрөнгө ":name"-ыг шилжүүлж байна…',
                 ],
+                'copy' => [
+                    'directory' => 'Лавлах ":name"-ыг хуулж байна…',
+                ],
                 'directory' => [
                     'title'  => 'Директор',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => '正在移动目录 ":name"…',
                     'asset'     => '正在移动资产 ":name"…',
                 ],
+                'copy' => [
+                    'directory' => '正在复制目录 ":name"…',
+                ],
                 'directory' => [
                     'title'  => '目录',
                     'create' => [

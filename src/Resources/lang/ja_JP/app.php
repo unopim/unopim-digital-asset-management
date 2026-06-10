@@ -53,6 +53,9 @@ return [
                     'directory' => 'ディレクトリ「:name」を移動中…',
                     'asset'     => 'アセット「:name」を移動中…',
                 ],
+                'copy' => [
+                    'directory' => 'ディレクトリ「:name」をコピー中…',
+                ],
                 'directory' => [
                     'title'  => 'ディレクトリ',
                     'create' => [

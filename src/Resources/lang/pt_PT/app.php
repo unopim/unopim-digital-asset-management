@@ -53,6 +53,9 @@ return [
                     'directory' => 'A mover o diretório ":name"…',
                     'asset'     => 'A mover o recurso ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'A copiar o diretório ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Diretório',
                     'create' => [

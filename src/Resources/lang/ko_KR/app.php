@@ -53,6 +53,9 @@ return [
                     'directory' => '디렉터리 ":name" 이동 중…',
                     'asset'     => '자산 ":name" 이동 중…',
                 ],
+                'copy' => [
+                    'directory' => '디렉터리 ":name" 복사 중…',
+                ],
                 'directory' => [
                     'title'  => '디렉터리',
                     'create' => [

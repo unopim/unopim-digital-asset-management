@@ -53,6 +53,9 @@ return [
                     'directory' => 'Premještanje direktorija ":name"…',
                     'asset'     => 'Premještanje stavke ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopiranje direktorija ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktorij',
                     'create' => [

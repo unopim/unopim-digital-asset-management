@@ -53,6 +53,9 @@ return [
                     'directory' => 'Flyttar katalog ":name"…',
                     'asset'     => 'Flyttar tillgång ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopierar katalog ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Katalog',
                     'create' => [

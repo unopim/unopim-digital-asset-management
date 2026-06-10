@@ -53,6 +53,9 @@ return [
                     'directory' => 'Spostamento della directory ":name" in corso…',
                     'asset'     => 'Spostamento della risorsa ":name" in corso…',
                 ],
+                'copy' => [
+                    'directory' => 'Copia della directory ":name" in corso…',
+                ],
                 'directory' => [
                     'title'  => 'Directory',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => 'Movent el directori ":name"…',
                     'asset'     => 'Movent l\'actiu ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Copiant el directori ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directori',
                     'create' => [

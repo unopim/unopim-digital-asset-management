@@ -53,6 +53,9 @@ return [
                     'directory' => '":name" dizini taşınıyor…',
                     'asset'     => '":name" varlığı taşınıyor…',
                 ],
+                'copy' => [
+                    'directory' => '":name" dizini kopyalanıyor…',
+                ],
                 'directory' => [
                     'title'  => 'Dizin',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => 'Se mută directorul ":name"…',
                     'asset'     => 'Se mută activul ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Se copiază directorul ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Director',
                     'create' => [

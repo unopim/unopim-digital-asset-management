@@ -53,6 +53,9 @@ return [
                     'directory' => 'Map ":name" wordt verplaatst…',
                     'asset'     => 'Asset ":name" wordt verplaatst…',
                 ],
+                'copy' => [
+                    'directory' => 'Map ":name" wordt gekopieerd…',
+                ],
                 'directory' => [
                     'title'  => 'Map',
                     'create' => [

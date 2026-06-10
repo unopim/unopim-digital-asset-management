@@ -53,6 +53,9 @@ return [
                     'directory' => 'Переміщення каталогу ":name"…',
                     'asset'     => 'Переміщення активу ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Копіювання каталогу ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Каталог',
                     'create' => [

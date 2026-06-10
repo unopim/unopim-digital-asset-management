@@ -53,6 +53,9 @@ return [
                     'directory' => 'Moving directory ":name"…',
                     'asset'     => 'Moving asset ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Copying directory ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directory',
                     'create' => [

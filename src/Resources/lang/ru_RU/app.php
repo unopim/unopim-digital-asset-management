@@ -53,6 +53,9 @@ return [
                     'directory' => 'Перемещение каталога ":name"…',
                     'asset'     => 'Перемещение объекта ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Копирование каталога ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Директория',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => 'Đang di chuyển thư mục ":name"…',
                     'asset'     => 'Đang di chuyển tài sản ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Đang sao chép thư mục ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Thư mục',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => 'Inilipat ang direktoryo na ":name"…',
                     'asset'     => 'Inilipat ang asset na ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kinokopya ang direktoryo na ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktoryo',
                     'create' => [

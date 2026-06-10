@@ -53,6 +53,9 @@ return [
                     'directory' => 'Przenoszenie katalogu ":name"…',
                     'asset'     => 'Przenoszenie zasobu ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopiowanie katalogu ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Katalog',
                     'create' => [

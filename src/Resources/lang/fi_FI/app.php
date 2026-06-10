@@ -53,6 +53,9 @@ return [
                     'directory' => 'Siirretään hakemistoa ":name"…',
                     'asset'     => 'Siirretään kohdetta ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopioidaan hakemistoa ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Hakemisto',
                     'create' => [

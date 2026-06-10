@@ -53,6 +53,9 @@ return [
                     'directory' => 'Verschiebe Verzeichnis ":name"…',
                     'asset'     => 'Verschiebe Asset ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Kopiere Verzeichnis ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Verzeichnis',
                     'create' => [

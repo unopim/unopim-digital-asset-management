@@ -53,6 +53,9 @@ return [
                     'directory' => 'Moviendo el directorio ":name"…',
                     'asset'     => 'Moviendo el activo ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Copiando el directorio ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directorio',
                     'create' => [

@@ -53,6 +53,9 @@ return [
                     'directory' => 'Déplacement du répertoire ":name"…',
                     'asset'     => 'Déplacement de la ressource ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Copie du répertoire ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Répertoire',
                     'create' => [

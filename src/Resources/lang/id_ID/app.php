@@ -53,6 +53,9 @@ return [
                     'directory' => 'Memindahkan direktori ":name"…',
                     'asset'     => 'Memindahkan aset ":name"…',
                 ],
+                'copy' => [
+                    'directory' => 'Menyalin direktori ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktori',
                     'create' => [
