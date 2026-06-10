@@ -66,8 +66,8 @@ app.component('v-dam-bookmarks', {
             this.add(dir);
         });
 
-        this.$emitter.on('dam:directory-deleted', ({ id }) => {
-            this.bookmarks = this.bookmarks.filter(b => b.directory_id !== id);
+        this.$emitter.on('dam:directory-deleted', () => {
+            this.reloadBookmarks();
         });
     },
 
@@ -77,6 +77,12 @@ app.component('v-dam-bookmarks', {
                 .then(({ data }) => { this.bookmarks = data; })
                 .catch(() => { this.bookmarks = []; })
                 .finally(() => { this.$emitter.emit('dam:bookmarks-ready'); });
+        },
+
+        reloadBookmarks() {
+            this.$axios.get("{{ route('admin.dam.explorer.bookmarks.index') }}")
+                .then(({ data }) => { this.bookmarks = data; })
+                .catch(() => {});
         },
 
         add(dir) {
