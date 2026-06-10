@@ -158,4 +158,28 @@ class Directory extends Model implements DirectoryContract
 
         return $this->privateSupport($path, $disk);
     }
+
+    /**
+     * Return a name that is unique within the given parent directory.
+     * Appends " (copy)", " (copy) (1)", etc. until no collision.
+     */
+    public static function uniqueName(string $name, int $parentId): string
+    {
+        if (! static::where('name', $name)->where('parent_id', $parentId)->exists()) {
+            return $name;
+        }
+
+        $candidate = $name.' (copy)';
+        if (! static::where('name', $candidate)->where('parent_id', $parentId)->exists()) {
+            return $candidate;
+        }
+
+        $i = 1;
+        do {
+            $candidate = $name.' (copy) ('.$i.')';
+            $i++;
+        } while (static::where('name', $candidate)->where('parent_id', $parentId)->exists());
+
+        return $candidate;
+    }
 }

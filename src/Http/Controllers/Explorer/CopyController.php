@@ -89,13 +89,15 @@ class CopyController extends Controller
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
+        $source = Directory::findOrFail($sourceId);
+
         $requestAction = $this->start(EventType::COPY_DIRECTORY->value);
 
         CopyDirectoryJob::dispatch($sourceId, $targetId, $requestAction->getUser()->id);
 
         return response()->json([
             'message' => trans('dam::app.admin.explorer.context.copy-progress'),
-            'name'    => Directory::findOrFail($sourceId)->name,
+            'name'    => $source->name,
         ], 202);
     }
 
@@ -116,7 +118,7 @@ class CopyController extends Controller
 
         $source = Directory::findOrFail($request->integer('source_id'));
         $target = Directory::findOrFail($request->integer('target_id'));
-        $newName = $this->uniqueDirName($source->name, $target->id);
+        $newName = Directory::uniqueName($source->name, $target->id);
 
         $newRoot = Directory::create(['name' => $newName, 'parent_id' => $target->id]);
         $this->deepCopyStructure($source, $newRoot);
@@ -154,62 +156,6 @@ class CopyController extends Controller
         return Asset::where('file_name', $name)
             ->whereHas('directories', fn ($q) => $q->where('dam_directories.id', $dirId))
             ->exists();
-    }
-
-    private function uniqueDirName(string $name, int $parentId): string
-    {
-        $candidate = $name;
-        if (! $this->dirNameExists($candidate, $parentId)) {
-            return $candidate;
-        }
-
-        $candidate = $name.' (copy)';
-        if (! $this->dirNameExists($candidate, $parentId)) {
-            return $candidate;
-        }
-
-        $i = 1;
-        do {
-            $candidate = $name.' (copy) ('.$i.')';
-            $i++;
-        } while ($this->dirNameExists($candidate, $parentId));
-
-        return $candidate;
-    }
-
-    private function dirNameExists(string $name, int $parentId): bool
-    {
-        return Directory::where('name', $name)->where('parent_id', $parentId)->exists();
-    }
-
-    private function deepCopyDirectory(Directory $source, Directory $newParent): void
-    {
-        $source->loadMissing(['assets', 'children']);
-
-        $disk = Directory::getAssetDisk();
-        $newParentStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newParent->generatePath());
-        Storage::disk($disk)->makeDirectory($newParentStoragePath);
-
-        foreach ($source->assets as $asset) {
-            $newStoragePath = $newParentStoragePath.'/'.$asset->file_name;
-            Storage::disk($disk)->copy($asset->path, $newStoragePath);
-
-            $newAsset = Asset::create([
-                'file_name' => $asset->file_name,
-                'file_type' => $asset->file_type,
-                'extension' => $asset->extension,
-                'file_size' => $asset->file_size,
-                'path'      => $newStoragePath,
-                'mime_type' => $asset->mime_type,
-                'meta_data' => $asset->meta_data,
-            ]);
-            $newAsset->directories()->attach($newParent->id);
-        }
-
-        foreach ($source->children as $child) {
-            $newChild = Directory::create(['name' => $child->name, 'parent_id' => $newParent->id]);
-            $this->deepCopyDirectory($child, $newChild);
-        }
     }
 
     private function deepCopyStructure(Directory $source, Directory $newParent): void

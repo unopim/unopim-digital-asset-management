@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Models\Asset;
@@ -18,6 +19,8 @@ class CopyDirectory
 {
     use ActionRequestTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private const MAX_DEPTH = 100;
+
     public function __construct(
         protected int $sourceId,
         protected int $targetId,
@@ -27,20 +30,32 @@ class CopyDirectory
     public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
-            throw new \Exception('User not found');
+            $this->failed(EventType::COPY_DIRECTORY->value, $this->userId, 'User not found');
+
+            return;
         }
 
-        $source = Directory::with(['assets', 'children'])->findOrFail($this->sourceId);
-        $newName = $this->uniqueDirName($source->name, $this->targetId);
+        try {
+            $source = Directory::with(['assets', 'children'])->findOrFail($this->sourceId);
+            $newName = Directory::uniqueName($source->name, $this->targetId);
 
-        $newRoot = Directory::create(['name' => $newName, 'parent_id' => $this->targetId]);
-        $this->deepCopyDirectory($source, $newRoot);
+            DB::transaction(function () use ($source, $newName) {
+                $newRoot = Directory::create(['name' => $newName, 'parent_id' => $this->targetId]);
+                $this->deepCopyDirectory($source, $newRoot, 0);
+            });
 
-        $this->completed(EventType::COPY_DIRECTORY->value, $this->userId);
+            $this->completed(EventType::COPY_DIRECTORY->value, $this->userId);
+        } catch (\Throwable $e) {
+            $this->failed(EventType::COPY_DIRECTORY->value, $this->userId, $e->getMessage());
+        }
     }
 
-    private function deepCopyDirectory(Directory $source, Directory $newParent): void
+    private function deepCopyDirectory(Directory $source, Directory $newParent, int $depth): void
     {
+        if ($depth > self::MAX_DEPTH) {
+            throw new \RuntimeException('Directory tree exceeds maximum copy depth of '.self::MAX_DEPTH);
+        }
+
         $source->loadMissing(['assets', 'children']);
 
         $disk = Directory::getAssetDisk();
@@ -48,11 +63,12 @@ class CopyDirectory
         Storage::disk($disk)->makeDirectory($newParentStoragePath);
 
         foreach ($source->assets as $asset) {
-            $newStoragePath = $newParentStoragePath.'/'.$asset->file_name;
+            $newFileName = $this->uniqueAssetName($asset->file_name, $newParent->id);
+            $newStoragePath = $newParentStoragePath.'/'.$newFileName;
             Storage::disk($disk)->copy($asset->path, $newStoragePath);
 
             $newAsset = Asset::create([
-                'file_name' => $asset->file_name,
+                'file_name' => $newFileName,
                 'file_type' => $asset->file_type,
                 'extension' => $asset->extension,
                 'file_size' => $asset->file_size,
@@ -66,28 +82,38 @@ class CopyDirectory
 
         foreach ($source->children as $child) {
             $newChild = Directory::create(['name' => $child->name, 'parent_id' => $newParent->id]);
-            $this->deepCopyDirectory($child, $newChild);
+            $this->deepCopyDirectory($child, $newChild, $depth + 1);
         }
     }
 
-    private function uniqueDirName(string $name, int $parentId): string
+    private function uniqueAssetName(string $fileName, int $dirId): string
     {
-        $candidate = $name;
-        if (! Directory::where('name', $candidate)->where('parent_id', $parentId)->exists()) {
-            return $candidate;
+        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+        $base = $ext ? substr($fileName, 0, -(strlen($ext) + 1)) : $fileName;
+        $dotExt = $ext ? '.'.$ext : '';
+
+        if (! $this->assetNameExists($fileName, $dirId)) {
+            return $fileName;
         }
 
-        $candidate = $name.' (copy)';
-        if (! Directory::where('name', $candidate)->where('parent_id', $parentId)->exists()) {
+        $candidate = $base.' (copy)'.$dotExt;
+        if (! $this->assetNameExists($candidate, $dirId)) {
             return $candidate;
         }
 
         $i = 1;
         do {
-            $candidate = $name.' (copy) ('.$i.')';
+            $candidate = $base.' (copy) ('.$i.')'.$dotExt;
             $i++;
-        } while (Directory::where('name', $candidate)->where('parent_id', $parentId)->exists());
+        } while ($this->assetNameExists($candidate, $dirId));
 
         return $candidate;
+    }
+
+    private function assetNameExists(string $name, int $dirId): bool
+    {
+        return Asset::where('file_name', $name)
+            ->whereHas('directories', fn ($q) => $q->where('dam_directories.id', $dirId))
+            ->exists();
     }
 }

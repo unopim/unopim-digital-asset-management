@@ -70,7 +70,9 @@ trait ActionRequest
 
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
-        $request->update(['status' => 'completed']);
+        if ($request) {
+            $request->update(['status' => 'completed']);
+        }
 
         $this->actionRequest = $request;
 
@@ -91,10 +93,12 @@ trait ActionRequest
 
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
-        $request->update([
-            'status'        => 'failed',
-            'error_message' => $error,
-        ]);
+        if ($request) {
+            $request->update([
+                'status'        => 'failed',
+                'error_message' => $error,
+            ]);
+        }
 
         $this->actionRequest = $request;
 
