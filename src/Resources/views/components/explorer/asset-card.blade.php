@@ -103,7 +103,16 @@ app.component('v-dam-asset-card', {
                 name:  this.asset.file_name,
                 tabId: this.tabId,
             }));
-            e.currentTarget.style.opacity = '0.4';
+            const el = this.$el;
+            const clone = el.cloneNode(true);
+            const ghostW = 96;
+            const scale = ghostW / el.offsetWidth;
+            const ghostH = Math.round(el.offsetHeight * scale);
+            clone.style.cssText = `position:fixed;top:-200px;left:-200px;pointer-events:none;width:${ghostW}px;height:${ghostH}px;transform-origin:top left;overflow:hidden;border-radius:8px;opacity:1;`;
+            document.body.appendChild(clone);
+            e.dataTransfer.setDragImage(clone, ghostW / 2, ghostH / 2);
+            setTimeout(() => clone.remove(), 0);
+            requestAnimationFrame(() => { el.style.opacity = '0.4'; });
         },
         onDragEnd(e) {
             e.currentTarget.style.opacity = '';

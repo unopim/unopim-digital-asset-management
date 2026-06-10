@@ -111,9 +111,17 @@ app.component('v-dam-explorer-grid', {
                 assetsCount: d.assets_count ?? 0,
                 tabId: this.tabId,
             }));
+            this._draggingId = d.id;
             // opacity handled by v-dam-explorer-folder-card
         },
+        onDragEnd() {
+            this._draggingId = null;
+            this.dropTargetId = null;
+            clearTimeout(this._springTimer?.id);
+            this._springTimer = null;
+        },
         onFolderDragOver(e, dir) {
+            if (this._draggingId === dir.id) return;
             this.dropTargetId = dir.id;
             if (this._springTimer?.dirId === dir.id) return;
             clearTimeout(this._springTimer?.id);
@@ -136,7 +144,7 @@ app.component('v-dam-explorer-grid', {
             this._springTimer = null;
             let payload;
             try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
-            if (payload.id === targetDir.id) return;
+            if (payload.type === 'dam-folder' && payload.id === targetDir.id) return;
             this.$emit('internal-drop', { payload, targetDir });
         },
         showCtx(e, item, type) {

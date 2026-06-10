@@ -32,6 +32,19 @@ app.component('v-dam-explorer-folder-card', {
 
     methods: {
         onDragStart(e) {
+            const ghost = document.createElement('div');
+            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            const icon = document.createElement('i');
+            icon.className = 'icon-dam-folder';
+            icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
+            const label = document.createElement('span');
+            label.style.cssText = 'font-size:11px;color:#374151;word-break:break-all;text-align:center;line-height:1.2;max-width:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;';
+            label.textContent = this.dir.name;
+            ghost.appendChild(icon);
+            ghost.appendChild(label);
+            document.body.appendChild(ghost);
+            e.dataTransfer.setDragImage(ghost, 48, 50);
+            setTimeout(() => ghost.remove(), 0);
             e.currentTarget.style.opacity = '0.4';
             this.$emit('drag-start', e);
         },
