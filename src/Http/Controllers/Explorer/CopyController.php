@@ -8,12 +8,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
+use Webkul\DAM\Enums\EventType;
+use Webkul\DAM\Jobs\CopyDirectory as CopyDirectoryJob;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
 class CopyController extends Controller
 {
+    use ActionRequestTrait;
+
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}
@@ -84,14 +89,13 @@ class CopyController extends Controller
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
-        $source = Directory::with(['assets', 'children'])->findOrFail($sourceId);
-        $newName = $this->uniqueDirName($source->name, $targetId);
+        $requestAction = $this->start(EventType::COPY_DIRECTORY->value);
 
-        $newRoot = Directory::create(['name' => $newName, 'parent_id' => $targetId]);
-        $this->deepCopyDirectory($source, $newRoot);
+        CopyDirectoryJob::dispatch($sourceId, $targetId, $requestAction->getUser()->id);
 
         return response()->json([
             'message' => trans('dam::app.admin.explorer.context.copy-progress'),
+            'name'    => Directory::findOrFail($sourceId)->name,
         ], 202);
     }
 

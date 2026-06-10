@@ -3,6 +3,26 @@
 <script type="text/x-template" id="v-dam-tab-template">
     <div class="flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
 
+        {{-- Operation overlay (directory copy / move in-flight) --}}
+        <div
+            v-if="operationOverlay.show"
+            class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+            style="z-index: 99998;"
+            role="status"
+            aria-live="polite"
+        >
+            <div
+                class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
+                style="min-width: 360px; z-index: 99999;"
+            >
+                <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span class="text-base font-semibold text-gray-900 dark:text-white text-center break-words" v-text="operationOverlay.label"></span>
+            </div>
+        </div>
+
         {{-- Row 1: sidebar toggle + back/forward + breadcrumb + actions --}}
         <div class="flex items-center gap-2 flex-wrap">
             {{-- Sidebar collapse toggle — only when at least one sidebar component is enabled --}}
@@ -186,6 +206,7 @@
                 @bookmark="bookmark"
                 @sort-change="onSort"
                 @refresh="fetch"
+                @internal-drop="onInternalDrop"
             ></v-dam-explorer-list>
         </v-dam-drop-upload>
     </div>
@@ -237,6 +258,8 @@ app.component('v-dam-tab', {
             navIdx:       -1,
             dialog: { on: false, type: null, value: '', loading: false, extra: null },
             clipboard:          null,
+            pasting:            false,
+            operationOverlay:   { show: false, label: '' },
             ctxTarget:          null,
             sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
             available: {
@@ -758,33 +781,40 @@ app.component('v-dam-tab', {
             } else if (payload.type === 'dam-folder') {
                 const tabId = this.tabId;
                 const originTabId = payload.tabId;
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-folder-started')" });
+                const folderName = payload.name ?? '';
+                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.move.directory')`.replace(':name', folderName) };
                 this.$axios.post("{{ route('admin.dam.directory.moved') }}", {
                     move_item_id:  payload.id,
                     new_parent_id: targetDir.id,
                 }).then(() => {
                     let attempts = 0;
                     const poll = () => {
-                        if (++attempts > 15) return;
+                        if (++attempts > 30) {
+                            this.operationOverlay = { show: false, label: '' };
+                            return;
+                        }
                         this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'move_directory_structure'))
                             .then(({ data: d }) => {
                                 if (d.status === 'completed') {
+                                    this.operationOverlay = { show: false, label: '' };
                                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-done')" });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                     if (originTabId && originTabId !== tabId) {
                                         this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
                                     }
                                 } else if (d.status === 'failed') {
+                                    this.operationOverlay = { show: false, label: '' };
                                     this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                     if (originTabId && originTabId !== tabId) {
                                         this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
                                     }
                                 } else { setTimeout(poll, 2000); }
-                            }).catch(() => {});
+                            }).catch(() => { setTimeout(poll, 2000); });
                     };
                     setTimeout(poll, 1000);
                 }).catch(err => {
+                    this.operationOverlay = { show: false, label: '' };
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
                 });
             }
@@ -845,8 +875,9 @@ app.component('v-dam-tab', {
         },
 
         executePaste(targetDirId) {
-            if (! this.clipboard || ! targetDirId || ! this.canUploadHere) return;
+            if (! this.clipboard || ! targetDirId || ! this.canUploadHere || this.pasting || this.operationOverlay.show) return;
             const cb = this.clipboard;
+            this.pasting = true;
 
             if (cb.type === 'asset') {
                 this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-file-started')" });
@@ -858,18 +889,37 @@ app.component('v-dam-tab', {
                     this.fetch();
                 }).catch(err => {
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message });
-                });
+                }).finally(() => { this.pasting = false; });
             } else {
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-folder-started')" });
+                const dirName = cb.name ?? '';
+                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.copy.directory')`.replace(':name', dirName) };
                 this.$axios.post("{{ route('admin.dam.explorer.copy.directory') }}", {
                     directory_id:        cb.id,
                     target_directory_id: targetDirId,
                 }).then(() => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-done')" });
-                    this.fetch();
+                    let attempts = 0;
+                    const poll = () => {
+                        if (++attempts > 30) {
+                            this.operationOverlay = { show: false, label: '' };
+                            return;
+                        }
+                        this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'copy_directory'))
+                            .then(({ data: d }) => {
+                                if (d.status === 'completed') {
+                                    this.operationOverlay = { show: false, label: '' };
+                                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-done')" });
+                                    this.fetch();
+                                } else if (d.status === 'failed') {
+                                    this.operationOverlay = { show: false, label: '' };
+                                    this.$emitter.emit('add-flash', { type: 'error', message: d.message });
+                                } else { setTimeout(poll, 2000); }
+                            }).catch(() => { setTimeout(poll, 2000); });
+                    };
+                    setTimeout(poll, 1000);
                 }).catch(err => {
+                    this.operationOverlay = { show: false, label: '' };
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message });
-                });
+                }).finally(() => { this.pasting = false; });
             }
         },
     },
