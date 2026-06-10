@@ -319,6 +319,12 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
+        this.$emitter.on(`dam:operation-overlay:show:${this.tabId}`, ({ label }) => {
+            this.operationOverlay = { show: true, label: label ?? '' };
+        });
+        this.$emitter.on(`dam:operation-overlay:hide:${this.tabId}`, () => {
+            this.operationOverlay = { show: false, label: '' };
+        });
         this.$emitter.on(`dam:dir-deleted:${this.tabId}`, () => {
             this.navHistory = this.navHistory.slice(0, this.navIdx + 1);
         });

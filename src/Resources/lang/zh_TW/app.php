@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => '正在複製目錄 ":name"…',
                 ],
+                'delete' => [
+                    'directory' => '正在刪除目錄 ":name"…',
+                ],
                 'directory' => [
                     'title'  => '目錄',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => '正在移動資料夾...',
                 'move-done'            => '資料夾已成功移動。',
                 'move-asset-done'      => '檔案已成功移動。',
+                'delete-done'          => '目錄已成功刪除。',
             ],
             'folder' => [
                 'deleted' => '此資料夾已被刪除 — 已返回根目錄。',

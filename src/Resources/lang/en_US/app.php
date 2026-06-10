@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Copying directory ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Deleting directory ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directory',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Moving folder...',
                 'move-done'            => 'Folder moved successfully.',
                 'move-asset-done'      => 'File moved successfully.',
+                'delete-done'          => 'Directory deleted successfully.',
             ],
             'folder' => [
                 'deleted' => 'This folder was deleted — returned to Root.',

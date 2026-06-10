@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => '":name" dizini kopyalanıyor…',
                 ],
+                'delete' => [
+                    'directory' => '":name" dizini siliniyor…',
+                ],
                 'directory' => [
                     'title'  => 'Dizin',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Klasör taşınıyor...',
                 'move-done'            => 'Klasör başarıyla taşındı.',
                 'move-asset-done'      => 'Dosya başarıyla taşındı.',
+                'delete-done'          => 'Dizin başarıyla silindi.',
             ],
             'folder' => [
                 'deleted' => 'Bu klasör silindi — Kök dizine dönüldü.',

@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopiere Verzeichnis ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Lösche Verzeichnis ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Verzeichnis',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Ordner wird verschoben...',
                 'move-done'            => 'Ordner erfolgreich verschoben.',
                 'move-asset-done'      => 'Datei erfolgreich verschoben.',
+                'delete-done'          => 'Verzeichnis erfolgreich gelöscht.',
             ],
             'folder' => [
                 'deleted' => 'Dieser Ordner wurde gelöscht — zurück zum Stammverzeichnis.',

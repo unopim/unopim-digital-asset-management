@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Đang sao chép thư mục ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Đang xóa thư mục ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Thư mục',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Đang di chuyển thư mục...',
                 'move-done'            => 'Thư mục đã được di chuyển thành công.',
                 'move-asset-done'      => 'Tệp đã được di chuyển thành công.',
+                'delete-done'          => 'Thư mục đã được xóa thành công.',
             ],
             'folder' => [
                 'deleted' => 'Thư mục này đã bị xóa — đã trở về thư mục gốc.',

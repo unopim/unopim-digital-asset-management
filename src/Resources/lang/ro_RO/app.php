@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Se copiază directorul ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Se șterge directorul ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Director',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Se mută dosarul...',
                 'move-done'            => 'Dosar mutat cu succes.',
                 'move-asset-done'      => 'Fișier mutat cu succes.',
+                'delete-done'          => 'Director șters cu succes.',
             ],
             'folder' => [
                 'deleted' => 'Acest dosar a fost șters — s-a revenit la rădăcină.',

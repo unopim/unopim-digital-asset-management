@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Copiando o diretório ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Excluindo o diretório ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Diretório',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Movendo pasta...',
                 'move-done'            => 'Pasta movida com sucesso.',
                 'move-asset-done'      => 'Arquivo movido com sucesso.',
+                'delete-done'          => 'Diretório excluído com sucesso.',
             ],
             'folder' => [
                 'deleted' => 'Esta pasta foi excluída — retornado à Raiz.',

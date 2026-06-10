@@ -259,31 +259,43 @@ app.component('v-dam-explorer-ctx', {
         },
         delDir() {
             const tabId = this.tabId;
+            const dirName = this.item?.name ?? '';
             this.close();
             this.$emitter.emit('open-delete-modal', {
                 message: "@lang('dam::app.admin.components.modal.confirm.message')",
                 agree: () => {
+                    this.$emitter.emit(`dam:operation-overlay:show:${tabId}`, {
+                        label: `@lang('dam::app.admin.dam.index.delete.directory')`.replace(':name', dirName),
+                    });
                     this.$axios.delete(`{{ route('admin.dam.directory.destroy', ':id') }}`.replace(':id', this.item.id))
                         .then(({ data }) => {
                             this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.dam.index.directory.deleting-in-progress')" });
                             let attempts = 0;
                             const poll = () => {
-                                if (++attempts > 15) return;
+                                if (++attempts > 15) {
+                                    this.$emitter.emit(`dam:operation-overlay:hide:${tabId}`);
+                                    return;
+                                }
                                 this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'delete_directory'))
                                     .then(({ data: d }) => {
                                         if (d.status === 'completed') {
-                                            this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
+                                            this.$emitter.emit(`dam:operation-overlay:hide:${tabId}`);
+                                            this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.delete-done')" });
                                             this.$emitter.emit('dam:directory-deleted', { id: this.item.id });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                         } else if (d.status === 'failed') {
+                                            this.$emitter.emit(`dam:operation-overlay:hide:${tabId}`);
                                             this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                         } else { setTimeout(poll, 2000); }
-                                    }).catch(() => {});
+                                    }).catch(() => { setTimeout(poll, 2000); });
                             };
                             setTimeout(poll, 1000);
                         })
-                        .catch(e => this.$emitter.emit('add-flash', { type: 'error', message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" }));
+                        .catch(e => {
+                            this.$emitter.emit(`dam:operation-overlay:hide:${tabId}`);
+                            this.$emitter.emit('add-flash', { type: 'error', message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
+                        });
                 },
             });
         },

@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Map ":name" wordt gekopieerd…',
                 ],
+                'delete' => [
+                    'directory' => 'Map ":name" verwijderen…',
+                ],
                 'directory' => [
                     'title'  => 'Map',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Map wordt verplaatst...',
                 'move-done'            => 'Map succesvol verplaatst.',
                 'move-asset-done'      => 'Bestand succesvol verplaatst.',
+                'delete-done'          => 'Map succesvol verwijderd.',
             ],
             'folder' => [
                 'deleted' => 'Deze map is verwijderd — teruggekeerd naar Root.',

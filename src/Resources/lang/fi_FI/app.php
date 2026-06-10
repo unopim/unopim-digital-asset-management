@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopioidaan hakemistoa ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Poistetaan hakemistoa ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Hakemisto',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Siirretään kansiota...',
                 'move-done'            => 'Kansio siirretty onnistuneesti.',
                 'move-asset-done'      => 'Tiedosto siirretty onnistuneesti.',
+                'delete-done'          => 'Hakemisto poistettu onnistuneesti.',
             ],
             'folder' => [
                 'deleted' => 'Tämä kansio on poistettu — palautettu juurikansioon.',

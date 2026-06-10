@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Copiant el directori ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Eliminant el directori ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directori',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Movent la carpeta...',
                 'move-done'            => 'Carpeta moguda correctament.',
                 'move-asset-done'      => 'Fitxer mogut correctament.',
+                'delete-done'          => 'Directori eliminat correctament.',
             ],
             'folder' => [
                 'deleted' => 'Aquesta carpeta s\'ha eliminat — torneu a l\'arrel.',

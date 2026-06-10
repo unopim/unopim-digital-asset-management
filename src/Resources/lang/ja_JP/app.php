@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'ディレクトリ「:name」をコピー中…',
                 ],
+                'delete' => [
+                    'directory' => 'ディレクトリ「:name」を削除中…',
+                ],
                 'directory' => [
                     'title'  => 'ディレクトリ',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'フォルダを移動中...',
                 'move-done'            => 'フォルダを正常に移動しました。',
                 'move-asset-done'      => 'ファイルを正常に移動しました。',
+                'delete-done'          => 'ディレクトリが正常に削除されました。',
             ],
             'folder' => [
                 'deleted' => 'このフォルダーは削除されました — ルートに戻りました。',

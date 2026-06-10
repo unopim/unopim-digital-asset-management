@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'جاري نسخ المجلد ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'جاري حذف الدليل ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'الدليل',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'جارٍ نقل المجلد...',
                 'move-done'            => 'تم نقل المجلد بنجاح.',
                 'move-asset-done'      => 'تم نقل الملف بنجاح.',
+                'delete-done'          => 'تم حذف الدليل بنجاح.',
             ],
             'folder' => [
                 'deleted' => 'تم حذف هذا المجلد — تمت العودة إلى الجذر.',

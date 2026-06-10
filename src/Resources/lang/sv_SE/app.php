@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopierar katalog ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Tar bort katalog ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Katalog',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Flyttar mapp...',
                 'move-done'            => 'Mapp flyttad.',
                 'move-asset-done'      => 'Fil flyttad.',
+                'delete-done'          => 'Katalogen har tagits bort.',
             ],
             'folder' => [
                 'deleted' => 'Den här mappen togs bort — återgick till roten.',

@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopiranje direktorija ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Brisanje direktorija ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktorij',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Premještanje mape...',
                 'move-done'            => 'Mapa je uspješno premještena.',
                 'move-asset-done'      => 'Datoteka je uspješno premještena.',
+                'delete-done'          => 'Direktorij je uspješno obrisan.',
             ],
             'folder' => [
                 'deleted' => 'Ova mapa je obrisana — vraćeno na korijenski direktorij.',

@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Copiando el directorio ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Eliminando el directorio ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Directorio',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Moviendo carpeta...',
                 'move-done'            => 'Carpeta movida correctamente.',
                 'move-asset-done'      => 'Archivo movido correctamente.',
+                'delete-done'          => 'Directorio eliminado correctamente.',
             ],
             'folder' => [
                 'deleted' => 'Esta carpeta fue eliminada — se ha vuelto al directorio raíz.',

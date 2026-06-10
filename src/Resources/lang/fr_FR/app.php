@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Copie du répertoire ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Suppression du répertoire ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Répertoire',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Déplacement du dossier...',
                 'move-done'            => 'Dossier déplacé avec succès.',
                 'move-asset-done'      => 'Fichier déplacé avec succès.',
+                'delete-done'          => 'Répertoire supprimé avec succès.',
             ],
             'folder' => [
                 'deleted' => 'Ce dossier a été supprimé — retour à la racine.',

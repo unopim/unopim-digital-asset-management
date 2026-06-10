@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kinokopya ang direktoryo na ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Tinatanggal ang direktoryo na ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktoryo',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Inililipat ang folder...',
                 'move-done'            => 'Matagumpay na nalipat ang folder.',
                 'move-asset-done'      => 'Matagumpay na nalipat ang file.',
+                'delete-done'          => 'Matagumpay na natanggal ang direktoryo.',
             ],
             'folder' => [
                 'deleted' => 'Natanggal ang folder na ito — bumalik sa Root.',

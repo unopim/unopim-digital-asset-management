@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => '디렉터리 ":name" 복사 중…',
                 ],
+                'delete' => [
+                    'directory' => '디렉터리 ":name" 삭제 중…',
+                ],
                 'directory' => [
                     'title'  => '디렉터리',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => '폴더 이동 중...',
                 'move-done'            => '폴더가 성공적으로 이동되었습니다.',
                 'move-asset-done'      => '파일이 성공적으로 이동되었습니다.',
+                'delete-done'          => '디렉터리가 성공적으로 삭제되었습니다.',
             ],
             'folder' => [
                 'deleted' => '이 폴더가 삭제되었습니다 — 루트 디렉터리로 이동했습니다.',

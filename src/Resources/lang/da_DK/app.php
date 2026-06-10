@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopierer mappen ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Sletter mappen ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Mappe',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Flytter mappe...',
                 'move-done'            => 'Mappen er flyttet.',
                 'move-asset-done'      => 'Filen er flyttet.',
+                'delete-done'          => 'Mappe slettet.',
             ],
             'folder' => [
                 'deleted' => 'Denne mappe blev slettet — returneret til roden.',

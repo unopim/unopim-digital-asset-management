@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Kopiowanie katalogu ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Usuwanie katalogu ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Katalog',
                     'create' => [
@@ -640,6 +643,7 @@ return [
                 'move-folder-started'  => 'Przenoszenie folderu...',
                 'move-done'            => 'Folder przeniesiony pomyślnie.',
                 'move-asset-done'      => 'Plik przeniesiony pomyślnie.',
+                'delete-done'          => 'Katalog został pomyślnie usunięty.',
             ],
             'folder' => [
                 'deleted' => 'Ten folder został usunięty — powrót do katalogu głównego.',

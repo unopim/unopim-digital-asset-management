@@ -56,6 +56,9 @@ return [
                 'copy' => [
                     'directory' => 'Menyalin direktori ":name"…',
                 ],
+                'delete' => [
+                    'directory' => 'Menghapus direktori ":name"…',
+                ],
                 'directory' => [
                     'title'  => 'Direktori',
                     'create' => [
@@ -639,6 +642,7 @@ return [
                 'move-folder-started'  => 'Memindahkan folder...',
                 'move-done'            => 'Folder berhasil dipindahkan.',
                 'move-asset-done'      => 'File berhasil dipindahkan.',
+                'delete-done'          => 'Direktori berhasil dihapus.',
             ],
             'folder' => [
                 'deleted' => 'Folder ini telah dihapus — dikembalikan ke Root.',
