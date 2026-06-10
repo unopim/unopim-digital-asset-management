@@ -273,6 +273,7 @@ app.component('v-dam-explorer-ctx', {
                                     .then(({ data: d }) => {
                                         if (d.status === 'completed') {
                                             this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
+                                            this.$emitter.emit('dam:directory-deleted', { id: this.item.id });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                         } else if (d.status === 'failed') {
                                             this.$emitter.emit('add-flash', { type: 'error', message: d.message });

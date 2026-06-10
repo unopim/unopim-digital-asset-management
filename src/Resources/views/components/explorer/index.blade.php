@@ -49,7 +49,7 @@
                 v-if="tabs.length < 20"
                 type="button"
                 class="w-7 h-7 mb-0.5 ml-1 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 dark:hover:bg-cherry-800 hover:text-gray-700 text-lg font-light shrink-0"
-                @click="newTab()"
+                @click="newTabFromCurrent()"
                 :title="'@lang('dam::app.admin.explorer.tab.new')'"
             >+</button>
         </div>
@@ -118,6 +118,28 @@ app.component('v-dam-explorer', {
             this.newTab(directoryId, name ?? '…');
         });
 
+        this.$emitter.on('dam:bookmarks-ready', () => {
+            const tab = this.tabs.find(t => t.id === this.activeTabId);
+            if (tab?.directoryId) {
+                this.$emitter.emit('dam:explorer-navigate', { directoryId: tab.directoryId });
+            }
+        });
+
+        this.$emitter.on('dam:directory-deleted', ({ id }) => {
+            const matching = this.tabs.filter(t => t.directoryId === id);
+            if (! matching.length) return;
+            matching.forEach(t => {
+                if (this.tabs.length === 1) {
+                    const fresh = this.makeTab();
+                    this.tabs.splice(0, 1, fresh);
+                    this.activeTabId = fresh.id;
+                } else {
+                    this.closeTab(t.id);
+                }
+            });
+            this.persistTabs();
+        });
+
         this._kbHandler = (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'c' && ! e.target.matches('input, textarea')) {
                 e.preventDefault();
@@ -144,8 +166,51 @@ app.component('v-dam-explorer', {
             return { id: this.uid(), directoryId, label, search: '', viewMode: 'grid', page: 1, perPage: 50 };
         },
 
+        persistTabs() {
+            try {
+                const snapshot = this.tabs.map(t => ({
+                    directoryId: t.directoryId,
+                    label:       t.label,
+                    search:      t.search,
+                    viewMode:    t.viewMode,
+                    page:        t.page,
+                    perPage:     t.perPage,
+                }));
+                const activeIdx = this.tabs.findIndex(t => t.id === this.activeTabId);
+                localStorage.setItem('dam_explorer_tabs', JSON.stringify({ tabs: snapshot, activeIdx }));
+            } catch {}
+        },
+
         restore(initialDirId = null) {
-            this.newTab(initialDirId);
+            if (initialDirId) {
+                this.newTab(initialDirId);
+                return;
+            }
+            try {
+                const raw = localStorage.getItem('dam_explorer_tabs');
+                if (raw) {
+                    const { tabs, activeIdx } = JSON.parse(raw);
+                    if (Array.isArray(tabs) && tabs.length) {
+                        tabs.forEach(t => {
+                            const tab = this.makeTab(t.directoryId, t.label ?? '…');
+                            tab.search   = t.search   ?? '';
+                            tab.viewMode = t.viewMode ?? 'grid';
+                            tab.page     = t.page     ?? 1;
+                            tab.perPage  = t.perPage  ?? 50;
+                            this.tabs.push(tab);
+                        });
+                        const idx = Math.min(Math.max(activeIdx ?? 0, 0), this.tabs.length - 1);
+                        this.activeTabId = this.tabs[idx].id;
+                        return;
+                    }
+                }
+            } catch {}
+            this.newTab();
+        },
+
+        newTabFromCurrent() {
+            const active = this.tabs.find(t => t.id === this.activeTabId);
+            this.newTab(active?.directoryId ?? null, active?.label ?? '…');
         },
 
         newTab(directoryId = null, label = '…') {
@@ -153,6 +218,7 @@ app.component('v-dam-explorer', {
             const tab = this.makeTab(directoryId, label);
             this.tabs.push(tab);
             this.activeTabId = tab.id;
+            this.persistTabs();
         },
 
         closeTab(id) {
@@ -160,20 +226,28 @@ app.component('v-dam-explorer', {
             const idx = this.tabs.findIndex(t => t.id === id);
             this.tabs = this.tabs.filter(t => t.id !== id);
             if (this.activeTabId === id) this.activeTabId = this.tabs[Math.max(0, idx - 1)].id;
+            const active = this.tabs.find(t => t.id === this.activeTabId);
+            if (active?.directoryId) this.$emitter.emit('dam:explorer-navigate', { directoryId: active.directoryId });
+            this.persistTabs();
         },
 
         setActive(id) {
             this.activeTabId = id;
+            const tab = this.tabs.find(t => t.id === id);
+            if (tab?.directoryId) {
+                this.$emitter.emit('dam:explorer-navigate', { directoryId: tab.directoryId });
+            }
+            this.persistTabs();
         },
 
         onStateChange(id, state) {
             const tab = this.tabs.find(t => t.id === id);
-            if (tab) Object.assign(tab, state);
+            if (tab) { Object.assign(tab, state); this.persistTabs(); }
         },
 
         onLabelChange(id, label) {
             const tab = this.tabs.find(t => t.id === id);
-            if (tab) tab.label = label;
+            if (tab) { tab.label = label; this.persistTabs(); }
         },
 
         onTabDragOver(e, tabId) {

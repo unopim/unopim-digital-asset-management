@@ -25,7 +25,7 @@
                             $showSidebar   = $showTree || $showBookmarks;
                         @endphp
                         @if ($showSidebar)
-                        <div class="flex flex-col gap-3 w-[360px] max-w-full max-sm:w-full shrink-0" {!! config('dam.explorer.enabled') ? 'v-show="showSidebar"' : '' !!}>
+                        <div class="flex flex-col gap-3 w-[280px] max-w-full max-sm:w-full shrink-0" {!! config('dam.explorer.enabled') ? 'v-show="showSidebar"' : '' !!}>
 
                             <!-- directories card -->
                             @if ($showTree)
