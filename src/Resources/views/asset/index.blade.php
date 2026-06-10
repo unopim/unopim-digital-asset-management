@@ -73,7 +73,7 @@
                              when explorer is enabled but show_tree is off. Modals teleport to body. --}}
                         @if (config('dam.explorer.enabled') && !$showTree && bouncer()->hasPermission('dam.directory.index'))
                         <div class="hidden" aria-hidden="true">
-                            <x-dam::tree.damdirectories />
+                            <x-dam::tree.damdirectories :visible="false" />
                         </div>
                         @endif
 

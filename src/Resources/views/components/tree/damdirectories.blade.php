@@ -1,3 +1,4 @@
+@props(['visible' => true])
 <div class="flex flex-col gap-2">
     <x-dam::tree.search />
     <x-dam::tree.asset-count-badge />
@@ -6,6 +7,7 @@
         :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
         :accessible-ids='@json(dam_accessible_dir_ids())'
         :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
+        :visible="{{ $visible ? 'true' : 'false' }}"
     >
         <x-admin::shimmer.tree />
     </v-tree-view>
@@ -969,6 +971,10 @@
                 type: Boolean,
                 default: false,
             },
+            visible: {
+                type: Boolean,
+                default: true,
+            },
         },
         provide() {
             // DAM_TREE_SHOW_ASSETS env toggle surfaced to descendants. When
@@ -1129,7 +1135,9 @@
                 this.$refs.directoryCreateOrRenameModal.toggle();
             });
 
-            this.loadDirectories();
+            if (this.visible) {
+                this.loadDirectories();
+            }
         },
 
         computed: {
