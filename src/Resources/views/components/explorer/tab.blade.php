@@ -59,6 +59,17 @@
                 <i class="icon-dam-link text-xl"></i>
             </button>
             @endif
+            @if (config('dam.explorer.bookmarks_enabled'))
+            <button
+                v-if="currentDirId"
+                type="button"
+                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer shrink-0"
+                title="@lang('dam::app.admin.explorer.context.bookmark')"
+                @click="bookmarkCurrentDir"
+            >
+                <i class="icon-star text-xl"></i>
+            </button>
+            @endif
 
             @if (bouncer()->hasPermission('dam.asset.upload'))
             <input
@@ -554,6 +565,12 @@ app.component('v-dam-tab', {
         shareCurrentDir() {
             if (! this.currentDirId) return;
             this.$emitter.emit('open-share-modal', { targetType: 'directory', targetId: this.currentDirId });
+        },
+
+        bookmarkCurrentDir() {
+            if (! this.currentDirId) return;
+            const label = this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
+            this.$emitter.emit('dam:add-bookmark', { id: this.currentDirId, name: label });
         },
 
         openDialog(type, value, extra) {

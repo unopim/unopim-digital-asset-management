@@ -52,19 +52,13 @@
                     <button type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     @if (config('dam.explorer.bookmarks_enabled'))
-                    <div class="relative group/bm">
-                        <button
-                            type="button"
-                            class="text-gray-400 hover:text-violet-600 flex items-center"
-                            :data-bookmark-dir="dir.id"
-                            @click.stop="$emit('bookmark', dir)"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                        </button>
-                        <span class="pointer-events-none absolute bottom-full right-0 mb-1 px-2 py-1 text-xs text-white bg-gray-800 dark:bg-gray-600 rounded whitespace-nowrap opacity-0 group-hover/bm:opacity-100 transition-opacity z-10">
-                            @lang('dam::app.admin.explorer.context.bookmark')
-                        </span>
-                    </div>
+                    <button
+                        type="button"
+                        class="icon-star text-gray-400 hover:text-violet-600 text-base"
+                        :data-bookmark-dir="dir.id"
+                        @click.stop="$emit('bookmark', dir)"
+                        title="@lang('dam::app.admin.explorer.context.bookmark')"
+                    ></button>
                     @endif
                 </div>
             </div>

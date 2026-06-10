@@ -60,7 +60,7 @@
             @endif
             @if (config('dam.explorer.bookmarks_enabled'))
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doBookmark">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                <i class="icon-star text-sm text-zinc-600 dark:text-white shrink-0"></i>
                 @lang('dam::app.admin.explorer.context.bookmark')
             </button>
             <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
