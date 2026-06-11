@@ -365,9 +365,11 @@
                     const items = event.dataTransfer?.items;
                     if (! items || items.length === 0) return;
 
-                    // Each drop gets its own session with its own progress panel
-                    const session = { id: this.nextSessionId++, jobs: [], minimized: false };
+                    // Each drop gets its own session with its own progress panel.
+                    // Re-assign to the reactive Proxy: Vue 3 wraps pushed items lazily, so the plain object bypasses tracking.
+                    let session = { id: this.nextSessionId++, jobs: [], minimized: false };
                     this.activeSessions.push(session);
+                    session = this.activeSessions[this.activeSessions.length - 1];
 
                     const flatFiles  = [];
                     const dirEntries = [];
