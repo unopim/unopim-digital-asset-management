@@ -99,9 +99,7 @@ trait Directory
                 throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
-            // getimagesize / exif_read_data require a real local filesystem
-            // path. On non-local drivers (e.g. S3) Storage::path() returns only
-            // the object key, so we materialize the object into a temp file.
+            // exif_read_data needs a real filesystem path; on S3 Storage::path() is just the object key.
             $tempFile = tempnam(sys_get_temp_dir(), 'dam_meta_');
             file_put_contents($tempFile, $storage->get($path));
 

@@ -52,11 +52,7 @@ class MetadataExtractionService
                 return [];
             }
 
-            // Small extension fallbacks for image/video/audio only — mime_content_type can
-            // mis-detect MP4/MOV as application/octet-stream, SVG as text/xml, and HEIC/AVIF
-            // on older PHP builds. Keeping these ensures the correct exiftool branch still
-            // fires. Everything else (zip, pdf, office, unknown) falls through to the
-            // generic branch by design.
+            // Extension fallbacks for image/video/audio: mime_content_type mis-detects MP4/MOV, SVG, HEIC on older PHP.
             $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff', 'svg', 'heic', 'heif', 'avif'];
             $videoExts = ['mp4', 'mov', 'mkv', 'webm', 'avi', 'wmv', 'flv', 'm4v', '3gp', 'mpg', 'mpeg'];
             $audioExts = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma', 'opus'];
@@ -76,9 +72,7 @@ class MetadataExtractionService
                 return $this->extractMediaMetadata($tempPath, $originalFileName);
             }
 
-            // Generic exiftool branch: pdf, office, opendocument, rtf, txt, csv, zip, epub,
-            // psd, ai, application/octet-stream for non-media containers, etc. Anything not
-            // forbidden and not routed above lands here.
+            // Generic branch: pdf, office, zip, psd, ai, etc. — anything not routed to image/video/audio above.
             return $this->extractDocumentMetadata($tempPath, $originalFileName);
         } finally {
             if (! $localPath) {

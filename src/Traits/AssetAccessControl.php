@@ -6,14 +6,8 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
 /**
- * Per-asset directory ACL gate. Use in controllers that operate on a specific
- * asset id — calls layer on top of the existing `bouncer()` route-level ACL,
- * so a request must satisfy BOTH the ACL key (admin middleware) AND the
- * directory grant (this trait) to pass.
- *
- * Bypass roles (`permission_type=all`, anonymous, API guard) skip the
- * directory check transparently — the `bouncer()` ACL still applies as it
- * does today.
+ * Per-asset directory ACL gate. Layered on top of bouncer() — both the route ACL and
+ * the directory grant must pass. Bypass roles skip the directory check transparently.
  */
 trait AssetAccessControl
 {

@@ -60,9 +60,7 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
 
-        // Create page uses an underscored event name (`access_control` vs
-        // edit's `access-control`). Listen to both so the tab renders in
-        // both create + edit flows.
+        // Create fires access_control (underscore); edit fires access-control (hyphen). Listen to both.
         Event::listen('unopim.admin.settings.roles.create.card.access_control.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
@@ -72,10 +70,7 @@ class EventServiceProvider extends ServiceProvider
                 return;
             }
 
-            // Marker is rendered inside the DAM tab's v-if wrapper. Absent
-            // marker = tab not shown (e.g. permission_type=all) so we leave
-            // existing grants alone. Present marker = the submitted
-            // `directories[]` set is authoritative, including empty.
+            // Absent marker = DAM tab hidden (bypass role) — leave grants unchanged. Present = directories[] is authoritative.
             if (! request()->boolean('dam_directory_grants_managed')) {
                 return;
             }
@@ -110,13 +105,8 @@ class EventServiceProvider extends ServiceProvider
             $allDirectories = request()->boolean('dam_all_directories');
             $inheritChildren = request()->boolean('dam_inherit_children');
 
-            // When inherit_children is on, the blade pre-checks all descendants
-            // so submitted directories[] contains both explicit grants and
-            // inherit-expanded descendants. Strip only the expanded ones:
-            // keep items that were already an explicit grant in the DB (e.g.
-            // auto-granted by another admin's directory creation), and keep
-            // new root-level selections. This prevents accumulation of
-            // descendants in the DB while preserving intentional child grants.
+            // With inherit_children, submitted directories[] includes pre-checked descendants.
+            // Strip expanded-only entries; keep existing DB grants and new explicit selections.
             if ($inheritChildren && count($directoryIds) > 1) {
                 $existingGrants = app(DirectoryRolePermissionRepository::class)
                     ->getDirectoryIdsForRole((int) $role->id);
