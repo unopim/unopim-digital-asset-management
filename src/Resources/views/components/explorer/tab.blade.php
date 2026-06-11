@@ -49,6 +49,7 @@
                 :can-go-back="canGoBack"
                 :can-go-forward="canGoForward"
                 :current-dir-id="currentDirId"
+                :loading="loading"
                 @back="goBack"
                 @forward="goForward"
                 @navigate="goTo"

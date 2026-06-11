@@ -2,6 +2,22 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-breadcrumb-template">
     <div class="flex items-center gap-2 flex-1 min-w-0">
+
+        <template v-if="loading">
+            {{-- Shimmer: back + forward buttons --}}
+            <div class="flex items-center gap-0.5 shrink-0">
+                <div class="shimmer w-7 h-7 rounded-md"></div>
+                <div class="shimmer w-7 h-7 rounded-md"></div>
+            </div>
+            {{-- Shimmer: crumb trail --}}
+            <div class="flex items-center gap-1 flex-1">
+                <div class="shimmer h-5 w-16 rounded"></div>
+                <div class="shimmer h-5 w-24 rounded"></div>
+                <div class="shimmer h-5 w-32 rounded"></div>
+            </div>
+        </template>
+
+        <template v-else>
         {{-- Back / Forward --}}
         <div class="flex items-center gap-0.5 shrink-0">
             <button
@@ -64,6 +80,8 @@
                 >@lang('dam::app.admin.explorer.context.open-new-tab')</button>
             </div>
         </teleport>
+        </template>
+
     </div>
 </script>
 
@@ -77,6 +95,7 @@ app.component('v-dam-explorer-breadcrumb', {
         canGoBack:    { type: Boolean, default: false },
         canGoForward: { type: Boolean, default: false },
         currentDirId: { type: Number,  default: null },
+        loading:      { type: Boolean, default: false },
     },
 
     data() {

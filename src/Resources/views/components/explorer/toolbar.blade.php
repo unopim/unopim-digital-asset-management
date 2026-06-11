@@ -6,7 +6,11 @@
 --}}
 @once('v-dam-explorer-toolbar')
         {{-- Row 2: search + filters + pagination --}}
-        <div class="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <template v-if="loading">
+            <x-admin::shimmer.datagrid.toolbar />
+        </template>
+
+        <div v-else class="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
 
             {{-- Left: search + results count --}}
             <div class="flex flex-1 min-w-[120px] items-center gap-x-1">
@@ -92,4 +96,5 @@
                 ></v-dam-explorer-pager>
             </div>
         </div>
+
 @endonce
