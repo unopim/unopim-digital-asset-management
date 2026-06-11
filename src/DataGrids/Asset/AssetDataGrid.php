@@ -74,9 +74,7 @@ class AssetDataGrid extends DataGrid
         $service = app(DirectoryPermissionService::class);
 
         if (! $service->bypass()) {
-            // Strict: only assets in directly-granted dirs. Ancestor dirs
-            // visible in the tree (via canView expansion) must not leak their
-            // assets here.
+            // Only assets in directly-granted dirs — tree-visible ancestors must not leak assets.
             $allowedIds = $service->directlyGrantedIds();
 
             if (empty($allowedIds)) {
@@ -211,20 +209,18 @@ class AssetDataGrid extends DataGrid
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
 
                 if ($requestedColumn === 'directory_id') {
-                    // Expand to descendants server-side; frontend sends only the selected id.
-                    $expandedIds = collect();
-                    foreach ($requestedValues as $rootId) {
-                        $expandedIds->push((int) $rootId);
-                        $expandedIds = $expandedIds->merge(
-                            Directory::descendantsOf($rootId)->pluck('id')
-                        );
-                    }
-                    $expandedIds = $expandedIds->unique()->values()->all();
+                    // Nested-set BETWEEN on _lft covers the full subtree without loading descendant IDs into PHP.
+                    $this->queryBuilder->where(function ($q) use ($requestedValues) {
+                        foreach ($requestedValues as $rootId) {
+                            $root = Directory::select('_lft', '_rgt')->find((int) $rootId);
+                            if ($root) {
+                                $q->orWhereBetween('dam_directories._lft', [$root->_lft, $root->_rgt]);
+                            }
+                        }
+                    });
 
-                    if (empty($expandedIds)) {
+                    if (empty($requestedValues)) {
                         $this->queryBuilder->whereRaw('1 = 0');
-                    } else {
-                        $this->queryBuilder->whereIn($this->customFilterColumns[$requestedColumn], $expandedIds);
                     }
 
                     continue;
