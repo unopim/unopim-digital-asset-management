@@ -117,7 +117,31 @@
                     // out to be missing (e.g. it was deleted while we were
                     // away on the edit page).
                     let dirId = null;
+
+                    // 1. Asset-edit breadcrumb return (highest priority).
                     try { dirId = sessionStorage.getItem('dam_return_dir'); sessionStorage.removeItem('dam_return_dir'); } catch {}
+
+                    // 2. URL param — format is filters[directory_id][]=X (datagrid convention).
+                    if (! dirId) {
+                        try {
+                            const urlDirId = new URLSearchParams(window.location.search).get('filters[directory_id][]');
+                            if (urlDirId) dirId = urlDirId;
+                        } catch {}
+                    }
+
+                    // 3. localStorage — the datagrid persists applied filters under key
+                    //    'datagrids' as an array of {src, applied} objects. Find the DAM
+                    //    assets datagrid entry and read its directory_id column filter.
+                    if (! dirId) {
+                        try {
+                            const datagrids = JSON.parse(localStorage.getItem('datagrids') || '[]');
+                            const damSrc = "{{ route('admin.dam.assets.index') }}";
+                            const entry = datagrids.find(d => d.src === damSrc);
+                            const col = entry?.applied?.filters?.columns?.find(c => c.index === 'directory_id');
+                            if (col?.value?.[0]) dirId = String(col.value[0]);
+                        } catch {}
+                    }
+
                     if (dirId) {
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
@@ -465,19 +489,28 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-breadcrumb-template">
             <nav class="flex items-center gap-1 flex-wrap text-sm" aria-label="Directory breadcrumb">
-                <template v-for="(crumb, i) in crumbs" :key="crumb.id">
-                    <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
-                    <button
-                        type="button"
-                        class="px-1 py-0.5 rounded transition-colors"
-                        :class="i === crumbs.length - 1
-                            ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                            : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
-                        :disabled="i === crumbs.length - 1"
-                        @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
-                    >@{{ crumb.name }}</button>
+                <template v-if="loading">
+                    <div class="shimmer h-4 w-10 rounded"></div>
+                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                    <div class="shimmer h-4 w-24 rounded"></div>
+                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                    <div class="shimmer h-4 w-16 rounded"></div>
                 </template>
-                <span v-if="!crumbs.length" class="text-base text-gray-600 dark:text-gray-300 font-bold">@lang('dam::app.admin.dam.index.root')</span>
+                <template v-else>
+                    <template v-for="(crumb, i) in crumbs" :key="crumb.id">
+                        <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
+                        <button
+                            type="button"
+                            class="px-1 py-0.5 rounded transition-colors"
+                            :class="i === crumbs.length - 1
+                                ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
+                                : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
+                            :disabled="i === crumbs.length - 1"
+                            @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
+                        >@{{ crumb.name }}</button>
+                    </template>
+                    <span v-if="!crumbs.length" class="text-base text-gray-600 dark:text-gray-300 font-bold">@lang('dam::app.admin.dam.index.root')</span>
+                </template>
             </nav>
         </script>
 
@@ -485,10 +518,13 @@
             app.component('v-dam-breadcrumb', {
                 template: '#v-dam-breadcrumb-template',
                 data() {
-                    return { crumbs: [] };
+                    return { crumbs: [], loading: true };
                 },
                 mounted() {
-                    this._onBreadcrumb = (crumbs) => { this.crumbs = Array.isArray(crumbs) ? crumbs : []; };
+                    this._onBreadcrumb = (crumbs) => {
+                        this.loading = false;
+                        this.crumbs = Array.isArray(crumbs) ? crumbs : [];
+                    };
                     this.$emitter.on('current-directory-breadcrumb', this._onBreadcrumb);
                 },
                 beforeUnmount() {
@@ -496,11 +532,6 @@
                 },
                 methods: {
                     navigateTo(crumb) {
-                        // Crumbs are clickable — reveal the directory in the tree,
-                        // which triggers setFilters() and reloads the grid.
-                        // Silent: the crumb was built from the current tree
-                        // state, so a "not found" here is a transient race
-                        // (mid-refresh / deleted-elsewhere), not a real error.
                         this.$emitter.emit('dam:reveal-directory', { id: crumb.id, silent: true });
                     },
                 },

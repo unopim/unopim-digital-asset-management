@@ -295,6 +295,8 @@
                 assetsLoaded: false,
                 assetsLoading: false,
                 assetsStale: false,
+                childrenLoaded: false,
+                childrenLoading: false,
                 // Local reactive asset list — own data, never reassigned, so
                 // vuedraggable's Sortable stays bound to a stable array ref
                 // for the lifetime of this component instance. Avoids the
@@ -313,6 +315,9 @@
             this.$emitter.on('current-item-expanded', (data) => {
                 if (data.id !== this.item.id) return;
                 this.isOpen = true;
+                if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                    this.loadChildDirectories();
+                }
                 if (! this.assetsLoaded && ! this.assetsLoading) {
                     this.loadDirectoryAssets();
                 }
@@ -339,12 +344,15 @@
                 this.assetsLoaded = false;
                 this.assetsLoading = false;
                 this.assetsStale = false;
+                this.childrenLoaded = false;
+                this.childrenLoading = false;
                 this.localAssets.splice(0, this.localAssets.length);
             },
         },
         computed: {
             isDirectory: function() {
-                return this.item.children && Object.keys(this.item.children).length;
+                return (this.item.children && Object.keys(this.item.children).length)
+                    || this.item.has_children;
             },
 
             isAssets: function() {
@@ -411,8 +419,13 @@
                     this.isOpen = willOpen;
                 }
 
-                if (willOpen && ! this.assetsLoaded && ! this.assetsLoading) {
-                    this.loadDirectoryAssets();
+                if (willOpen) {
+                    if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                        this.loadChildDirectories();
+                    }
+                    if (! this.assetsLoaded && ! this.assetsLoading) {
+                        this.loadDirectoryAssets();
+                    }
                 }
 
                 this.$emit("set-filters", item);
@@ -463,9 +476,31 @@
                 if (! this.isOpen) {
                     this.isOpen = true;
                 }
+                if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                    this.loadChildDirectories();
+                }
                 if (! this.assetsLoaded) {
                     this.loadDirectoryAssets();
                 }
+            },
+
+            loadChildDirectories() {
+                if (this.childrenLoading || this.childrenLoaded) return;
+                this.childrenLoading = true;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id))
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(this.item.children)) {
+                            this.$set(this.item, 'children', []);
+                        }
+                        this.item.children.splice(0, this.item.children.length, ...children);
+                        this.childrenLoaded = true;
+                        this.childrenLoading = false;
+                    })
+                    .catch(() => {
+                        this.childrenLoading = false;
+                    });
             },
 
             invalidateAssetCache() {
@@ -1077,7 +1112,7 @@
             // intact so collapse is not overridden by this roundtrip.
             // fromTree=false: navigation from grid/bookmark/breadcrumb, so expand all
             // including the target so its children become visible in the tree.
-            this.$emitter.on('dam:explorer-tree-sync', ({ id, fromTree } = {}) => {
+            this.$emitter.on('dam:explorer-tree-sync', async ({ id, fromTree } = {}) => {
                 if (id == null) return;
                 if (! this.formattedItems || ! this.formattedItems[0]) {
                     // Tree not loaded yet — piggyback on _pendingReveal so it runs once ready.
@@ -1087,10 +1122,13 @@
                     return;
                 }
                 this.__explorerSync = true;
-                const path = this.findPathToDirectory(id);
+                let path = this.findPathToDirectory(id);
                 if (! path) {
-                    this.__explorerSync = false;
-                    return;
+                    path = await this.fetchAndRevealPath(id, true);
+                    if (! path) {
+                        this.__explorerSync = false;
+                        return;
+                    }
                 }
                 const expandCount = fromTree ? path.length - 1 : path.length;
                 for (let i = 0; i < expandCount; i++) {
@@ -1254,15 +1292,13 @@
             // `silent=true` suppresses the not-found flash — used for non-user
             // initiated reveals (deep link from edit page, breadcrumb click).
             async revealDirectory(id, silent = false) {
-                const path = this.findPathToDirectory(id);
+                let path = this.findPathToDirectory(id);
+
                 if (! path) {
-                    if (! silent) {
-                        this.$emitter.emit('add-flash', {
-                            type: 'error',
-                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
-                        });
-                    }
-                    return;
+                    // Node not yet in the lazy-loaded tree — fetch the ancestor
+                    // chain from the backend and load each missing level.
+                    path = await this.fetchAndRevealPath(id, silent);
+                    if (! path) return;
                 }
 
                 // Expand every ancestor AND the target itself so its children are visible.
@@ -1288,6 +1324,77 @@
                 }
 
                 this.setFilters(target);
+            },
+
+            // Load direct children of a node into its `children` array.
+            // Returns a Promise that resolves once children are spliced in.
+            loadNodeChildren(node) {
+                return this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', node.id))
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(node.children)) {
+                            node.children = [];
+                        }
+                        node.children.splice(0, node.children.length, ...children);
+                        return children;
+                    })
+                    .catch(() => []);
+            },
+
+            // Fetches the ancestor path for `id` from the backend, injects any
+            // missing levels into the local tree, then returns the path array so
+            // revealDirectory can expand it. Returns null on error or not-found.
+            async fetchAndRevealPath(id, silent = false) {
+                let ancestors;
+                try {
+                    const response = await this.$axios.get(
+                        `{{ route('admin.dam.directory.path', ':id') }}`.replace(':id', id)
+                    );
+                    ancestors = response.data.data || [];
+                } catch (e) {
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
+                    return null;
+                }
+
+                if (! ancestors.length) {
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
+                    return null;
+                }
+
+                // Walk down the ancestor chain. For each ancestor, if it is not
+                // yet in the local tree, load its parent's children so it appears.
+                for (const ancestor of ancestors) {
+                    const inTree = this.findItemDirectoryById(this.formattedItems, ancestor.id, null);
+                    if (inTree) continue;
+
+                    // Not in tree — load children of its parent to inject it.
+                    if (ancestor.parent_id == null) continue; // root already there
+
+                    const parentNode = this.findItemDirectoryById(this.formattedItems, ancestor.parent_id, null);
+                    if (parentNode) {
+                        await this.loadNodeChildren(parentNode.item);
+                    }
+                }
+
+                const path = this.findPathToDirectory(id);
+                if (! path && ! silent) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                    });
+                }
+                return path;
             },
 
             setFilters(item, type = "directory") {
@@ -2048,8 +2155,10 @@
 
                             this.$nextTick(() => {
                                 if (this.selectedItem) {
-                                    this.$emitter.emit('current-item-expanded', this.selectedItem);
-                                    this.setFilters(this.selectedItem);
+                                    // With lazy loading the full path is not in the new
+                                    // shallow tree — use revealDirectory so ancestors are
+                                    // fetched and expanded, not just the target node.
+                                    this.revealDirectory(this.selectedItem.id, true);
                                 } else if (! this._pendingReveal) {
                                     // Only set default selection when no pending reveal exists.
                                     // If _pendingReveal is set, revealDirectory will handle

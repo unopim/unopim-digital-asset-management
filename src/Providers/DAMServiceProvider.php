@@ -13,6 +13,7 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\DamInstaller;
+use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
@@ -81,6 +82,7 @@ class DAMServiceProvider extends ServiceProvider
             $this->commands([
                 DamInstaller::class,
                 BackfillThumbnails::class,
+                GenerateScaleData::class,
             ]);
         }
 
@@ -139,9 +141,7 @@ class DAMServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Load DAM-only global helper functions (dam_can_view_dir, etc.).
-        // Loaded here rather than via composer.json `autoload.files` so DAM
-        // stays self-contained without touching the root composer.json.
+        // Load DAM helpers here rather than composer.json autoload.files to keep DAM self-contained.
         $helpers = __DIR__.'/../Http/helpers.php';
         if (file_exists($helpers)) {
             require_once $helpers;
