@@ -229,34 +229,147 @@ class DirectoryRepository extends Repository
     }
 
     /**
-     * Specify directory tree without asset nodes.
+     * Lazy-load entry point for the main DAM directory tree.
      *
-     * Used by the main DAM directory tree which only needs folder nodes; asset
-     * listing is handled by the datagrid. Skipping the assets eager-load keeps
-     * the payload small and avoids shipping asset data the UI would discard.
+     * Returns root nodes with their direct children pre-loaded (depth 2).
+     * Each child carries `has_children: bool` so the UI knows whether to
+     * show an expand chevron without fetching deeper levels. Grandchildren
+     * (depth 3+) are loaded on demand via `getShallowChildren()` when the
+     * user expands a node.
+     *
+     * Drops the O(n²) `getAssetCountsRollup()` entirely — `assets_count`
+     * (direct-only, from `withCount`) is used as `assets_total_count`.
      */
     public function getDirectoryTreeOnly()
     {
         $service = app(DirectoryPermissionService::class);
-        $query = $this->model->withCount('assets');
 
-        // When ACL is active, restrict the rollup to only the directly-granted
-        // directories so ancestor nodes don't inflate their counts with assets
-        // from sibling subtrees the user cannot access.
-        $rollup = $service->bypass()
-            ? $this->getAssetCountsRollup()
-            : $this->getAssetCountsRollup($service->directlyGrantedIds());
+        $rootQuery = $this->model->withCount('children')->whereNull('parent_id');
+
+        if (! $service->bypass()) {
+            $rootQuery->whereIn('id', $service->viewableIds());
+        }
+
+        $roots = $rootQuery->get();
+
+        $rootCounts = $this->getSubtreeAssetCounts($roots->pluck('id')->all());
+
+        foreach ($roots as $root) {
+            $root->assets_total_count = $rootCounts[$root->id] ?? 0;
+            $root->has_children = $root->children_count > 0;
+            $root->children = $this->getShallowChildren($root->id, $service)->values()->all();
+        }
+
+        return $roots;
+    }
+
+    /**
+     * Returns the immediate (depth-1) children of a directory, each stamped
+     * with `has_children` (true when they have children of their own) and an
+     * empty `children` array so the frontend tree can render the expand chevron
+     * without a round-trip.
+     */
+    public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null): Collection
+    {
+        $service ??= app(DirectoryPermissionService::class);
+
+        $query = $this->model
+            ->withCount('children')
+            ->where('parent_id', $parentId)
+            ->orderBy('name');
 
         if (! $service->bypass()) {
             $query->whereIn('id', $service->viewableIds());
         }
 
-        // `withCount('assets')` adds an `assets_count` column without loading
-        // the actual asset rows. The tree uses this to render the expand
-        // chevron on directories that have assets but no child directories.
-        return $query->get()
-            ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
-            ->toTree();
+        $children = $query->get()->map(function ($dir) {
+            $dir->has_children = $dir->children_count > 0;
+            $dir->children = [];
+
+            return $dir;
+        });
+
+        $counts = $this->getSubtreeAssetCounts($children->pluck('id')->all());
+
+        $children->each(function ($dir) use ($counts) {
+            $dir->assets_total_count = $counts[$dir->id] ?? 0;
+        });
+
+        return $children;
+    }
+
+    /**
+     * Returns the ancestor chain from the root down to directory `$id`
+     * (inclusive), ordered root-first. Used by `revealDirectory` on the
+     * frontend when the target node is not yet in the locally-loaded tree.
+     *
+     * Each node in the result carries `has_children` but an empty `children`
+     * array — the frontend loads each level via `getShallowChildren` as it
+     * walks down the path.
+     */
+    public function getAncestorPath(int $id): Collection
+    {
+        $target = $this->model->select('id', '_lft', '_rgt', 'parent_id', 'name')->find($id);
+
+        if (! $target) {
+            return collect();
+        }
+
+        $nodes = $this->model
+            ->withCount('children')
+            ->where('_lft', '<=', $target->_lft)
+            ->where('_rgt', '>=', $target->_rgt)
+            ->orderBy('_lft')
+            ->get()
+            ->map(function ($dir) {
+                $dir->has_children = $dir->children_count > 0;
+                $dir->children = [];
+
+                return $dir;
+            });
+
+        $counts = $this->getSubtreeAssetCounts($nodes->pluck('id')->all());
+
+        $nodes->each(function ($dir) use ($counts) {
+            $dir->assets_total_count = $counts[$dir->id] ?? 0;
+        });
+
+        return $nodes;
+    }
+
+    /**
+     * Recursive asset count for each of the given directory IDs in one query.
+     * Counts assets in the directory itself plus all descendants via nested-set range.
+     * Returns [id => count]. IDs absent from the result had zero assets.
+     *
+     * @param  array<int>  $ids
+     * @return array<int, int>
+     */
+    public function getSubtreeAssetCounts(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, fn ($id) => $id > 0)));
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        $prefix = DB::getTablePrefix();
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $rows = DB::select("
+            SELECT ancestor.id AS id, COUNT(DISTINCT ad.asset_id) AS total
+            FROM {$prefix}dam_directories AS ancestor
+            LEFT JOIN {$prefix}dam_directories AS descendant
+                ON descendant._lft >= ancestor._lft AND descendant._rgt <= ancestor._rgt
+            LEFT JOIN {$prefix}dam_asset_directory AS ad
+                ON ad.directory_id = descendant.id
+            WHERE ancestor.id IN ({$placeholders})
+            GROUP BY ancestor.id
+        ", $ids);
+
+        return collect($rows)
+            ->mapWithKeys(fn ($row) => [(int) $row->id => (int) $row->total])
+            ->all();
     }
 
     /**
