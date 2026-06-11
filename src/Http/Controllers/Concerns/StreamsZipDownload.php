@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webkul\DAM\Http\Controllers\Concerns;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -67,6 +68,63 @@ trait StreamsZipDownload
 
             $zip->finish();
         }, Response::HTTP_OK, $headers);
+    }
+
+    /**
+     * Stream assets from a DB cursor as a ZIP — no allFiles() scan, no pre-size simulation.
+     * Starts streaming immediately; uses set_time_limit(0) inside the closure so large
+     * directories are not cut off by PHP's max_execution_time.
+     */
+    protected function buildZipStreamFromAssets(
+        Builder $query,
+        string $folderBase,
+        string $disk,
+        string $zipName,
+    ): StreamedResponse {
+        $parentBase = dirname($folderBase).'/';
+
+        return response()->stream(function () use ($query, $parentBase, $disk): void {
+            set_time_limit(0);
+
+            $outputStream = fopen('php://output', 'wb');
+
+            $zip = new ZipStream(
+                outputStream: $outputStream,
+                sendHttpHeaders: false,
+                defaultCompressionMethod: CompressionMethod::STORE,
+                flushOutput: true,
+            );
+
+            foreach ($query->cursor() as $asset) {
+                $path = $asset->path;
+
+                $entryName = str_starts_with($path, $parentBase)
+                    ? substr($path, strlen($parentBase))
+                    : ($asset->file_name ?: basename($path));
+
+                try {
+                    if ($disk === Directory::ASSETS_DISK_AWS) {
+                        $stream = Storage::disk($disk)->readStream($path);
+                        if ($stream) {
+                            $zip->addFileFromStream(fileName: $entryName, stream: $stream);
+                        }
+                    } else {
+                        $fullPath = Storage::disk($disk)->path($path);
+                        if (file_exists($fullPath)) {
+                            $zip->addFileFromPath(fileName: $entryName, path: $fullPath);
+                        }
+                    }
+                } catch (\Throwable) {
+                    // Skip unreadable/missing files rather than aborting the archive
+                }
+            }
+
+            $zip->finish();
+        }, Response::HTTP_OK, [
+            'Content-Type'        => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="'.addslashes($zipName).'"',
+            'Cache-Control'       => 'no-store',
+        ]);
     }
 
     /**
