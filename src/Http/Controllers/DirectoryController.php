@@ -394,18 +394,24 @@ class DirectoryController
 
         $directory = $this->directoryRepository->findOrFail($id);
 
-        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
+        $folderBase = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
-        $files = Storage::disk($disk)->allFiles($folderPath);
-        $directories = Storage::disk($disk)->allDirectories($folderPath);
 
-        if (empty($directories) && empty($files)) {
+        $subtreeQuery = Asset::query()
+            ->whereHas('directories', fn ($q) => $q->whereBetween('_lft', [$directory->_lft, $directory->_rgt]));
+
+        if (! $subtreeQuery->exists()) {
             return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
         }
 
         $zipName = sprintf('%s.zip', $directory->name);
 
-        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
+        return $this->buildZipStreamFromAssets(
+            $subtreeQuery->select(['path', 'file_name']),
+            $folderBase,
+            $disk,
+            $zipName,
+        );
     }
 
     /**

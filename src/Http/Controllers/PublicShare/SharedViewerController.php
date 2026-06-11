@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Http\Controllers\PublicShare;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -61,14 +62,7 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        $directoryIds = Directory::descendantsOf($directory->id)
-            ->pluck('id')
-            ->push($directory->id)
-            ->unique();
-
-        $assets = Asset::whereHas('directories', function ($q) use ($directoryIds) {
-            $q->whereIn('dam_directories.id', $directoryIds);
-        })->orderByDesc('updated_at')->paginate(24);
+        $assets = $this->subtreeAssetQuery($directory)->orderByDesc('updated_at')->paginate(24);
 
         return view('dam::share.public.directory', [
             'share'     => $share,
@@ -93,16 +87,10 @@ class SharedViewerController extends Controller
             return response()->json(['error' => 'not_found'], 404);
         }
 
-        $directoryIds = Directory::descendantsOf($directory->id)
-            ->pluck('id')
-            ->push($directory->id)
-            ->unique();
-
         $page = max(1, (int) request('page', 1));
         $perPage = 24;
 
-        $paginator = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds)
-        )->orderByDesc('updated_at')->paginate($perPage, ['*'], 'page', $page);
+        $paginator = $this->subtreeAssetQuery($directory)->orderByDesc('updated_at')->paginate($perPage, ['*'], 'page', $page);
 
         $data = $paginator->getCollection()->map(fn (Asset $asset) => [
             'id'                  => $asset->id,
@@ -167,24 +155,33 @@ class SharedViewerController extends Controller
             return $this->renderExpiredOrNotFound($token);
         }
 
-        $asset = $this->resolveDirectoryAsset($share, $assetId);
+        $directory = $share->directory;
+        if (! $directory) {
+            return $this->renderNotFound();
+        }
+
+        $asset = $this->subtreeAssetQuery($directory)->where('id', $assetId)->first();
         if (! $asset) {
             return $this->renderNotFound();
         }
 
-        $directoryIds = Directory::descendantsOf($share->target_id)
-            ->pluck('id')
-            ->push($share->target_id)
-            ->unique();
+        // Cursor-based prev/next: never loads all asset IDs into memory.
+        // Order is updated_at DESC; id DESC is the tiebreaker for equal timestamps.
+        $prevAssetId = $this->subtreeAssetQuery($directory)
+            ->where(fn ($q) => $q
+                ->where('updated_at', '<', $asset->updated_at)
+                ->orWhere(fn ($q) => $q->where('updated_at', $asset->updated_at)->where('id', '<', $asset->id))
+            )
+            ->orderByDesc('updated_at')->orderByDesc('id')
+            ->value('id');
 
-        $assetIds = Asset::whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
-            ->orderByDesc('updated_at')
-            ->pluck('id')
-            ->toArray();
-
-        $currentIndex = array_search($assetId, $assetIds);
-        $prevAssetId = $currentIndex < count($assetIds) - 1 ? $assetIds[$currentIndex + 1] : null;
-        $nextAssetId = $currentIndex > 0 ? $assetIds[$currentIndex - 1] : null;
+        $nextAssetId = $this->subtreeAssetQuery($directory)
+            ->where(fn ($q) => $q
+                ->where('updated_at', '>', $asset->updated_at)
+                ->orWhere(fn ($q) => $q->where('updated_at', $asset->updated_at)->where('id', '>', $asset->id))
+            )
+            ->orderBy('updated_at')->orderBy('id')
+            ->value('id');
 
         return view('dam::share.public.asset', [
             'share'       => $share,
@@ -295,14 +292,18 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
-        $files = Storage::disk($disk)->allFiles($folderPath);
+        $folderBase = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $zipName = Str::slug($directory->name ?: 'download').'.zip';
 
         $this->shareRepository->incrementDownload($share);
 
-        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
+        return $this->buildZipStreamFromAssets(
+            $this->subtreeAssetQuery($directory)->select(['path', 'file_name']),
+            $folderBase,
+            $disk,
+            $zipName,
+        );
     }
 
     /**
@@ -356,20 +357,24 @@ class SharedViewerController extends Controller
     }
 
     /**
-     * Look up an asset that lives within the share's directory tree
-     * (direct child or any descendant subdirectory).
+     * Range query for all assets in directory's subtree using nested-set _lft/_rgt.
+     * No PHP-side ID collection — one EXISTS subquery, fully index-backed.
      */
+    protected function subtreeAssetQuery(Directory $directory): Builder
+    {
+        return Asset::query()
+            ->whereHas('directories', fn ($q) => $q->whereBetween('_lft', [$directory->_lft, $directory->_rgt]));
+    }
+
+    /** Look up an asset that lives within the share's directory tree. */
     protected function resolveDirectoryAsset(Share $share, int $assetId): ?Asset
     {
-        $directoryIds = Directory::descendantsOf($share->target_id)
-            ->pluck('id')
-            ->push($share->target_id)
-            ->unique();
+        $directory = $share->directory;
+        if (! $directory) {
+            return null;
+        }
 
-        return Asset::query()
-            ->whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds))
-            ->where('id', $assetId)
-            ->first();
+        return $this->subtreeAssetQuery($directory)->where('id', $assetId)->first();
     }
 
     protected function resolveAssetForShare(Share $share, int $assetId): ?Asset
