@@ -5,7 +5,6 @@ namespace Webkul\DAM\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -14,6 +13,7 @@ use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
 use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
@@ -77,7 +77,8 @@ class DirectoryController
     }
 
     /**
-     * Get the children directory
+     * Lazy-load immediate children of a directory.
+     * Each child carries `has_children` and an empty `children` array.
      */
     public function childrenDirectory(int $id): JsonResponse
     {
@@ -87,16 +88,36 @@ class DirectoryController
             ], 403);
         }
 
-        $directory = $this->directoryRepository->getDirectoryTree($id)?->first();
-
-        if (! $directory) {
+        if (! $this->directoryRepository->find($id)) {
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.not-found'),
             ], 404);
         }
 
+        $children = $this->directoryRepository->getShallowChildren($id);
+
         return new JsonResponse([
-            'data' => $directory,
+            'data' => $children->values(),
+        ]);
+    }
+
+    /**
+     * Returns the ancestor chain from root to directory $id (inclusive),
+     * root-first. Used by the frontend revealDirectory to load a path that
+     * is not yet in the locally-loaded lazy tree.
+     */
+    public function directoryPath(int $id): JsonResponse
+    {
+        if (! $this->permissionService->canView($id)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $path = $this->directoryRepository->getAncestorPath($id);
+
+        return new JsonResponse([
+            'data' => $path->values(),
         ]);
     }
 
