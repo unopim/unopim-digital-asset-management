@@ -92,14 +92,22 @@ class ExplorerDataController extends Controller
             $dirQuery->where('parent_id', $dir->id);
         }
 
+        // viewableIds() includes ancestors of granted dirs so that transit
+        // directories (e.g. "webkul" when the user only has "webkul/akeneo")
+        // appear in the listing and allow the user to navigate down.
         if (! $this->permissionService->bypass()) {
-            $dirQuery->whereIn('id', $this->permissionService->directlyGrantedIds());
+            $dirQuery->whereIn('id', $this->permissionService->viewableIds());
         }
 
         $dirSortColumn = match ($sortBy) {
             'updated_at' => 'updated_at',
             default      => 'name',
         };
+
+        // Memoised per request — safe to call here without re-querying.
+        $directlyGrantedIds = $this->permissionService->bypass()
+            ? null
+            : $this->permissionService->directlyGrantedIds();
 
         $directories = $dirQuery->withCount(['assets', 'children'])
             ->orderBy($dirSortColumn, $sortOrder)
@@ -111,6 +119,9 @@ class ExplorerDataController extends Controller
                 'assets_count'   => $d->assets_count ?? 0,
                 'children_count' => $d->children_count ?? 0,
                 'updated_at'     => $d->updated_at,
+                // true = user may upload/rename/delete inside this dir;
+                // false = transit ancestor, visible for navigation only.
+                'can_access'     => $directlyGrantedIds === null || in_array($d->id, $directlyGrantedIds),
             ]);
 
         // --- Assets ---
@@ -249,6 +260,9 @@ class ExplorerDataController extends Controller
                 'current_page'      => $page,
                 'last_page'         => max(1, (int) ceil($totalAssets / max($perPage, 1))),
                 'per_page'          => $perPage,
+                // Whether the current user may perform write operations in this dir.
+                // false when the dir is only visible as a transit ancestor.
+                'can_access_current' => $this->permissionService->bypass() || $this->permissionService->canAccess($dir->id),
             ],
         ]);
     }

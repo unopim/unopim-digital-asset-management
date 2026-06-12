@@ -7,6 +7,7 @@
     >
         {{-- Directory actions --}}
         <template v-if="itemType === 'directory'">
+            {{-- Open / Open in new tab always available even for transit-only dirs --}}
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doNavigate">
                 <i class="icon-dam-folder text-sm text-zinc-600 dark:text-white"></i>
                 @lang('dam::app.admin.explorer.context.open')
@@ -15,95 +16,114 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                 @lang('dam::app.admin.explorer.context.open-new-tab')
             </button>
-            <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-            @if (bouncer()->hasPermission('dam.asset.upload'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="uploadHere">
-                <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.upload-files')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.asset.upload'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="folderUploadHere">
-                <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.explorer.context.folder-upload')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.store'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="createHere">
-                <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.add-directory')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.rename'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="renameDir">
-                <i class="icon-dam-rename text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.rename')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.copy_structure'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="copyStructure">
-                <i class="icon-dam-directory text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.copy-directory-structured')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.download_zip'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="downloadZip">
-                <i class="icon-dam-zip text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.download-zip')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.share'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="share">
-                <i class="icon-dam-link text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.share')
-            </button>
-            @endif
-            @if (config('dam.explorer.bookmarks_enabled'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doBookmark">
-                <i class="icon-star text-sm text-zinc-600 dark:text-white shrink-0"></i>
-                @lang('dam::app.admin.explorer.context.bookmark')
-            </button>
-            <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-            @endif
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doCopy">
-                <i class="icon-copy text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.explorer.context.copy')
-            </button>
-            @if (bouncer()->hasPermission('dam.directory.destroy'))
-            <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-zinc-600 dark:text-white transition-colors hover:bg-red-600 hover:text-white" @click="delDir">
-                <i class="icon-dam-delete text-sm"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.delete')
-            </button>
-            @endif
+
+            {{-- Write actions only for directories the user is actually granted --}}
+            <template v-if="item && item.can_access">
+                <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+                @if (bouncer()->hasPermission('dam.asset.upload'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="uploadHere">
+                    <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.upload-files')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.asset.upload'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="folderUploadHere">
+                    <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.explorer.context.folder-upload')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.store'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="createHere">
+                    <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.add-directory')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.rename'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="renameDir">
+                    <i class="icon-dam-rename text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.rename')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.copy_structure'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="copyStructure">
+                    <i class="icon-dam-directory text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.copy-directory-structured')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.download_zip'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="downloadZip">
+                    <i class="icon-dam-zip text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.download-zip')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.share'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="share">
+                    <i class="icon-dam-link text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.share')
+                </button>
+                @endif
+                @if (config('dam.explorer.bookmarks_enabled'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doBookmark">
+                    <i class="icon-star text-sm text-zinc-600 dark:text-white shrink-0"></i>
+                    @lang('dam::app.admin.explorer.context.bookmark')
+                </button>
+                <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+                @endif
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doCopy">
+                    <i class="icon-copy text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.explorer.context.copy')
+                </button>
+                @if (bouncer()->hasPermission('dam.directory.destroy'))
+                <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-zinc-600 dark:text-white transition-colors hover:bg-red-600 hover:text-white" @click="delDir">
+                    <i class="icon-dam-delete text-sm"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.delete')
+                </button>
+                @endif
+            </template>
+            <template v-else>
+                {{-- Transit ancestor: user can navigate but not modify --}}
+                <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+                <p class="px-4 py-1.5 text-xs text-gray-400 dark:text-slate-500 italic select-none">
+                    @lang('dam::app.admin.permissions.no-actions')
+                </p>
+            </template>
         </template>
 
         {{-- Space actions (right-click on empty area in current directory) --}}
         <template v-else-if="itemType === 'space'">
-            @if (bouncer()->hasPermission('dam.asset.upload'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="uploadHere">
-                <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.upload-files')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.asset.upload'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="folderUploadHere">
-                <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.explorer.context.folder-upload')
-            </button>
-            @endif
-            @if (bouncer()->hasPermission('dam.directory.store'))
-            <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="createHere">
-                <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
-                @lang('dam::app.admin.dam.index.directory.actions.add-directory')
-            </button>
-            @endif
-            <template v-if="clipboard">
-                <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
-                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doPaste">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                    @lang('dam::app.admin.explorer.context.paste')
+            <template v-if="item && item.can_access">
+                @if (bouncer()->hasPermission('dam.asset.upload'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="uploadHere">
+                    <i class="icon-dam-upload text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.upload-files')
                 </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.asset.upload'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="folderUploadHere">
+                    <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.explorer.context.folder-upload')
+                </button>
+                @endif
+                @if (bouncer()->hasPermission('dam.directory.store'))
+                <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="createHere">
+                    <i class="icon-dam-add-folder text-sm text-zinc-600 dark:text-white"></i>
+                    @lang('dam::app.admin.dam.index.directory.actions.add-directory')
+                </button>
+                @endif
+                <template v-if="clipboard">
+                    <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
+                    <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doPaste">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600 dark:text-white shrink-0"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        @lang('dam::app.admin.explorer.context.paste')
+                    </button>
+                </template>
+            </template>
+            <template v-else>
+                {{-- No write access to this directory (root or transit ancestor) --}}
+                <p class="px-4 py-1.5 text-xs text-gray-400 dark:text-slate-500 italic select-none">
+                    @lang('dam::app.admin.permissions.no-actions')
+                </p>
             </template>
         </template>
 

@@ -83,12 +83,13 @@ app.component('v-dam-explorer-grid', {
     emits: ['navigate', 'open-new-tab', 'bookmark', 'refresh', 'internal-drop'],
 
     props: {
-        directories:  { type: Array, default: () => [] },
-        assets:       { type: Array, default: () => [] },
-        isLoading:    { type: Boolean, default: false },
-        tabId:        { type: String, required: true },
-        currentDirId: { type: Number, default: null },
-        clipboard:    { type: Object, default: null },
+        directories:          { type: Array, default: () => [] },
+        assets:               { type: Array, default: () => [] },
+        isLoading:            { type: Boolean, default: false },
+        tabId:                { type: String, required: true },
+        currentDirId:         { type: Number, default: null },
+        clipboard:            { type: Object, default: null },
+        canAccessCurrentDir:  { type: Boolean, default: true },
     },
 
     data() {
@@ -169,7 +170,7 @@ app.component('v-dam-explorer-grid', {
         },
         showSpaceCtx(e) {
             if (! this.currentDirId) return;
-            this.showCtx(e, { id: this.currentDirId }, 'space');
+            this.showCtx(e, { id: this.currentDirId, can_access: this.canAccessCurrentDir }, 'space');
         },
         preview(id)  { this.$emitter.emit('dam-open-preview', id); },
         edit(id)     { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id); },

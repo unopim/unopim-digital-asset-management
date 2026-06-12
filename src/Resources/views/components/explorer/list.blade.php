@@ -55,10 +55,10 @@
                 <span class="text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
                 <div class="flex gap-2 items-center">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
-                    <button type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
+                    <button v-if="dir.can_access !== false" type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.directory.destroy'))
-                    <button type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
+                    <button v-if="dir.can_access !== false" type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     @if (config('dam.explorer.bookmarks_enabled'))
                     <button
@@ -136,14 +136,15 @@ app.component('v-dam-explorer-list', {
     emits: ['navigate','open-new-tab','bookmark','sort-change','refresh','internal-drop'],
 
     props: {
-        directories:  { type: Array, default: () => [] },
-        assets:       { type: Array, default: () => [] },
-        isLoading:    { type: Boolean, default: false },
-        sortBy:       { type: String, default: 'name' },
-        sortOrder:    { type: String, default: 'asc' },
-        tabId:        { type: String, required: true },
-        currentDirId: { type: Number, default: null },
-        clipboard:    { type: Object, default: null },
+        directories:          { type: Array, default: () => [] },
+        assets:               { type: Array, default: () => [] },
+        isLoading:            { type: Boolean, default: false },
+        sortBy:               { type: String, default: 'name' },
+        sortOrder:            { type: String, default: 'asc' },
+        tabId:                { type: String, required: true },
+        currentDirId:         { type: Number, default: null },
+        clipboard:            { type: Object, default: null },
+        canAccessCurrentDir:  { type: Boolean, default: true },
     },
 
     data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null, dropTargetId: null }; },
@@ -191,7 +192,7 @@ app.component('v-dam-explorer-list', {
         },
         showSpaceCtx(e) {
             if (! this.currentDirId) return;
-            this.showCtx(e, { id: this.currentDirId }, 'space');
+            this.showCtx(e, { id: this.currentDirId, can_access: this.canAccessCurrentDir }, 'space');
         },
         preview(id) { this.$emitter.emit('dam-open-preview', id); },
         edit(id)    { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id); },

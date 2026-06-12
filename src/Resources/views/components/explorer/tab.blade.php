@@ -186,6 +186,7 @@
                 :tab-id="tabId"
                 :current-dir-id="currentDirId"
                 :clipboard="clipboard"
+                :can-access-current-dir="canAccessCurrentDir"
                 @navigate="goTo"
                 @open-new-tab="openNewTab"
                 @bookmark="bookmark"
@@ -202,6 +203,7 @@
                 :tab-id="tabId"
                 :current-dir-id="currentDirId"
                 :clipboard="clipboard"
+                :can-access-current-dir="canAccessCurrentDir"
                 @navigate="goTo"
                 @open-new-tab="openNewTab"
                 @bookmark="bookmark"
@@ -288,6 +290,9 @@ app.component('v-dam-tab', {
             if (this.aclBypass) return true;
             if (! this.currentDirId) return false;
             return this.localAccessibleIds.map(Number).includes(Number(this.currentDirId));
+        },
+        canAccessCurrentDir() {
+            return this.aclBypass || !!(this.meta?.can_access_current);
         },
         canGoBack()    { return this.navIdx > 0; },
         canGoForward() { return this.navIdx < this.navHistory.length - 1; },
