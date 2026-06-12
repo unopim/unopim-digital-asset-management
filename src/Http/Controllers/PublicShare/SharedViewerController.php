@@ -299,7 +299,7 @@ class SharedViewerController extends Controller
         $this->shareRepository->incrementDownload($share);
 
         return $this->buildZipStreamFromAssets(
-            $this->subtreeAssetQuery($directory)->select(['path', 'file_name']),
+            $this->subtreeAssetQuery($directory)->select(['id', 'path', 'file_name'])->with('directories'),
             $folderBase,
             $disk,
             $zipName,
@@ -314,8 +314,9 @@ class SharedViewerController extends Controller
     protected function streamAsset(Asset $asset, string $disposition, ?callable $onSuccess = null)
     {
         $disk = Directory::getAssetDisk();
+        $path = $this->resolveEffectiveAssetPath($asset, $disk);
 
-        if (! Storage::disk($disk)->exists($asset->path)) {
+        if (! $path) {
             return abort(404);
         }
 
@@ -323,7 +324,7 @@ class SharedViewerController extends Controller
             $onSuccess();
         }
 
-        $mimeType = Storage::disk($disk)->mimeType($asset->path) ?: 'application/octet-stream';
+        $mimeType = Storage::disk($disk)->mimeType($path) ?: 'application/octet-stream';
         $disposition = in_array(strtolower($disposition), ['inline', 'attachment'], true)
             ? strtolower($disposition)
             : 'attachment';
@@ -334,7 +335,7 @@ class SharedViewerController extends Controller
         if ($disk === Directory::ASSETS_DISK_AWS) {
             try {
                 $url = Storage::disk($disk)->temporaryUrl(
-                    $asset->path,
+                    $path,
                     now()->addMinutes(10),
                     [
                         'ResponseContentDisposition' => $contentDisposition,
@@ -350,10 +351,38 @@ class SharedViewerController extends Controller
             }
         }
 
-        return response()->file(Storage::disk($disk)->path($asset->path), [
+        return response()->file(Storage::disk($disk)->path($path), [
             'Content-Type'        => $mimeType,
             'Content-Disposition' => $contentDisposition,
         ]);
+    }
+
+    /**
+     * Resolve the effective storage path for a shared asset.
+     * If the stored path is stale (e.g. directory renamed with a pending queue job),
+     * derive the current path from the asset's immediate parent directory by ID.
+     */
+    protected function resolveEffectiveAssetPath(Asset $asset, string $disk): ?string
+    {
+        if (Storage::disk($disk)->exists($asset->path)) {
+            return $asset->path;
+        }
+
+        $directory = $asset->relationLoaded('directories')
+            ? $asset->directories->first()
+            : $asset->directories()->first();
+
+        if (! $directory) {
+            return null;
+        }
+
+        $derived = sprintf('%s/%s/%s',
+            Directory::ASSETS_DIRECTORY,
+            $directory->generatePath(),
+            $asset->file_name,
+        );
+
+        return Storage::disk($disk)->exists($derived) ? $derived : null;
     }
 
     /**
