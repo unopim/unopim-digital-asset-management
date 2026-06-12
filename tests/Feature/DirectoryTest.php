@@ -82,7 +82,7 @@ it('should create new directory', function () {
     ]);
 });
 
-it('updates a directory name and dispatches RenameDirectoryJob', function () {
+it('updates a directory name', function () {
 
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);

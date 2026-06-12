@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
-use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\User\Models\Admin;
@@ -59,10 +58,9 @@ it('returns 404 when directory not found via api', function () {
         ->assertStatus(404);
 });
 
-it('renames a directory and dispatches rename job via api', function () {
+it('renames a directory via api', function () {
     $disk = Directory::getAssetDisk();
     Storage::disk($disk)->makeDirectory('assets/OldApiDir');
-    Bus::fake();
 
     $directory = Directory::factory()->create(['name' => 'OldApiDir', 'parent_id' => null]);
 
@@ -72,7 +70,7 @@ it('renames a directory and dispatches rename job via api', function () {
         ]);
 
     $response->assertOk()->assertJsonPath('success', true);
-    Bus::assertDispatched(RenameDirectoryJob::class);
+    $this->assertDatabaseHas('dam_directories', ['id' => $directory->id, 'name' => 'RenamedApiDir']);
 });
 
 it('returns 404 when updating a non-existent directory via api', function () {

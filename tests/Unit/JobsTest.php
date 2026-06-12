@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Jobs\CopyDirectoryStructure;
 use Webkul\DAM\Jobs\DeleteDirectory;
 use Webkul\DAM\Jobs\MoveDirectoryStructure;
-use Webkul\DAM\Jobs\RenameDirectory;
 use Webkul\DAM\Models\ActionRequest;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
@@ -73,50 +72,6 @@ it('delete directory job deletes directory and its assets', function () {
     $job->handle();
 
     $this->assertDatabaseMissing('dam_directories', ['id' => $directoryId]);
-});
-
-// RenameDirectory Job Tests
-
-it('dispatches rename directory job', function () {
-    Bus::fake();
-
-    $directory = Directory::factory()->create();
-
-    RenameDirectory::dispatch($directory->id, auth()->id());
-
-    Bus::assertDispatched(RenameDirectory::class);
-});
-
-it('rename directory job is queueable', function () {
-    Queue::fake();
-
-    $directory = Directory::factory()->create();
-
-    RenameDirectory::dispatch($directory->id, auth()->id());
-
-    Queue::assertPushed(RenameDirectory::class);
-});
-
-it('rename directory job updates asset paths', function () {
-    Storage::fake(Directory::getAssetDisk());
-
-    $parent = Directory::factory()->create(['name' => 'Root']);
-    $directory = Directory::factory()->create(['name' => 'NewName', 'parent_id' => $parent->id]);
-
-    $asset = Asset::factory()->create([
-        'file_name' => 'photo.jpg',
-        'path'      => 'assets/Root/OldName/photo.jpg',
-    ]);
-    $directory->assets()->attach($asset->id);
-
-    createPendingActionRequest('rename_directory');
-
-    $job = new RenameDirectory($directory->id, auth()->id());
-    $job->handle();
-
-    $asset->refresh();
-    $expectedPath = sprintf('assets/%s/photo.jpg', $directory->generatePath());
-    expect($asset->path)->toBe($expectedPath);
 });
 
 // CopyDirectoryStructure Job Tests

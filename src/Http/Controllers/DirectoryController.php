@@ -12,7 +12,6 @@ use Webkul\DAM\Http\Requests\DirectorySearchRequest;
 use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
-use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
@@ -246,9 +245,8 @@ class DirectoryController
                     'name' => $request->input('name'),
                 ], $id);
 
-                $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
-
-                RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+                $this->start(EventType::RENAME_DIRECTORY->value);
+                $this->completed(EventType::RENAME_DIRECTORY->value, $this->getUser()->id);
             }
 
             return new JsonResponse([
@@ -433,6 +431,56 @@ class DirectoryController
             $disk,
             $zipName,
         );
+    }
+
+    /**
+     * Return ancestor paths for multiple directory IDs in one request.
+     * Used by the role-permission editor to resolve breadcrumb chains for
+     * all checked directories without N individual /path/{id} calls.
+     */
+    public function ancestorPaths(Request $request): JsonResponse
+    {
+        // 'present' ensures the key exists (400-family for missing key)
+        // while allowing an empty array. 'required' rejects empty arrays in Laravel.
+        $request->validate([
+            'ids'   => 'present|array',
+            'ids.*' => 'integer|min:1',
+        ]);
+
+        $ids = $request->input('ids');
+
+        if (empty($ids)) {
+            return new JsonResponse(['data' => []]);
+        }
+
+        $nodes = $this->directoryRepository->getAncestorPathsForIds($ids);
+
+        // Note: canView() is based on the editing admin's own grants.
+        // A custom-permission admin editing roles may see a filtered ancestor set
+        // if they lack access to some parent directories. This is accepted behaviour.
+        $nodes = $nodes->filter(fn ($node) => $this->permissionService->canView($node->id));
+
+        return new JsonResponse(['data' => $nodes->values()]);
+    }
+
+    /**
+     * Returns all descendant IDs for the given directory.
+     * Used by the role-permission editor to cascade-select all descendants
+     * without requiring the tree to be expanded first.
+     */
+    public function descendants(int $id): JsonResponse
+    {
+        $node = $this->directoryRepository->find($id);
+
+        if (! $node || ! $this->permissionService->canView($node->id)) {
+            return new JsonResponse(['data' => []]);
+        }
+
+        $ids = $this->directoryRepository->getDescendantIds($id);
+
+        $ids = array_values(array_filter($ids, fn ($did) => $this->permissionService->canView($did)));
+
+        return new JsonResponse(['data' => $ids]);
     }
 
     /**

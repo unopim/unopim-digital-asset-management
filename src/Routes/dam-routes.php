@@ -124,6 +124,8 @@ Route::group([
         Route::post('/copy-structure', 'copyStructure')->name('admin.dam.directory.copy_structure');
         Route::post('/moved', 'moved')->name('admin.dam.directory.moved');
         Route::post('/create-structure', 'createStructure')->name('admin.dam.directory.create_structure');
+        Route::post('/paths', 'ancestorPaths')->name('admin.dam.directory.paths');
+        Route::get('/{id}/descendants', 'descendants')->name('admin.dam.directory.descendants');
     });
 
     Route::controller(ActionRequestController::class)->prefix('action-request')->group(function () {

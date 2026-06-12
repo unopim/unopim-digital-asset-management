@@ -63,6 +63,14 @@ class DirectoryRepository extends Repository
 
         if ($oldDirectory->name != $newDirectory->name) {
             $this->createDirectoryWithStorage($newPath, $oldPath);
+
+            $oldPrefix = Directory::ASSETS_DIRECTORY.'/'.$oldPath.'/';
+            $newPrefix = Directory::ASSETS_DIRECTORY.'/'.$newPath.'/';
+
+            DB::statement(
+                sprintf('UPDATE %sdam_assets SET path = REPLACE(path, ?, ?) WHERE path LIKE ?', DB::getTablePrefix()),
+                [$oldPrefix, $newPrefix, $oldPrefix.'%']
+            );
         }
 
         return $newDirectory;
@@ -407,6 +415,99 @@ class DirectoryRepository extends Repository
             ->get()
             ->each(fn ($dir) => $dir->assets_total_count = (int) ($rollup[$dir->id] ?? 0))
             ->toTree();
+    }
+
+    /**
+     * Returns all unique ancestor nodes (inclusive) for the given directory IDs
+     * in a single nested-set query, ordered by `_lft` ascending.
+     *
+     * "Inclusive" means each node in `$ids` is included in the result because
+     * a node is its own ancestor in nested-set terms
+     * (ancestor._lft <= self._lft AND ancestor._rgt >= self._rgt).
+     *
+     * Each returned model carries `has_children` (bool) and an empty `children`
+     * array so the frontend can pre-expand the tree without further round-trips.
+     *
+     * Two queries total:
+     *  1. Raw SQL self-join to discover the distinct ancestor ID set (portable
+     *     across MySQL + PostgreSQL, prefix-aware via DB::getTablePrefix()).
+     *  2. Eloquent `whereIn` + `withCount('children')` to hydrate full models
+     *     and compute `has_children` the same way `getShallowChildren` does.
+     *
+     * @param  array<int>  $ids
+     */
+    public function getAncestorPathsForIds(array $ids): Collection
+    {
+        $ids = array_values(array_unique(array_filter($ids, fn ($id) => (int) $id > 0)));
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        // Step 1: discover distinct ancestor IDs via nested-set self-join.
+        // Raw SQL is required here for the same reason as getAssetCountsRollup:
+        // the query builder would prefix table aliases (e.g. "ancestor" ->
+        // "prefix_ancestor") which then mismatches subsequent column references
+        // on Postgres. DB::getTablePrefix() keeps everything portable.
+        $prefix = DB::getTablePrefix();
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        // ANSI SQL requires ORDER BY columns to appear in the SELECT list when
+        // DISTINCT is used (PostgreSQL enforces this strictly; MySQL is lenient).
+        // Selecting ancestor._lft alongside ancestor.id satisfies both drivers.
+        $rows = DB::select("
+            SELECT DISTINCT ancestor.id, ancestor._lft
+            FROM {$prefix}dam_directories AS ancestor
+            INNER JOIN {$prefix}dam_directories AS descendant
+                ON ancestor._lft <= descendant._lft
+                AND ancestor._rgt >= descendant._rgt
+            WHERE descendant.id IN ({$placeholders})
+            ORDER BY ancestor._lft
+        ", $ids);
+
+        $ancestorIds = collect($rows)->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        if (empty($ancestorIds)) {
+            return collect();
+        }
+
+        // Step 2: hydrate as Eloquent models with has_children.
+        // Reuses the withCount('children') -> has_children pattern from
+        // getShallowChildren() and getAncestorPath() for consistency.
+        return $this->model
+            ->withCount('children')
+            ->whereIn('id', $ancestorIds)
+            ->orderBy('_lft')
+            ->get()
+            ->map(function ($dir) {
+                $dir->has_children = $dir->children_count > 0;
+                $dir->assets_total_count = 0;
+                $dir->children = [];
+
+                return $dir;
+            });
+    }
+
+    /**
+     * Returns all descendant IDs for a directory using the nested-set columns.
+     * Single query — no model hydration. Portable across MySQL + PostgreSQL.
+     *
+     * @return array<int>
+     */
+    public function getDescendantIds(int $id): array
+    {
+        $node = $this->model->where('id', $id)->first(['_lft', '_rgt']);
+
+        if (! $node) {
+            return [];
+        }
+
+        return $this->model
+            ->where('_lft', '>', $node->_lft)
+            ->where('_rgt', '<', $node->_rgt)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**
