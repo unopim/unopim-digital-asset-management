@@ -5,6 +5,18 @@ use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
     $this->loginAsAdmin();
+
+    $sourceDir = storage_path('app/private/assets/Root');
+
+    if (! is_dir($sourceDir)) {
+        mkdir($sourceDir, 0755, true);
+    }
+
+    $dummyFile = $sourceDir.'/sample.jpg';
+
+    if (! file_exists($dummyFile)) {
+        file_put_contents($dummyFile, str_repeat("\0", 1024));
+    }
 });
 
 it('creates the requested number of directories', function () {

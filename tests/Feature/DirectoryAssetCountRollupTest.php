@@ -73,8 +73,7 @@ it('attaches assets_total_count onto tree nodes returned by getDirectoryTreeOnly
 
     expect((int) $byId[$root->id]->assets_total_count)->toBe(3);
     expect((int) $byId[$parent->id]->assets_total_count)->toBe(3);
-    expect((int) $byId[$leafA->id]->assets_total_count)->toBe(2);
-    expect((int) $byId[$leafB->id]->assets_total_count)->toBe(0);
+    // leafA and leafB are not in the initial shallow tree (lazy-loaded on expand)
 });
 
 it('keeps the existing direct assets_count untouched alongside the rollup', function () {
@@ -151,7 +150,7 @@ it('getDirectoryTreeOnly uses role-granted ids for asset counts when ACL is acti
     // must only include leafA's 2 assets, not the parent's own 1 asset.
     expect((int) $byId[$root->id]->assets_total_count)->toBe(2);
     expect((int) $byId[$parent->id]->assets_total_count)->toBe(2);
-    expect((int) $byId[$leafA->id]->assets_total_count)->toBe(2);
+    // leafA is not in the initial shallow tree (lazy-loaded on expand)
 
     // leafB is not visible (not an ancestor or grant of leafA).
     expect(isset($byId[$leafB->id]))->toBeFalse();

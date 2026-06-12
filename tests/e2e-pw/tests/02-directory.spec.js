@@ -17,6 +17,14 @@ async function rightClickDirectory(page, dirName) {
     : wrapper.locator('> .flex.cursor-pointer').first();
 
   await row.scrollIntoViewIfNeeded();
+
+  await page.waitForFunction(
+    () => {
+      const el = document.querySelector('.tree-container > div.flex');
+      return el != null && !el.classList.contains('pointer-events-none');
+    },
+    { timeout: 15000 }
+  ).catch(() => {});
   await row.click({ button: 'right', force: true });
   // Wait for the menu to actually render before the caller clicks an item.
   await page.locator('#app').getByText('Add Directory').first()

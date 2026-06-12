@@ -7,7 +7,6 @@ use Webkul\DAM\Jobs\DeleteDirectory;
 use Webkul\DAM\Jobs\MoveDirectoryStructure;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
-use Webkul\DAM\Repositories\DirectoryRepository;
 
 beforeEach(function () {
     $this->loginAsAdmin();
@@ -23,34 +22,17 @@ it('should return all directories with correct structure', function () {
 
 it('should return the children directory data when directory exists', function () {
     $parent = Directory::factory()->create();
-
-    $children = Directory::factory()->count(3)->make([
-        'parent_id' => $parent->id,
-    ]);
-
-    $parent->setRelation('children', $children);
-
-    $this->mock(DirectoryRepository::class, function ($mock) use ($parent) {
-        $mock->shouldReceive('getDirectoryTree')
-            ->with($parent->id)
-            ->andReturn(collect([$parent]));
-    });
+    $children = Directory::factory()->count(3)->create(['parent_id' => $parent->id]);
 
     $response = $this->get(route('admin.dam.directory.children', $parent->id));
 
     $response->assertOk();
-    $response->assertJsonStructure([
-        'data' => [
-            'id',
-            'name',
-            'parent_id',
-            'children',
-        ],
-    ]);
+    $response->assertJsonCount(3, 'data');
 
-    $responseData = $response->json('data');
-    expect($responseData['id'])->toBe($parent->id);
-    expect($responseData['children'])->toHaveCount(3);
+    $ids = collect($response->json('data'))->pluck('id')->all();
+    foreach ($children as $child) {
+        expect($ids)->toContain($child->id);
+    }
 });
 
 it('returns assets of the directory when directory exists (many-to-many)', function () {
@@ -151,21 +133,13 @@ it('downloads a zip archive of the directory files and folders', function () {
         'name' => 'TestDirectory',
     ]);
 
-    $this->mock(DirectoryRepository::class, function ($mock) use ($directory) {
-        $mock->shouldReceive('findOrFail')
-            ->with($directory->id)
-            ->andReturn($directory);
-    });
-
     $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
-
     $disk = Directory::getAssetDisk();
-
     Storage::fake($disk);
-
     Storage::disk($disk)->put($folderPath.'/file1.txt', 'File 1 contents');
-    Storage::disk($disk)->put($folderPath.'/subdir/file2.txt', 'File 2 contents');
-    Storage::disk($disk)->makeDirectory($folderPath.'/subdir');
+
+    $asset = Asset::factory()->create(['path' => $folderPath.'/file1.txt']);
+    $directory->assets()->attach($asset->id);
 
     $response = $this->get(route('admin.dam.directory.zip_download', ['id' => $directory->id]));
 
@@ -227,12 +201,6 @@ it('should not delete a non-deletable directory', function () {
 });
 
 it('should return 404 when directory not found for children', function () {
-    $this->mock(DirectoryRepository::class, function ($mock) {
-        $mock->shouldReceive('getDirectoryTree')
-            ->with(99999)
-            ->andReturn(collect([]));
-    });
-
     $response = $this->get(route('admin.dam.directory.children', 99999));
 
     $response->assertStatus(404)

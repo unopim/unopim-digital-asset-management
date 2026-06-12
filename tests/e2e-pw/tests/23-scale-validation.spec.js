@@ -108,7 +108,12 @@ test.describe('DAM Scale Validation (large dataset)', () => {
       .or(adminPage.locator('[class*="next-page"], [aria-label*="next" i]').first());
 
     const isVisible = await nextBtn.isVisible({ timeout: 5_000 }).catch(() => false);
-    if (isVisible) {
+    // pointer-events-none is applied when the button is in a disabled/last-page state.
+    // isVisible() returns true regardless, so we check the class explicitly.
+    const isDisabled = isVisible && await nextBtn.evaluate(
+      el => el.classList.contains('pointer-events-none') || el.hasAttribute('disabled')
+    ).catch(() => true);
+    if (isVisible && !isDisabled) {
       const start = Date.now();
       await nextBtn.click();
       await expect(adminPage.locator('h2').first()).toBeVisible({ timeout: PAGINATION_NAV_MS });
