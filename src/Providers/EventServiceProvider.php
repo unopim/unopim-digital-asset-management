@@ -105,8 +105,9 @@ class EventServiceProvider extends ServiceProvider
             $allDirectories = request()->boolean('dam_all_directories');
             $inheritChildren = request()->boolean('dam_inherit_children');
 
-            // With inherit_children, submitted directories[] includes pre-checked descendants.
-            // Strip expanded-only entries; keep existing DB grants and new explicit selections.
+            // With inherit_children, the runtime service expands grants dynamically.
+            // Strip submitted descendants so only root selections are stored;
+            // the job will not re-expand them (inherit = expansion at query time).
             if ($inheritChildren && count($directoryIds) > 1) {
                 $existingGrants = app(DirectoryRolePermissionRepository::class)
                     ->getDirectoryIdsForRole((int) $role->id);
@@ -130,6 +131,8 @@ class EventServiceProvider extends ServiceProvider
                     ->all();
             }
 
+            // Update role settings inline so all_directories / inherit_children
+            // take effect immediately.
             DB::table('dam_role_settings')->updateOrInsert(
                 ['role_id' => (int) $role->id],
                 [

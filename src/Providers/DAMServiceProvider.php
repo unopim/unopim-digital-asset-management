@@ -17,7 +17,6 @@ use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
-use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
@@ -97,33 +96,22 @@ class DAMServiceProvider extends ServiceProvider
                 : null;
 
             $grantedIds = $role
-                ? app(DirectoryRolePermissionRepository::class)->getDirectoryIdsForRole($role->id)
+                ? app(DirectoryRolePermissionRepository::class)->getAllGrantedIds($role->id)
                 : [];
             $inheritChildren = (bool) ($settings?->inherit_children ?? false);
 
-            if ($inheritChildren && ! empty($grantedIds)) {
-                $descendants = DB::table('dam_directories as ancestor')
-                    ->join('dam_directories as descendant', function ($join) {
-                        $join->whereColumn('descendant._lft', '>=', 'ancestor._lft')
-                            ->whereColumn('descendant._rgt', '<=', 'ancestor._rgt');
-                    })
-                    ->whereIn('ancestor.id', $grantedIds)
-                    ->distinct()
-                    ->pluck('descendant.id')
-                    ->map(fn ($id) => (int) $id)
-                    ->all();
-                $expandedGrantedIds = array_values(array_unique(array_merge($grantedIds, $descendants)));
-            } else {
-                $expandedGrantedIds = $grantedIds;
-            }
+            $damEnabled = true;
 
             $view->with([
-                'role'               => $role,
-                'directoryTree'      => app(DirectoryRepository::class)->getFullDirectoryTreeOnly(),
-                'grantedIds'         => $grantedIds,
-                'expandedGrantedIds' => $expandedGrantedIds,
-                'allDirectories'     => (bool) ($settings?->all_directories ?? false),
-                'inheritChildren'    => $inheritChildren,
+                'role'                       => $role,
+                'grantedIds'                 => $grantedIds,
+                'allDirectories'             => (bool) ($settings?->all_directories ?? false),
+                'inheritChildren'            => $inheritChildren,
+                'damEnabled'                 => $damEnabled,
+                'routeDirectory'             => route('admin.dam.directory.index'),
+                'routeDirectoryPaths'        => route('admin.dam.directory.paths'),
+                'routeDirectoryChildren'     => route('admin.dam.directory.children', ['id' => '__ID__']),
+                'routeDirectoryDescendants'  => route('admin.dam.directory.descendants', ['id' => '__ID__']),
             ]);
         });
 

@@ -348,6 +348,15 @@
                 this.childrenLoading = false;
                 this.localAssets.splice(0, this.localAssets.length);
             },
+            // When the tree reloads (same id, new prop object), the fresh item
+            // has children = [] so lazy-loaded grandchildren are discarded.
+            // Reset childrenLoaded so the next expand re-fetches them instead
+            // of rendering an empty list.
+            'item.children'(newChildren) {
+                if (Array.isArray(newChildren) && newChildren.length === 0 && this.childrenLoaded) {
+                    this.childrenLoaded = false;
+                }
+            },
         },
         computed: {
             isDirectory: function() {
