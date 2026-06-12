@@ -243,6 +243,7 @@ class DirectoryRepository extends Repository
     public function getDirectoryTreeOnly()
     {
         $service = app(DirectoryPermissionService::class);
+        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
 
         $rootQuery = $this->model->withCount('children')->whereNull('parent_id');
 
@@ -252,7 +253,7 @@ class DirectoryRepository extends Repository
 
         $roots = $rootQuery->get();
 
-        $rootCounts = $this->getSubtreeAssetCounts($roots->pluck('id')->all());
+        $rootCounts = $this->getSubtreeAssetCounts($roots->pluck('id')->all(), $allowedDescendantIds);
 
         foreach ($roots as $root) {
             $root->assets_total_count = $rootCounts[$root->id] ?? 0;
@@ -272,6 +273,7 @@ class DirectoryRepository extends Repository
     public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null): Collection
     {
         $service ??= app(DirectoryPermissionService::class);
+        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
 
         $query = $this->model
             ->withCount('children')
@@ -289,7 +291,7 @@ class DirectoryRepository extends Repository
             return $dir;
         });
 
-        $counts = $this->getSubtreeAssetCounts($children->pluck('id')->all());
+        $counts = $this->getSubtreeAssetCounts($children->pluck('id')->all(), $allowedDescendantIds);
 
         $children->each(function ($dir) use ($counts) {
             $dir->assets_total_count = $counts[$dir->id] ?? 0;
@@ -342,10 +344,14 @@ class DirectoryRepository extends Repository
      * Counts assets in the directory itself plus all descendants via nested-set range.
      * Returns [id => count]. IDs absent from the result had zero assets.
      *
+     * When `$allowedDescendantIds` is provided, only descendants whose id is in
+     * that list contribute to the count (ACL-filtered rollup for the lazy tree).
+     *
      * @param  array<int>  $ids
+     * @param  array<int>|null  $allowedDescendantIds  null = count all descendants
      * @return array<int, int>
      */
-    public function getSubtreeAssetCounts(array $ids): array
+    public function getSubtreeAssetCounts(array $ids, ?array $allowedDescendantIds = null): array
     {
         $ids = array_values(array_unique(array_filter($ids, fn ($id) => $id > 0)));
 
@@ -353,19 +359,34 @@ class DirectoryRepository extends Repository
             return [];
         }
 
+        if ($allowedDescendantIds !== null && empty($allowedDescendantIds)) {
+            return array_fill_keys($ids, 0);
+        }
+
         $prefix = DB::getTablePrefix();
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $descendantFilter = '';
+        $bindings = $ids;
+
+        if ($allowedDescendantIds !== null) {
+            $dPlaceholders = implode(',', array_fill(0, count($allowedDescendantIds), '?'));
+            $descendantFilter = "AND descendant.id IN ({$dPlaceholders})";
+            // ON-clause bindings come before WHERE-clause bindings
+            $bindings = array_merge($allowedDescendantIds, $ids);
+        }
 
         $rows = DB::select("
             SELECT ancestor.id AS id, COUNT(DISTINCT ad.asset_id) AS total
             FROM {$prefix}dam_directories AS ancestor
             LEFT JOIN {$prefix}dam_directories AS descendant
                 ON descendant._lft >= ancestor._lft AND descendant._rgt <= ancestor._rgt
+                {$descendantFilter}
             LEFT JOIN {$prefix}dam_asset_directory AS ad
                 ON ad.directory_id = descendant.id
             WHERE ancestor.id IN ({$placeholders})
             GROUP BY ancestor.id
-        ", $ids);
+        ", $bindings);
 
         return collect($rows)
             ->mapWithKeys(fn ($row) => [(int) $row->id => (int) $row->total])
