@@ -614,6 +614,7 @@ return [
         'explorer' => [
             'not-found'     => 'Directory not found.',
             'access-denied' => 'You do not have access to this directory.',
+            'empty'         => 'No directories found.',
             'bookmarks'     => [
                 'title'     => 'Bookmarks',
                 'drag-hint' => 'Drag a folder here to bookmark it',
@@ -677,6 +678,27 @@ return [
             'view' => [
                 'grid' => 'Grid View',
                 'list' => 'List View',
+            ],
+            'mass-actions' => [
+                'select-count'   => ':count selected',
+                'select-action'  => 'Select Action',
+                'delete'         => 'Delete',
+                'confirm'        => 'Delete :count item(s)? Folders will be deleted recursively and cannot be undone.',
+                'deleting'       => 'Deleting :count item(s)...',
+                'deleted-assets' => ':count asset(s) deleted.',
+                'deleted-dirs'   => ':count folder(s) deleted.',
+                'move-to'        => 'Move to…',
+                'copy-to'        => 'Copy to…',
+                'moving'         => 'Moving :count item(s)…',
+                'copying'        => 'Copying :count item(s)…',
+                'moved-assets'   => ':count asset(s) moved.',
+                'copied-assets'  => ':count asset(s) copied.',
+                'moved-dirs'     => ':count folder(s) moved.',
+                'copied-dirs'    => ':count folder(s) copied.',
+                'pick-dest'      => 'Select Destination',
+                'select-here'    => 'Select Here',
+                'move-done'      => 'Items moved.',
+                'copy-done'      => 'Items copied.',
             ],
             'toolbar' => [
                 'toggle-tree'    => 'Toggle directory tree',
