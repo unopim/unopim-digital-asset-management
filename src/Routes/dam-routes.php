@@ -126,6 +126,7 @@ Route::group([
         Route::post('/create-structure', 'createStructure')->name('admin.dam.directory.create_structure');
         Route::post('/paths', 'ancestorPaths')->name('admin.dam.directory.paths');
         Route::get('/{id}/descendants', 'descendants')->name('admin.dam.directory.descendants');
+        Route::post('/mass-delete', 'massDestroy')->name('admin.dam.directory.mass_destroy');
     });
 
     Route::controller(ActionRequestController::class)->prefix('action-request')->group(function () {

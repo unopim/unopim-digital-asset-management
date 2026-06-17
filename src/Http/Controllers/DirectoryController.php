@@ -5,6 +5,7 @@ namespace Webkul\DAM\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -301,6 +302,34 @@ class DirectoryController
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Mass delete multiple directories.
+     */
+    public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
+    {
+        $ids = $massDestroyRequest->input('indices');
+
+        $requestAction = $this->start(EventType::DELETE_DIRECTORY->value);
+
+        foreach ($ids as $id) {
+            if (! $this->permissionService->canAccess($id)) {
+                continue;
+            }
+
+            $directory = $this->directoryRepository->find($id);
+
+            if (! $directory || ! $directory->isDeletable()) {
+                continue;
+            }
+
+            DeleteDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+        }
+
+        return new JsonResponse([
+            'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
+        ]);
     }
 
     /**

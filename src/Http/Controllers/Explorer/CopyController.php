@@ -10,14 +10,16 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Jobs\CopyDirectory as CopyDirectoryJob;
+use Webkul\DAM\Jobs\MassCopy as MassCopyJob;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
+use Webkul\DAM\Traits\AssetAccessControl;
 
 class CopyController extends Controller
 {
-    use ActionRequestTrait;
+    use ActionRequestTrait, AssetAccessControl;
 
     public function __construct(
         protected DirectoryPermissionService $permissionService
@@ -126,6 +128,72 @@ class CopyController extends Controller
         return response()->json([
             'message' => trans('dam::app.admin.explorer.context.copy-done'),
         ], 202);
+    }
+
+    public function massCopy(Request $request): JsonResponse
+    {
+        $request->validate([
+            'asset_ids'           => 'nullable|array',
+            'asset_ids.*'         => 'integer',
+            'directory_ids'       => 'nullable|array',
+            'directory_ids.*'     => 'integer',
+            'target_directory_id' => 'required|integer|exists:dam_directories,id',
+        ]);
+
+        $targetId = $request->integer('target_directory_id');
+
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($targetId)) {
+            return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
+        }
+
+        $disk = Directory::getAssetDisk();
+
+        $assetIds = array_filter(
+            array_map('intval', $request->input('asset_ids', [])),
+            function (int $id) use ($disk) {
+                if (! $this->damCanAccessAsset($id)) {
+                    return false;
+                }
+
+                $asset = Asset::find($id);
+
+                if (! $asset || ! $asset->path || ! Storage::disk($disk)->exists($asset->path)) {
+                    return false;
+                }
+
+                $sourceDir = $asset->directories()->first();
+
+                if ($sourceDir && ! $this->permissionService->bypass() && ! $this->permissionService->canView($sourceDir->id)) {
+                    return false;
+                }
+
+                return true;
+            }
+        );
+
+        $dirIds = array_filter(
+            array_map('intval', $request->input('directory_ids', [])),
+            function (int $id) {
+                if (! $this->permissionService->bypass() && ! $this->permissionService->canView($id)) {
+                    return false;
+                }
+
+                $dir = Directory::find($id);
+
+                return $dir && $dir->isCopyable();
+            }
+        );
+
+        $requestAction = $this->start(EventType::MASS_COPY->value);
+
+        MassCopyJob::dispatch(
+            array_values($assetIds),
+            array_values($dirIds),
+            $targetId,
+            $requestAction->getUser()->id
+        );
+
+        return response()->json(['queued' => true]);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
