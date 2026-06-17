@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -14,9 +15,11 @@ use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 
-class MoveDirectoryStructure
+class MoveDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $timeout = 3600;
 
     public function __construct(protected int $directoryId, protected int $newParentId, protected int $userId) {}
 
