@@ -2,11 +2,13 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-folder-card-template">
     <div
-        class="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center cursor-pointer transition-colors select-none min-w-0"
+        class="relative flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center cursor-pointer transition-colors select-none min-w-0"
         :class="isDropTarget
             ? 'bg-violet-200 dark:bg-violet-900/60 ring-2 ring-violet-400'
             : 'hover:bg-violet-100 dark:hover:bg-violet-800/50'"
         draggable="true"
+        @mouseenter="hovered = true"
+        @mouseleave="hovered = false"
         @dragstart="onDragStart"
         @dragend="onDragEnd"
         @dragover.prevent="$emit('drag-over', $event)"
@@ -15,6 +17,23 @@
         @click="$emit('navigate', dir)"
         @contextmenu.prevent.stop="$emit('ctx', { event: $event, dir })"
     >
+        {{-- Checkbox overlay for mass selection --}}
+        <div
+            v-show="anySelected || hovered"
+            class="absolute top-1 left-1"
+            @click.stop
+        >
+            <label :for="`sel-card-dir-${dir.id}`" class="flex items-center cursor-pointer">
+                <input
+                    type="checkbox"
+                    class="peer hidden"
+                    :id="`sel-card-dir-${dir.id}`"
+                    :checked="isSelected"
+                    @change="$emit('toggle-select')"
+                >
+                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl bg-white/80 dark:bg-cherry-900/80"></span>
+            </label>
+        </div>
         <i class="icon-dam-folder text-6xl text-violet-400 dark:text-violet-500 shrink-0 leading-none"></i>
         <div class="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 break-all w-full leading-tight" :title="dir.name">@{{ dir.name }}</div>
     </div>
@@ -23,11 +42,19 @@
 <script type="module">
 app.component('v-dam-explorer-folder-card', {
     template: '#v-dam-explorer-folder-card-template',
-    emits: ['navigate', 'ctx', 'drag-start', 'drag-end', 'drag-over', 'drag-leave', 'drop'],
+    emits: ['navigate', 'ctx', 'drag-start', 'drag-end', 'drag-over', 'drag-leave', 'drop', 'toggle-select'],
 
     props: {
         dir:          { type: Object, required: true },
         isDropTarget: { type: Boolean, default: false },
+        isSelected:   { type: Boolean, default: false },
+        anySelected:  { type: Boolean, default: false },
+    },
+
+    data() {
+        return {
+            hovered: false,
+        };
     },
 
     methods: {

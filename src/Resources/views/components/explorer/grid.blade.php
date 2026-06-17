@@ -21,6 +21,9 @@
                         :dir="dir"
                         :is-drop-target="dropTargetId === dir.id"
                         :data-dir-id="dir.id"
+                        :is-selected="isSelectedById(dir.id, 'directory')"
+                        :any-selected="selection.ids.length > 0"
+                        @toggle-select="$emit('toggle-select', dir.id, 'directory')"
                         @navigate="$emit('navigate', $event)"
                         @ctx="showCtx($event.event, $event.dir, 'directory')"
                         @drag-start="onDragStart($event, dir)"
@@ -43,6 +46,9 @@
                         :key="asset.id"
                         :asset="asset"
                         :tab-id="tabId"
+                        :is-selected="isSelectedById(asset.id, 'asset')"
+                        :any-selected="selection.ids.length > 0"
+                        @toggle-select="$emit('toggle-select', asset.id, 'asset')"
                         @preview="preview"
                         @edit="edit"
                         @delete="del"
@@ -80,7 +86,7 @@
 <script type="module">
 app.component('v-dam-explorer-grid', {
     template: '#v-dam-explorer-grid-template',
-    emits: ['navigate', 'open-new-tab', 'bookmark', 'refresh', 'internal-drop'],
+    emits: ['navigate', 'open-new-tab', 'bookmark', 'refresh', 'internal-drop', 'toggle-select'],
 
     props: {
         directories:          { type: Array, default: () => [] },
@@ -90,6 +96,7 @@ app.component('v-dam-explorer-grid', {
         currentDirId:         { type: Number, default: null },
         clipboard:            { type: Object, default: null },
         canAccessCurrentDir:  { type: Boolean, default: true },
+        selection:            { type: Object, default: () => ({ ids: [], mode: 'none' }) },
     },
 
     data() {
@@ -104,6 +111,9 @@ app.component('v-dam-explorer-grid', {
     },
 
     methods: {
+        isSelectedById(id, type) {
+            return this.selection.ids.some(i => i.id === id && i.type === type);
+        },
         onDragStart(e, d) {
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'dam-folder',

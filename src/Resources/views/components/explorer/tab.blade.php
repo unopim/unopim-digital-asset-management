@@ -1,4 +1,5 @@
 @once('v-dam-tab')
+@include('dam::components.explorer.folder-picker')
 @push('scripts')
 <script type="text/x-template" id="v-dam-tab-template">
     <div class="flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
@@ -187,6 +188,8 @@
                 :current-dir-id="currentDirId"
                 :clipboard="clipboard"
                 :can-access-current-dir="canAccessCurrentDir"
+                :selection="selection"
+                @toggle-select="toggleSelect"
                 @navigate="goTo"
                 @open-new-tab="openNewTab"
                 @bookmark="bookmark"
@@ -204,6 +207,8 @@
                 :current-dir-id="currentDirId"
                 :clipboard="clipboard"
                 :can-access-current-dir="canAccessCurrentDir"
+                :selection="selection"
+                @toggle-select="toggleSelect"
                 @navigate="goTo"
                 @open-new-tab="openNewTab"
                 @bookmark="bookmark"
@@ -212,6 +217,14 @@
                 @internal-drop="onInternalDrop"
             ></v-dam-explorer-list>
         </v-dam-drop-upload>
+
+        <v-dam-folder-picker
+            :open="folderPicker.open"
+            :tab-id="tabId"
+            :excluded-dir-ids="selection.ids.filter(i => i.type === 'directory').map(i => i.id)"
+            @picked="onFolderPickerPicked"
+            @close="closeFolderPicker"
+        ></v-dam-folder-picker>
     </div>
 </script>
 
@@ -263,6 +276,8 @@ app.component('v-dam-tab', {
             clipboard:          null,
             pasting:            false,
             operationOverlay:   { show: false, label: '' },
+            selection:          { ids: [], mode: 'none' },
+            folderPicker:       { open: false, mode: null },
             ctxTarget:          null,
             sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
             available: {
@@ -437,6 +452,225 @@ app.component('v-dam-tab', {
     },
 
     methods: {
+        toggleSelect(id, type) {
+            const idx = this.selection.ids.findIndex(i => i.id === id && i.type === type);
+            if (idx === -1) {
+                this.selection.ids.push({ id, type });
+            } else {
+                this.selection.ids.splice(idx, 1);
+            }
+            this.computeSelectionMode();
+        },
+
+        toggleSelectAll() {
+            if (this.selection.mode === 'all' || this.selection.mode === 'partial') {
+                this.clearSelection();
+            } else {
+                this.selection.ids = [
+                    ...this.dirs.map(d => ({ id: d.id, type: 'directory' })),
+                    ...this.assets.map(a => ({ id: a.id, type: 'asset' })),
+                ];
+                this.computeSelectionMode();
+            }
+        },
+
+        clearSelection() {
+            this.selection.ids  = [];
+            this.selection.mode = 'none';
+        },
+
+        performMassDelete() {
+            const count = this.selection.ids.length;
+
+            this.$emitter.emit('open-delete-modal', {
+                message: "@lang('dam::app.admin.explorer.mass-actions.confirm')".replace(':count', count),
+                agree: async () => {
+                    const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+                    const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+
+                    this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
+                        label: "@lang('dam::app.admin.explorer.mass-actions.deleting')".replace(':count', count),
+                    });
+
+                    if (assetIds.length) {
+                        try {
+                            await this.$axios.post('{{ route("admin.dam.assets.mass_delete") }}', { indices: assetIds });
+                            this.$emitter.emit('add-flash', {
+                                type: 'success',
+                                message: "@lang('dam::app.admin.explorer.mass-actions.deleted-assets')".replace(':count', assetIds.length),
+                            });
+                        } catch (e) {
+                            this.$emitter.emit('add-flash', {
+                                type: 'warning',
+                                message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                            });
+                        }
+                    }
+
+                    if (dirIds.length) {
+                        try {
+                            await this.$axios.post('{{ route("admin.dam.directory.mass_destroy") }}', { indices: dirIds });
+                            await new Promise((resolve) => {
+                                let attempts = 0;
+                                const poll = () => {
+                                    if (++attempts > 30) { resolve(); return; }
+                                    this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'delete_directory'))
+                                        .then(({ data: d }) => {
+                                            if (d.status === 'completed') {
+                                                dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
+                                                this.$emitter.emit('dam:tree-reload');
+                                                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.mass-actions.deleted-dirs')".replace(':count', dirIds.length) });
+                                                resolve();
+                                            } else if (d.status === 'failed') {
+                                                this.$emitter.emit('add-flash', { type: 'error', message: d.message });
+                                                resolve();
+                                            } else { setTimeout(poll, 2000); }
+                                        }).catch(() => { setTimeout(poll, 2000); });
+                                };
+                                setTimeout(poll, 1000);
+                            });
+                        } catch (e) {
+                            this.$emitter.emit('add-flash', {
+                                type: 'error',
+                                message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                            });
+                        }
+                    }
+
+                    this.$emitter.emit(`dam:operation-overlay:hide:${this.tabId}`);
+                    this.clearSelection();
+                    this.$emitter.emit(`dam:explorer-ctx-refresh:${this.tabId}`);
+                },
+            });
+        },
+
+        openFolderPicker(mode) {
+            this.folderPicker = { open: true, mode };
+        },
+
+        closeFolderPicker() {
+            this.folderPicker = { open: false, mode: null };
+        },
+
+        onFolderPickerPicked(targetDirId) {
+            const mode = this.folderPicker.mode;
+            this.folderPicker = { open: false, mode: null };
+            if (mode === 'move') {
+                this.performMassMove(targetDirId);
+            } else {
+                this.performMassCopy(targetDirId);
+            }
+        },
+
+        performMassMove(targetDirId) {
+            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+            const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const count    = this.selection.ids.length;
+
+            this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
+                label: "@lang('dam::app.admin.explorer.mass-actions.moving')".replace(':count', count),
+            });
+
+            (async () => {
+                try {
+                    await this.$axios.post('{{ route("admin.dam.explorer.mass_move") }}', {
+                        asset_ids:           assetIds,
+                        directory_ids:       dirIds,
+                        target_directory_id: targetDirId,
+                    });
+
+                    await new Promise((resolve) => {
+                        let attempts = 0;
+                        const poll = () => {
+                            if (++attempts > 150) { resolve(); return; }
+                            this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'mass_move'))
+                                .then(({ data: d }) => {
+                                    if (d.status === 'completed') {
+                                        this.$emitter.emit('add-flash', {
+                                            type: 'success',
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')",
+                                        });
+                                        dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
+                                        this.$emitter.emit('dam:tree-reload');
+                                        resolve();
+                                    } else if (d.status === 'failed') {
+                                        this.$emitter.emit('add-flash', { type: 'error', message: d.message || "@lang('dam::app.admin.dam.index.directory.error-operation')" });
+                                        resolve();
+                                    } else { setTimeout(poll, 2000); }
+                                }).catch(() => { setTimeout(poll, 2000); });
+                        };
+                        setTimeout(poll, 1000);
+                    });
+                } catch (e) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                    });
+                }
+
+                this.$emitter.emit(`dam:operation-overlay:hide:${this.tabId}`);
+                this.clearSelection();
+                this.$emitter.emit(`dam:explorer-ctx-refresh:${this.tabId}`);
+            })();
+        },
+
+        performMassCopy(targetDirId) {
+            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+            const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const count    = this.selection.ids.length;
+
+            this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
+                label: "@lang('dam::app.admin.explorer.mass-actions.copying')".replace(':count', count),
+            });
+
+            (async () => {
+                try {
+                    await this.$axios.post('{{ route("admin.dam.explorer.mass_copy") }}', {
+                        asset_ids:           assetIds,
+                        directory_ids:       dirIds,
+                        target_directory_id: targetDirId,
+                    });
+
+                    await new Promise((resolve) => {
+                        let attempts = 0;
+                        const poll = () => {
+                            if (++attempts > 150) { resolve(); return; }
+                            this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'mass_copy'))
+                                .then(({ data: d }) => {
+                                    if (d.status === 'completed') {
+                                        this.$emitter.emit('add-flash', {
+                                            type: 'success',
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')",
+                                        });
+                                        this.$emitter.emit('dam:tree-reload');
+                                        resolve();
+                                    } else if (d.status === 'failed') {
+                                        this.$emitter.emit('add-flash', { type: 'error', message: d.message || "@lang('dam::app.admin.dam.index.directory.error-operation')" });
+                                        resolve();
+                                    } else { setTimeout(poll, 2000); }
+                                }).catch(() => { setTimeout(poll, 2000); });
+                        };
+                        setTimeout(poll, 1000);
+                    });
+                } catch (e) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                    });
+                }
+
+                this.$emitter.emit(`dam:operation-overlay:hide:${this.tabId}`);
+                this.clearSelection();
+                this.$emitter.emit(`dam:explorer-ctx-refresh:${this.tabId}`);
+            })();
+        },
+
+        computeSelectionMode() {
+            const total = this.dirs.length + this.assets.length;
+            const count = this.selection.ids.length;
+            this.selection.mode = count === 0 ? 'none' : count === total ? 'all' : 'partial';
+        },
+
         toggleSidebar() {
             this.$emitter.emit('dam:toggle-sidebar');
         },
@@ -519,6 +753,7 @@ app.component('v-dam-tab', {
 
         goTo(dir, isRoot = false, skipHistory = false, fromTree = false) {
             if (! dir?.id) return;
+            this.clearSelection();
             this.currentDirId = dir.id;
             try { localStorage.setItem('dam_explorer_active_dir', dir.id); } catch {}
             this.search       = '';

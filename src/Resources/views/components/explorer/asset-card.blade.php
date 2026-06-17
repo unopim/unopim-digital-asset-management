@@ -3,6 +3,7 @@
 <script type="text/x-template" id="v-dam-asset-card-template">
     <div
         class="group rounded-lg border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
+        :class="{ 'ring-2 ring-violet-500': isSelected }"
         style="box-shadow:0 1px 3px rgba(0,0,0,.08);"
         draggable="true"
         @dragstart="onDragStart"
@@ -12,6 +13,24 @@
     >
         {{-- Thumbnail --}}
         <div class="image-card relative overflow-hidden">
+            {{-- Checkbox overlay for mass selection --}}
+            <div
+                class="absolute top-1.5 left-1.5 z-10 opacity-0 group-hover:!opacity-100 transition-opacity"
+                :class="{ '!opacity-100': anySelected || isSelected }"
+                @click.stop
+            >
+                <label :for="`sel-card-asset-${asset.id}`" class="flex items-center cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="peer hidden"
+                        :id="`sel-card-asset-${asset.id}`"
+                        :checked="isSelected"
+                        @change="$emit('toggle-select')"
+                    >
+                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl bg-white/80 dark:bg-cherry-900/80"></span>
+                </label>
+            </div>
+
             <img
                 :src="asset.path"
                 :alt="asset.file_name"
@@ -69,11 +88,13 @@
 <script type="module">
 app.component('v-dam-asset-card', {
     template: '#v-dam-asset-card-template',
-    emits: ['preview', 'edit', 'delete', 'ctx'],
+    emits: ['preview', 'edit', 'delete', 'ctx', 'toggle-select'],
 
     props: {
         asset: { type: Object, required: true },
         tabId: { type: String, required: true },
+        isSelected: { type: Boolean, default: false },
+        anySelected: { type: Boolean, default: false },
     },
 
     data() {

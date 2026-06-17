@@ -14,31 +14,95 @@
 
             {{-- Left: search + results count --}}
             <div class="flex flex-1 min-w-[120px] items-center gap-x-1">
-                <div class="flex w-full max-w-[445px] min-w-0 items-center max-sm:max-w-full">
-                    <div class="relative w-full min-w-0">
-                        <input
-                            type="text"
-                            class="block w-full rounded-lg border dark:border-cherry-800 bg-white dark:bg-cherry-900 py-1.5 ltr:pl-3 rtl:pr-3 ltr:pr-10 rtl:pl-10 leading-6 text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
-                            :placeholder="'@lang('dam::app.admin.explorer.search.placeholder')'"
-                            v-model="searchInput"
-                            @input="onSearch"
-                            autocomplete="off"
-                        />
-                        <button
-                            v-if="searchInput"
-                            @click="clearSearch"
-                            class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 text-base leading-none"
-                        >×</button>
-                        <div v-else class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl"></div>
-                    </div>
-                </div>
+                {{-- Select-all checkbox (always visible) --}}
+                <label class="flex items-center cursor-pointer shrink-0 mr-2">
+                    <input
+                        type="checkbox"
+                        class="peer hidden"
+                        :checked="['all', 'partial'].includes(selection.mode)"
+                        @change="toggleSelectAll"
+                    >
+                    <span
+                        class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
+                        :class="{
+                            'peer-checked:icon-checkbox-check peer-checked:text-violet-700': selection.mode === 'all',
+                            'peer-checked:icon-checkbox-partial peer-checked:text-violet-700': selection.mode === 'partial',
+                        }"
+                    ></span>
+                </label>
 
-                {{-- Asset count --}}
-                <div class="ltr:pl-2.5 rtl:pr-2.5" v-if="meta">
-                    <p class="text-sm font-light text-gray-800 dark:text-white">
-                        @{{ "@lang('admin::app.components.datagrid.toolbar.results')".replace(':total', meta.total_assets) }}
-                    </p>
-                </div>
+                {{-- Action bar (selection mode) --}}
+                <template v-if="selection.ids.length > 0">
+                    @if (bouncer()->hasPermission('dam.asset.mass_delete'))
+                    <x-admin::dropdown>
+                        <x-slot:toggle>
+                            <button
+                                type="button"
+                                class="flex items-center gap-x-1.5 rounded-md border border-violet-300 bg-violet-50 dark:bg-violet-900/30 dark:border-violet-700 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition"
+                            >
+                                @lang('dam::app.admin.explorer.mass-actions.select-action')
+                                <span class="icon-chevron-down text-2xl"></span>
+                            </button>
+                        </x-slot:toggle>
+
+                        <x-slot:menu class="shadow-md !p-0 z-10">
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="openFolderPicker('move')"
+                            >
+                                @lang('dam::app.admin.explorer.mass-actions.move-to')
+                            </li>
+
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="openFolderPicker('copy')"
+                            >
+                                @lang('dam::app.admin.explorer.mass-actions.copy-to')
+                            </li>
+
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="performMassDelete"
+                            >
+                                @lang('dam::app.admin.explorer.mass-actions.delete')
+                            </li>
+                        </x-slot:menu>
+                    </x-admin::dropdown>
+                    @endif
+
+                    <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                        @{{ "@lang('dam::app.admin.explorer.mass-actions.select-count')".replace(':count', selection.ids.length) }}
+                    </span>
+                </template>
+
+                {{-- Search bar (idle mode) --}}
+                <template v-else>
+                    <div class="flex w-full max-w-[445px] min-w-0 items-center max-sm:max-w-full">
+                        <div class="relative w-full min-w-0">
+                            <input
+                                type="text"
+                                class="block w-full rounded-lg border dark:border-cherry-800 bg-white dark:bg-cherry-900 py-1.5 ltr:pl-3 rtl:pr-3 ltr:pr-10 rtl:pl-10 leading-6 text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
+                                :placeholder="'@lang('dam::app.admin.explorer.search.placeholder')'"
+                                v-model="searchInput"
+                                @input="onSearch"
+                                autocomplete="off"
+                            />
+                            <button
+                                v-if="searchInput"
+                                @click="clearSearch"
+                                class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 text-base leading-none"
+                            >×</button>
+                            <div v-else class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl"></div>
+                        </div>
+                    </div>
+
+                    {{-- Asset count --}}
+                    <div class="ltr:pl-2.5 rtl:pr-2.5" v-if="meta">
+                        <p class="text-sm font-light text-gray-800 dark:text-white">
+                            @{{ "@lang('admin::app.components.datagrid.toolbar.results')".replace(':total', meta.total_assets) }}
+                        </p>
+                    </div>
+                </template>
             </div>
 
             {{-- Right: filter drawer + pagination --}}

@@ -18,16 +18,17 @@
 
         <template v-else>
             {{-- Header --}}
-            <div class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2 bg-gray-50 dark:bg-cherry-950 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 <span></span>
-                <span class="cursor-pointer hover:text-gray-600" @click="sort('name')">
+                <span></span>
+                <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('name')">
                     @lang('dam::app.admin.explorer.list.header.name') <span v-if="sortBy==='name'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
                 <span>@lang('dam::app.admin.explorer.list.header.type')</span>
-                <span class="cursor-pointer hover:text-gray-600" @click="sort('size')">
+                <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('size')">
                     @lang('dam::app.admin.explorer.list.header.size') <span v-if="sortBy==='size'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span class="cursor-pointer hover:text-gray-600" @click="sort('updated_at')">
+                <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('updated_at')">
                     @lang('dam::app.admin.explorer.list.header.modified') <span v-if="sortBy==='updated_at'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
                 <span>@lang('dam::app.admin.explorer.list.header.actions')</span>
@@ -36,7 +37,7 @@
             {{-- Folder rows --}}
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
-                class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 transition-colors"
+                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 :class="{ 'ring-2 ring-inset ring-violet-400': dropTargetId === dir.id }"
                 :data-dir-id="dir.id"
                 draggable="true"
@@ -48,6 +49,18 @@
                 @dragleave="onDirDragLeave($event, dir)"
                 @drop.prevent.stop="onDirDrop($event, dir)"
             >
+                <div class="flex items-center justify-center" @click.stop>
+                    <label :for="`sel-dir-${dir.id}`" class="flex items-center justify-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            class="peer hidden"
+                            :id="`sel-dir-${dir.id}`"
+                            :checked="isSelectedById(dir.id, 'directory')"
+                            @change="$emit('toggle-select', dir.id, 'directory')"
+                        >
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl cursor-pointer"></span>
+                    </label>
+                </div>
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
                 <span class="text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
@@ -80,12 +93,24 @@
             {{-- Asset rows --}}
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
-                class="grid-cols-[28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-gray-50 dark:hover:bg-cherry-800 transition-colors"
+                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 draggable="true"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                 @dragstart="onAssetDragStart($event, asset)"
                 @dragend="onDragEnd"
             >
+                <div class="flex items-center justify-center" @click.stop>
+                    <label :for="`sel-asset-${asset.id}`" class="flex items-center justify-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            class="peer hidden"
+                            :id="`sel-asset-${asset.id}`"
+                            :checked="isSelectedById(asset.id, 'asset')"
+                            @change="$emit('toggle-select', asset.id, 'asset')"
+                        >
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl cursor-pointer"></span>
+                    </label>
+                </div>
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
                 <span class="text-gray-700 dark:text-gray-200 truncate">@{{ asset.file_name }}</span>
                 <div class="flex items-center overflow-hidden"><span class="text-xs font-bold rounded px-1 py-px uppercase whitespace-nowrap overflow-hidden" style="max-width:100%;text-overflow:ellipsis;" :class="badge(asset.file_type, asset.extension)">@{{ asset.file_type }}</span></div>
@@ -133,7 +158,7 @@
 <script type="module">
 app.component('v-dam-explorer-list', {
     template: '#v-dam-explorer-list-template',
-    emits: ['navigate','open-new-tab','bookmark','sort-change','refresh','internal-drop'],
+    emits: ['navigate','open-new-tab','bookmark','sort-change','refresh','internal-drop','toggle-select'],
 
     props: {
         directories:          { type: Array, default: () => [] },
@@ -145,11 +170,15 @@ app.component('v-dam-explorer-list', {
         currentDirId:         { type: Number, default: null },
         clipboard:            { type: Object, default: null },
         canAccessCurrentDir:  { type: Boolean, default: true },
+        selection:            { type: Object, default: () => ({ ids: [], mode: 'none' }) },
     },
 
     data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null, dropTargetId: null }; },
 
     methods: {
+        isSelectedById(id, type) {
+            return this.selection.ids.some(i => i.id === id && i.type === type);
+        },
         sort(col) {
             const ord = this.sortBy === col && this.sortOrder === 'asc' ? 'desc' : 'asc';
             this.$emit('sort-change', { sortBy: col, sortOrder: ord });
