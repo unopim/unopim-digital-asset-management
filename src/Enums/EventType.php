@@ -9,4 +9,6 @@ enum EventType: string
     case COPY_DIRECTORY = 'copy_directory';
     case COPY_DIRECTORY_STRUCTURE = 'copy_directory_structure';
     case MOVE_DIRECTORY_STRUCTURE = 'move_directory_structure';
+    case MASS_MOVE = 'mass_move';
+    case MASS_COPY = 'mass_copy';
 }

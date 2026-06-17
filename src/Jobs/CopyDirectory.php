@@ -21,6 +21,8 @@ class CopyDirectory
 
     private const MAX_DEPTH = 100;
 
+    public int $timeout = 3600;
+
     public function __construct(
         protected int $sourceId,
         protected int $targetId,
