@@ -4,6 +4,7 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Webkul\DAM\Models\ActionRequest;
 
 class ActionRequestController
@@ -20,13 +21,17 @@ class ActionRequestController
             ]);
 
             return new JsonResponse([
-                'status'  => $request?->status,
-                'message' => $request?->error_message,
+                'status'   => $request?->status,
+                'message'  => $request?->error_message,
+                'progress' => Cache::get("dam.progress.{$eventType}.".Auth::id()),
             ]);
         } catch (\Exception $e) {
-            return new JsonResponse([
-                'message' => $e->getMessage(),
-            ], 500);
+            logger()->error('DAM ActionRequest fetchStatus failed', [
+                'event_type' => $eventType,
+                'exception'  => $e->getMessage(),
+            ]);
+
+            return new JsonResponse(['message' => 'Failed to fetch status.'], 500);
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Webkul\DAM\Models\ActionRequest as ActionRequestModel;
 use Webkul\User\Models\Admin;
 
@@ -79,7 +80,7 @@ trait ActionRequest
         return $this;
     }
 
-    public function failed(string $eventType, int $userId, ?string $error = null, array $options = []): self
+    public function markFailed(string $eventType, int $userId, ?string $error = null, array $options = []): self
     {
         $whereCondition = [
             'event_type' => $eventType,
@@ -103,6 +104,18 @@ trait ActionRequest
         $this->actionRequest = $request;
 
         return $this;
+    }
+
+    public function updateProgress(string $eventType, int $userId, int $percent): void
+    {
+        $percent = max(0, min(100, $percent));
+
+        Cache::put("dam.progress.{$eventType}.{$userId}", $percent, now()->addHours(2));
+    }
+
+    public function clearProgress(string $eventType, int $userId): void
+    {
+        Cache::forget("dam.progress.{$eventType}.{$userId}");
     }
 
     public function checkedUser($userId)
