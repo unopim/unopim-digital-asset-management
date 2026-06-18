@@ -107,7 +107,7 @@ trait ActionRequest
 
     public function checkedUser($userId)
     {
-        $this->user = Admin::find($this->userId);
+        $this->user = Admin::find($userId);
 
         return $this->user;
     }
