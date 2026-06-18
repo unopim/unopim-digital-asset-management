@@ -13,24 +13,6 @@
     >
         {{-- Thumbnail --}}
         <div class="image-card relative overflow-hidden">
-            {{-- Checkbox overlay for mass selection --}}
-            <div
-                class="absolute top-1.5 left-1.5 z-10 opacity-0 group-hover:!opacity-100 transition-opacity"
-                :class="{ '!opacity-100': anySelected || isSelected }"
-                @click.stop
-            >
-                <label :for="`sel-card-asset-${asset.id}`" class="flex items-center cursor-pointer">
-                    <input
-                        type="checkbox"
-                        class="peer hidden"
-                        :id="`sel-card-asset-${asset.id}`"
-                        :checked="isSelected"
-                        @change="$emit('toggle-select')"
-                    >
-                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl bg-white/80 dark:bg-cherry-900/80"></span>
-                </label>
-            </div>
-
             <img
                 :src="asset.path"
                 :alt="asset.file_name"
@@ -79,7 +61,24 @@
             </div>
         </div>
 
-        <div class="px-2 py-1.5">
+        <div class="flex gap-1.5 items-center py-1.5 pl-1">
+            {{-- Checkbox overlay for mass selection --}}
+            <span
+                class="z-10 opacity-0 group-hover:!opacity-100 transition-opacity"
+                :class="{ '!opacity-100': anySelected || isSelected }"
+                @click.stop
+            >
+                <label :for="`sel-card-asset-${asset.id}`" class="flex items-center cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="peer hidden"
+                        :id="`sel-card-asset-${asset.id}`"
+                        :checked="isSelected"
+                        @change="$emit('toggle-select')"
+                    >
+                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl"></span>
+                </label>
+            </span>
             <p class="text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
         </div>
     </div>

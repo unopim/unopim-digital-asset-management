@@ -276,4 +276,41 @@ class ExplorerDataController extends Controller
             ],
         ]);
     }
+
+    public function countItems(Request $request): JsonResponse
+    {
+        $request->validate([
+            'asset_ids'       => 'nullable|array',
+            'asset_ids.*'     => 'integer|min:1',
+            'directory_ids'   => 'nullable|array',
+            'directory_ids.*' => 'integer|min:1',
+        ]);
+
+        $assetIds = array_unique(array_map('intval', $request->input('asset_ids', [])));
+        $dirIds = array_unique(array_map('intval', $request->input('directory_ids', [])));
+
+        $fileCount = count($assetIds);
+
+        if (! empty($dirIds)) {
+            // Load roots once, then get all subtree IDs in ONE range-union query
+            $roots = Directory::whereIn('id', $dirIds)->get(['id', '_lft', '_rgt']);
+
+            $subtreeQuery = Directory::query();
+            foreach ($roots as $i => $root) {
+                $method = $i === 0 ? 'where' : 'orWhere';
+                $subtreeQuery->{$method}(function ($q) use ($root) {
+                    $q->where('_lft', '>=', $root->_lft)
+                        ->where('_rgt', '<=', $root->_rgt);
+                });
+            }
+            $allDirIds = $subtreeQuery->pluck('id');
+
+            $fileCount += DB::table('dam_asset_directory')
+                ->whereIn('directory_id', $allDirIds)
+                ->distinct()
+                ->count('asset_id');
+        }
+
+        return response()->json(['file_count' => $fileCount]);
+    }
 }

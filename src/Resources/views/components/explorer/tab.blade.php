@@ -2,27 +2,7 @@
 @include('dam::components.explorer.folder-picker')
 @push('scripts')
 <script type="text/x-template" id="v-dam-tab-template">
-    <div class="flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
-
-        {{-- Operation overlay (directory copy / move in-flight) --}}
-        <div
-            v-if="operationOverlay.show"
-            class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
-            style="z-index: 99998;"
-            role="status"
-            aria-live="polite"
-        >
-            <div
-                class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
-                style="min-width: 360px; z-index: 99999;"
-            >
-                <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-                <span class="text-base font-semibold text-gray-900 dark:text-white text-center break-words" v-text="operationOverlay.label"></span>
-            </div>
-        </div>
+    <div class="relative flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
 
         {{-- Row 1: sidebar toggle + back/forward + breadcrumb + actions --}}
         <div class="flex items-center gap-2 flex-wrap">
@@ -225,6 +205,44 @@
             @picked="onFolderPickerPicked"
             @close="closeFolderPicker"
         ></v-dam-folder-picker>
+
+        {{-- Operation progress bar (matches drag-and-drop panel style) --}}
+        <div
+            v-if="operationOverlay.show"
+            class="fixed bottom-4 ltr:right-8 rtl:left-8 z-[10005] w-[460px] rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600"
+            role="status"
+            aria-live="polite"
+        >
+            <!-- Violet header — same as drag-drop panel -->
+            <div class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <svg class="animate-spin h-3.5 w-3.5 text-white/80 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold text-white truncate" v-text="operationOverlay.label"></span>
+                </div>
+                <span
+                    v-if="operationOverlay.fileCount != null"
+                    class="text-xs text-white/70 flex-shrink-0 ml-2"
+                    v-text="'@lang('dam::app.admin.explorer.mass-actions.total-files')'.replace(':count', operationOverlay.fileCount)"
+                ></span>
+            </div>
+
+            <!-- Progress footer — same style as drag-drop footer -->
+            <div v-if="operationOverlay.progress != null" class="px-4 py-2.5 bg-white dark:bg-cherry-800 border-t border-gray-100 dark:border-cherry-700">
+                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+                    <span>@lang('dam::app.admin.explorer.mass-actions.progress')</span>
+                    <span v-text="operationOverlay.progress + '%'"></span>
+                </div>
+                <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
+                    <div
+                        class="h-full bg-violet-600 dark:bg-violet-500 rounded-full transition-all duration-300"
+                        :style="{ width: operationOverlay.progress + '%' }"
+                    ></div>
+                </div>
+            </div>
+        </div>
     </div>
 </script>
 
@@ -275,7 +293,7 @@ app.component('v-dam-tab', {
             dialog: { on: false, type: null, value: '', loading: false, extra: null },
             clipboard:          null,
             pasting:            false,
-            operationOverlay:   { show: false, label: '' },
+            operationOverlay:   { show: false, label: '', progress: null, fileCount: null },
             selection:          { ids: [], mode: 'none' },
             folderPicker:       { open: false, mode: null },
             ctxTarget:          null,
@@ -340,11 +358,14 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
-        this.$emitter.on(`dam:operation-overlay:show:${this.tabId}`, ({ label }) => {
-            this.operationOverlay = { show: true, label: label ?? '' };
+        this.$emitter.on(`dam:operation-overlay:show:${this.tabId}`, ({ label, progress = null, fileCount = null }) => {
+            this.operationOverlay = { show: true, label: label ?? '', progress, fileCount };
+        });
+        this.$emitter.on(`dam:operation-overlay:progress:${this.tabId}`, ({ progress }) => {
+            this.operationOverlay = { ...this.operationOverlay, progress };
         });
         this.$emitter.on(`dam:operation-overlay:hide:${this.tabId}`, () => {
-            this.operationOverlay = { show: false, label: '' };
+            this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
         });
         this.$emitter.on(`dam:dir-deleted:${this.tabId}`, () => {
             this.navHistory = this.navHistory.slice(0, this.navIdx + 1);
@@ -565,13 +586,21 @@ app.component('v-dam-tab', {
         performMassMove(targetDirId) {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
-            const count    = this.selection.ids.length;
 
-            this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
-                label: "@lang('dam::app.admin.explorer.mass-actions.moving')".replace(':count', count),
+            // Show bar immediately with 0% progress so bar is visible from the start
+            this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.moving')", progress: 0, fileCount: null };
+
+            // Fetch actual file count in background; update bar when ready
+            this.$axios.post('{{ route("admin.dam.explorer.count_items") }}', {
+                asset_ids: assetIds, directory_ids: dirIds,
+            }).then(({ data }) => {
+                this.operationOverlay = { ...this.operationOverlay, fileCount: data.file_count ?? (assetIds.length + dirIds.length) };
+            }).catch(() => {
+                this.operationOverlay = { ...this.operationOverlay, fileCount: assetIds.length + dirIds.length };
             });
 
             (async () => {
+
                 try {
                     await this.$axios.post('{{ route("admin.dam.explorer.mass_move") }}', {
                         asset_ids:           assetIds,
@@ -582,13 +611,20 @@ app.component('v-dam-tab', {
                     await new Promise((resolve) => {
                         let attempts = 0;
                         const poll = () => {
-                            if (++attempts > 150) { resolve(); return; }
+                            if (++attempts > 150) {
+                                this.$emitter.emit('add-flash', {
+                                    type: 'warning',
+                                    message: "@lang('dam::app.admin.explorer.mass-actions.still-running')",
+                                });
+                                resolve();
+                                return;
+                            }
                             this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'mass_move'))
                                 .then(({ data: d }) => {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')",
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
                                         });
                                         dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
                                         this.$emitter.emit('dam:tree-reload');
@@ -596,7 +632,12 @@ app.component('v-dam-tab', {
                                     } else if (d.status === 'failed') {
                                         this.$emitter.emit('add-flash', { type: 'error', message: d.message || "@lang('dam::app.admin.dam.index.directory.error-operation')" });
                                         resolve();
-                                    } else { setTimeout(poll, 2000); }
+                                    } else {
+                                        if (d.progress != null) {
+                                            this.$emitter.emit(`dam:operation-overlay:progress:${this.tabId}`, { progress: d.progress });
+                                        }
+                                        setTimeout(poll, 2000);
+                                    }
                                 }).catch(() => { setTimeout(poll, 2000); });
                         };
                         setTimeout(poll, 1000);
@@ -617,13 +658,21 @@ app.component('v-dam-tab', {
         performMassCopy(targetDirId) {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
-            const count    = this.selection.ids.length;
 
-            this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
-                label: "@lang('dam::app.admin.explorer.mass-actions.copying')".replace(':count', count),
+            // Show bar immediately with 0% progress so bar is visible from the start
+            this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.copying')", progress: 0, fileCount: null };
+
+            // Fetch actual file count in background; update bar when ready
+            this.$axios.post('{{ route("admin.dam.explorer.count_items") }}', {
+                asset_ids: assetIds, directory_ids: dirIds,
+            }).then(({ data }) => {
+                this.operationOverlay = { ...this.operationOverlay, fileCount: data.file_count ?? (assetIds.length + dirIds.length) };
+            }).catch(() => {
+                this.operationOverlay = { ...this.operationOverlay, fileCount: assetIds.length + dirIds.length };
             });
 
             (async () => {
+
                 try {
                     await this.$axios.post('{{ route("admin.dam.explorer.mass_copy") }}', {
                         asset_ids:           assetIds,
@@ -634,20 +683,32 @@ app.component('v-dam-tab', {
                     await new Promise((resolve) => {
                         let attempts = 0;
                         const poll = () => {
-                            if (++attempts > 150) { resolve(); return; }
+                            if (++attempts > 150) {
+                                this.$emitter.emit('add-flash', {
+                                    type: 'warning',
+                                    message: "@lang('dam::app.admin.explorer.mass-actions.still-running')",
+                                });
+                                resolve();
+                                return;
+                            }
                             this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'mass_copy'))
                                 .then(({ data: d }) => {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')",
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
                                         });
                                         this.$emitter.emit('dam:tree-reload');
                                         resolve();
                                     } else if (d.status === 'failed') {
                                         this.$emitter.emit('add-flash', { type: 'error', message: d.message || "@lang('dam::app.admin.dam.index.directory.error-operation')" });
                                         resolve();
-                                    } else { setTimeout(poll, 2000); }
+                                    } else {
+                                        if (d.progress != null) {
+                                            this.$emitter.emit(`dam:operation-overlay:progress:${this.tabId}`, { progress: d.progress });
+                                        }
+                                        setTimeout(poll, 2000);
+                                    }
                                 }).catch(() => { setTimeout(poll, 2000); });
                         };
                         setTimeout(poll, 1000);
@@ -1029,7 +1090,7 @@ app.component('v-dam-tab', {
                 const tabId = this.tabId;
                 const originTabId = payload.tabId;
                 const folderName = payload.name ?? '';
-                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.move.directory')`.replace(':name', folderName) };
+                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.move.directory')`.replace(':name', folderName), progress: null, fileCount: null };
                 this.$axios.post("{{ route('admin.dam.directory.moved') }}", {
                     move_item_id:  payload.id,
                     new_parent_id: targetDir.id,
@@ -1037,20 +1098,20 @@ app.component('v-dam-tab', {
                     let attempts = 0;
                     const poll = () => {
                         if (++attempts > 30) {
-                            this.operationOverlay = { show: false, label: '' };
+                            this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                             return;
                         }
                         this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'move_directory_structure'))
                             .then(({ data: d }) => {
                                 if (d.status === 'completed') {
-                                    this.operationOverlay = { show: false, label: '' };
+                                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-done')" });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                     if (originTabId && originTabId !== tabId) {
                                         this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
                                     }
                                 } else if (d.status === 'failed') {
-                                    this.operationOverlay = { show: false, label: '' };
+                                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                                     this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                     if (originTabId && originTabId !== tabId) {
@@ -1061,7 +1122,7 @@ app.component('v-dam-tab', {
                     };
                     setTimeout(poll, 1000);
                 }).catch(err => {
-                    this.operationOverlay = { show: false, label: '' };
+                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
                 });
             }
@@ -1139,7 +1200,7 @@ app.component('v-dam-tab', {
                 }).finally(() => { this.pasting = false; });
             } else {
                 const dirName = cb.name ?? '';
-                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.copy.directory')`.replace(':name', dirName) };
+                this.operationOverlay = { show: true, label: `@lang('dam::app.admin.dam.index.copy.directory')`.replace(':name', dirName), progress: null, fileCount: null };
                 this.$axios.post("{{ route('admin.dam.explorer.copy.directory') }}", {
                     directory_id:        cb.id,
                     target_directory_id: targetDirId,
@@ -1147,24 +1208,24 @@ app.component('v-dam-tab', {
                     let attempts = 0;
                     const poll = () => {
                         if (++attempts > 30) {
-                            this.operationOverlay = { show: false, label: '' };
+                            this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                             return;
                         }
                         this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'copy_directory'))
                             .then(({ data: d }) => {
                                 if (d.status === 'completed') {
-                                    this.operationOverlay = { show: false, label: '' };
+                                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.paste-done')" });
                                     this.fetch();
                                 } else if (d.status === 'failed') {
-                                    this.operationOverlay = { show: false, label: '' };
+                                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                                     this.$emitter.emit('add-flash', { type: 'error', message: d.message });
                                 } else { setTimeout(poll, 2000); }
                             }).catch(() => { setTimeout(poll, 2000); });
                     };
                     setTimeout(poll, 1000);
                 }).catch(err => {
-                    this.operationOverlay = { show: false, label: '' };
+                    this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                     this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message });
                 }).finally(() => { this.pasting = false; });
             }

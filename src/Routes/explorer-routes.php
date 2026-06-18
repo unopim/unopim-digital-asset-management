@@ -11,6 +11,7 @@ use Webkul\DAM\Http\Controllers\Explorer\MassMoveController;
 Route::controller(ExplorerDataController::class)->prefix('explorer')->group(function () {
     Route::get('/data', 'index')->name('admin.dam.explorer.index');
     Route::get('/filter-options', 'filterOptions')->name('admin.dam.explorer.filter-options');
+    Route::post('/count-items', 'countItems')->name('admin.dam.explorer.count_items');
 });
 
 Route::prefix('explorer/bookmarks')->controller(BookmarkController::class)->group(function () {
