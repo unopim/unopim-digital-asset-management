@@ -62,6 +62,7 @@ class AssetDataGrid extends DataGrid
         $this->addFilter('id', 'dam_assets.id');
         $this->addFilter('file_name', 'dam_assets.file_name');
         $this->addFilter('extension', 'dam_assets.extension');
+        $this->addFilter('path', 'dam_assets.path');
         $this->addFilter('tag', 'dam_tags.name');
         $this->addFilter('created_at', 'dam_assets.created_at');
         $this->addFilter('updated_at', 'dam_assets.updated_at');
@@ -196,13 +197,21 @@ class AssetDataGrid extends DataGrid
      */
     public function processRequestedFilters(array $requestedFilters)
     {
+        $prefix = DB::getTablePrefix();
+
         foreach ($requestedFilters as $requestedColumn => $requestedValues) {
             if ($requestedColumn === 'all') {
-                $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedValues) {
+                $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $requestedValues) {
                     foreach ($requestedValues as $value) {
                         collect($this->columns)
-                            ->filter(fn ($column) => $column->searchable && $column->type !== ColumnTypeEnum::BOOLEAN->value)
-                            ->each(fn ($column) => $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%'));
+                            ->filter(fn ($column) => $column->searchable
+                                && $column->type !== ColumnTypeEnum::BOOLEAN->value
+                                && $column->type !== ColumnTypeEnum::DATE_RANGE->value
+                                && $column->type !== ColumnTypeEnum::DATE_TIME_RANGE->value)
+                            ->each(fn ($column) => $scopeQueryBuilder->orWhereRaw(
+                                'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                ['%'.strtolower($value).'%']
+                            ));
                     }
                 });
             } else {
@@ -255,9 +264,12 @@ class AssetDataGrid extends DataGrid
 
                 switch ($column->type) {
                     case ColumnTypeEnum::STRING->value:
-                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
+                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $column, $requestedValues) {
                             foreach ($requestedValues as $value) {
-                                $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%');
+                                $scopeQueryBuilder->orWhereRaw(
+                                    'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                    ['%'.strtolower($value).'%']
+                                );
                             }
                         });
 
@@ -302,9 +314,12 @@ class AssetDataGrid extends DataGrid
                         break;
 
                     default:
-                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
+                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $column, $requestedValues) {
                             foreach ($requestedValues as $value) {
-                                $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%');
+                                $scopeQueryBuilder->orWhereRaw(
+                                    'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                    ['%'.strtolower($value).'%']
+                                );
                             }
                         });
 
