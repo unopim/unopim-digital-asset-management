@@ -387,6 +387,9 @@ class GenerateScaleData extends Command
         $this->info('  Running fixTree() to rebuild nested-set columns...');
         (new Directory)->newNestedSetQuery()->fixTree();
         $this->info('  fixTree() complete.');
+
+        // Explicit-ID bulk inserts bypass the PostgreSQL sequence — reset it.
+        $this->resetSequence('dam_directories');
     }
 
     private function createStorageDirs(array $nodes): void
@@ -584,5 +587,33 @@ class GenerateScaleData extends Command
 
         $bar->finish();
         $this->newLine();
+    }
+
+    /**
+     * After explicit-ID bulk inserts, PostgreSQL sequences are left behind.
+     * Advance the sequence to MAX(id) so the next INSERT doesn't collide.
+     * No-op on MySQL (auto_increment tracks the max automatically).
+     */
+    private function resetSequence(string $table): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        $prefixed = DB::getTablePrefix().$table;
+        $row = DB::selectOne("SELECT pg_get_serial_sequence(?, 'id') AS seq", [$prefixed]);
+
+        if (! $row || ! $row->seq) {
+            return;
+        }
+
+        $max = DB::selectOne("SELECT MAX(id) AS mx FROM \"{$prefixed}\"");
+
+        if (! $max || ! $max->mx) {
+            return;
+        }
+
+        DB::statement("SELECT setval('{$row->seq}', {$max->mx})");
+        $this->info("  Sequence reset: {$prefixed} → {$max->mx}");
     }
 }
