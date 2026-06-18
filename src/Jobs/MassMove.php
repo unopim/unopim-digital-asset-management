@@ -25,6 +25,13 @@ class MassMove implements ShouldQueue
 
     public int $timeout = 3600;
 
+    private const ASSET_CHUNK_SIZE = 500;
+
+    public function retryUntil(): \DateTime
+    {
+        return now()->addSeconds(3600);
+    }
+
     public function __construct(
         protected array $assetIds,
         protected array $dirIds,
@@ -35,7 +42,7 @@ class MassMove implements ShouldQueue
     public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
-            $this->failed(EventType::MASS_MOVE->value, $this->userId, 'User not found');
+            $this->markFailed(EventType::MASS_MOVE->value, $this->userId, 'User not found');
 
             return;
         }
@@ -45,13 +52,16 @@ class MassMove implements ShouldQueue
             $targetDirectory = Directory::findOrFail($this->targetId);
             $targetDirPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $targetDirectory->generatePath());
 
+            $totalDirs = count($this->dirIds);
+            $totalAssets = count($this->assetIds);
+            $total = max(1, $totalAssets + $totalDirs);
+            $done = 0;
+
             // ── Assets ──────────────────────────────────────────────────────────
             if (! empty($this->assetIds)) {
-                $assets = Asset::whereIn('id', $this->assetIds)
-                    ->with(['directories:id,parent_id'])
-                    ->get();
-
                 $pivotTable = (new Asset)->directories()->getTable();
+
+                // Seed name-collision cache once — 1 query, persists across all chunks via reference
                 $usedNames = Asset::whereHas(
                     'directories',
                     fn ($q) => $q->where('dam_directories.id', $this->targetId)
@@ -59,45 +69,53 @@ class MassMove implements ShouldQueue
 
                 Storage::disk($disk)->makeDirectory($targetDirPath);
 
-                $plans = [];
+                // Process in chunks to keep memory bounded for large selections
+                Asset::whereIn('id', $this->assetIds)
+                    ->with(['directories:id,parent_id'])
+                    ->chunk(self::ASSET_CHUNK_SIZE, function ($assets) use ($disk, $targetDirPath, $pivotTable, &$usedNames, &$done, $total) {
+                        $updates = [];
 
-                foreach ($assets as $asset) {
-                    if (! $asset->directories->first()) {
-                        continue;
-                    }
+                        foreach ($assets as $asset) {
+                            if (! $asset->directories->first()) {
+                                continue;
+                            }
 
-                    $ext = $asset->extension ? '.'.$asset->extension : '';
-                    $base = pathinfo($asset->file_name, PATHINFO_FILENAME);
-                    $newName = $this->resolveUniqueName($base, $ext, $usedNames);
-                    $newPath = $targetDirPath.'/'.$newName;
+                            $ext = $asset->extension ? '.'.$asset->extension : '';
+                            $base = pathinfo($asset->file_name, PATHINFO_FILENAME);
+                            $newName = $this->resolveUniqueName($base, $ext, $usedNames);
+                            $newPath = $targetDirPath.'/'.$newName;
 
-                    $plans[] = compact('asset', 'newName', 'newPath');
-                }
+                            try {
+                                if ($asset->path && $asset->path !== $newPath) {
+                                    Storage::disk($disk)->move($asset->path, $newPath);
+                                }
 
-                $updates = [];
-
-                foreach ($plans as ['asset' => $asset, 'newName' => $newName, 'newPath' => $newPath]) {
-                    try {
-                        if ($asset->path && $asset->path !== $newPath) {
-                            Storage::disk($disk)->move($asset->path, $newPath);
+                                $updates[] = ['id' => $asset->id, 'path' => $newPath, 'file_name' => $newName];
+                            } catch (\Throwable $e) {
+                                report($e);
+                            }
                         }
 
-                        $updates[] = ['id' => $asset->id, 'path' => $newPath, 'file_name' => $newName];
-                    } catch (\Throwable $e) {
-                        report($e);
-                    }
-                }
+                        if (empty($updates)) {
+                            return;
+                        }
 
-                if ($updates) {
-                    $successIds = array_column($updates, 'id');
+                        $successIds = array_column($updates, 'id');
 
-                    DB::table($pivotTable)->whereIn('asset_id', $successIds)->delete();
-                    DB::table($pivotTable)->insert(
-                        array_map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId], $successIds)
-                    );
+                        DB::table($pivotTable)->whereIn('asset_id', $successIds)->delete();
+                        DB::table($pivotTable)->insert(
+                            array_map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId], $successIds)
+                        );
 
-                    Asset::upsert($updates, ['id'], ['path', 'file_name']);
-                }
+                        Asset::upsert($updates, ['id'], ['path', 'file_name']);
+
+                        $done += count($updates);
+                        $this->updateProgress(
+                            EventType::MASS_MOVE->value,
+                            $this->userId,
+                            (int) min(99, round($done / $total * 100))
+                        );
+                    });
             }
 
             // ── Directories ─────────────────────────────────────────────────────
@@ -145,12 +163,21 @@ class MassMove implements ShouldQueue
 
                     // 3 queries to update ALL asset paths in subtree (replaces O(N) per-asset updates)
                     $this->batchReplaceAssetPaths($directory, $oldStoragePath, $newStoragePath);
+
+                    $done++;
+                    $this->updateProgress(
+                        EventType::MASS_MOVE->value,
+                        $this->userId,
+                        (int) min(99, round($done / $total * 100))
+                    );
                 }
             }
 
             $this->completed(EventType::MASS_MOVE->value, $this->userId);
+            $this->clearProgress(EventType::MASS_MOVE->value, $this->userId);
         } catch (\Throwable $e) {
-            $this->failed(EventType::MASS_MOVE->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::MASS_MOVE->value, $this->userId, $e->getMessage());
+            $this->clearProgress(EventType::MASS_MOVE->value, $this->userId);
         }
     }
 
@@ -241,5 +268,11 @@ class MassMove implements ShouldQueue
         $usedNames[$candidate] = true;
 
         return $candidate;
+    }
+
+    public function failed(\Throwable $e): void
+    {
+        $this->markFailed(EventType::MASS_MOVE->value, $this->userId, $e->getMessage());
+        $this->clearProgress(EventType::MASS_MOVE->value, $this->userId);
     }
 }
