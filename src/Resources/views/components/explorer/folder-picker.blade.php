@@ -186,6 +186,8 @@ app.component('v-dam-folder-picker', {
                         name:      r.name,
                         parent_id: r.parent_id,
                         breadcrumb: (r.path_names || []).join(' › '),
+                        path_names: r.path_names || [],
+                        path_ids:   r.path_ids   || [],
                     }));
                     this.searchLoading = false;
                 })
@@ -196,7 +198,11 @@ app.component('v-dam-folder-picker', {
             this.query         = '';
             this.searchResults = [];
             this.currentDirId  = result.id;
-            this.breadcrumb    = [{ id: result.id, name: result.name }];
+            // Build full navigable breadcrumb from ancestor chain returned by search API
+            this.breadcrumb = result.path_ids.map((id, i) => ({
+                id,
+                name: result.path_names[i] ?? '',
+            }));
             this.loadChildren(result.id);
         },
 

@@ -59,7 +59,13 @@ class DirectoryController
         $offset = (int) ($request->validated('offset') ?? 0);
 
         $results = $this->directoryRepository->search($q, $limit, $offset);
-        $total = $this->directoryRepository->searchCount($q);
+
+        // Skip the extra COUNT query when the page is clearly the last one —
+        // saves a full-table LIKE scan on every partial page (the common case).
+        $returned = $results->count();
+        $total = ($returned < $limit)
+            ? $offset + $returned
+            : $this->directoryRepository->searchCount($q);
 
         return new JsonResponse([
             'data' => $results->map(fn ($directory) => [
@@ -67,6 +73,7 @@ class DirectoryController
                 'name'       => $directory->name,
                 'parent_id'  => $directory->parent_id,
                 'path_names' => $directory->path_names,
+                'path_ids'   => $directory->path_ids,
             ])->values(),
             'meta' => [
                 'total'  => $total,

@@ -591,11 +591,7 @@ class DirectoryRepository extends Repository
             ->limit($limit)
             ->get(['id', 'name', 'parent_id', '_lft', '_rgt']);
 
-        return $matches->map(function ($directory) {
-            $directory->path_names = $this->resolveAncestorPathNames($directory);
-
-            return $directory;
-        })->values();
+        return $this->attachAncestorPaths($matches);
     }
 
     /**
@@ -629,21 +625,38 @@ class DirectoryRepository extends Repository
     }
 
     /**
-     * Resolve top-down ancestor name chain (Root, ..., target) for a directory
-     * using the nested-set _lft/_rgt columns.
+     * Attach path_names + path_ids to a collection of directory results in ONE query.
+     * Replaces the old N×2 per-row ancestor queries (20 results → 40 queries before).
+     * Self-join on _lft/_rgt: anc covers child iff anc._lft <= child._lft AND anc._rgt >= child._rgt.
      */
-    protected function resolveAncestorPathNames($directory): array
+    protected function attachAncestorPaths($directories)
     {
-        $ancestors = $this->model->newQuery()
-            ->where('_lft', '<', $directory->_lft)
-            ->where('_rgt', '>', $directory->_rgt)
-            ->orderBy('_lft')
-            ->pluck('name')
-            ->all();
+        if ($directories->isEmpty()) {
+            return $directories->values();
+        }
 
-        $ancestors[] = $directory->name;
+        $table = $this->model->getTable();
+        $ids = $directories->pluck('id')->all();
 
-        return $ancestors;
+        $rows = DB::table("{$table} as anc")
+            ->join("{$table} as child", function ($join) {
+                $join->whereColumn('anc._lft', '<=', 'child._lft')
+                    ->whereColumn('anc._rgt', '>=', 'child._rgt');
+            })
+            ->whereIn('child.id', $ids)
+            ->orderBy('child.id')
+            ->orderBy('anc._lft')
+            ->select('anc.id as anc_id', 'anc.name as anc_name', 'child.id as for_id')
+            ->get()
+            ->groupBy('for_id');
+
+        return $directories->map(function ($directory) use ($rows) {
+            $ancestors = $rows->get($directory->id, collect());
+            $directory->path_names = $ancestors->pluck('anc_name')->all();
+            $directory->path_ids = $ancestors->pluck('anc_id')->all();
+
+            return $directory;
+        })->values();
     }
 
     /**
