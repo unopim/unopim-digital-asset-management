@@ -86,8 +86,10 @@ class ExplorerDataController extends Controller
         $dirQuery = Directory::query();
 
         if ($search) {
+            // whereDescendantOf uses the nested-set _lft/_rgt range — one efficient index scan
             $dirQuery->whereDescendantOf($dir)
-                ->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($search).'%');
+                ->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($search).'%')
+                ->limit(200); // cap search results — full subtree scan on large trees otherwise unbounded
         } else {
             $dirQuery->where('parent_id', $dir->id);
         }
@@ -143,9 +145,15 @@ class ExplorerDataController extends Controller
                 );
 
             if ($search) {
-                $subtreeIds = Directory::whereDescendantOrSelf($dir)->pluck('id');
+                // Subquery keeps all IDs in the DB — never loads 10k dir IDs into PHP
+                $dirTable = (new Directory)->getTable();
+                $subtreeSubquery = DB::table($dirTable)
+                    ->select('id')
+                    ->where('_lft', '>=', $dir->_lft)
+                    ->where('_rgt', '<=', $dir->_rgt);
+
                 $lowerSearch = '%'.strtolower($search).'%';
-                $q->whereIn('dam_asset_directory.directory_id', $subtreeIds)
+                $q->whereIn('dam_asset_directory.directory_id', $subtreeSubquery)
                     ->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch]);
             } else {
                 $q->where('dam_asset_directory.directory_id', $dir->id);
@@ -217,9 +225,11 @@ class ExplorerDataController extends Controller
             default      => 'dam_assets.file_name',
         };
 
-        $totalAssets = $buildAssetQuery()->distinct()->count('dam_assets.id');
+        // Build once — clone for count to avoid re-running the subtree subquery
+        $assetQuery = $buildAssetQuery();
+        $totalAssets = (clone $assetQuery)->distinct()->count('dam_assets.id');
 
-        $assets = $buildAssetQuery()
+        $assets = $assetQuery
             ->select([
                 'dam_assets.id', 'dam_assets.file_name', 'dam_assets.file_type',
                 'dam_assets.extension', 'dam_assets.file_size', 'dam_assets.path',
