@@ -35,7 +35,7 @@ class DeleteDirectory implements ShouldQueue
 
             $this->completed(EventType::DELETE_DIRECTORY->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::DELETE_DIRECTORY->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::DELETE_DIRECTORY->value, $this->userId, $e->getMessage());
         }
     }
 

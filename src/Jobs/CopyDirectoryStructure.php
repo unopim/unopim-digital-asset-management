@@ -51,7 +51,7 @@ class CopyDirectoryStructure implements ShouldQueue
 
             $this->completed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId, $e->getMessage());
         }
     }
 

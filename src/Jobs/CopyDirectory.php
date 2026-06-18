@@ -32,7 +32,7 @@ class CopyDirectory
     public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
-            $this->failed(EventType::COPY_DIRECTORY->value, $this->userId, 'User not found');
+            $this->markFailed(EventType::COPY_DIRECTORY->value, $this->userId, 'User not found');
 
             return;
         }
@@ -48,7 +48,7 @@ class CopyDirectory
 
             $this->completed(EventType::COPY_DIRECTORY->value, $this->userId);
         } catch (\Throwable $e) {
-            $this->failed(EventType::COPY_DIRECTORY->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::COPY_DIRECTORY->value, $this->userId, $e->getMessage());
         }
     }
 
