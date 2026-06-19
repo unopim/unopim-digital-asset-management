@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Webkul\DAM\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -15,7 +16,7 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
-class CopyDirectory
+class CopyDirectory implements ShouldQueue
 {
     use ActionRequestTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -64,22 +65,51 @@ class CopyDirectory
         $newParentStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newParent->generatePath());
         Storage::disk($disk)->makeDirectory($newParentStoragePath);
 
-        foreach ($source->assets as $asset) {
-            $newFileName = $this->uniqueAssetName($asset->file_name, $newParent->id);
-            $newStoragePath = $newParentStoragePath.'/'.$newFileName;
-            Storage::disk($disk)->copy($asset->path, $newStoragePath);
+        if ($source->assets->isNotEmpty()) {
+            // Load all existing names in target dir once — O(1) set lookup per asset
+            // instead of the former N EXISTS queries (one per asset + conflict retries).
+            $existingNames = Asset::whereHas(
+                'directories',
+                fn ($q) => $q->where('dam_directories.id', $newParent->id)
+            )->pluck('file_name')->flip()->all();
 
-            $newAsset = Asset::create([
-                'file_name' => $newFileName,
-                'file_type' => $asset->file_type,
-                'extension' => $asset->extension,
-                'file_size' => $asset->file_size,
-                'path'      => $newStoragePath,
-                'mime_type' => $asset->mime_type,
-                'meta_data' => $asset->meta_data,
-            ]);
+            $assetRows = [];
+            $assetPaths = [];
 
-            $newAsset->directories()->attach($newParent->id);
+            foreach ($source->assets as $asset) {
+                $newFileName = $this->uniqueAssetNameFromSet($asset->file_name, $existingNames);
+                $newStoragePath = $newParentStoragePath.'/'.$newFileName;
+
+                Storage::disk($disk)->copy($asset->path, $newStoragePath);
+
+                // Register in set so subsequent assets in the same loop avoid collision.
+                $existingNames[$newFileName] = true;
+
+                $assetRows[] = [
+                    'file_name'  => $newFileName,
+                    'file_type'  => $asset->file_type,
+                    'extension'  => $asset->extension,
+                    'file_size'  => $asset->file_size,
+                    'path'       => $newStoragePath,
+                    'mime_type'  => $asset->mime_type,
+                    // meta_data is cast array on Asset model; DB::table()->insert() needs raw JSON.
+                    'meta_data'  => $asset->meta_data !== null ? json_encode($asset->meta_data) : null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                $assetPaths[] = $newStoragePath;
+            }
+
+            // 1 bulk INSERT instead of N Asset::create() calls.
+            DB::table((new Asset)->getTable())->insert($assetRows);
+
+            // Fetch new IDs by unique path — portable across MySQL + PostgreSQL.
+            $newIds = Asset::whereIn('path', $assetPaths)->pluck('id');
+
+            // 1 bulk pivot INSERT instead of N attach() calls.
+            DB::table('dam_asset_directory')->insert(
+                $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $newParent->id])->all()
+            );
         }
 
         foreach ($source->children as $child) {
@@ -88,18 +118,24 @@ class CopyDirectory
         }
     }
 
-    private function uniqueAssetName(string $fileName, int $dirId): string
+    /**
+     * Resolve a unique file name against an in-memory name set — no DB queries.
+     * Caller must register the returned name into $existingNames after use.
+     *
+     * @param  array<string, mixed>  $existingNames  Flipped pluck — keys are names, used as a hash set.
+     */
+    private function uniqueAssetNameFromSet(string $fileName, array $existingNames): string
     {
+        if (! isset($existingNames[$fileName])) {
+            return $fileName;
+        }
+
         $ext = pathinfo($fileName, PATHINFO_EXTENSION);
         $base = $ext ? substr($fileName, 0, -(strlen($ext) + 1)) : $fileName;
         $dotExt = $ext ? '.'.$ext : '';
 
-        if (! $this->assetNameExists($fileName, $dirId)) {
-            return $fileName;
-        }
-
         $candidate = $base.' (copy)'.$dotExt;
-        if (! $this->assetNameExists($candidate, $dirId)) {
+        if (! isset($existingNames[$candidate])) {
             return $candidate;
         }
 
@@ -107,15 +143,8 @@ class CopyDirectory
         do {
             $candidate = $base.' (copy) ('.$i.')'.$dotExt;
             $i++;
-        } while ($this->assetNameExists($candidate, $dirId));
+        } while (isset($existingNames[$candidate]));
 
         return $candidate;
-    }
-
-    private function assetNameExists(string $name, int $dirId): bool
-    {
-        return Asset::where('file_name', $name)
-            ->whereHas('directories', fn ($q) => $q->where('dam_directories.id', $dirId))
-            ->exists();
     }
 }
