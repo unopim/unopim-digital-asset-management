@@ -7,9 +7,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
@@ -23,12 +25,7 @@ class MoveDirectoryStructure implements ShouldQueue
 
     public function __construct(protected int $directoryId, protected int $newParentId, protected int $userId) {}
 
-    /**
-     * Handle the event.
-     *
-     * @return void
-     */
-    public function handle()
+    public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
             throw new \Exception('User not found');
@@ -42,7 +39,8 @@ class MoveDirectoryStructure implements ShouldQueue
             throw new \Exception(trans('dam::app.admin.dam.index.directory.not-found'));
         }
 
-        $oldPath = $directory->generatePath();
+        $oldRelativePath = $directory->generatePath();
+        $oldStoragePath = sprintf('%s/%s', ModelDirectory::ASSETS_DIRECTORY, $oldRelativePath);
 
         $name = $this->setDirectoryNameForCopy($directory->name, $this->newParentId);
 
@@ -58,13 +56,28 @@ class MoveDirectoryStructure implements ShouldQueue
         }
 
         try {
-            $this->updateDirectoryParentAndChildren($directory, $directoryRepository);
+            // Iterative BFS — rebuilds nested-set lft/rgt for every descendant
+            // without recursion risk on deep trees (10k+ dirs = PHP stack overflow).
+            $this->rebuildDescendantNodes($directory);
 
             $directory->refresh();
 
-            $newPath = $directory->generatePath();
+            $newRelativePath = $directory->generatePath();
+            $newStoragePath = sprintf('%s/%s', ModelDirectory::ASSETS_DIRECTORY, $newRelativePath);
 
-            $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
+            $disk = ModelDirectory::getAssetDisk();
+
+            // S3: no real directories — move every object to its new key.
+            // Local: createDirectoryWithStorage handles the rename in one syscall.
+            if ($disk === ModelDirectory::ASSETS_DISK_AWS) {
+                $this->moveS3Prefix($disk, $oldStoragePath, $newStoragePath);
+            }
+
+            // Single REPLACE() updates every asset path in the subtree — 3 queries
+            // regardless of asset count, replacing the previous N individual UPDATEs.
+            $this->batchReplaceAssetPaths($directory, $oldStoragePath, $newStoragePath);
+
+            $directoryRepository->createDirectoryWithStorage($newRelativePath, $oldRelativePath);
 
             $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
@@ -73,65 +86,82 @@ class MoveDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * update the directory parent with the children directory
+     * Iterative BFS replacement for the former recursive updateDirectoryParentAndChildren.
+     * Calls appendToNode(parent) on each descendant to keep nested-set lft/rgt consistent
+     * after the root was re-parented. Queue holds [child, parent] pairs so each node is
+     * always appended under its correct immediate parent.
      */
-    public function updateDirectoryParentAndChildren(ModelDirectory $originalDirectory, $directoryRepository): void
+    private function rebuildDescendantNodes(ModelDirectory $root): void
     {
-        foreach ($originalDirectory->children as $child) {
-            $child->save();
+        $queue = [];
 
-            // Set the new child to the new directory
-            $child->appendToNode($originalDirectory)->save();
-            $this->updateDirectoryParentAndChildren($child, $directoryRepository);
-
-            $this->moveAssets($child);
+        foreach ($root->children as $child) {
+            $queue[] = [$child, $root];
         }
 
-        $this->moveAssets($originalDirectory);
+        while (! empty($queue)) {
+            [$node, $parent] = array_shift($queue);
+
+            $node->appendToNode($parent)->save();
+
+            foreach ($node->children as $grandchild) {
+                $queue[] = [$grandchild, $node];
+            }
+        }
     }
 
     /**
-     * Move the assets of the directory
+     * Replace asset paths for every asset in the directory subtree in 3 queries:
+     * one lft/rgt range scan for descendant IDs, one pivot join for asset IDs,
+     * one bulk REPLACE(). Works on both MySQL and PostgreSQL.
      */
-    public function moveAssets(ModelDirectory $directory): void
+    private function batchReplaceAssetPaths(ModelDirectory $directory, string $oldPrefix, string $newPrefix): void
     {
-        $path = $directory->generatePath();
-        $disk = ModelDirectory::getAssetDisk();
-        // On object stores like S3 there are no real directories, so the
-        // folder-level rename performed later is a no-op and assets would be
-        // orphaned. Move each file individually for those drivers.
-        $movePerFile = $disk === ModelDirectory::ASSETS_DISK_AWS;
+        if ($oldPrefix === $newPrefix) {
+            return;
+        }
 
-        foreach ($directory->assets()->get() as $asset) {
-            $oldAssetPath = $asset->path;
-            $newAssetPath = sprintf('%s/%s/%s', ModelDirectory::ASSETS_DIRECTORY, $path, $asset->file_name);
+        $subtreeDirIds = $directory->descendants()->pluck('id')->prepend($directory->id);
 
-            if (
-                $movePerFile
-                && $oldAssetPath
-                && $oldAssetPath !== $newAssetPath
-            ) {
-                try {
-                    if (
-                        Storage::disk($disk)->exists($oldAssetPath)
-                        && ! Storage::disk($disk)->exists($newAssetPath)
-                    ) {
-                        Storage::disk($disk)->move($oldAssetPath, $newAssetPath);
-                    }
-                } catch (\Throwable $e) {
-                    Log::error('DAM: failed to move asset file on storage', [
-                        'asset_id' => $asset->id,
-                        'from'     => $oldAssetPath,
-                        'to'       => $newAssetPath,
-                        'disk'     => $disk,
-                        'error'    => $e->getMessage(),
-                    ]);
+        $pivotTable = (new Asset)->directories()->getTable();
+        $assetIds = DB::table($pivotTable)
+            ->whereIn('directory_id', $subtreeDirIds)
+            ->distinct()
+            ->pluck('asset_id');
 
-                    throw $e;
-                }
+        if ($assetIds->isEmpty()) {
+            return;
+        }
+
+        DB::table((new Asset)->getTable())
+            ->whereIn('id', $assetIds)
+            ->update([
+                'path' => DB::raw(
+                    'REPLACE(path, '.DB::getPdo()->quote($oldPrefix).', '.DB::getPdo()->quote($newPrefix).')'
+                ),
+            ]);
+    }
+
+    /**
+     * S3-only: move every object under the old prefix to the new prefix.
+     * One allFiles() listing + N moves; no per-directory loop needed.
+     */
+    private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
+    {
+        foreach (Storage::disk($disk)->allFiles($oldPrefix) as $file) {
+            $destination = $newPrefix.substr($file, strlen($oldPrefix));
+
+            try {
+                Storage::disk($disk)->move($file, $destination);
+            } catch (\Throwable $e) {
+                Log::error('DAM MoveDirectoryStructure: S3 file move failed', [
+                    'from'  => $file,
+                    'to'    => $destination,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
             }
-
-            $asset->update(['path' => $newAssetPath]);
         }
     }
 }
