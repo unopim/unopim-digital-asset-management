@@ -596,7 +596,7 @@ class AssetController extends Controller
 
         $this->damAuthorizeAsset((int) $id);
 
-        if ($asset->resources()->get()->count()) {
+        if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),

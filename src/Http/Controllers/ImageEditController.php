@@ -688,11 +688,8 @@ class ImageEditController
     {
         Storage::disk($disk)->delete('thumbnails/'.$path);
 
-        $allPreviews = Storage::disk($disk)->allFiles('preview');
-        foreach ($allPreviews as $file) {
-            if (str_ends_with($file, '/'.$path)) {
-                Storage::disk($disk)->delete($file);
-            }
+        foreach (Storage::disk($disk)->directories('preview') as $sizeDir) {
+            Storage::disk($disk)->delete($sizeDir.'/'.$path);
         }
     }
 

@@ -989,7 +989,7 @@ class AssetController extends Controller
             ], 403);
         }
 
-        if ($asset->resources()->get()->count()) {
+        if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
@@ -1029,34 +1029,49 @@ class AssetController extends Controller
         $skippedAssetNames = [];
 
         try {
+            $disk = Directory::getAssetDisk();
+
+            // 1 query + eager-loaded resources instead of N find() + N resources()->get()
+            $assets = Asset::whereIn('id', $assetIds)->with('resources')->get()->keyBy('id');
+
+            $deletableIds = [];
+
             foreach ($assetIds as $assetId) {
-                $asset = $this->assetRepository->find($assetId);
+                $asset = $assets->get($assetId);
 
-                if (isset($asset)) {
-                    if ($asset->resources()->get()->count()) {
-                        $skippedAssetNames[] = $asset->file_name;
+                if (! $asset) {
+                    continue;
+                }
 
-                        continue;
-                    }
-                    $disk = Directory::getAssetDisk();
+                if ($asset->resources->isNotEmpty()) {
+                    $skippedAssetNames[] = $asset->file_name;
 
-                    $fileDeleted = Storage::disk($disk)->delete($asset->path);
+                    continue;
+                }
 
-                    if (! $fileDeleted) {
-                        throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
-                            'type'       => 'file',
-                            'actionType' => 'rename',
-                            'path'       => $asset->path,
-                        ]));
-                    }
+                $fileDeleted = Storage::disk($disk)->delete($asset->path);
 
-                    $this->clearAssetCache($asset->path, $disk);
+                if (! $fileDeleted) {
+                    throw new \Exception(trans('dam::app.admin.dam.index.directory.not-writable', [
+                        'type'       => 'file',
+                        'actionType' => 'rename',
+                        'path'       => $asset->path,
+                    ]));
+                }
 
-                    Event::dispatch('dam.asset.delete.before', $assetId);
+                $this->clearAssetCache($asset->path, $disk);
 
-                    $this->assetRepository->delete($assetId);
+                Event::dispatch('dam.asset.delete.before', $assetId);
 
-                    Event::dispatch('dam.asset.delete.after', $assetId);
+                $deletableIds[] = $assetId;
+            }
+
+            if (! empty($deletableIds)) {
+                // Single bulk DELETE instead of N individual deletes
+                Asset::whereIn('id', $deletableIds)->delete();
+
+                foreach ($deletableIds as $deletedId) {
+                    Event::dispatch('dam.asset.delete.after', $deletedId);
                 }
             }
 
@@ -1410,10 +1425,11 @@ class AssetController extends Controller
     {
         Storage::disk($disk)->delete('thumbnails/'.$path);
 
-        foreach (Storage::disk($disk)->allFiles('preview') as $previewFile) {
-            if (str_ends_with($previewFile, '/'.$path)) {
-                Storage::disk($disk)->delete($previewFile);
-            }
+        // Preview files live at preview/{size}/{asset_path}. Listing only the
+        // size subdirs (2–5 entries) and deleting directly avoids a full
+        // allFiles() scan that grows with the total number of cached previews.
+        foreach (Storage::disk($disk)->directories('preview') as $sizeDir) {
+            Storage::disk($disk)->delete($sizeDir.'/'.$path);
         }
 
         if ($assetId !== null) {
