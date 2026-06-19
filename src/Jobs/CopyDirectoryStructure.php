@@ -56,20 +56,38 @@ class CopyDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * Copy the directory with the children directory
+     * Copy the directory tree iteratively using BFS.
+     *
+     * Replaces the former recursive method that would stack-overflow on deep trees.
+     * Children for each BFS level are loaded in a single query (one per level)
+     * instead of lazy-loading one directory at a time.
      */
-    public function copyDirectoryAndChildren(ModelDirectory $originalDirectory, ModelDirectory $newDirectory, $directoryRepository): void
+    public function copyDirectoryAndChildren(ModelDirectory $root, ModelDirectory $newRoot, DirectoryRepository $directoryRepository): void
     {
-        foreach ($originalDirectory->children as $child) {
-            $newChild = $child->replicate();
-            $newChild->save();
+        // Each queue entry: [sourceDir, newParentDir]
+        $queue = [[$root, $newRoot]];
 
-            // Set the new child to the new directory
-            $newChild->appendToNode($newDirectory)->save();
-            $newPath = $newChild->generatePath();
-            $directoryRepository->createDirectoryWithStorage($newPath);
+        while (! empty($queue)) {
+            $nextLevel = [];
 
-            $this->copyDirectoryAndChildren($child, $newChild, $directoryRepository);
+            // Batch-load all children for this BFS level in one query.
+            $sourceIds = array_map(fn ($pair) => $pair[0]->id, $queue);
+            $childrenByParent = ModelDirectory::whereIn('parent_id', $sourceIds)
+                ->get()
+                ->groupBy('parent_id');
+
+            foreach ($queue as [$source, $newParent]) {
+                foreach ($childrenByParent->get($source->id, collect()) as $child) {
+                    $newChild = $child->replicate();
+                    $newChild->appendToNode($newParent)->save();
+
+                    $directoryRepository->createDirectoryWithStorage($newChild->generatePath());
+
+                    $nextLevel[] = [$child, $newChild];
+                }
+            }
+
+            $queue = $nextLevel;
         }
     }
 }
