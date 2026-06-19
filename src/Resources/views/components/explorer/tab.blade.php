@@ -931,6 +931,7 @@ app.component('v-dam-tab', {
 
         onSearch() {
             clearTimeout(this.debounce);
+            if (this.searchInput.length > 0 && this.searchInput.length < 2) return;
             this.debounce = setTimeout(() => { this.search = this.searchInput; this.page = 1; this.fetch(); }, 300);
         },
 
