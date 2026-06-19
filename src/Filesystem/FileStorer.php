@@ -1,6 +1,6 @@
 <?php
 
-namespace Webkul\DAM\FileSystem;
+namespace Webkul\DAM\Filesystem;
 
 use Webkul\Core\Filesystem\FileStorer as BaseFileStorer;
 
