@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Bus;
-use Webkul\DAM\Jobs\MoveDirectoryStructure;
+use Webkul\DAM\Jobs\MassMove;
 use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
@@ -24,7 +24,7 @@ it('mass moves directories to target by dispatching jobs', function () {
     ]);
 
     $response->assertOk();
-    Bus::assertDispatchedTimes(MoveDirectoryStructure::class, 2);
+    Bus::assertDispatchedTimes(MassMove::class, 1);
 });
 
 it('skips directory if it is an ancestor of the target (circular move)', function () {

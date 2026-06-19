@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Bus;
-use Webkul\DAM\Jobs\CopyDirectory;
+use Webkul\DAM\Jobs\MassCopy;
 use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
@@ -24,7 +24,7 @@ it('mass copies directories to target by dispatching jobs', function () {
     ]);
 
     $response->assertOk();
-    Bus::assertDispatchedTimes(CopyDirectory::class, 2);
+    Bus::assertDispatchedTimes(MassCopy::class, 1);
 });
 
 it('skips root directory (protected by isCopyable) in mass copy', function () {
