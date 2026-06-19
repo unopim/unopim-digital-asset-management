@@ -113,7 +113,7 @@ test.describe('DAM Directory Management', () => {
     await rightClickDirectory(adminPage, 'Root');
     await adminPage.getByText('Add Directory').click({ force: true });
     await adminPage.waitForTimeout(500);
-    await expect(adminPage.locator('#app').getByText('Create Directory').first()).toBeVisible();
+    await expect(adminPage.getByText('Create Directory').first()).toBeVisible();
     await expect(adminPage.getByPlaceholder('Name')).toBeVisible();
     await expect(adminPage.getByRole('button', { name: 'Save Directory' })).toBeVisible();
   });

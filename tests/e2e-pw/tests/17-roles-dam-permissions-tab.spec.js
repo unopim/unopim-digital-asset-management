@@ -55,9 +55,9 @@ test.describe('Role Edit — DAM Directory Permissions Tab', () => {
 
     const tab = adminPage.locator('#dam-directory-permissions-tab');
 
-    await expect(tab.locator('.v-tree-container').first()).toBeAttached();
+    await expect(tab.locator('.dam-perm-tree').first()).toBeAttached();
     await expect(
-      tab.locator('input[type="checkbox"][name="directories[]"]').first()
+      tab.locator('input.dam-perm-cb').first()
     ).toBeAttached();
   });
 

@@ -227,19 +227,27 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
     const checkbox = adminPage.locator(`input.dam-perm-cb[data-id="${rootId}"]`);
     await checkbox.waitFor({ state: 'attached', timeout: 10000 });
 
+    // The native checkbox is hidden (Tailwind `hidden` class = display:none).
+    // Playwright's check/uncheck cannot scroll a display:none element into view
+    // even with force:true, so we dispatch the event directly via evaluate.
+    const toggleCheckbox = (el, checked) => {
+      el.checked = checked;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
     // Ensure it starts unchecked (clear any prior grant for a clean test).
     const wasChecked = await checkbox.isChecked();
     if (wasChecked) {
-      await checkbox.uncheck({ force: true });
+      await checkbox.evaluate(toggleCheckbox, false);
       await expect(checkbox).not.toBeChecked();
     }
 
     // Check it.
-    await checkbox.check({ force: true });
+    await checkbox.evaluate(toggleCheckbox, true);
     await expect(checkbox).toBeChecked();
 
     // Uncheck it.
-    await checkbox.uncheck({ force: true });
+    await checkbox.evaluate(toggleCheckbox, false);
     await expect(checkbox).not.toBeChecked();
   });
 
