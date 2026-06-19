@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -25,10 +26,16 @@ class DirectoryController
 
     /**
      * Get all the directory.
+     *
+     * Pass ?with_assets=1 to include full asset eager-loading (legacy behaviour).
+     * Default returns the lightweight tree (directory nodes + counts only),
+     * which avoids loading 100k+ asset records into memory on every tree fetch.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $directories = $this->directoryRepository->getDirectoryTree();
+        $directories = $request->boolean('with_assets')
+            ? $this->directoryRepository->getDirectoryTree()
+            : $this->directoryRepository->getDirectoryTreeOnly();
 
         return new JsonResponse([
             'success' => true,
