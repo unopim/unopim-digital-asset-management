@@ -14,6 +14,7 @@ use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
+use Webkul\DAM\Console\Commands\SeedDamDemoData;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRepository;
@@ -77,6 +78,7 @@ class DAMServiceProvider extends ServiceProvider
             $this->commands([
                 DamInstaller::class,
                 BackfillThumbnails::class,
+                SeedDamDemoData::class,
             ]);
         }
 

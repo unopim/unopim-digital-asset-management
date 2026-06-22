@@ -157,6 +157,30 @@ During execution, the command will prompt you to choose:
 php artisan unopim:dam:move-asset-to-s3
 ```
 
+## 🗂 Demo Data
+
+Seed sample directories and assets to explore DAM without uploading your own files.
+
+### Command
+
+```bash
+php artisan dam:demo-data
+```
+
+Seeds a set of demo directories (Accessories, Audio and Video, Clothes, Documents) with sample images and documents. The command is **idempotent** — running it twice does nothing if data is already present.
+
+### Re-seed from scratch
+
+```bash
+php artisan dam:demo-data --force
+```
+
+Clears all assets and directories under `assets/Root/` and re-seeds from scratch. The command prompts for confirmation (defaults to **No**) before deleting anything.
+
+### During installation
+
+`php artisan dam-package:install` asks whether to seed demo data as the final step, after migrations and asset publishing are complete.
+
 ## 📬 Postman API Collection
 
 To interact with UnoPim DAM's API, you can use our official Postman collection:
