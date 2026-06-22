@@ -1,5 +1,13 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## **Version 2.1.1** — Demo Data Seed
+
+### Features
+
+- **`dam:demo-data` command** — New Artisan command that seeds sample directories and assets (Accessories, Audio and Video, Clothes, Documents) so DAM can be explored without uploading real files. Idempotent by default; re-run with `--force` to wipe and re-seed. The `--force` flag prompts for explicit Y/N confirmation (defaults to No) before deleting existing assets.
+
+- **Demo data step in `dam-package:install`** — The install command now offers an optional demo data seed as its final step, after migrations and asset publishing complete.
+
 ## **Version 2.1.0** — New Features, Improvements, and UnoPim v2.1.0 Compatibility
 
 ### Features & Enhancements
