@@ -34,6 +34,15 @@ class AssetDataSource extends ApiDataSource
      */
     public function prepareApiQueryBuilder()
     {
+        $this->addFilter('file_type', ['='], 'dam_assets');
+        $this->addFilter('mime_type', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('extension', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('file_size', ['=', '<', '>', '<=', '>='], 'dam_assets');
+        $this->addFilter('file_name', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('code', ['=', 'LIKE'], 'dam_assets');
+        $this->addFilter('created_at', ['=', '>=', '<='], 'dam_assets');
+        $this->addFilter('updated_at', ['=', '>=', '<='], 'dam_assets');
+
         return $this->assetRepository->queryBuilder();
     }
 
@@ -135,6 +144,10 @@ class AssetDataSource extends ApiDataSource
 
             case 'extension':
                 $scopeQueryBuilder->where($filterTable.'extension', 'LIKE', "%{$value['value']}%");
+                break;
+
+            case 'code':
+                $scopeQueryBuilder->where($filterTable.'file_name', 'LIKE', "%{$value['value']}%");
                 break;
 
             case 'file_size':

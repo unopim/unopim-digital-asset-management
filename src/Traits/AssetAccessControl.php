@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Traits;
 
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
@@ -31,7 +32,9 @@ trait AssetAccessControl
             return null;
         }
 
-        $dirId = $asset->directories()->value('dam_directories.id');
+        $dirId = DB::table('dam_asset_directory')
+            ->where('asset_id', $asset->id)
+            ->value('directory_id');
 
         return $dirId ? (int) $dirId : null;
     }
@@ -42,19 +45,23 @@ trait AssetAccessControl
      */
     protected function damCanAccessAsset(int $assetId): bool
     {
-        $service = $this->damPermissionService();
+        try {
+            $service = $this->damPermissionService();
 
-        if ($service->bypass()) {
-            return true;
-        }
+            if ($service->bypass()) {
+                return true;
+            }
 
-        $dirId = $this->damAssetDirectoryId(Asset::find($assetId));
+            $dirId = $this->damAssetDirectoryId(Asset::find($assetId));
 
-        if ($dirId === null) {
+            if ($dirId === null) {
+                return false;
+            }
+
+            return $service->canAccess($dirId);
+        } catch (\Throwable $e) {
             return false;
         }
-
-        return $service->canAccess($dirId);
     }
 
     /**
