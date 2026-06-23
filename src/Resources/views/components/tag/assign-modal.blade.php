@@ -73,6 +73,7 @@
                 return {
                     assetIds: [],
                     context: null,
+                    directoryIds: [],
                     options: [],
                     selectedTags: [],
                     isAssigning: false,
@@ -81,21 +82,28 @@
 
             computed: {
                 subtitle() {
+                    // When folders are part of the selection the asset count is resolved
+                    // server-side (recursively), so show the recursive wording instead.
+                    if (this.directoryIds.length) {
+                        return "@lang('dam::app.admin.dam.tag.mass-action.modal-subtitle-recursive')";
+                    }
+
                     return "@lang('dam::app.admin.dam.tag.mass-action.modal-subtitle')"
                         .replace(':count', this.assetIds.length);
                 },
             },
 
             mounted() {
-                this.$emitter.on('dam:open-tag-assign-modal', ({ assetIds, context }) => {
-                    this.assetIds = Array.isArray(assetIds) ? assetIds.map(Number).filter(Boolean) : [];
-                    this.context  = context ?? null;
+                this.$emitter.on('dam:open-tag-assign-modal', ({ assetIds, directoryIds, context }) => {
+                    this.assetIds     = Array.isArray(assetIds) ? assetIds.map(Number).filter(Boolean) : [];
+                    this.directoryIds = Array.isArray(directoryIds) ? directoryIds.map(Number).filter(Boolean) : [];
+                    this.context      = context ?? null;
                     this.selectedTags = [];
 
-                    if (! this.assetIds.length) {
+                    if (! this.assetIds.length && ! this.directoryIds.length) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.tag.mass-action.no-assets')),
+                            message: @js(trans('dam::app.admin.dam.tag.mass-action.no-items')),
                         });
                         return;
                     }
@@ -151,6 +159,7 @@
 
                     this.$axios.post('{{ route('admin.dam.assets.mass_assign_tags') }}', {
                             indices: this.assetIds,
+                            directory_ids: this.directoryIds,
                             tags,
                         })
                         .then(({ data }) => {

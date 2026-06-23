@@ -510,19 +510,22 @@ app.component('v-dam-tab', {
         },
 
         openAssignTagsModal() {
-            // Tags apply to assets only — directories in the selection are ignored.
-            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+            // Tag the explicitly selected assets AND every asset inside the selected folders
+            // (recursively, resolved server-side) — so picking folders tags their contents too.
+            const assetIds     = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+            const directoryIds = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
 
-            if (! assetIds.length) {
+            if (! assetIds.length && ! directoryIds.length) {
                 this.$emitter.emit('add-flash', {
                     type: 'warning',
-                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-assets')",
+                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-items')",
                 });
                 return;
             }
 
             this.$emitter.emit('dam:open-tag-assign-modal', {
                 assetIds,
+                directoryIds,
                 context: `explorer:${this.tabId}`,
             });
         },
