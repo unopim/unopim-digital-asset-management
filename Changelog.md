@@ -1,12 +1,22 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## **Version 2.1.1** — Demo Data Seed
+## **Version 2.1.1** — Demo Data Seed & API Improvements
 
 ### Features
 
 - **`dam:demo-data` command** — New Artisan command that seeds sample directories and assets (Accessories, Audio and Video, Clothes, Documents) so DAM can be explored without uploading real files. Idempotent by default; re-run with `--force` to wipe and re-seed. The `--force` flag prompts for explicit Y/N confirmation (defaults to No) before deleting existing assets.
 
 - **Demo data step in `dam-package:install`** — The install command now offers an optional demo data seed as its final step, after migrations and asset publishing complete.
+
+- **Asset REST API filters** — The asset API data source now exposes filters for `file_type`, `mime_type`, `extension`, `file_size`, `file_name`, `code`, `created_at`, and `updated_at`, with range operators on size and date fields.
+
+### Improvements
+
+- **Hardened DAM API directory authorization** — Asset access-control resolution now fails closed: directory lookups run through a direct query, and any error during the permission check denies access instead of leaking it.
+
+### Bug Fixes
+
+- **Namespace casing in `FileStorer.php`** — Corrected the namespace from `Webkul\DAM\FileSystem` to `Webkul\DAM\Filesystem` to match the directory casing and fix autoloading on case-sensitive filesystems.
 
 ## **Version 2.1.0** — New Features, Improvements, and UnoPim v2.1.0 Compatibility
 
