@@ -14,6 +14,7 @@ use Webkul\DAM\Http\Controllers\DAMController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Http\Controllers\ImageEditController;
+use Webkul\DAM\Http\Controllers\TagController as TagManagementController;
 
 Route::group([
     'middleware' => ['admin', 'dam'],
@@ -51,6 +52,7 @@ Route::group([
         Route::controller(TagController::class)->prefix('')->group(function () {
             Route::post('/tag', 'addOrUpdateTag')->name('admin.dam.assets.tag');
             Route::post('/remove-tag', 'removeTag')->name('admin.dam.assets.remove-tag');
+            Route::post('/mass-assign-tags', 'massAssignTags')->name('admin.dam.assets.mass_assign_tags');
         });
 
         Route::controller(PropertyController::class)->prefix('')->group(function () {
@@ -108,6 +110,15 @@ Route::group([
             ->name('admin.dam.shares.active_for_target')
             ->where('type', 'asset|directory')
             ->where('targetId', '[0-9]+');
+    });
+
+    Route::controller(TagManagementController::class)->prefix('tags')->group(function () {
+        Route::get('', 'index')->name('admin.dam.tags.index');
+        Route::get('/list', 'list')->name('admin.dam.tags.list');
+        Route::post('', 'store')->name('admin.dam.tags.store');
+        Route::post('/mass-delete', 'massDestroy')->name('admin.dam.tags.mass_delete');
+        Route::put('/{id}', 'update')->name('admin.dam.tags.update')->where('id', '[0-9]+');
+        Route::delete('/{id}', 'destroy')->name('admin.dam.tags.destroy')->where('id', '[0-9]+');
     });
 
     Route::controller(DirectoryController::class)->prefix('directory')->group(function () {

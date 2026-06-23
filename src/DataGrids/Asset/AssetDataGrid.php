@@ -338,6 +338,15 @@ class AssetDataGrid extends DataGrid
      */
     public function prepareMassActions()
     {
+        if (bouncer()->hasPermission('dam.asset.update')) {
+            $this->addMassAction([
+                'title'   => trans('dam::app.admin.dam.tag.mass-action.assign-tags'),
+                'url'     => route('admin.dam.assets.mass_assign_tags'),
+                'method'  => 'POST',
+                'options' => ['actionType' => 'assign-tags'],
+            ]);
+        }
+
         if (bouncer()->hasPermission('dam.asset.mass_delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),

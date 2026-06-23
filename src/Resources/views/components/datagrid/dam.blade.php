@@ -199,6 +199,15 @@
                     this.treeBusy = !! busy;
                 });
 
+                // After the shared tag modal finishes a legacy-datagrid assignment,
+                // clear the selection and reload so the new tags show immediately.
+                this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
+                    if (context && context !== 'legacy-datagrid') return;
+                    this.applied.massActions.indices = [];
+                    this.applied.massActions.meta.mode = 'none';
+                    this.get();
+                });
+
                 this.boot();
             },
 
@@ -748,6 +757,17 @@
 
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
+
+                    // Assign-tags opens the shared tag modal instead of the generic confirm flow.
+                    // The modal posts the assignment itself; we just refresh on `dam:tag-assign:done`.
+                    if (actionType === 'assign-tags') {
+                        this.$emitter.emit('dam:open-tag-assign-modal', {
+                            assetIds: [...this.applied.massActions.indices],
+                            context: 'legacy-datagrid',
+                        });
+
+                        return;
+                    }
 
                     const selectedCount = this.applied.massActions.indices.length;
                     const startStatus = (label) => {

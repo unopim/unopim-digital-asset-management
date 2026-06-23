@@ -358,6 +358,15 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
+
+        // Shared tag modal finished assigning tags to assets selected in THIS tab —
+        // clear the selection and refresh so the change is reflected.
+        this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
+            if (context !== `explorer:${this.tabId}`) return;
+            this.clearSelection();
+            this.fetch();
+        });
+
         this.$emitter.on(`dam:operation-overlay:show:${this.tabId}`, ({ label, progress = null, fileCount = null }) => {
             this.operationOverlay = { show: true, label: label ?? '', progress, fileCount };
         });
@@ -498,6 +507,24 @@ app.component('v-dam-tab', {
         clearSelection() {
             this.selection.ids  = [];
             this.selection.mode = 'none';
+        },
+
+        openAssignTagsModal() {
+            // Tags apply to assets only — directories in the selection are ignored.
+            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+
+            if (! assetIds.length) {
+                this.$emitter.emit('add-flash', {
+                    type: 'warning',
+                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-assets')",
+                });
+                return;
+            }
+
+            this.$emitter.emit('dam:open-tag-assign-modal', {
+                assetIds,
+                context: `explorer:${this.tabId}`,
+            });
         },
 
         performMassDelete() {

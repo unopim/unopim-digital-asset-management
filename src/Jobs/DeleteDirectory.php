@@ -65,34 +65,40 @@ class DeleteDirectory implements ShouldQueue
         // Nested-set lft/rgt scan replaces the former unbounded recursion.
         $subtreeDirIds = $root->descendants()->pluck('id')->prepend($root->id);
 
-        // Bulk delete all assets in the subtree — 2 queries instead of N per dir.
-        $assetIds = DB::table('dam_asset_directory')
-            ->whereIn('directory_id', $subtreeDirIds)
-            ->distinct()
-            ->pluck('asset_id');
+        // All metadata deletes run in one transaction so a mid-sequence failure can never
+        // leave orphaned pivot rows or a corrupted nested set — either everything for the
+        // subtree is removed and the lft/rgt gap is repaired, or nothing changes.
+        DB::transaction(function () use ($subtreeDirIds, $table, $rgt, $width) {
+            // Bulk delete all assets in the subtree — 2 queries instead of N per dir.
+            $assetIds = DB::table('dam_asset_directory')
+                ->whereIn('directory_id', $subtreeDirIds)
+                ->distinct()
+                ->pluck('asset_id');
 
-        if ($assetIds->isNotEmpty()) {
-            Asset::whereIn('id', $assetIds)->delete();
-        }
+            if ($assetIds->isNotEmpty()) {
+                Asset::whereIn('id', $assetIds)->delete();
+            }
 
-        // Remove pivot rows for these directories before deleting the directories
-        // themselves — otherwise dam_asset_directory.directory_id FK blocks the delete.
-        DB::table('dam_asset_directory')->whereIn('directory_id', $subtreeDirIds)->delete();
+            // Remove pivot rows for these directories before deleting the directories
+            // themselves — otherwise dam_asset_directory.directory_id FK blocks the delete.
+            DB::table('dam_asset_directory')->whereIn('directory_id', $subtreeDirIds)->delete();
 
-        // Null out parent_id within the subtree to break the self-referential FK loop.
-        // Without this, PostgreSQL rejects a bulk DELETE because rows in the same batch
-        // still reference each other via parent_id, causing FK constraint violations.
-        DB::table($table)->whereIn('id', $subtreeDirIds)->update(['parent_id' => null]);
+            // Null out parent_id within the subtree to break the self-referential FK loop.
+            // Without this, PostgreSQL rejects a bulk DELETE because rows in the same batch
+            // still reference each other via parent_id, causing FK constraint violations.
+            DB::table($table)->whereIn('id', $subtreeDirIds)->update(['parent_id' => null]);
 
-        // Bulk delete all directory rows — no FK block now that parent_id is nulled.
-        DB::table($table)->whereIn('id', $subtreeDirIds)->delete();
+            // Bulk delete all directory rows — no FK block now that parent_id is nulled.
+            DB::table($table)->whereIn('id', $subtreeDirIds)->delete();
 
-        // Repair the nested-set lft/rgt values for nodes to the right of the deleted
-        // subtree — equivalent to what kalnoy does internally on a single-node delete.
-        DB::table($table)->where('_rgt', '>', $rgt)->decrement('_rgt', $width);
-        DB::table($table)->where('_lft', '>', $rgt)->decrement('_lft', $width);
+            // Repair the nested-set lft/rgt values for nodes to the right of the deleted
+            // subtree — equivalent to what kalnoy does internally on a single-node delete.
+            DB::table($table)->where('_rgt', '>', $rgt)->decrement('_rgt', $width);
+            DB::table($table)->where('_lft', '>', $rgt)->decrement('_lft', $width);
+        });
 
-        // Single storage call removes the entire directory tree — files AND subdirectories.
+        // Storage removal runs only after the metadata transaction commits — it is not
+        // transactional, so doing it last avoids deleting files for a delete that rolled back.
         $directoryRepository->deleteDirectoryWithStorage($rootPath);
     }
 }

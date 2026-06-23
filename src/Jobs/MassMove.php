@@ -102,12 +102,17 @@ class MassMove implements ShouldQueue
 
                         $successIds = array_column($updates, 'id');
 
-                        DB::table($pivotTable)->whereIn('asset_id', $successIds)->delete();
-                        DB::table($pivotTable)->insert(
-                            array_map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId], $successIds)
-                        );
+                        // Re-point the directory pivots and update the asset paths in one
+                        // transaction: a failure between the pivot delete and re-insert would
+                        // otherwise detach assets from every directory, hiding them from all grids.
+                        DB::transaction(function () use ($pivotTable, $successIds, $updates) {
+                            DB::table($pivotTable)->whereIn('asset_id', $successIds)->delete();
+                            DB::table($pivotTable)->insert(
+                                array_map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId], $successIds)
+                            );
 
-                        Asset::upsert($updates, ['id'], ['path', 'file_name']);
+                            Asset::upsert($updates, ['id'], ['path', 'file_name']);
+                        });
 
                         $done += count($updates);
                         $this->updateProgress(

@@ -232,6 +232,26 @@ return [
         'route' => 'admin.dam.shares.destroy',
         'sort'  => 3,
     ], [
+        'key'   => 'dam.tags',
+        'name'  => 'dam::app.admin.acl.tags',
+        'route' => 'admin.dam.tags.index',
+        'sort'  => 6,
+    ], [
+        'key'   => 'dam.tags.create',
+        'name'  => 'dam::app.admin.acl.create',
+        'route' => 'admin.dam.tags.store',
+        'sort'  => 1,
+    ], [
+        'key'   => 'dam.tags.update',
+        'name'  => 'dam::app.admin.acl.update',
+        'route' => 'admin.dam.tags.update',
+        'sort'  => 2,
+    ], [
+        'key'   => 'dam.tags.delete',
+        'name'  => 'dam::app.admin.acl.delete',
+        'route' => 'admin.dam.tags.destroy',
+        'sort'  => 3,
+    ], [
         'key'   => 'dam.configuration',
         'name'  => 'dam::app.admin.acl.configuration',
         'route' => 'admin.dam.configuration.index',

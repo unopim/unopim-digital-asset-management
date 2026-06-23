@@ -548,4 +548,7 @@
     @endPushOnce
 
     <v-share-link-modal></v-share-link-modal>
+
+    {{-- Shared "Assign Tags" mass-action modal — used by both the legacy datagrid and the explorer --}}
+    <x-dam::tag.assign-modal />
 </x-admin::layouts>

@@ -48,17 +48,23 @@ class MoveDirectoryStructure implements ShouldQueue
 
         $directoryRepository->isDirectoryWritable($newParentDirectory, 'move');
 
-        if ($newParentDirectory && ! $newParentDirectory->isDescendantOf($directory) && $directory->id !== $newParentDirectory->id) {
-            $directory->name = $name;
-            $directory->parent()->associate($newParentDirectory)->save();
-        } else {
+        if (! $newParentDirectory || $newParentDirectory->isDescendantOf($directory) || $directory->id === $newParentDirectory->id) {
             throw new \Exception(trans('dam::app.admin.dam.index.directory.cannot-move'));
         }
 
         try {
-            // Iterative BFS — rebuilds nested-set lft/rgt for every descendant
-            // without recursion risk on deep trees (10k+ dirs = PHP stack overflow).
-            $this->rebuildDescendantNodes($directory);
+            // Re-parent and the nested-set lft/rgt rebuild of the whole subtree run in one
+            // transaction. A partial rebuild would corrupt the tree (some descendants
+            // appended under the new parent, others left with stale bounds), so this is
+            // all-or-nothing: either the entire subtree relocates or the move rolls back.
+            DB::transaction(function () use ($directory, $newParentDirectory, $name) {
+                $directory->name = $name;
+                $directory->parent()->associate($newParentDirectory)->save();
+
+                // Iterative BFS — rebuilds nested-set lft/rgt for every descendant
+                // without recursion risk on deep trees (10k+ dirs = PHP stack overflow).
+                $this->rebuildDescendantNodes($directory);
+            });
 
             $directory->refresh();
 

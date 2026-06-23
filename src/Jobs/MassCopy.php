@@ -140,19 +140,24 @@ class MassCopy implements ShouldQueue
                             return;
                         }
 
-                        // Bulk insert — 1 query per chunk instead of 1 per asset
-                        DB::table($assetTable)->insert($rows);
+                        // Asset rows and their directory pivots are written in one transaction so a
+                        // pivot-insert failure can never leave assets stranded with no directory
+                        // (which would make them invisible in every grid yet still occupy storage).
+                        DB::transaction(function () use ($assetTable, $pivotTable, $rows) {
+                            // Bulk insert — 1 query per chunk instead of 1 per asset
+                            DB::table($assetTable)->insert($rows);
 
-                        // Retrieve inserted IDs by path (paths unique per disk)
-                        $newIds = DB::table($assetTable)
-                            ->whereIn('path', array_column($rows, 'path'))
-                            ->pluck('id');
+                            // Retrieve inserted IDs by path (paths unique per disk)
+                            $newIds = DB::table($assetTable)
+                                ->whereIn('path', array_column($rows, 'path'))
+                                ->pluck('id');
 
-                        if ($newIds->isNotEmpty()) {
-                            DB::table($pivotTable)->insert(
-                                $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId])->all()
-                            );
-                        }
+                            if ($newIds->isNotEmpty()) {
+                                DB::table($pivotTable)->insert(
+                                    $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId])->all()
+                                );
+                            }
+                        });
 
                         $this->progressDone += count($rows);
                         $this->updateProgress(
@@ -248,19 +253,23 @@ class MassCopy implements ShouldQueue
                         return;
                     }
 
-                    // Bulk insert — 1 query per 500 assets instead of 500 individual INSERTs
-                    DB::table($assetTable)->insert($rows);
+                    // Atomic asset + pivot write — see the top-level chunk above; a partial
+                    // failure here must not leave copied assets with no owning directory.
+                    DB::transaction(function () use ($assetTable, $pivotTable, $rows, $destDir) {
+                        // Bulk insert — 1 query per 500 assets instead of 500 individual INSERTs
+                        DB::table($assetTable)->insert($rows);
 
-                    // Retrieve inserted IDs by path (paths unique per disk)
-                    $newIds = DB::table($assetTable)
-                        ->whereIn('path', array_column($rows, 'path'))
-                        ->pluck('id');
+                        // Retrieve inserted IDs by path (paths unique per disk)
+                        $newIds = DB::table($assetTable)
+                            ->whereIn('path', array_column($rows, 'path'))
+                            ->pluck('id');
 
-                    if ($newIds->isNotEmpty()) {
-                        DB::table($pivotTable)->insert(
-                            $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $destDir->id])->all()
-                        );
-                    }
+                        if ($newIds->isNotEmpty()) {
+                            DB::table($pivotTable)->insert(
+                                $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $destDir->id])->all()
+                            );
+                        }
+                    });
 
                     $this->progressDone += count($rows);
                     $this->updateProgress(

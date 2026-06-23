@@ -25,6 +25,11 @@ return [
         'route' => 'admin.api.dam.assets.edit',
         'sort'  => 1,
     ], [
+        'key'   => 'api.dam.assets.update',
+        'name'  => 'dam::app.admin.acl.update',
+        'route' => 'admin.api.dam.assets.update',
+        'sort'  => 1,
+    ], [
         'key'   => 'api.dam.assets.delete',
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.api.dam.assets.destroy',

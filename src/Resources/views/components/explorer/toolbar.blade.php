@@ -33,7 +33,7 @@
 
                 {{-- Action bar (selection mode) --}}
                 <template v-if="selection.ids.length > 0">
-                    @if (bouncer()->hasPermission('dam.asset.mass_delete'))
+                    @if (bouncer()->hasPermission('dam.asset.mass_delete') || bouncer()->hasPermission('dam.asset.update'))
                     <x-admin::dropdown>
                         <x-slot:toggle>
                             <button
@@ -46,6 +46,7 @@
                         </x-slot:toggle>
 
                         <x-slot:menu class="shadow-md !p-0 z-10">
+                            @if (bouncer()->hasPermission('dam.asset.mass_delete'))
                             <li
                                 class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
                                 @click="openFolderPicker('move')"
@@ -59,13 +60,25 @@
                             >
                                 @lang('dam::app.admin.explorer.mass-actions.copy-to')
                             </li>
+                            @endif
 
+                            @if (bouncer()->hasPermission('dam.asset.update'))
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="openAssignTagsModal"
+                            >
+                                @lang('dam::app.admin.dam.tag.mass-action.assign-tags')
+                            </li>
+                            @endif
+
+                            @if (bouncer()->hasPermission('dam.asset.mass_delete'))
                             <li
                                 class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
                                 @click="performMassDelete"
                             >
                                 @lang('dam::app.admin.explorer.mass-actions.delete')
                             </li>
+                            @endif
                         </x-slot:menu>
                     </x-admin::dropdown>
                     @endif
