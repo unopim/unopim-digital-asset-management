@@ -538,6 +538,7 @@ app.component('v-dam-tab', {
                 agree: async () => {
                     const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
                     const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+                    const sourceName = this.currentFolderName();
 
                     this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
                         label: "@lang('dam::app.admin.explorer.mass-actions.deleting')".replace(':count', count),
@@ -548,7 +549,9 @@ app.component('v-dam-tab', {
                             await this.$axios.post('{{ route("admin.dam.assets.mass_delete") }}', { indices: assetIds });
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
-                                message: "@lang('dam::app.admin.explorer.mass-actions.deleted-assets')".replace(':count', assetIds.length),
+                                message: "@lang('dam::app.admin.explorer.mass-actions.deleted-assets')"
+                                    .replace(':count', assetIds.length)
+                                    .replace(':source', sourceName),
                             });
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
@@ -570,7 +573,7 @@ app.component('v-dam-tab', {
                                             if (d.status === 'completed') {
                                                 dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
                                                 this.$emitter.emit('dam:tree-reload');
-                                                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.mass-actions.deleted-dirs')".replace(':count', dirIds.length) });
+                                                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.mass-actions.deleted-dirs')".replace(':count', dirIds.length).replace(':source', sourceName) });
                                                 resolve();
                                             } else if (d.status === 'failed') {
                                                 this.$emitter.emit('add-flash', { type: 'error', message: d.message });
@@ -603,19 +606,29 @@ app.component('v-dam-tab', {
             this.folderPicker = { open: false, mode: null };
         },
 
-        onFolderPickerPicked(targetDirId) {
+        onFolderPickerPicked(payload) {
+            // Picker emits { id, name }; tolerate a bare id for safety.
+            const targetDirId   = payload?.id ?? payload;
+            const targetDirName = payload?.name ?? '';
             const mode = this.folderPicker.mode;
             this.folderPicker = { open: false, mode: null };
             if (mode === 'move') {
-                this.performMassMove(targetDirId);
+                this.performMassMove(targetDirId, targetDirName);
             } else {
-                this.performMassCopy(targetDirId);
+                this.performMassCopy(targetDirId, targetDirName);
             }
         },
 
-        performMassMove(targetDirId) {
+        // Name of the folder currently open in this tab — used as the "source"
+        // in move/copy/delete success alerts.
+        currentFolderName() {
+            return this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
+        },
+
+        performMassMove(targetDirId, targetDirName = '') {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const sourceName = this.currentFolderName();
 
             // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.moving')", progress: 0, fileCount: null };
@@ -654,7 +667,10 @@ app.component('v-dam-tab', {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')"
+                                                .replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length))
+                                                .replace(':source', sourceName)
+                                                .replace(':destination', targetDirName),
                                         });
                                         dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
                                         this.$emitter.emit('dam:tree-reload');
@@ -685,9 +701,10 @@ app.component('v-dam-tab', {
             })();
         },
 
-        performMassCopy(targetDirId) {
+        performMassCopy(targetDirId, targetDirName = '') {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const sourceName = this.currentFolderName();
 
             // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.copying')", progress: 0, fileCount: null };
@@ -726,7 +743,10 @@ app.component('v-dam-tab', {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')"
+                                                .replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length))
+                                                .replace(':source', sourceName)
+                                                .replace(':destination', targetDirName),
                                         });
                                         this.$emitter.emit('dam:tree-reload');
                                         resolve();
@@ -948,7 +968,7 @@ app.component('v-dam-tab', {
             const asset = this.dialog.extra?.asset;
             this.$axios.post("{{ route('admin.dam.assets.rename') }}", { id: asset.id, file_name: name })
                 .then(({ data }) => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
+                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.action-completed')" });
                     this.closeDialog();
                     this.fetch();
                 })

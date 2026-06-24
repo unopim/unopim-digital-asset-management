@@ -110,3 +110,64 @@ it('returns 404 when updating a missing tag', function () {
     $this->putJson(route('admin.dam.tags.update', 99999), ['name' => 'x'])
         ->assertStatus(404);
 });
+
+it('paginates the autocomplete tag list', function () {
+    foreach (range(1, 30) as $i) {
+        Tag::create(['name' => sprintf('tag-%02d', $i)]);
+    }
+
+    $page1 = $this->getJson(route('admin.dam.tags.list'));
+    $page1->assertOk();
+    expect($page1->json('data'))->toHaveCount(25);
+    expect($page1->json('has_more'))->toBeTrue();
+    expect((int) $page1->json('last_page'))->toBe(2);
+
+    $page2 = $this->getJson(route('admin.dam.tags.list', ['page' => 2]));
+    $page2->assertOk();
+    expect($page2->json('data'))->toHaveCount(5);
+    expect($page2->json('has_more'))->toBeFalse();
+});
+
+it('honours a custom per_page on the autocomplete tag list', function () {
+    foreach (range(1, 12) as $i) {
+        Tag::create(['name' => sprintf('size-%02d', $i)]);
+    }
+
+    $response = $this->getJson(route('admin.dam.tags.list', ['per_page' => 5]));
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(5);
+    expect($response->json('has_more'))->toBeTrue();
+});
+
+it('filters the autocomplete tag list by query', function () {
+    Tag::create(['name' => 'alpha']);
+    Tag::create(['name' => 'alphabet']);
+    Tag::create(['name' => 'beta']);
+
+    $response = $this->getJson(route('admin.dam.tags.list', ['query' => 'alph']));
+
+    $response->assertOk();
+
+    $names = collect($response->json('data'))->pluck('name')->all();
+
+    expect($names)->toContain('alpha')
+        ->toContain('alphabet')
+        ->not->toContain('beta');
+});
+
+it('exposes the explorer translation keys introduced for the UI changes', function () {
+    // These must resolve to real strings (not echo the key back) so the
+    // blade @lang() references render correctly instead of leaking raw keys.
+    foreach ([
+        'dam::app.admin.explorer.action-completed',
+        'dam::app.admin.explorer.bookmarks.remove',
+        'dam::app.admin.explorer.bookmarks.empty',
+    ] as $key) {
+        expect(trans($key))->not->toBe($key);
+    }
+
+    expect(trans('dam::app.admin.explorer.mass-actions.move-done'))->toContain(':source');
+    expect(trans('dam::app.admin.explorer.mass-actions.move-done'))->toContain(':destination');
+    expect(trans('dam::app.admin.explorer.mass-actions.deleted-assets'))->toContain(':source');
+});

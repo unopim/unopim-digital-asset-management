@@ -15,7 +15,7 @@
             {{-- Left: search + results count --}}
             <div class="flex flex-1 min-w-[120px] items-center gap-x-1">
                 {{-- Select-all checkbox (always visible) --}}
-                <label class="flex items-center cursor-pointer shrink-0 mr-2">
+                <label class="flex items-center cursor-pointer shrink-0 mr-2" data-select-all>
                     <input
                         type="checkbox"
                         class="peer hidden"
@@ -103,7 +103,7 @@
                             <button
                                 v-if="searchInput"
                                 @click="clearSearch"
-                                class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 text-base leading-none"
+                                class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 text-base leading-none"
                             >×</button>
                             <div v-else class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl"></div>
                         </div>

@@ -188,7 +188,7 @@ app.component('v-dam-explorer-grid', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.action-completed')" }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });

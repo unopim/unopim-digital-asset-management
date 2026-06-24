@@ -2305,7 +2305,7 @@
 
                     this.$emitter.emit('add-flash', {
                         type: 'success',
-                        message: 'Action completed successfully'
+                        message: "@lang('dam::app.admin.explorer.action-completed')"
                     });
 
                     return true;

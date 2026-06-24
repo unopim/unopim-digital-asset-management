@@ -117,16 +117,33 @@ class TagController extends Controller
     }
 
     /**
-     * Lightweight tag list used to populate the "Assign Tags" autocomplete.
+     * Lightweight, searchable + paginated tag list used to populate the
+     * "Assign Tags" autocomplete. Paginating keeps the dropdown responsive
+     * even with hundreds of tags (the client lazy-loads further pages and
+     * narrows results server-side as the user types).
      */
-    public function list(): JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $tags = Tag::query()
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn (Tag $tag) => ['id' => $tag->id, 'name' => $tag->name]);
+        $search = trim((string) $request->input('query', ''));
+        $perPage = (int) $request->input('per_page', 25);
+        $perPage = max(1, min($perPage, 100));
 
-        return response()->json(['data' => $tags]);
+        $query = Tag::query()->orderBy('name');
+
+        if ($search !== '') {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        $paginator = $query->paginate($perPage, ['id', 'name']);
+
+        return response()->json([
+            'data' => $paginator->getCollection()
+                ->map(fn (Tag $tag) => ['id' => $tag->id, 'name' => $tag->name])
+                ->values(),
+            'current_page' => $paginator->currentPage(),
+            'last_page'    => $paginator->lastPage(),
+            'has_more'     => $paginator->hasMorePages(),
+        ]);
     }
 
     protected function unauthorized(): JsonResponse

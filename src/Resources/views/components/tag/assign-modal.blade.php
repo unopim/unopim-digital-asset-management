@@ -39,9 +39,12 @@
                             :clear-on-select="false"
                             :hide-selected="true"
                             :show-labels="false"
+                            :loading="tagsLoading"
+                            :internal-search="false"
                             :tag-placeholder="@js(trans('dam::app.admin.dam.tag.mass-action.add-tag'))"
                             :placeholder="@js(trans('dam::app.admin.dam.tag.mass-action.tags-placeholder'))"
                             @tag="addTag"
+                            @search-change="onTagSearch"
                         ></v-multiselect>
                     </div>
 
@@ -77,6 +80,8 @@
                     options: [],
                     selectedTags: [],
                     isAssigning: false,
+                    tagsLoading: false,
+                    searchDebounce: null,
                 };
             },
 
@@ -114,14 +119,34 @@
             },
 
             methods: {
-                loadTags() {
-                    this.$axios.get('{{ route('admin.dam.tags.list') }}')
+                // Fetch a page of tags from the server, optionally narrowed by a search
+                // term. Server-side search + pagination keeps the dropdown responsive
+                // with hundreds of tags instead of loading them all up front.
+                loadTags(query = '') {
+                    this.tagsLoading = true;
+
+                    this.$axios.get('{{ route('admin.dam.tags.list') }}', {
+                            params: { query, per_page: 25 },
+                        })
                         .then(({ data }) => {
-                            this.options = (data?.data ?? []).map(t => t.name);
+                            const fetched = (data?.data ?? []).map(t => t.name);
+                            // Keep already-selected tags in the option list so their
+                            // chips stay intact even when filtered out by a search.
+                            this.options = [...new Set([...this.selectedTags, ...fetched])];
                         })
                         .catch(() => {
-                            this.options = [];
+                            this.options = [...this.selectedTags];
+                        })
+                        .finally(() => {
+                            this.tagsLoading = false;
                         });
+                },
+
+                onTagSearch(query) {
+                    clearTimeout(this.searchDebounce);
+                    this.searchDebounce = setTimeout(() => {
+                        this.loadTags((query || '').trim());
+                    }, 300);
                 },
 
                 addTag(newTag) {

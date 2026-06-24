@@ -159,7 +159,11 @@ app.component('v-dam-explorer', {
 
     methods: {
         uid() {
-            return (crypto.randomUUID ?? (() => Math.random().toString(36).slice(2)))();
+            // Call randomUUID as a method so `this` stays bound to `crypto`
+            // (a detached call throws "Illegal invocation" in secure contexts).
+            return (typeof crypto !== 'undefined' && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : Math.random().toString(36).slice(2);
         },
 
         makeTab(directoryId = null, label = '…') {

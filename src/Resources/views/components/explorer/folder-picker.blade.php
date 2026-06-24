@@ -1,7 +1,7 @@
 @once('v-dam-folder-picker')
 @push('scripts')
 <script type="text/x-template" id="v-dam-folder-picker-template">
-    <div v-if="open" class="fixed inset-0 z-[10010] flex items-center justify-center">
+    <div v-if="open" class="fixed inset-0 z-[10010] flex items-center justify-center" data-folder-picker>
         {{-- Backdrop --}}
         <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
 
@@ -9,11 +9,15 @@
         <div class="relative bg-white dark:bg-cherry-900 rounded-xl shadow-2xl w-[360px] h-[520px] flex flex-col">
 
             {{-- Header --}}
-            <div class="flex items-center justify-between px-5 py-4 border-b dark:border-cherry-800">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white">
+            <div class="flex items-center justify-between gap-3 px-5 py-4 border-b dark:border-cherry-800">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white truncate">
                     @lang('dam::app.admin.explorer.mass-actions.pick-dest')
                 </h3>
-                <button @click="$emit('close')" class="icon-cancel text-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition"></button>
+                <div class="flex items-center gap-2 shrink-0">
+                    {{-- Reuse the same grid/list toggle as the assets page --}}
+                    <v-dam-explorer-view-toggle :model-value="viewMode" @update:model-value="setView"></v-dam-explorer-view-toggle>
+                    <button @click="$emit('close')" class="icon-cancel text-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition"></button>
+                </div>
             </div>
 
             {{-- Breadcrumb --}}
@@ -58,19 +62,36 @@
                     <p v-if="visibleSearchResults.length === 0" class="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-gray-500">
                         @lang('dam::app.admin.dam.index.directory.search.no-matches')
                     </p>
-                    <button
-                        v-else
-                        v-for="result in visibleSearchResults"
-                        :key="result.id"
-                        class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
-                        @click="selectSearchResult(result)"
-                    >
-                        <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
-                        <span class="flex flex-col min-w-0">
-                            <span class="text-sm text-gray-700 dark:text-gray-200 truncate">@{{ result.name }}</span>
-                            <span v-if="result.breadcrumb" class="text-xs text-gray-400 dark:text-gray-500 break-all leading-tight">@{{ result.breadcrumb }}</span>
-                        </span>
-                    </button>
+
+                    {{-- List view --}}
+                    <template v-else-if="viewMode === 'list'">
+                        <button
+                            v-for="result in visibleSearchResults"
+                            :key="result.id"
+                            class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
+                            @click="selectSearchResult(result)"
+                        >
+                            <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
+                            <span class="flex flex-col min-w-0">
+                                <span class="text-sm text-gray-700 dark:text-gray-200 truncate">@{{ result.name }}</span>
+                                <span v-if="result.breadcrumb" class="text-xs text-gray-400 dark:text-gray-500 break-all leading-tight">@{{ result.breadcrumb }}</span>
+                            </span>
+                        </button>
+                    </template>
+
+                    {{-- Grid view --}}
+                    <div v-else class="grid grid-cols-3 gap-2">
+                        <button
+                            v-for="result in visibleSearchResults"
+                            :key="result.id"
+                            class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
+                            :title="result.breadcrumb || result.name"
+                            @click="selectSearchResult(result)"
+                        >
+                            <i class="icon-dam-folder text-4xl text-violet-400 dark:text-violet-500"></i>
+                            <span class="text-xs text-gray-700 dark:text-gray-200 truncate w-full text-center">@{{ result.name }}</span>
+                        </button>
+                    </div>
                 </template>
 
                 {{-- Browse mode --}}
@@ -78,17 +99,34 @@
                     <p v-if="visibleDirs.length === 0" class="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-gray-500">
                         @lang('dam::app.admin.explorer.empty')
                     </p>
-                    <button
-                        v-else
-                        v-for="dir in visibleDirs"
-                        :key="dir.id"
-                        class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
-                        @click="navigateInto(dir)"
-                    >
-                        <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
-                        <span class="truncate flex-1">@{{ dir.name }}</span>
-                        <i class="icon-chevron-right text-gray-300 dark:text-gray-600 text-lg shrink-0"></i>
-                    </button>
+
+                    {{-- List view --}}
+                    <template v-else-if="viewMode === 'list'">
+                        <button
+                            v-for="dir in visibleDirs"
+                            :key="dir.id"
+                            class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
+                            @click="navigateInto(dir)"
+                        >
+                            <i class="icon-dam-folder text-2xl text-violet-400 dark:text-violet-500 shrink-0"></i>
+                            <span class="truncate flex-1">@{{ dir.name }}</span>
+                            <i class="icon-chevron-right text-gray-300 dark:text-gray-600 text-lg shrink-0"></i>
+                        </button>
+                    </template>
+
+                    {{-- Grid view --}}
+                    <div v-else class="grid grid-cols-3 gap-2">
+                        <button
+                            v-for="dir in visibleDirs"
+                            :key="dir.id"
+                            class="flex flex-col items-center gap-1.5 p-3 rounded-lg hover:bg-violet-50 dark:hover:bg-cherry-800 transition"
+                            :title="dir.name"
+                            @click="navigateInto(dir)"
+                        >
+                            <i class="icon-dam-folder text-4xl text-violet-400 dark:text-violet-500"></i>
+                            <span class="text-xs text-gray-700 dark:text-gray-200 truncate w-full text-center">@{{ dir.name }}</span>
+                        </button>
+                    </div>
                 </template>
             </div>
 
@@ -124,7 +162,11 @@ app.component('v-dam-folder-picker', {
     },
 
     data() {
+        let savedView = 'list';
+        try { savedView = localStorage.getItem('dam_picker_view') || 'list'; } catch (e) {}
+
         return {
+            viewMode:      savedView,
             currentDirId:  null,
             breadcrumb:    [],
             dirs:          [],
@@ -246,7 +288,15 @@ app.component('v-dam-folder-picker', {
 
         confirm() {
             if (! this.currentDirId) return;
-            this.$emit('picked', this.currentDirId);
+            const crumb = this.breadcrumb[this.breadcrumb.length - 1];
+            // Emit the destination name alongside the id so callers can show it
+            // in the "moved/copied … to <destination>" success alert.
+            this.$emit('picked', { id: this.currentDirId, name: crumb?.name ?? '' });
+        },
+
+        setView(mode) {
+            this.viewMode = mode;
+            try { localStorage.setItem('dam_picker_view', mode); } catch (e) {}
         },
     },
 });

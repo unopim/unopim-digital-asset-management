@@ -229,7 +229,7 @@ app.component('v-dam-explorer-list', {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.assets.destroy', ':id') }}`.replace(':id', asset.id))
-                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
+                        .then(({ data }) => { this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.action-completed')" }); this.$emit('refresh'); this.$emitter.emit('dam:tree-reload'); })
                         .catch(err => this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message }));
                 },
             });
@@ -341,14 +341,14 @@ app.component('v-dam-explorer-list', {
                 agree: () => {
                     this.$axios.delete(`{{ route('admin.dam.directory.destroy', ':id') }}`.replace(':id', dir.id))
                         .then(({ data }) => {
-                            this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
+                            this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.action-completed')" });
                             let attempts = 0;
                             const poll = () => {
                                 if (++attempts > 15) return;
                                 this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'delete_directory'))
                                     .then(({ data: d }) => {
                                         if (d.status === 'completed') {
-                                            this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
+                                            this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.action-completed')" });
                                             this.$emitter.emit('dam:directory-deleted', { id: dir.id });
                                             this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                             this.$emitter.emit('dam:tree-reload');
