@@ -154,7 +154,18 @@ class ExplorerDataController extends Controller
 
                 $lowerSearch = '%'.strtolower($search).'%';
                 $q->whereIn('dam_asset_directory.directory_id', $subtreeSubquery)
-                    ->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch]);
+                    ->where(function ($w) use ($prefix, $lowerSearch) {
+                        // Match the file name OR any associated tag — mirrors the legacy
+                        // datagrid where the tag column is searchable alongside file_name.
+                        $w->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch])
+                            ->orWhereExists(
+                                DB::table('dam_tags')
+                                    ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
+                                    ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
+                                    ->whereRaw('LOWER('.$prefix.'dam_tags.name) LIKE ?', [$lowerSearch])
+                                    ->select(DB::raw(1))
+                            );
+                    });
             } else {
                 $q->where('dam_asset_directory.directory_id', $dir->id);
             }

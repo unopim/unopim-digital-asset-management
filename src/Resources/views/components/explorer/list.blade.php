@@ -18,7 +18,7 @@
 
         <template v-else>
             {{-- Header --}}
-            <div class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 <span></span>
                 <span></span>
                 <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('name')">
@@ -37,7 +37,7 @@
             {{-- Folder rows --}}
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
-                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
+                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 :class="{ 'ring-2 ring-inset ring-violet-400': dropTargetId === dir.id }"
                 :data-dir-id="dir.id"
                 draggable="true"
@@ -58,7 +58,7 @@
                             :checked="isSelectedById(dir.id, 'directory')"
                             @change="$emit('toggle-select', dir.id, 'directory')"
                         >
-                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl cursor-pointer"></span>
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl cursor-pointer"></span>
                     </label>
                 </div>
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
@@ -86,14 +86,14 @@
             </div>
 
             {{-- Files divider --}}
-            <div v-if="directories.length && assets.length" class="px-4 py-0.5 bg-gray-50 dark:bg-cherry-950 border-b border-gray-100 dark:border-cherry-800 text-[10px] font-bold uppercase tracking-widest text-violet-400">
+            <div v-if="directories.length && assets.length" class="px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 @lang('dam::app.admin.explorer.sections.files')
             </div>
 
             {{-- Asset rows --}}
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
-                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-0 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
+                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 draggable="true"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                 @dragstart="onAssetDragStart($event, asset)"
@@ -108,7 +108,7 @@
                             :checked="isSelectedById(asset.id, 'asset')"
                             @change="$emit('toggle-select', asset.id, 'asset')"
                         >
-                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl cursor-pointer"></span>
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl cursor-pointer"></span>
                     </label>
                 </div>
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
