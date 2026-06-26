@@ -757,6 +757,17 @@ return [
                 'toggle-tree'    => 'Toggle directory tree',
                 'toggle-sidebar' => 'Toggle sidebar',
             ],
+            'upload' => [
+                'queued'              => 'Queued',
+                'uploading'           => 'Uploading',
+                'creating'            => 'Creating folder',
+                'done'                => 'Done',
+                'failed'              => 'Failed',
+                'interrupted'         => 'Interrupted — re-add to retry',
+                'resuming'            => 'Resuming…',
+                'overall'             => ':done of :total uploaded',
+                'too-large-to-resume' => 'Batch too large to auto-resume after refresh',
+            ],
         ],
     ],
     'share' => [

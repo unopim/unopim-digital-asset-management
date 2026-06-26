@@ -190,7 +190,7 @@ app.component('v-dam-explorer-ctx', {
             const r  = el.getBoundingClientRect();
             const vw = window.innerWidth;
             const vh = window.innerHeight;
-            const pad = 6;
+            const pad = 8;
             let top, left;
 
             if (this.y + r.height + pad <= vh) {

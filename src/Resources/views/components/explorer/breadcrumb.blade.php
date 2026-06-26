@@ -45,12 +45,12 @@
         </div>
 
         {{-- Crumb trail --}}
-        <nav class="flex items-center gap-1 text-sm flex-1 flex-wrap min-w-0">
+        <nav class="flex items-center gap-1 text-sm flex-1 flex-nowrap min-w-0 overflow-x-auto whitespace-nowrap">
             <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id ?? i">
                 <span v-if="i > 0" class="text-gray-300 dark:text-gray-600">/</span>
                 <button
                     type="button"
-                    class="px-1 py-0.5 rounded transition-colors max-w-[120px] truncate"
+                    class="px-1 py-0.5 rounded transition-colors max-w-[80px] sm:max-w-[120px] truncate shrink-0"
                     :class="i === breadcrumbs.length - 1
                         ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
                         : crumbDropTarget === crumb.id

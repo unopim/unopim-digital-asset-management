@@ -9,26 +9,23 @@
         @drop.prevent="onSpaceDrop($event)"
     >
 
-        <div v-if="isLoading" class="flex justify-center py-12">
-            <svg class="animate-spin h-8 w-8 text-violet-600" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
+        <div v-if="isLoading" class="divide-y divide-gray-100 dark:divide-cherry-800 p-2">
+            <div v-for="n in 8" :key="n" class="h-10 my-1 rounded bg-gray-100 dark:bg-cherry-800 animate-pulse"></div>
         </div>
 
         <template v-else>
             {{-- Header --}}
-            <div class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 <span></span>
                 <span></span>
                 <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('name')">
                     @lang('dam::app.admin.explorer.list.header.name') <span v-if="sortBy==='name'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span>@lang('dam::app.admin.explorer.list.header.type')</span>
-                <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('size')">
+                <span class="hidden sm:block">@lang('dam::app.admin.explorer.list.header.type')</span>
+                <span class="hidden md:block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('size')">
                     @lang('dam::app.admin.explorer.list.header.size') <span v-if="sortBy==='size'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('updated_at')">
+                <span class="hidden lg:block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('updated_at')">
                     @lang('dam::app.admin.explorer.list.header.modified') <span v-if="sortBy==='updated_at'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
                 <span>@lang('dam::app.admin.explorer.list.header.actions')</span>
@@ -37,7 +34,7 @@
             {{-- Folder rows --}}
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
-                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
+                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 :class="{ 'ring-2 ring-inset ring-violet-400': dropTargetId === dir.id }"
                 :data-dir-id="dir.id"
                 draggable="true"
@@ -62,10 +59,15 @@
                     </label>
                 </div>
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
-                <span class="font-medium text-violet-700 dark:text-violet-300 truncate">@{{ dir.name }}</span>
-                <span class="text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
-                <span class="text-gray-400 text-xs">@{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}</span>
-                <span class="text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
+                <div class="min-w-0">
+                    <span class="font-medium text-violet-700 dark:text-violet-300 truncate block">@{{ dir.name }}</span>
+                    <span class="sm:hidden text-xs text-gray-400 truncate block">
+                        @lang('dam::app.admin.explorer.sections.folder') · @{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}
+                    </span>
+                </div>
+                <span class="hidden sm:block text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
+                <span class="hidden md:block text-gray-400 text-xs">@{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}</span>
+                <span class="hidden lg:block text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
                 <div class="flex gap-2 items-center">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
                     <button v-if="dir.can_access !== false" type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
@@ -93,7 +95,7 @@
             {{-- Asset rows --}}
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
-                class="grid-cols-[28px_28px_1fr_110px_80px_110px_100px] grid gap-x-2 px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
+                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
                 draggable="true"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                 @dragstart="onAssetDragStart($event, asset)"
@@ -112,10 +114,13 @@
                     </label>
                 </div>
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
-                <span class="text-gray-700 dark:text-gray-200 truncate">@{{ asset.file_name }}</span>
-                <div class="flex items-center overflow-hidden"><span class="text-xs font-bold rounded px-1 py-px uppercase whitespace-nowrap overflow-hidden" style="max-width:100%;text-overflow:ellipsis;" :class="badge(asset.file_type, asset.extension)">@{{ asset.file_type }}</span></div>
-                <span class="text-gray-400 text-xs">@{{ fmtSize(asset.file_size) }}</span>
-                <span class="text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
+                <div class="min-w-0">
+                    <span class="text-gray-700 dark:text-gray-200 truncate block">@{{ asset.file_name }}</span>
+                    <span class="sm:hidden text-xs text-gray-400 truncate block">@{{ asset.file_type }} · @{{ fmtSize(asset.file_size) }}</span>
+                </div>
+                <div class="hidden sm:flex items-center overflow-hidden"><span class="text-xs font-bold rounded px-1 py-px uppercase whitespace-nowrap overflow-hidden" style="max-width:100%;text-overflow:ellipsis;" :class="badge(asset.file_type, asset.extension)">@{{ asset.file_type }}</span></div>
+                <span class="hidden md:block text-gray-400 text-xs">@{{ fmtSize(asset.file_size) }}</span>
+                <span class="hidden lg:block text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
                 <div class="flex gap-2">
                     @if (bouncer()->hasPermission('dam.asset.view'))
                     <button type="button" class="icon-dam-preview text-gray-400 hover:text-violet-600 text-base" @click="preview(asset.id)" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"></button>

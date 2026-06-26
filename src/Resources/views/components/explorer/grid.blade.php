@@ -4,7 +4,7 @@
     {{-- Outer div catches right-click and drops on empty space (item events use .stop) --}}
     <div class="pr-4 min-h-72" @contextmenu.prevent="showSpaceCtx($event)" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
         {{-- Shimmer --}}
-        <div v-if="isLoading" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
+        <div v-if="isLoading" class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
         </div>
 
@@ -14,7 +14,7 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.folders')
                 </p>
-                <div class="grid grid-cols-[repeat(auto-fill,96px)] gap-1 mb-6">
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(96px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-2 mb-6">
                     <v-dam-explorer-folder-card
                         v-for="dir in directories"
                         :key="dir.id"
@@ -40,7 +40,7 @@
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.files')
                 </p>
-                <div class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
                     <v-dam-asset-card
                         v-for="asset in assets"
                         :key="asset.id"

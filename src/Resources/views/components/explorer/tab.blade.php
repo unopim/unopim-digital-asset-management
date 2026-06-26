@@ -77,33 +77,13 @@
             <input
                 type="file" multiple name="files[]"
                 :id="`explorer-upload-${tabId}`" class="hidden"
-                :disabled="uploading"
                 @change="onFileChange"
             />
             <input
                 type="file" webkitdirectory multiple name="folder_files[]"
                 :id="`explorer-folder-upload-${tabId}`" class="hidden"
-                :disabled="folderUploading"
                 @change="onFolderChange"
             />
-            <!-- <template v-if="canUploadHere">
-                <label
-                    :for="`explorer-upload-${tabId}`"
-                    class="secondary-button cursor-pointer"
-                    :class="{ 'opacity-60 pointer-events-none': uploading || folderUploading }"
-                >
-                    <svg v-if="uploading || folderUploading" class="animate-spin inline-block h-4 w-4 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <span v-else class="icon-dam-upload"></span>
-                    <span v-if="uploading || folderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
-                    <span v-else>@lang('dam::app.admin.dam.index.upload')</span>
-                </label>
-                <button v-if="uploading || folderUploading" type="button" class="secondary-button" @click="uploading ? cancelUpload() : cancelFolderUpload()">
-                    @lang('dam::app.admin.dam.index.cancel')
-                </button>
-            </template> -->
             @endif
 
             {{-- Grid / List view toggle --}}
@@ -137,27 +117,15 @@
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
         </div>
 
-        {{-- Content area — v-dam-drop-upload handles OS file/folder drops --}}
+        {{-- Content area — v-dam-drop-upload handles OS file/folder drops and is
+             the single upload manager; toolbar uploads enqueue into it via $refs. --}}
         <v-dam-drop-upload
+            ref="dropUpload"
             class="flex-1 overflow-y-auto flex flex-col"
             :current-directory="currentDirId ? { id: currentDirId } : null"
             :can-upload="canUploadHere"
             @refresh-datagrid="fetch()"
         >
-            {{-- Upload blocking overlay (button upload only) --}}
-            <div
-                v-if="uploading"
-                class="absolute inset-0 z-40 bg-white/70 dark:bg-cherry-900/70 backdrop-blur-sm flex items-center justify-center rounded-lg pointer-events-all"
-            >
-                <div class="flex flex-col items-center gap-3">
-                    <svg class="animate-spin h-8 w-8 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <p class="text-sm font-semibold text-violet-700 dark:text-violet-300">@lang('dam::app.admin.dam.index.uploading')</p>
-                </div>
-            </div>
-
             <v-dam-explorer-grid
                 v-if="viewMode === 'grid'"
                 class="flex-1"
@@ -281,10 +249,6 @@ app.component('v-dam-tab', {
             sortOrder:    'asc',
             page:         this.initialPage,
             perPage:      this.initialPerPage,
-            uploading:          false,
-            abort:              null,
-            folderUploading:    false,
-            folderAbort:        null,
             uploadTargetDirId:  null,
             localAccessibleIds: [...(this.accessibleIds || [])],
             debounce:        null,
@@ -381,28 +345,25 @@ app.component('v-dam-tab', {
         });
         this.$emitter.on('dam:directory-mutated', () => this.fetch());
 
-        // Tree "Upload files" → emit dam:upload-files with pre-built FormData
+        // Tree "Upload files" → route the pre-built FormData through the unified
+        // upload manager so it shows the same progress panel as every other upload.
         this.$emitter.on('dam:upload-files', (formData) => {
-            if (this.uploading) return;
-            this.uploading = true;
-            this.abort = new AbortController();
-            this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                signal: this.abort.signal,
-            }).then(() => {
-                this.fetch();
-                this.$emitter.emit('dam:tree-reload');
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-            }).catch(err => {
-                if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                }
-            }).finally(() => { this.uploading = false; this.abort = null; });
+            const files = formData.getAll('files[]');
+            if (! files.length) return;
+            const targetDirId = formData.get('directory_id') ?? this.currentDirId;
+            this.$refs.dropUpload?.enqueueUpload({
+                items: files.map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                folderPaths: [],
+                targetDirId,
+            });
         });
 
-        // Tree folder upload state → mirror on explorer breadcrumb button
-        this.$emitter.on('dam:folder-upload-start', () => { this.folderUploading = true; });
-        this.$emitter.on('dam:folder-upload-end',   () => { this.folderUploading = false; });
+        // Refresh the listing whenever the upload manager finishes a batch that
+        // targeted this tab's current directory.
+        this.$emitter.on('dam:uploads-refresh', ({ directoryId } = {}) => {
+            if (! directoryId || Number(directoryId) === Number(this.currentDirId)) this.fetch();
+        });
+
         this.$emitter.on('dam:directory-granted', (id) => {
             const numId = Number(id);
             if (! this.localAccessibleIds.map(Number).includes(numId)) {
@@ -1091,31 +1052,16 @@ app.component('v-dam-tab', {
 
         onFileChange(e) {
             const files = e.target.files;
-            if (! files?.length) return;
+            if (! files?.length) { e.target.value = ''; return; }
             const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
             this.uploadTargetDirId = null;
-            const fd = new FormData();
-            Array.from(files).forEach(f => fd.append('files[]', f));
-            fd.append('directory_id', targetDirId);
-            this.uploading = true;
-            this.abort     = new AbortController();
-            this.$axios.post("{{ route('admin.dam.assets.upload') }}", fd, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                signal: this.abort.signal,
-            }).then(() => {
-                this.fetch();
-                this.$emitter.emit('dam:tree-reload');
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-            }).catch(err => {
-                if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                }
-            }).finally(() => { this.uploading = false; this.abort = null; e.target.value = ''; });
+            this.$refs.dropUpload?.enqueueUpload({
+                items: Array.from(files).map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                folderPaths: [],
+                targetDirId,
+            });
+            e.target.value = '';
         },
-
-        cancelUpload() { this.abort?.abort(); },
-
-        cancelFolderUpload() { this.folderAbort?.abort(); this.$emitter.emit('dam:cancel-folder-upload'); },
 
         onInternalDrop({ payload, targetDir }) {
             if (! this.aclBypass && ! this.accessibleIds.map(Number).includes(Number(targetDir.id))) {
@@ -1181,56 +1127,26 @@ app.component('v-dam-tab', {
 
         onFolderChange(e) {
             const files = Array.from(e.target.files ?? []);
-            if (! files.length) return;
+            if (! files.length) { e.target.value = ''; return; }
             const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
             this.uploadTargetDirId = null;
 
-            const hasFiles = files.some(f => f.size > 0);
+            // Every directory level along each path becomes a folder to create;
+            // files with content become upload jobs. Both flow through the manager.
+            const folderPaths = new Set();
+            files.forEach(f => {
+                const rel  = f.webkitRelativePath || f.name;
+                const segs = rel.split('/');
+                for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+            });
 
-            if (hasFiles) {
-                const fd = new FormData();
-                files.forEach(f => {
-                    fd.append('files[]', f);
-                    fd.append('relative_paths[]', f.webkitRelativePath || f.name);
-                });
-                fd.append('directory_id', targetDirId);
-                fd.append('preserve_root', '1');
-
-                this.folderUploading = true;
-                this.folderAbort     = new AbortController();
-
-                this.$axios.post("{{ route('admin.dam.assets.upload_folder') }}", fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    signal: this.folderAbort.signal,
-                }).then(() => {
-                    this.fetch();
-                    this.$emitter.emit('dam:tree-reload');
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-                }).catch(err => {
-                    if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                        this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                    }
-                }).finally(() => { this.folderUploading = false; this.folderAbort = null; e.target.value = ''; });
-            } else {
-                const paths = [...new Set(
-                    files.map(f => f.webkitRelativePath || f.name)
-                         .map(p => p.split('/').slice(0, -1).join('/'))
-                         .filter(Boolean)
-                )];
-
-                if (! paths.length) { e.target.value = ''; return; }
-
-                this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
-                    directory_id: targetDirId,
-                    paths,
-                }).then(() => {
-                    this.fetch();
-                    this.$emitter.emit('dam:tree-reload');
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-                }).catch(err => {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
-                }).finally(() => { e.target.value = ''; });
-            }
+            this.$refs.dropUpload?.enqueueUpload({
+                items: files.filter(f => f.size > 0)
+                            .map(f => ({ file: f, relativePath: f.webkitRelativePath || f.name, preserveRoot: true })),
+                folderPaths: [...folderPaths],
+                targetDirId,
+            });
+            e.target.value = '';
         },
 
         executePaste(targetDirId) {

@@ -541,10 +541,15 @@
     });
 </script>
 <script type="text/x-template" id="v-tree-view-template">
+    <template v-if="treeLoading">
+        <div class="tree-container overflow-hidden" style="max-height: calc(100vh - 360px);">
+            <x-admin::shimmer.tree />
+        </div>
+    </template>
     <div
             class="relative"
             ref="treeContainer"
-            v-if="formattedItems"
+            v-else-if="formattedItems"
         >
             <!-- Move-in-flight overlay (directory or asset drag-move) -->
             <div
@@ -1048,6 +1053,7 @@
                 requestType: null,
                 parentItem: null,
                 isLoading: false,
+                treeLoading: false,
                 actionStatus: null,
                 dragStart: false,
                 movingDirectoryId: null,
@@ -1929,49 +1935,29 @@
 
                 const fileEntries = await collectFiles(dirHandle, '');
 
-                if (emptyDirs.length > 0) {
-                    try {
-                        await this.$axios.post(
-                            "{{ route('admin.dam.directory.create_structure') }}",
-                            { directory_id: this.selectedItem.id, paths: emptyDirs }
-                        );
-                    } catch (e) {
-                        // non-fatal
-                    }
-                }
-
-                if (fileEntries.length === 0) {
-                    if (emptyDirs.length > 0) {
-                        this.$emitter.emit('add-flash', {
-                            type: 'success',
-                            message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                        });
-                        this.loadDirectories();
-                        this.$emitter.emit('data-grid:refresh');
-                        this.$emitter.emit('dam:directory-mutated');
-                    } else {
-                        this.$emitter.emit('add-flash', {
-                            type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
-                        });
-                    }
+                if (fileEntries.length === 0 && emptyDirs.length === 0) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'warning',
+                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                    });
                     return;
                 }
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries, emptyDirs);
             },
 
             handleFileChange(event) {
                 const files = event.target.files;
                 if (! files || files.length === 0) return;
+                if (! this.selectedItem) { event.target.value = ''; return; }
 
-                const formData = new FormData();
-                for (let i = 0; i < files.length; i++) {
-                    formData.append('files[]', files[i]);
-                }
-                formData.append('directory_id', this.selectedItem.id);
-
-                this.$emitter.emit('dam:upload-files', formData);
+                // Funnel into the shared upload manager so the floating progress
+                // panel (with per-file progress) shows, identical to a drag-drop.
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items: Array.from(files).map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                    folderPaths: [],
+                    targetDirId: this.selectedItem.id,
+                });
                 event.target.value = '';
             },
 
@@ -1994,89 +1980,31 @@
 
                 event.target.value = '';
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries);
             },
 
-            async chunkedFolderUpload(fileEntries) {
-                if (! fileEntries.length) return;
+            // Funnel a folder (files + any empty directories) into the shared upload
+            // manager so it shows the floating progress panel with per-file progress,
+            // identical to a drag-drop. The manager creates the directory structure
+            // (create_structure) then uploads each file (upload_folder) concurrently.
+            enqueueFolderUpload(fileEntries, emptyDirs = []) {
+                if (! this.selectedItem) return;
+                if (! fileEntries.length && ! emptyDirs.length) return;
 
-                if (this._folderAbortController) {
-                    this._folderAbortController.abort();
-                }
-                this._folderAbortController = new AbortController();
-                const signal = this._folderAbortController.signal;
-
-                const chunkSize = Math.max(1, damTreeMaxFileUploads - 2);
-                const chunks = [];
-                for (let i = 0; i < fileEntries.length; i += chunkSize) {
-                    chunks.push(fileEntries.slice(i, i + chunkSize));
-                }
-
-                this.$emitter.emit('dam:grid-busy', true);
-                this.$emitter.emit('dam:folder-upload-start');
-
-                let totalUploaded = 0;
-
-                for (const chunk of chunks) {
-                    if (signal.aborted) break;
-
-                    const formData = new FormData();
-                    formData.append('directory_id', this.selectedItem.id);
-                    formData.append('preserve_root', '1');
-                    chunk.forEach(({ file, relativePath }) => {
-                        formData.append('files[]', file);
-                        formData.append('relative_paths[]', relativePath);
-                    });
-
-                    try {
-                        const response = await this.$axios.post(
-                            "{{ route('admin.dam.assets.upload_folder') }}",
-                            formData,
-                            { headers: { 'Content-Type': 'multipart/form-data' }, signal }
-                        );
-                        totalUploaded += (response.data.files || []).length;
-                    } catch (error) {
-                        this._folderAbortController = null;
-                        this.$emitter.emit('dam:grid-busy', false);
-                        this.$emitter.emit('dam:folder-upload-end');
-
-                        if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED' || signal.aborted) {
-                            this.$emitter.emit('add-flash', {
-                                type: 'warning',
-                                message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                            });
-                        } else {
-                            this.$emitter.emit('add-flash', {
-                                type: 'error',
-                                message: error?.response?.data?.message || "@lang('dam::app.admin.dam.index.directory.creation-failed')",
-                            });
-                        }
-                        return;
-                    }
+                const folderPaths = new Set(emptyDirs);
+                const items = [];
+                for (const { file, relativePath } of fileEntries) {
+                    const rel  = relativePath || file.name;
+                    const segs = rel.split('/');
+                    for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+                    items.push({ file, relativePath: rel, preserveRoot: true });
                 }
 
-                this._folderAbortController = null;
-                this.$emitter.emit('dam:grid-busy', false);
-                this.$emitter.emit('dam:folder-upload-end');
-
-                if (totalUploaded > 0 && this.selectedItem) {
-                    this.adjustAncestorCounts(this.selectedItem.id, totalUploaded);
-                }
-
-                if (! signal.aborted) {
-                    this.$emitter.emit('add-flash', {
-                        type: 'success',
-                        message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                    });
-                    this.loadDirectories();
-                    this.$emitter.emit('data-grid:refresh');
-                    this.$emitter.emit('dam:directory-mutated');
-                } else {
-                    this.$emitter.emit('add-flash', {
-                        type: 'warning',
-                        message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                    });
-                }
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items,
+                    folderPaths: [...folderPaths],
+                    targetDirId: this.selectedItem.id,
+                });
             },
 
             setAssets(data) {
@@ -2145,8 +2073,14 @@
             },
 
             loadDirectories() {
+                this.treeLoading = true;
                 this.$axios.get("{{ route('admin.dam.directory.index') }}")
                         .then((response) => {
+                            // Clear the shimmer flag synchronously in this same
+                            // reactive flush (before the reveal/scroll $nextTick
+                            // below) so the real tree container is mounted when
+                            // that callback queries this.$refs.treeContainer.
+                            this.treeLoading = false;
                             const tree = response.data.data;
 
                             // Default Root.assets to an empty array synchronously
@@ -2215,6 +2149,7 @@
                             });
                         })
                         .catch((error) => {
+                            this.treeLoading = false;
                             console.error('Error fetching directories:', error);
                         });
             },
