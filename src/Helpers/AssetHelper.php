@@ -192,7 +192,7 @@ class AssetHelper
     /**
      * Check if given extension or mime type is forbidden for upload
      */
-    public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null): bool
+    public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = [
             'php',
@@ -247,6 +247,67 @@ class AssetHelper
             return true;
         }
 
+        if (self::isPlaceholderImage($extension, $mimeType, $fileName, $realPath)) {
+            return true;
+        }
+
         return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));
+    }
+
+    /**
+     * The DAM ships a "no records found" placeholder SVG (no-records-found.svg)
+     * meant only to render the empty state. Block it from being uploaded as a
+     * real asset — by filename stem, or (robust against rename and SVGO/browser
+     * re-serialization) by a content signature: the #7C3AEC stroke plus one of
+     * its three distinctive path-data fragments. Only SVGs are inspected, so
+     * legitimate non-SVG uploads and unrelated SVGs are unaffected.
+     */
+    public static function isPlaceholderImage(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
+    {
+        $isSvg = $extension === 'svg' || $mimeType === 'image/svg+xml';
+
+        if (! $isSvg) {
+            return false;
+        }
+
+        if ($fileName) {
+            $stem = strtolower(pathinfo(basename($fileName), PATHINFO_FILENAME));
+
+            if (Str::startsWith($stem, 'no-records-found')) {
+                return true;
+            }
+        }
+
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $contents = @file_get_contents($realPath, false, null, 0, 65536);
+
+        if ($contents === false || $contents === '') {
+            return false;
+        }
+
+        $normalize = fn (string $value): string => strtolower(preg_replace('/\s+/', '', $value));
+
+        $haystack = $normalize($contents);
+
+        if (! str_contains($haystack, '#7c3aec')) {
+            return false;
+        }
+
+        $pathSignatures = [
+            'M44 88H42.908C29.868 88 23.34 88 18.812 84.808',
+            'M12 48C12 44.4641 13.4046 41.0731 15.9049 38.5729',
+            'M76.9143 80.5715L84.1143 87.7715',
+        ];
+
+        foreach ($pathSignatures as $signature) {
+            if (str_contains($haystack, $normalize($signature))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

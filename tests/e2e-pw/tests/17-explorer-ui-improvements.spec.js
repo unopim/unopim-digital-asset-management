@@ -87,4 +87,52 @@ test.describe('DAM Explorer UI improvements', () => {
     await expect(gridBtn).not.toHaveClass(/bg-violet-100/);
     expect(await adminPage.evaluate(() => localStorage.getItem('dam_picker_view'))).toBe('list');
   });
+
+  test('can create a folder inline in the destination picker and it is auto-selected', async ({ adminPage }) => {
+    await adminPage.waitForLoadState('networkidle').catch(() => {});
+    await adminPage.locator('[data-dir-id]').first().waitFor({ state: 'visible', timeout: 40000 });
+
+    // Select the current page so the mass-action menu appears, then open the
+    // Move destination picker.
+    await adminPage.locator('[data-select-all]').first().click();
+    await expect(adminPage.getByText(/\d+ selected/)).toBeVisible({ timeout: 20000 });
+    await adminPage.locator('button:has-text("Select Action")').first().click({ timeout: 30000 });
+    await adminPage.locator('li:has-text("Move to")').first().click({ timeout: 30000 });
+
+    const modal = adminPage.locator('[data-folder-picker]');
+    await expect(modal).toBeVisible({ timeout: 15000 });
+
+    // Force list view for a deterministic inline-create row.
+    const listBtn = modal.locator('[data-view="list"]');
+    if (await listBtn.count()) await listBtn.click();
+
+    // The inline create row renders once the modal's root listing settles (and
+    // only with the dam.directory.store permission). Wait before deciding to skip.
+    const newFolderBtn = modal.locator('button:has-text("New Folder")');
+    const canCreate = await newFolderBtn
+      .first()
+      .waitFor({ state: 'visible', timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!canCreate, 'Create-directory permission not available.');
+    await newFolderBtn.first().click();
+
+    const input = modal.locator('input[placeholder="Folder name"]');
+    await expect(input).toBeVisible();
+
+    // A unique name so the row is unambiguous and never collides with seed data.
+    const name = `PW Picker ${Date.now()}`;
+    await input.fill(name);
+    await input.press('Enter');
+
+    // The new folder appears in the listing and is auto-selected as destination
+    // (violet ring), and the inline input collapses back to the trigger button.
+    const newRow = modal.locator('button', { hasText: name });
+    await expect(newRow).toBeVisible({ timeout: 15000 });
+    await expect(newRow).toHaveClass(/ring-violet-500/);
+    await expect(input).toHaveCount(0);
+
+    // The destination can be confirmed immediately, with a single click.
+    await expect(modal.locator('button:has-text("Select Here")')).toBeEnabled();
+  });
 });

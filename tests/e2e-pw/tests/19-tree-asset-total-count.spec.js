@@ -29,7 +29,11 @@ test.describe('DAM Tree — recursive asset-count chip', () => {
     // Wait for the tree to mount.
     await adminPage.locator('.tree-container').first().waitFor({ state: 'visible', timeout: 15000 });
 
+    // Count badges load lazily (a separate asset-counts fetch), so a chip is not
+    // in the DOM until that resolves — wait for the first one to render.
     const chips = adminPage.locator('[data-asset-total-count]');
+    await chips.first().waitFor({ state: 'attached', timeout: 15000 });
+
     const count = await chips.count();
     expect(count).toBeGreaterThan(0);
   });

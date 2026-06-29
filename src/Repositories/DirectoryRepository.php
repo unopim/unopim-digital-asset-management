@@ -11,6 +11,12 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class DirectoryRepository extends Repository
 {
+    /**
+     * Default number of children loaded per tree level. The tree pages through
+     * wide levels ("load more") instead of shipping/rendering them all at once.
+     */
+    public const DEFAULT_TREE_PAGE_SIZE = 100;
+
     protected $copyDirectory;
 
     /**
@@ -245,13 +251,14 @@ class DirectoryRepository extends Repository
      * (depth 3+) are loaded on demand via `getShallowChildren()` when the
      * user expands a node.
      *
-     * Drops the O(n²) `getAssetCountsRollup()` entirely — `assets_count`
-     * (direct-only, from `withCount`) is used as `assets_total_count`.
+     * Asset counts are NOT computed here — folders return immediately and the
+     * `assets_total_count` badges are fetched lazily via `getSubtreeAssetCounts`
+     * (the `directory.asset-counts` endpoint). The root's children are loaded a
+     * page at a time; `children_has_more` tells the UI whether to offer "load more".
      */
     public function getDirectoryTreeOnly()
     {
         $service = app(DirectoryPermissionService::class);
-        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
 
         $rootQuery = $this->model->withCount('children')->whereNull('parent_id');
 
@@ -261,27 +268,32 @@ class DirectoryRepository extends Repository
 
         $roots = $rootQuery->get();
 
-        $rootCounts = $this->getSubtreeAssetCounts($roots->pluck('id')->all(), $allowedDescendantIds);
-
         foreach ($roots as $root) {
-            $root->assets_total_count = $rootCounts[$root->id] ?? 0;
             $root->has_children = $root->children_count > 0;
-            $root->children = $this->getShallowChildren($root->id, $service)->values()->all();
+
+            $page = $this->getShallowChildren($root->id, $service);
+            $root->children = $page['data']->all();
+            $root->children_has_more = $page['has_more'];
         }
 
         return $roots;
     }
 
     /**
-     * Returns the immediate (depth-1) children of a directory, each stamped
-     * with `has_children` (true when they have children of their own) and an
-     * empty `children` array so the frontend tree can render the expand chevron
-     * without a round-trip.
+     * Returns one page of immediate (depth-1) children of a directory, each
+     * stamped with `has_children` and an empty `children` array so the tree can
+     * render the expand chevron without a round-trip.
+     *
+     * Paginated (`$offset`/`$limit`) so wide levels load incrementally, and it
+     * does NOT compute asset counts — badges are fetched lazily via
+     * `getSubtreeAssetCounts`. Returns `['data' => Collection, 'has_more' => bool]`.
      */
-    public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null): Collection
+    public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null, int $offset = 0, int $limit = self::DEFAULT_TREE_PAGE_SIZE): array
     {
         $service ??= app(DirectoryPermissionService::class);
-        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
+
+        $limit = max(1, $limit);
+        $offset = max(0, $offset);
 
         $query = $this->model
             ->withCount('children')
@@ -292,20 +304,22 @@ class DirectoryRepository extends Repository
             $query->whereIn('id', $service->viewableIds());
         }
 
-        $children = $query->get()->map(function ($dir) {
+        // Fetch one extra row to detect whether further pages exist.
+        $rows = $query->skip($offset)->take($limit + 1)->get();
+
+        $hasMore = $rows->count() > $limit;
+
+        $children = $rows->take($limit)->map(function ($dir) {
             $dir->has_children = $dir->children_count > 0;
             $dir->children = [];
 
             return $dir;
-        });
+        })->values();
 
-        $counts = $this->getSubtreeAssetCounts($children->pluck('id')->all(), $allowedDescendantIds);
-
-        $children->each(function ($dir) use ($counts) {
-            $dir->assets_total_count = $counts[$dir->id] ?? 0;
-        });
-
-        return $children;
+        return [
+            'data'     => $children,
+            'has_more' => $hasMore,
+        ];
     }
 
     /**
@@ -325,7 +339,7 @@ class DirectoryRepository extends Repository
             return collect();
         }
 
-        $nodes = $this->model
+        return $this->model
             ->withCount('children')
             ->where('_lft', '<=', $target->_lft)
             ->where('_rgt', '>=', $target->_rgt)
@@ -337,14 +351,6 @@ class DirectoryRepository extends Repository
 
                 return $dir;
             });
-
-        $counts = $this->getSubtreeAssetCounts($nodes->pluck('id')->all());
-
-        $nodes->each(function ($dir) use ($counts) {
-            $dir->assets_total_count = $counts[$dir->id] ?? 0;
-        });
-
-        return $nodes;
     }
 
     /**

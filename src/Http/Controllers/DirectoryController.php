@@ -84,10 +84,11 @@ class DirectoryController
     }
 
     /**
-     * Lazy-load immediate children of a directory.
-     * Each child carries `has_children` and an empty `children` array.
+     * Lazy-load one page of immediate children of a directory.
+     * Each child carries `has_children` and an empty `children` array; the
+     * response includes `has_more` so the tree can offer "load more".
      */
-    public function childrenDirectory(int $id): JsonResponse
+    public function childrenDirectory(int $id, Request $request): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
             return new JsonResponse([
@@ -101,11 +102,47 @@ class DirectoryController
             ], 404);
         }
 
-        $children = $this->directoryRepository->getShallowChildren($id);
+        $offset = max(0, (int) $request->query('offset', 0));
+        $limit = (int) $request->query('limit', DirectoryRepository::DEFAULT_TREE_PAGE_SIZE);
+
+        $page = $this->directoryRepository->getShallowChildren($id, null, $offset, $limit);
 
         return new JsonResponse([
-            'data' => $children->values(),
+            'data'     => $page['data']->values(),
+            'has_more' => $page['has_more'],
         ]);
+    }
+
+    /**
+     * Lazy asset-count badges for the tree. Given directory ids, returns
+     * `{ id: subtree-asset-count }` for the ids the caller is allowed to view.
+     * Kept off the structural endpoints so the tree paints before the heavy
+     * nested-set roll-up runs.
+     */
+    public function assetCounts(Request $request): JsonResponse
+    {
+        $ids = collect($request->input('ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if (! $this->permissionService->bypass()) {
+            $viewable = array_flip($this->permissionService->viewableIds());
+            $ids = $ids->filter(fn ($id) => isset($viewable[$id]))->values();
+        }
+
+        if ($ids->isEmpty()) {
+            return new JsonResponse(['data' => (object) []]);
+        }
+
+        $allowedDescendantIds = ! $this->permissionService->bypass()
+            ? $this->permissionService->directlyGrantedIds()
+            : null;
+
+        $counts = $this->directoryRepository->getSubtreeAssetCounts($ids->all(), $allowedDescendantIds);
+
+        return new JsonResponse(['data' => (object) $counts]);
     }
 
     /**

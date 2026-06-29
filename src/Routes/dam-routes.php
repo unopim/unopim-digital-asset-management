@@ -125,6 +125,7 @@ Route::group([
         Route::get('', 'index')->name('admin.dam.directory.index');
         Route::get('/search', 'search')->name('admin.dam.directory.search');
         Route::get('/children-directory/{id}', 'childrenDirectory')->name('admin.dam.directory.children');
+        Route::post('/asset-counts', 'assetCounts')->name('admin.dam.directory.asset_counts');
         Route::get('/path/{id}', 'directoryPath')->name('admin.dam.directory.path');
         Route::get('/directory-assets/{id}', 'directoryAssets')->name('admin.dam.directory.assets');
         Route::post('/store', 'store')->name('admin.dam.directory.store');

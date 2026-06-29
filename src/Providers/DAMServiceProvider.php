@@ -18,6 +18,7 @@ use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
@@ -134,6 +135,12 @@ class DAMServiceProvider extends ServiceProvider
         if (file_exists($helpers)) {
             require_once $helpers;
         }
+
+        // Share one DirectoryPermissionService per request so its memoized
+        // ACL id-sets (a pivot query + nested-set self-joins) are computed once
+        // instead of being rebuilt by the controller, repository, and each Blade
+        // helper. autoGrantToCreator()->flush() keeps it correct after a grant.
+        $this->app->scoped(DirectoryPermissionService::class);
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
 
