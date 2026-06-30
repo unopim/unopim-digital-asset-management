@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Webkul\DAM\Helpers\AssetHelper;
@@ -45,7 +44,7 @@ class FileController
 
         if (Str::startsWith($path, 'preview/')) {
             $rest = Str::after($path, 'preview/');
-            // strip "{size}/"
+
             $slash = strpos($rest, '/');
 
             return $slash === false ? $rest : substr($rest, $slash + 1);
@@ -96,6 +95,8 @@ class FileController
             403,
             trans('dam::app.admin.permissions.unauthorized')
         );
+
+        $request->validate(['file' => 'required|file']);
 
         $disk = Directory::getAssetDisk();
         $directory = Str::random(10).'/files';
@@ -149,6 +150,8 @@ class FileController
             403,
             trans('dam::app.admin.permissions.unauthorized')
         );
+
+        $request->validate(['file' => 'required|file']);
 
         $path = (string) $request->path;
 
@@ -243,11 +246,6 @@ class FileController
             }
         }
 
-        // Cloudinary-style thumbnails for PDF / video — real first-page or
-        // first-frame previews rather than the generic placeholder icon.
-        // Eager generation happens via queued job on upload; this branch also
-        // generates synchronously on first request as a fallback so assets
-        // uploaded before the feature still get a real thumbnail.
         if ($asset && ($asset->file_type === 'video' || strtolower((string) $asset->extension) === 'pdf')) {
             $cached = $asset->meta_data['thumbnail_path'] ?? ('thumbnails/'.$path.'.jpg');
 
@@ -282,13 +280,13 @@ class FileController
             try {
                 $image = $this->resizeImage(Storage::disk($disk)->get($path), 300);
 
-                $imageData = $this->encodeImageByExtension($image, $path); // v3 method
+                $imageData = $this->encodeImageByExtension($image, $path);
 
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
 
                 return response($imageData, 200)->header('Content-Type', $mimeType);
-            } catch (NotReadableException $e) {
-                //
+            } catch (\Throwable $e) {
+                Log::warning('DAM thumbnail generation failed: '.$e->getMessage(), ['path' => $path]);
             }
         } elseif ($this->isSvgFile($path)) {
             if (! Storage::disk($disk)->exists($thumbnailPath)) {
@@ -476,8 +474,8 @@ class FileController
                     Storage::disk($disk)->put($previewPath, $imageData);
 
                     return $this->getFileResponse($previewPath);
-                } catch (NotReadableException $e) {
-                    Log::info('Failed Generating Image preview: '.json_encode($e));
+                } catch (\Throwable $e) {
+                    Log::info('Failed Generating Image preview: '.$e->getMessage());
                 }
             } elseif ($this->isSupportedMediaFile($mimeType)) {
                 return $this->getFileResponse($path);

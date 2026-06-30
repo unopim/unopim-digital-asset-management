@@ -4,6 +4,7 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Image;
@@ -47,8 +48,11 @@ class ImageEditController
         }
 
         $disk = Directory::getAssetDisk();
-        $manager = new ImageManager(new Driver);
-        $image = $manager->read(Storage::disk($disk)->get($asset->path));
+
+        $image = $this->readAssetImage($asset, $disk);
+        if (! $image) {
+            return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-source-not-readable')], 422);
+        }
 
         if ($hasCrop) {
             $scaleX = 1.0;
@@ -99,8 +103,11 @@ class ImageEditController
         ]);
 
         $disk = Directory::getAssetDisk();
-        $manager = new ImageManager(new Driver);
-        $image = $manager->read(Storage::disk($disk)->get($asset->path));
+
+        $image = $this->readAssetImage($asset, $disk);
+        if (! $image) {
+            return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-source-not-readable')], 422);
+        }
 
         if (($validated['brightness'] ?? 0) !== 0) {
             $image->brightness((int) $validated['brightness']);
@@ -138,8 +145,11 @@ class ImageEditController
         }
 
         $disk = Directory::getAssetDisk();
-        $manager = new ImageManager(new Driver);
-        $image = $manager->read(Storage::disk($disk)->get($asset->path));
+
+        $image = $this->readAssetImage($asset, $disk);
+        if (! $image) {
+            return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-source-not-readable')], 422);
+        }
 
         if ($validated['greyscale'] ?? false) {
             $image->greyscale();
@@ -168,8 +178,11 @@ class ImageEditController
         ]);
 
         $disk = Directory::getAssetDisk();
-        $manager = new ImageManager(new Driver);
-        $image = $manager->read(Storage::disk($disk)->get($asset->path));
+
+        $image = $this->readAssetImage($asset, $disk);
+        if (! $image) {
+            return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-source-not-readable')], 422);
+        }
 
         $rotation = (int) ($validated['rotation'] ?? 0);
         if ($rotation > 0) {
@@ -186,6 +199,26 @@ class ImageEditController
         $this->clearCache($asset->path, $disk);
 
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-transformed')]);
+    }
+
+    /**
+     * Read an asset's image for editing. Returns null — so the caller can
+     * respond with a graceful 422 — when the file is missing or undecodable,
+     * instead of letting Intervention v3's DecoderException bubble up as a 500.
+     */
+    private function readAssetImage(Asset $asset, string $disk)
+    {
+        try {
+            $contents = Storage::disk($disk)->get($asset->path);
+
+            return $contents === null
+                ? null
+                : (new ImageManager(new Driver))->read($contents);
+        } catch (\Throwable $e) {
+            Log::warning('DAM image-edit read failed: '.$e->getMessage(), ['asset' => $asset->id]);
+
+            return null;
+        }
     }
 
     // ── Edit Background ────────────────────────────────────────────────────

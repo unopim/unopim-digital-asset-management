@@ -705,6 +705,17 @@
                     </template>
                 </draggable>
 
+                <button
+                    v-if="rootChildrenHasMore"
+                    type="button"
+                    @click.stop="loadMoreRootChildren"
+                    :disabled="rootChildrenLoadingMore"
+                    class="flex items-center gap-1.5 ml-6 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+                >
+                    <span v-if="rootChildrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
+                    <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
+                </button>
+
                 <draggable
                     id="assets-items"
                     ghost-class="draggable-ghost"
@@ -1141,6 +1152,7 @@
                 copyingDirectoryId: null,
                 gridBusy: false,
                 moveStatusLabel: '',
+                rootChildrenLoadingMore: false,
                 _folderAbortController: null,
                 _awaitingFolderFiles: false,
                 localAccessibleIds: [...(this.accessibleIds || [])],
@@ -1288,6 +1300,12 @@
             // grid is busy on the other side. Drives `treeLocked` prop chain.
             treeBusy() {
                 return this.treeMutating || this.gridBusy;
+            },
+            // The root's direct children are rendered by THIS component (not a
+            // v-tree-item), so it needs its own "load more" — wide root levels
+            // (more than the page size) would otherwise be capped silently.
+            rootChildrenHasMore() {
+                return !! (this.formattedItems && this.formattedItems[0] && this.formattedItems[0].children_has_more);
             },
         },
 
@@ -2313,6 +2331,32 @@
                         });
                     })
                     .catch(() => {});
+            },
+
+            // Append the next page of the ROOT's direct children. Mirrors the
+            // v-tree-item `loadMoreChildren`, but for the root level which this
+            // component renders itself (root-tree-groups). Without it, roots
+            // with more children than the page size are silently truncated.
+            loadMoreRootChildren() {
+                const root = this.formattedItems && this.formattedItems[0];
+                if (! root || this.rootChildrenLoadingMore || ! root.children_has_more) return;
+                this.rootChildrenLoadingMore = true;
+                const offset = Array.isArray(root.children) ? root.children.length : 0;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', root.id), { params: { offset } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(root.children)) {
+                            root.children = [];
+                        }
+                        root.children.push(...children);
+                        root.children_has_more = !! response.data.has_more;
+                        this.rootChildrenLoadingMore = false;
+                        this.fetchCountsForNodes(children);
+                    })
+                    .catch(() => {
+                        this.rootChildrenLoadingMore = false;
+                    });
             },
 
             loadDirectoryChildrens() {

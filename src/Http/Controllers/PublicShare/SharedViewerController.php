@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
@@ -261,7 +260,7 @@ class SharedViewerController extends Controller
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
 
                 return response($imageData, 200)->header('Content-Type', $mimeType);
-            } catch (NotReadableException $e) {
+            } catch (\Throwable $e) {
                 Log::warning('DAM share thumbnail generation failed: '.$e->getMessage(), ['asset' => $asset->id]);
             }
         } elseif ($this->isSvgFile($path)) {

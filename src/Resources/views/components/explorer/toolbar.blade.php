@@ -6,7 +6,7 @@
 --}}
 @once('v-dam-explorer-toolbar')
         {{-- Row 2: search + filters + pagination --}}
-        <template v-if="loading">
+        <template v-if="loading && ! meta">
             <x-admin::shimmer.datagrid.toolbar />
         </template>
 

@@ -1161,12 +1161,12 @@ class AssetController extends Controller
         abort_unless($this->canActOnAsset($asset), 403, trans('dam::app.admin.permissions.unauthorized'));
 
         $baseName = pathinfo($asset->file_name, PATHINFO_FILENAME);
-        $zipFileName = $baseName.'_'.uniqid().'.zip';
-        $zipPath = public_path($zipFileName);
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'dam_zip_');
 
         $zip = new ZipArchive;
 
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+        if ($zip->open($zipPath, ZipArchive::OVERWRITE) !== true) {
             abort(500);
         }
 
