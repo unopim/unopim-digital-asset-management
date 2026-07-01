@@ -5,10 +5,7 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Background asset-upload session. Mirrors the core DataTransfer job_track state
- * machine so uploads gain the same cancel / pause / resume / retry semantics.
- */
+/** Background asset-upload session mirroring the core DataTransfer job_track state machine. */
 class UploadTracker extends Model
 {
     const STATE_PENDING = 'pending';
@@ -45,7 +42,7 @@ class UploadTracker extends Model
     ];
 
     /**
-     * Per-asset finalisation rows belonging to this session.
+     * Per-asset finalisation rows for this session.
      */
     public function batches(): HasMany
     {
@@ -53,9 +50,7 @@ class UploadTracker extends Model
     }
 
     /**
-     * A queued job calls this before doing work. When the session has been
-     * paused or cancelled the job must abort without touching the asset — the
-     * exact contract the core import batch jobs rely on.
+     * Whether a queued job should abort before touching the asset.
      */
     public function shouldStop(): bool
     {
@@ -67,7 +62,7 @@ class UploadTracker extends Model
     }
 
     /**
-     * True while the session can still make progress (or be resumed).
+     * Whether the session can still make progress or be resumed.
      */
     public function isActive(): bool
     {

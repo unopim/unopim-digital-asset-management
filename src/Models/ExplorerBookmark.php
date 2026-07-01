@@ -14,11 +14,17 @@ class ExplorerBookmark extends Model
 
     protected $fillable = ['user_id', 'directory_id', 'name', 'sort_order'];
 
+    /**
+     * Get the admin user that owns the bookmark.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'user_id');
     }
 
+    /**
+     * Get the directory the bookmark points to.
+     */
     public function directory(): BelongsTo
     {
         return $this->belongsTo(Directory::class, 'directory_id');

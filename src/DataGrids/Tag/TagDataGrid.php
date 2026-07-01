@@ -7,23 +7,12 @@ use Webkul\DataGrid\DataGrid;
 
 class TagDataGrid extends DataGrid
 {
-    /**
-     * Default sort column of datagrid.
-     *
-     * @var ?string
-     */
     protected $sortColumn = 'dam_tags.created_at';
 
     protected $sortOrder = 'desc';
 
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 25;
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $prefix = DB::getTablePrefix();
@@ -45,9 +34,6 @@ class TagDataGrid extends DataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -78,9 +64,6 @@ class TagDataGrid extends DataGrid
         ]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareActions()
     {
         if (bouncer()->hasPermission('dam.tags.update')) {
@@ -104,9 +87,6 @@ class TagDataGrid extends DataGrid
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareMassActions()
     {
         if (bouncer()->hasPermission('dam.tags.delete')) {

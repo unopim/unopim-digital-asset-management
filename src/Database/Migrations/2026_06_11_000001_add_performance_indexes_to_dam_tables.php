@@ -8,9 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // PostgreSQL does not auto-create indexes for foreign key columns.
-        // These are required for withCount('children'), withCount('assets'),
-        // and nested-set ancestor/descendant range queries.
         Schema::table('dam_directories', function (Blueprint $table) {
             $table->index('parent_id');
             $table->index('_lft');

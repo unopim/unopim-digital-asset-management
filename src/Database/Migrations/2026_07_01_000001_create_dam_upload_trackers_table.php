@@ -6,13 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Tracks a single background asset-upload session (the DAM analogue of the core
- * DataTransfer `job_track` row). The client generates a `uuid` per session and
- * sends it with every upload request; the server upserts one tracker per uuid.
- * Pause / resume / cancel simply flip the `state` column, which every queued
- * ProcessAssetUpload job re-reads before doing work.
- */
+/** Tracks a single background asset-upload session (state-driven pause/resume/cancel). */
 return new class extends Migration
 {
     public function up(): void

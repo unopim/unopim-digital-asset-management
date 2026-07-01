@@ -1,4 +1,7 @@
 @php
+    // Use getPreviewUrl so S3-stored media (video/audio) resolves to a direct
+    // S3 URL that supports native range/streaming — the local preview route
+    // only works for local disks and breaks video playback on S3.
     $mediaUrl = \Webkul\DAM\Helpers\AssetHelper::getPreviewUrl($asset->path);
 
     $placeholderSvg = match($asset->file_type) {

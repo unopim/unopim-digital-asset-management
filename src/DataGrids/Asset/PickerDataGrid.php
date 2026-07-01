@@ -4,14 +4,8 @@ namespace Webkul\DAM\DataGrids\Asset;
 
 class PickerDataGrid extends AssetDataGrid
 {
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 50;
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $queryBuilder = parent::prepareQueryBuilder();
@@ -21,9 +15,6 @@ class PickerDataGrid extends AssetDataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function formatData(): array
     {
         $formattedData = parent::formatData();

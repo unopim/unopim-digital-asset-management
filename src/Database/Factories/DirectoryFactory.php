@@ -7,16 +7,8 @@ use Webkul\DAM\Models\Directory;
 
 class DirectoryFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = Directory::class;
 
-    /**
-     * Define the model's default state.
-     */
     public function definition(): array
     {
         return [

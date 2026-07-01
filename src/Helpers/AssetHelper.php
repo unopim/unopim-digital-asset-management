@@ -9,11 +9,7 @@ use Webkul\DAM\Models\Directory;
 class AssetHelper
 {
     /**
-     * Effective max upload size in KB — derived entirely from PHP's runtime
-     * upload_max_filesize and post_max_size so the validator honours whatever
-     * the server is already configured to accept.
-     * Returns PHP_INT_MAX when PHP imposes no limit, so Laravel's max: rule
-     * effectively becomes a no-op and the server is the real gatekeeper.
+     * Determine the effective max upload size from PHP's runtime limits.
      */
     public static function getMaxUploadSizeKb(): int
     {
@@ -29,7 +25,7 @@ class AssetHelper
     }
 
     /**
-     * Format a kilobyte count into a human-readable string (e.g. "512 MB", "2 GB").
+     * Format a kilobyte count into a human-readable string.
      */
     public static function humanReadableSize(int $kilobytes): string
     {
@@ -45,7 +41,7 @@ class AssetHelper
     }
 
     /**
-     * Convert a php.ini shorthand size (e.g. "50M", "1G", "2048K") to kilobytes.
+     * Convert a php.ini shorthand size to kilobytes.
      */
     protected static function iniValueToKb(string $value): int
     {
@@ -67,10 +63,9 @@ class AssetHelper
     }
 
     /**
-     * fetch file type based on the mime type
+     * Determine the file type category from its MIME type.
      *
-     * @param [type] $file
-     * @return void
+     * @return string
      */
     public static function getFileType($file)
     {
@@ -84,7 +79,6 @@ class AssetHelper
             return 'audio';
         }
 
-        // Generic MIME (e.g. application/octet-stream) — fall back to extension
         $ext = strtolower($file->getClientOriginalExtension());
 
         if (in_array($ext, ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma'])) {
@@ -99,9 +93,8 @@ class AssetHelper
     }
 
     /**
-     * fetch file type based on the extension
+     * fetch file type based on the extension.
      *
-     * @param [type] $file
      * @return void
      */
     public static function getFileTypeUsingExtension(string $extension)
@@ -130,7 +123,7 @@ class AssetHelper
     }
 
     /**
-     * Displayable File name
+     * Displayable File name.
      */
     public static function getDisplayFileName(string $fileName): string
     {
@@ -176,11 +169,7 @@ class AssetHelper
         return $previewUrl;
     }
 
-    /**
-     * Check if the MIME type corresponds to a supported media file
-     *
-     * Supported types include SVG images, PDF, video, and audio formats.
-     */
+    /** Check if the MIME type corresponds to a supported media file. */
     public static function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
@@ -190,7 +179,7 @@ class AssetHelper
     }
 
     /**
-     * Check if given extension or mime type is forbidden for upload
+     * Check if given extension or mime type is forbidden for upload.
      */
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
@@ -255,12 +244,7 @@ class AssetHelper
     }
 
     /**
-     * The DAM ships a "no records found" placeholder SVG (no-records-found.svg)
-     * meant only to render the empty state. Block it from being uploaded as a
-     * real asset — by filename stem, or (robust against rename and SVGO/browser
-     * re-serialization) by a content signature: the #7C3AEC stroke plus one of
-     * its three distinctive path-data fragments. Only SVGs are inspected, so
-     * legitimate non-SVG uploads and unrelated SVGs are unaffected.
+     * The DAM ships a "no records found" placeholder SVG (no-records-found.svg).
      */
     public static function isPlaceholderImage(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {

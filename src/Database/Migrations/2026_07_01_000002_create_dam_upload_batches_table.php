@@ -6,11 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * One row per uploaded asset that still needs background finalisation
- * (metadata extraction, cover-art, thumbnail). The DAM analogue of a
- * DataTransfer `job_track_batch`. Retry re-queues rows whose state is `failed`.
- */
+/** One row per uploaded asset awaiting background finalisation. */
 return new class extends Migration
 {
     public function up(): void

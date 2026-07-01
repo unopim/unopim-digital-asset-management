@@ -21,10 +21,14 @@ class CopyController extends Controller
 {
     use ActionRequestTrait, AssetAccessControl;
 
+    /** Create a new instance. */
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}
 
+    /**
+     * Copy a single asset into the target directory with a unique name.
+     */
     public function copyAsset(Request $request): JsonResponse
     {
         $request->validate([
@@ -73,6 +77,9 @@ class CopyController extends Controller
         ], 201);
     }
 
+    /**
+     * Validate access and queue a job to copy a directory into the target.
+     */
     public function copyDirectory(Request $request): JsonResponse
     {
         $request->validate([
@@ -103,6 +110,9 @@ class CopyController extends Controller
         ], 202);
     }
 
+    /**
+     * Recursively copy a directory's folder structure into the target.
+     */
     public function copyStructureTo(Request $request): JsonResponse
     {
         $request->validate([
@@ -130,6 +140,9 @@ class CopyController extends Controller
         ], 202);
     }
 
+    /**
+     * Validate access and queue a job to copy the selected assets and directories.
+     */
     public function massCopy(Request $request): JsonResponse
     {
         $request->validate([
@@ -196,8 +209,9 @@ class CopyController extends Controller
         return response()->json(['queued' => true]);
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
+    /**
+     * Build a filename for the copy that does not collide within the directory.
+     */
     private function uniqueAssetName(string $base, string $ext, int $dirId): string
     {
         $candidate = $base.$ext;
@@ -219,6 +233,9 @@ class CopyController extends Controller
         return $candidate;
     }
 
+    /**
+     * Determine whether an asset with the given name already exists in the directory.
+     */
     private function assetNameExists(string $name, int $dirId): bool
     {
         return Asset::where('file_name', $name)
@@ -226,6 +243,9 @@ class CopyController extends Controller
             ->exists();
     }
 
+    /**
+     * Recursively recreate the source directory's child folders under the new parent.
+     */
     private function deepCopyStructure(Directory $source, Directory $newParent): void
     {
         $source->loadMissing('children');

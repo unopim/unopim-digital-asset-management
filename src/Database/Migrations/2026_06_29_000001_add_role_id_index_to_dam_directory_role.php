@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * The hot permission lookup filters dam_directory_role by role_id, but the
-     * table's primary key leads with directory_id, so that filter cannot use it.
-     * Add a (role_id, directory_id) index to cover the role-scoped query.
+     * Add a (role_id, directory_id) index to cover the role-scoped permission lookup.
      */
     public function up(): void
     {

@@ -8,16 +8,8 @@ use Webkul\DAM\Models\AssetProperty;
 
 class PropertyFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = AssetProperty::class;
 
-    /**
-     * Define the model's default state.
-     */
     public function definition(): array
     {
         return [

@@ -16,9 +16,6 @@ class PropertyController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
@@ -26,9 +23,7 @@ class PropertyController extends Controller
         protected LocaleRepository $localeRepository
     ) {}
 
-    /**
-     * Get the property
-     */
+    /** Get a property by id. */
     public function properties(int $id)
     {
         $property = $this->assetPropertyRepository->find($id);
@@ -49,9 +44,7 @@ class PropertyController extends Controller
         ], 200);
     }
 
-    /**
-     * Create new Property
-     */
+    /** Create a new property. */
     public function addProperty(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -103,7 +96,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * Properties update
+     * Update the specified property.
      */
     public function update(Request $request, int $id): JsonResponse
     {
@@ -141,7 +134,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * Delete the property
+     * Delete the specified property.
      */
     public function delete(Request $request, int $id): JsonResponse
     {

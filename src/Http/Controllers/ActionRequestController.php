@@ -10,7 +10,9 @@ use Webkul\DAM\Models\ActionRequest;
 class ActionRequestController
 {
     /**
-     * Fetches the status of a specific action request based on the event type.
+     * Fetch the status of a specific action request for the current admin.
+     *
+     * @return JsonResponse
      */
     public function fetchStatus(string $eventType)
     {

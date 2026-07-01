@@ -57,11 +57,9 @@ class MassMove implements ShouldQueue
             $total = max(1, $totalAssets + $totalDirs);
             $done = 0;
 
-            // ── Assets ──────────────────────────────────────────────────────────
             if (! empty($this->assetIds)) {
                 $pivotTable = (new Asset)->directories()->getTable();
 
-                // Seed name-collision cache once — 1 query, persists across all chunks via reference
                 $usedNames = Asset::whereHas(
                     'directories',
                     fn ($q) => $q->where('dam_directories.id', $this->targetId)
@@ -69,7 +67,6 @@ class MassMove implements ShouldQueue
 
                 Storage::disk($disk)->makeDirectory($targetDirPath);
 
-                // Process in chunks to keep memory bounded for large selections
                 Asset::whereIn('id', $this->assetIds)
                     ->with(['directories:id,parent_id'])
                     ->chunk(self::ASSET_CHUNK_SIZE, function ($assets) use ($disk, $targetDirPath, $pivotTable, &$usedNames, &$done, $total) {
@@ -102,9 +99,6 @@ class MassMove implements ShouldQueue
 
                         $successIds = array_column($updates, 'id');
 
-                        // Re-point the directory pivots and update the asset paths in one
-                        // transaction: a failure between the pivot delete and re-insert would
-                        // otherwise detach assets from every directory, hiding them from all grids.
                         DB::transaction(function () use ($pivotTable, $successIds, $updates) {
                             DB::table($pivotTable)->whereIn('asset_id', $successIds)->delete();
                             DB::table($pivotTable)->insert(
@@ -123,7 +117,6 @@ class MassMove implements ShouldQueue
                     });
             }
 
-            // ── Directories ─────────────────────────────────────────────────────
             if (! empty($this->dirIds)) {
                 $directoryRepository = app(DirectoryRepository::class);
                 $directoryRepository->isDirectoryWritable($targetDirectory, 'move');
@@ -141,32 +134,23 @@ class MassMove implements ShouldQueue
                         continue;
                     }
 
-                    // Capture relative path (what createDirectoryWithStorage expects) BEFORE tree update
                     $oldRelativePath = $directory->generatePath();
                     $oldStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldRelativePath);
 
-                    // Check name conflicts BEFORE moving (directory still in old parent — no self-conflict)
                     $directory->name = $this->setDirectoryNameForCopy($directory->name, $this->targetId);
 
-                    // appendToNode triggers the NestedSet SQL range update for the entire subtree.
-                    // parent()->associate() alone only changes parent_id — lft/rgt stay stale.
                     $directory->appendToNode($targetDirectory)->save();
                     $directory->refresh();
 
                     $newRelativePath = $directory->generatePath();
                     $newStoragePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $newRelativePath);
 
-                    // S3: no real directories — move each object using a single prefix listing
-                    // Local: createDirectoryWithStorage does rename($old, $new) — instant, no per-file loop
                     if ($disk === Directory::ASSETS_DISK_AWS) {
                         $this->moveS3Prefix($disk, $oldStoragePath, $newStoragePath);
                     }
 
-                    // For local: renames the whole dir tree in one syscall
-                    // For S3: cleans up old prefix marker + ensures new one exists
                     $directoryRepository->createDirectoryWithStorage($newRelativePath, $oldRelativePath);
 
-                    // 3 queries to update ALL asset paths in subtree (replaces O(N) per-asset updates)
                     $this->batchReplaceAssetPaths($directory, $oldStoragePath, $newStoragePath);
 
                     $done++;
@@ -187,7 +171,7 @@ class MassMove implements ShouldQueue
     }
 
     /**
-     * S3-only: one allFiles() listing + N moves replaces recursive eager-loading dirs+assets.
+     * Move every S3 object under a prefix to a new prefix.
      */
     private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
     {
@@ -209,8 +193,7 @@ class MassMove implements ShouldQueue
     }
 
     /**
-     * Replace old storage prefix with new one for every asset in the directory subtree.
-     * 3 queries regardless of tree depth or file count.
+     * Replace the storage prefix for every asset in the directory subtree.
      */
     private function batchReplaceAssetPaths(Directory $directory, string $oldPrefix, string $newPrefix): void
     {
@@ -218,10 +201,8 @@ class MassMove implements ShouldQueue
             return;
         }
 
-        // Query 1: descendant dir IDs — single lft/rgt range scan
         $subtreeDirIds = $directory->descendants()->pluck('id')->prepend($directory->id);
 
-        // Query 2: all asset IDs in those dirs via pivot
         $pivotTable = (new Asset)->directories()->getTable();
         $assetIds = DB::table($pivotTable)
             ->whereIn('directory_id', $subtreeDirIds)
@@ -232,7 +213,6 @@ class MassMove implements ShouldQueue
             return;
         }
 
-        // Query 3: single REPLACE() — works on both MySQL and PostgreSQL
         DB::table((new Asset)->getTable())
             ->whereIn('id', $assetIds)
             ->update([
@@ -243,7 +223,7 @@ class MassMove implements ShouldQueue
     }
 
     /**
-     * @param  array<string, true>  $usedNames  passed by reference
+     * Resolve a unique asset name.
      */
     private function resolveUniqueName(string $base, string $ext, array &$usedNames): string
     {

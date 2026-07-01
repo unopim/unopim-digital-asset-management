@@ -22,6 +22,9 @@ class ImageEditController
 {
     use AssetAccessControl;
 
+    /**
+     * Crop and/or resize an asset image and persist the result.
+     */
     public function resize(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -88,6 +91,9 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
+    /**
+     * Apply brightness, contrast, sharpen, and blur adjustments to an asset image.
+     */
     public function adjust(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -128,6 +134,9 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-adjusted')]);
     }
 
+    /**
+     * Apply greyscale and/or invert filters to an asset image.
+     */
     public function filters(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -164,6 +173,9 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
+    /**
+     * Rotate and/or flip an asset image and persist the result.
+     */
     public function transform(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -201,11 +213,7 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-transformed')]);
     }
 
-    /**
-     * Read an asset's image for editing. Returns null — so the caller can
-     * respond with a graceful 422 — when the file is missing or undecodable,
-     * instead of letting Intervention v3's DecoderException bubble up as a 500.
-     */
+    /** Read an asset's image for editing; returns null when missing or undecodable. */
     private function readAssetImage(Asset $asset, string $disk)
     {
         try {
@@ -220,8 +228,6 @@ class ImageEditController
             return null;
         }
     }
-
-    // ── Edit Background ────────────────────────────────────────────────────
 
     public function bgColor(Request $request, int $id): JsonResponse
     {
@@ -306,7 +312,6 @@ class ImageEditController
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
-        // Raise limits before decode — large PNGs OOM/timeout otherwise.
         ini_set('memory_limit', '512M');
         set_time_limit(120);
 
@@ -343,7 +348,7 @@ class ImageEditController
             if (isset($gd) && $gd) {
                 imagedestroy($gd);
             }
-            \Log::error('bgColorNormal failed', ['asset_id' => $id, 'error' => $e->getMessage()]);
+            Log::error('bgColorNormal failed', ['asset_id' => $id, 'error' => $e->getMessage()]);
 
             return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.error-operation')], 422);
         }
@@ -374,8 +379,6 @@ class ImageEditController
             $origW = imagesx($gd);
             $origH = imagesy($gd);
 
-            // Preview-only: cap at 400 px wide. Quartering pixel count vs 600
-            // makes the BFS ~4× cheaper while preview quality stays acceptable.
             if ($origW > 400) {
                 $newW = 400;
                 $newH = (int) round($origH * (400 / $origW));
@@ -389,8 +392,6 @@ class ImageEditController
             $h = imagesy($gd);
             [$bgR, $bgG, $bgB] = $this->sampleCornerBackground($gd, $w, $h);
 
-            // JPEG block quantization drifts background ±30-40 RGB units from
-            // reference; PNG is lossless so the background is nearly exact.
             $ext = strtolower(pathinfo($asset->path, PATHINFO_EXTENSION));
             $tolerance = in_array($ext, ['jpg', 'jpeg', 'jfif']) ? 40 : 22;
 
@@ -431,8 +432,7 @@ class ImageEditController
     }
 
     /**
-     * Average the 4 corner pixels — single-corner sample skews badly when one
-     * corner is occupied by the subject.
+     * Average the 4 corner pixels to estimate the background color.
      */
     private function sampleCornerBackground($gd, int $w, int $h): array
     {
@@ -449,13 +449,6 @@ class ImageEditController
 
     /**
      * Scanline flood fill from edge-matched seeds.
-     *
-     * Wins over per-pixel BFS:
-     *   - One imagefilledrectangle() per horizontal run instead of N imagesetpixel().
-     *   - Stack holds seed pixels per run, not every painted pixel — queue size
-     *     drops from O(area) to ~O(perimeter), saving 100s of MB on large images.
-     *   - Squared-distance compare avoids sqrt() per pixel.
-     *   - String bitfield for visited (1 bit/pixel) instead of bool array (~56 B/entry).
      */
     private function floodFillBackground($gd, int $w, int $h, int $bgR, int $bgG, int $bgB, int $fillColor, int $tolerance): void
     {
@@ -463,7 +456,6 @@ class ImageEditController
         $visited = str_repeat("\0", (int) ceil($w * $h / 8));
         $stack = [];
 
-        // Seed from any edge pixel matching the background.
         for ($x = 0; $x < $w; $x++) {
             foreach ([0, $h - 1] as $y) {
                 $p = imagecolorat($gd, $x, $y);
@@ -502,7 +494,6 @@ class ImageEditController
                 continue;
             }
 
-            // Walk left to find run start.
             $x1 = $sx;
             while ($x1 > 0) {
                 $i = $sy * $w + ($x1 - 1);
@@ -519,7 +510,6 @@ class ImageEditController
                 $x1--;
             }
 
-            // Walk right to find run end.
             $x2 = $sx;
             while ($x2 < $w - 1) {
                 $i = $sy * $w + ($x2 + 1);
@@ -536,15 +526,12 @@ class ImageEditController
                 $x2++;
             }
 
-            // Paint and mark the run in one shot.
             imagefilledrectangle($gd, $x1, $sy, $x2, $sy, $fillColor);
             for ($cx = $x1; $cx <= $x2; $cx++) {
                 $i = $sy * $w + $cx;
                 $visited[$i >> 3] = chr(ord($visited[$i >> 3]) | (1 << ($i & 7)));
             }
 
-            // Seed neighbours on rows above and below: one seed per contiguous
-            // matching span (not every pixel) — that's the scanline win.
             foreach ([$sy - 1, $sy + 1] as $ny) {
                 if ($ny < 0 || $ny >= $h) {
                     continue;
@@ -572,8 +559,6 @@ class ImageEditController
             }
         }
     }
-
-    // ── Shared helpers ─────────────────────────────────────────────────────
 
     private function resolveImagePlatform(int $platformId): array
     {

@@ -16,6 +16,11 @@ class ActionRequest extends Model implements ActionRequestContract
         'admin_id',
     ];
 
+    /**
+     * Find the first record matching the given constraint.
+     *
+     * @return Model|null
+     */
     public static function findOneWhere($column)
     {
         return static::where($column)->first();

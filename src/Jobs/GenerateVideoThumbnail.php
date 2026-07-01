@@ -60,7 +60,6 @@ class GenerateVideoThumbnail implements ShouldQueue
             $process->run();
 
             if (! $process->isSuccessful() || ! file_exists($tmpJpg) || filesize($tmpJpg) === 0) {
-                // Some videos are shorter than 1s — retry from the first frame.
                 $retry = new Process([
                     'ffmpeg',
                     '-y',

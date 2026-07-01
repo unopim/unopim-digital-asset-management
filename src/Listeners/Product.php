@@ -17,9 +17,7 @@ class Product
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
-    /**
-     * After product update or create
-     */
+    /** After product update or create. */
     public function afterCreateOrupdate($product)
     {
         $productValues = $product->values;

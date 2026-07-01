@@ -53,16 +53,10 @@ class MoveDirectoryStructure implements ShouldQueue
         }
 
         try {
-            // Re-parent and the nested-set lft/rgt rebuild of the whole subtree run in one
-            // transaction. A partial rebuild would corrupt the tree (some descendants
-            // appended under the new parent, others left with stale bounds), so this is
-            // all-or-nothing: either the entire subtree relocates or the move rolls back.
             DB::transaction(function () use ($directory, $newParentDirectory, $name) {
                 $directory->name = $name;
                 $directory->parent()->associate($newParentDirectory)->save();
 
-                // Iterative BFS — rebuilds nested-set lft/rgt for every descendant
-                // without recursion risk on deep trees (10k+ dirs = PHP stack overflow).
                 $this->rebuildDescendantNodes($directory);
             });
 
@@ -73,14 +67,10 @@ class MoveDirectoryStructure implements ShouldQueue
 
             $disk = ModelDirectory::getAssetDisk();
 
-            // S3: no real directories — move every object to its new key.
-            // Local: createDirectoryWithStorage handles the rename in one syscall.
             if ($disk === ModelDirectory::ASSETS_DISK_AWS) {
                 $this->moveS3Prefix($disk, $oldStoragePath, $newStoragePath);
             }
 
-            // Single REPLACE() updates every asset path in the subtree — 3 queries
-            // regardless of asset count, replacing the previous N individual UPDATEs.
             $this->batchReplaceAssetPaths($directory, $oldStoragePath, $newStoragePath);
 
             $directoryRepository->createDirectoryWithStorage($newRelativePath, $oldRelativePath);
@@ -92,10 +82,7 @@ class MoveDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * Iterative BFS replacement for the former recursive updateDirectoryParentAndChildren.
-     * Calls appendToNode(parent) on each descendant to keep nested-set lft/rgt consistent
-     * after the root was re-parented. Queue holds [child, parent] pairs so each node is
-     * always appended under its correct immediate parent.
+     * Rebuild nested-set bounds for every descendant after re-parenting.
      */
     private function rebuildDescendantNodes(ModelDirectory $root): void
     {
@@ -117,9 +104,7 @@ class MoveDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * Replace asset paths for every asset in the directory subtree in 3 queries:
-     * one lft/rgt range scan for descendant IDs, one pivot join for asset IDs,
-     * one bulk REPLACE(). Works on both MySQL and PostgreSQL.
+     * Bulk-replace the storage path prefix for every asset in the subtree.
      */
     private function batchReplaceAssetPaths(ModelDirectory $directory, string $oldPrefix, string $newPrefix): void
     {
@@ -149,8 +134,7 @@ class MoveDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * S3-only: move every object under the old prefix to the new prefix.
-     * One allFiles() listing + N moves; no per-directory loop needed.
+     * Move every S3 object from the old prefix to the new prefix.
      */
     private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
     {

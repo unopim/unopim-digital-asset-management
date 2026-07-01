@@ -6,11 +6,6 @@ use Illuminate\Console\Command;
 
 class DamInstaller extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'dam-package:install';
 
     protected $description = 'Install the Unopim DAM package';

@@ -4,6 +4,7 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Tag\TagDataGrid;
 use Webkul\DAM\Http\Requests\TagRequest;
@@ -12,12 +13,15 @@ use Webkul\DAM\Repositories\AssetTagRepository;
 
 class TagController extends Controller
 {
+    /** Create a new instance. */
     public function __construct(
         protected AssetTagRepository $tagRepository,
     ) {}
 
     /**
-     * Tag management listing page (and its datagrid JSON feed).
+     * Show the tag listing page or its datagrid JSON feed.
+     *
+     * @return JsonResponse|View
      */
     public function index()
     {
@@ -47,8 +51,7 @@ class TagController extends Controller
     }
 
     /**
-     * Rename an existing tag. The pivot rows reference the tag id, so a rename
-     * transparently updates the label everywhere the tag is used.
+     * Rename an existing tag.
      */
     public function update(TagRequest $request, int $id): JsonResponse
     {
@@ -71,8 +74,7 @@ class TagController extends Controller
     }
 
     /**
-     * Delete a single tag. The dam_asset_tag pivot rows are removed by the
-     * tag_id foreign key's ON DELETE CASCADE.
+     * Delete a single tag.
      */
     public function destroy(int $id): JsonResponse
     {
@@ -95,7 +97,7 @@ class TagController extends Controller
     }
 
     /**
-     * Delete many tags at once (datagrid mass action).
+     * Delete many tags at once via the datagrid mass action.
      */
     public function massDestroy(Request $request): JsonResponse
     {
@@ -117,10 +119,7 @@ class TagController extends Controller
     }
 
     /**
-     * Lightweight, searchable + paginated tag list used to populate the
-     * "Assign Tags" autocomplete. Paginating keeps the dropdown responsive
-     * even with hundreds of tags (the client lazy-loads further pages and
-     * narrows results server-side as the user types).
+     * Return a searchable, paginated tag list for the assign-tags autocomplete.
      */
     public function list(Request $request): JsonResponse
     {
@@ -146,6 +145,9 @@ class TagController extends Controller
         ]);
     }
 
+    /**
+     * Build an unauthorized JSON response.
+     */
     protected function unauthorized(): JsonResponse
     {
         return response()->json([
@@ -154,6 +156,9 @@ class TagController extends Controller
         ], 403);
     }
 
+    /**
+     * Build a not-found JSON response.
+     */
     protected function notFound(): JsonResponse
     {
         return response()->json([

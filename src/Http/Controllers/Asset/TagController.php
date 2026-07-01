@@ -15,17 +15,12 @@ class TagController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
     ) {}
 
-    /**
-     * To add and update the asset tag
-     */
+    /** Add and update the asset tag. */
     protected function addOrUpdateTag(Request $request)
     {
         $request->validate([
@@ -46,7 +41,7 @@ class TagController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
 
@@ -86,9 +81,7 @@ class TagController extends Controller
         ], 201);
     }
 
-    /**
-     * To remove the asset tag
-     */
+    /** Remove the asset tag. */
     protected function removeTag(Request $request)
     {
         $request->validate([
@@ -109,7 +102,7 @@ class TagController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
 
@@ -136,21 +129,7 @@ class TagController extends Controller
         ], 201);
     }
 
-    /**
-     * Attach one or more tags to many assets at once (datagrid + explorer mass action).
-     *
-     * Additive: existing tags on each asset are kept. Tag names are resolved
-     * find-or-create (case-insensitive) so the same payload works whether the
-     * tag already exists or is being created on the fly.
-     *
-     * Two target sources, which may be combined:
-     *  - `indices`: explicitly selected asset ids (small, bounded by the page) — tagged
-     *    one-by-one so each fires the history sync event.
-     *  - `directory_ids`: selected folders. Every asset inside them, recursively through
-     *    all sub-folders, is tagged via a single set-based INSERT ... SELECT per tag, so
-     *    it stays fast even for folders holding millions of assets (no rows loaded into
-     *    PHP, no per-asset history event).
-     */
+    /** Attach one or more tags to many assets at once. */
     protected function massAssignTags(Request $request)
     {
         $request->validate([
@@ -173,7 +152,6 @@ class TagController extends Controller
             ], 422);
         }
 
-        // Normalise + de-duplicate the submitted names (trimmed, case-insensitive).
         $names = collect($request->input('tags'))
             ->map(fn ($t) => trim((string) $t))
             ->filter()
@@ -187,7 +165,6 @@ class TagController extends Controller
             ], 422);
         }
 
-        // Resolve every name to a tag id once — reused across all selected assets.
         $tagIds = $names->map(function ($name) {
             $tag = $this->assetTagRepository->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])->first();
 
@@ -207,15 +184,12 @@ class TagController extends Controller
 
     /**
      * Tag explicitly selected assets one at a time so each emits the history sync event.
-     *
-     * @return int number of assets tagged
      */
     protected function tagSelectedAssets(array $assetIds, array $tagIds): int
     {
         $updated = 0;
 
         foreach ($assetIds as $assetId) {
-            // Silently skip assets the current user may not touch — never leak their existence.
             if (! $this->damCanAccessAsset((int) $assetId)) {
                 continue;
             }
@@ -228,7 +202,6 @@ class TagController extends Controller
 
             $oldTags = $asset->tags->pluck('name')->toArray();
 
-            // Keeps existing tags and ignores already-attached ones — no duplicate pivot rows.
             $asset->tags()->syncWithoutDetaching($tagIds);
 
             Event::dispatch('core.model.proxy.sync.tag', [
@@ -244,20 +217,10 @@ class TagController extends Controller
     }
 
     /**
-     * Recursively tag every asset contained in the given folders (and all sub-folders).
-     *
-     * Set-based and bounded: the descendant directory ids are resolved inside SQL via the
-     * nested-set lft/rgt range, and a single INSERT ... SELECT (ignoring duplicates) per tag
-     * writes the pivot rows — so the cost is a constant number of queries regardless of how
-     * many assets the folders hold. No per-asset history event is emitted on this path.
-     *
-     * @return int number of distinct assets the folders contain
+     * Recursively tag every asset contained in the given folders.
      */
     protected function tagAssetsInDirectories(array $directoryIds, array $tagIds): int
     {
-        // Only act on folders the user may access (a folder they selected). Access to a
-        // folder implies its whole subtree, mirroring the copy/move mass actions.
-        // bypass() is resolved once so selecting many folders stays cheap.
         $service = $this->damPermissionService();
         $bypass = $service->bypass();
 
@@ -279,8 +242,6 @@ class TagController extends Controller
         $dirTable = (new Directory)->getTable();
         $now = now()->toDateTimeString();
 
-        // Resolves the descendant directory ids entirely in SQL (one lft/rgt range per
-        // selected folder, OR-ed together) — never plucked into PHP, so memory stays flat.
         $subtreeDirIds = function ($query) use ($roots, $dirTable) {
             $query->select('id')->from($dirTable)->where(function ($scope) use ($roots) {
                 foreach ($roots as $i => $root) {
@@ -292,9 +253,6 @@ class TagController extends Controller
             });
         };
 
-        // The timestamp columns are selected as literals in an INSERT...SELECT.
-        // MySQL implicitly casts the string literal to its timestamp column type,
-        // but PostgreSQL rejects text→timestamp, so cast explicitly there.
         $nowLiteral = DB::getPdo()->quote($now);
         $nowExpr = DB::connection()->getDriverName() === 'pgsql'
             ? "CAST($nowLiteral AS timestamp)"

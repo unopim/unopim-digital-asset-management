@@ -43,7 +43,7 @@ class Importer extends CategoryImporter
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function prepareCategories(array $rowData, array &$categories): void
     {
@@ -61,7 +61,6 @@ class Importer extends CategoryImporter
             'additional_data' => $categoryValues,
         ];
 
-        /** additional fields data import  */
         $categoryFields = $this->getCategoryFields();
         $imageDirPath = $this->import->images_directory_path;
 

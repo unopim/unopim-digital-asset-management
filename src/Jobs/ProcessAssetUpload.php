@@ -15,37 +15,27 @@ use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\MetadataExtractionService;
 
-/**
- * Finalises a freshly-uploaded asset in the background: the expensive metadata
- * extraction (exiftool / ffprobe), audio cover-art and thumbnail generation are
- * lifted out of the HTTP request so the upload itself stays fast and low-memory.
- *
- * When the asset belongs to an upload session ($batchId set) the job honours the
- * session's cancel / pause state exactly like the core DataTransfer batch jobs:
- * a paused or cancelled tracker makes the job abort without touching the asset.
- */
+/** Finalises a freshly-uploaded asset in the background. */
 class ProcessAssetUpload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
 
-    /**
-     * @param  int  $assetId  The asset row to finalise (already persisted).
-     * @param  int|null  $batchId  The dam_upload_batches row, when part of a session.
-     */
+    /** Create a new instance. */
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
     ) {}
 
+    /**
+     * Finalise the asset: metadata, cover art and thumbnail generation.
+     */
     public function handle(MetadataExtractionService $metadataService): void
     {
         $batch = $this->batchId ? UploadBatch::find($this->batchId) : null;
         $tracker = $batch?->tracker;
 
-        // Session paused/cancelled: leave the batch pending so a resume can
-        // re-dispatch it, and do no work. Mirrors AbstractImporter::shouldStop().
         if ($tracker && $tracker->shouldStop()) {
             return;
         }
@@ -53,7 +43,6 @@ class ProcessAssetUpload implements ShouldQueue
         $asset = Asset::find($this->assetId);
 
         if (! $asset) {
-            // Asset was deleted before finalisation — nothing left to do.
             $this->settleBatch($batch, $tracker, failed: false);
 
             return;
@@ -87,9 +76,7 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * Extract metadata from the stored (not the temporary request) file so the
-     * job is self-contained. Reads through the asset disk — a real local path
-     * for local/private disks, a downloaded temp copy for S3.
+     * Extract metadata from the stored asset file.
      */
     protected function extractMetadata(MetadataExtractionService $service, Asset $asset, string $disk): array
     {
@@ -112,8 +99,7 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * For audio assets, pull embedded cover art and persist its path onto the
-     * asset's meta_data. No-op for non-audio types or when no artwork is found.
+     * Persist embedded cover art for audio assets onto meta_data.
      */
     protected function attachAudioCoverArt(MetadataExtractionService $service, Asset $asset, array $metaData, string $disk): void
     {
@@ -166,8 +152,7 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * Record the batch outcome, bump the tracker counters atomically and mark
-     * the session completed once every file has settled.
+     * Record the batch outcome and update tracker counters.
      */
     protected function settleBatch(?UploadBatch $batch, ?UploadTracker $tracker, bool $failed, ?string $error = null): void
     {
@@ -191,9 +176,7 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * Flip the tracker to `completed` once processed + failed reaches the total
-     * and nothing is still pending. Reloads a fresh row to avoid stale counters
-     * under concurrent workers.
+     * Mark the tracker completed once all files have settled.
      */
     protected function finalizeTrackerIfDone(int $trackerId): void
     {

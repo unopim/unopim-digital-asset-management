@@ -17,20 +17,13 @@ class PropertyController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
         protected FileStorer $fileStorer
     ) {}
 
-    /**
-     * For the asset properties route
-     *
-     * @return void
-     */
+    /** Asset properties route. */
     public function properties(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -42,11 +35,7 @@ class PropertyController extends Controller
         return view('dam::asset.properties.index', compact('id'));
     }
 
-    /**
-     * Property create $id
-     *
-     * @return void
-     */
+    /** Create a property. */
     public function propertiesCreate(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -92,11 +81,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    /**
-     * Property edit section
-     *
-     * @return void
-     */
+    /** Edit a property. */
     public function propertiesEdit(int $id)
     {
         $property = $this->assetPropertyRepository->findOrFail($id);
@@ -106,12 +91,7 @@ class PropertyController extends Controller
         return new JsonResponse($property);
     }
 
-    /**
-     * properties update
-     *
-     * @param  int  $id
-     * @return void
-     */
+    /** Update a property. */
     public function propertiesUpdate()
     {
         $id = request('id');
@@ -155,9 +135,8 @@ class PropertyController extends Controller
     }
 
     /**
-     * properties destroy
+     * properties destroy.
      *
-     * @param  int  $id
      * @return void
      */
     public function propertiesDestroy()
@@ -183,7 +162,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * Mass delete assets
+     * Mass delete assets.
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {

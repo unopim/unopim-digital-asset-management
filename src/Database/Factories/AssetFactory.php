@@ -7,16 +7,8 @@ use Webkul\DAM\Models\Asset;
 
 class AssetFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = Asset::class;
 
-    /**
-     * Define the model's default state.
-     */
     public function definition(): array
     {
         $fileName = fake()->name().'.jpg';

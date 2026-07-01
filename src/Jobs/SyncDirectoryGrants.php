@@ -10,12 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Kept for backward compatibility with any already-queued jobs.
- * Descendant expansion is no longer needed: directlyGrantedIds()
- * expands at runtime for inheritChildren=true, and auto-grant-on-create
- * handles inheritChildren=false via addDirectoryToRole().
- */
+/** Kept for backward compatibility with already-queued jobs; now a no-op. */
 class SyncDirectoryGrants implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -25,8 +20,5 @@ class SyncDirectoryGrants implements ShouldQueue
         protected array $directoryIds,
     ) {}
 
-    public function handle(): void
-    {
-        // no-op
-    }
+    public function handle(): void {}
 }

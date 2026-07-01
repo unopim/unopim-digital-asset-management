@@ -22,10 +22,7 @@ class MassCopy implements ShouldQueue
 
     public int $timeout = 3600;
 
-    /**
-     * Do not retry — this job is not idempotent. A retry after partial completion
-     * would re-copy already-created directories/assets, producing duplicates.
-     */
+    /** Do not retry — this job is not idempotent (a retry would duplicate copies). */
     public int $tries = 1;
 
     public function retryUntil(): \DateTime
@@ -37,7 +34,7 @@ class MassCopy implements ShouldQueue
 
     private const ASSET_CHUNK_SIZE = 500;
 
-    /** Per-directory name cache: [dirId => [name => true]] — 1 query per dir, then O(1) lookups */
+    /** Per-directory name cache. */
     private array $usedNames = [];
 
     private int $progressTotal = 0;
@@ -80,7 +77,6 @@ class MassCopy implements ShouldQueue
 
                 $copyableSources[$id] = $src;
 
-                // Count assets in this tree via nested-set range — one fast query per top-level dir
                 $this->progressTotal += DB::table($pivotTable)
                     ->join($dirTable, "{$dirTable}.id", '=', "{$pivotTable}.directory_id")
                     ->where("{$dirTable}._lft", '>=', $src->_lft)
@@ -91,7 +87,6 @@ class MassCopy implements ShouldQueue
 
             $this->progressTotal = max(1, $this->progressTotal);
 
-            // ── Assets ──────────────────────────────────────────────────────────
             if (! empty($this->assetIds)) {
                 $assetTable = (new Asset)->getTable();
                 $pivotTable = (new Asset)->directories()->getTable();
@@ -99,7 +94,6 @@ class MassCopy implements ShouldQueue
 
                 Storage::disk($disk)->makeDirectory($targetDirPath);
 
-                // Process in chunks to keep memory bounded for large selections
                 Asset::whereIn('id', $this->assetIds)
                     ->select(['file_name', 'file_type', 'extension', 'file_size', 'path', 'mime_type', 'meta_data'])
                     ->chunk(self::ASSET_CHUNK_SIZE, function ($assets) use ($disk, $targetDirPath, $assetTable, $pivotTable, $now) {
@@ -140,14 +134,9 @@ class MassCopy implements ShouldQueue
                             return;
                         }
 
-                        // Asset rows and their directory pivots are written in one transaction so a
-                        // pivot-insert failure can never leave assets stranded with no directory
-                        // (which would make them invisible in every grid yet still occupy storage).
                         DB::transaction(function () use ($assetTable, $pivotTable, $rows) {
-                            // Bulk insert — 1 query per chunk instead of 1 per asset
                             DB::table($assetTable)->insert($rows);
 
-                            // Retrieve inserted IDs by path (paths unique per disk)
                             $newIds = DB::table($assetTable)
                                 ->whereIn('path', array_column($rows, 'path'))
                                 ->pluck('id');
@@ -168,7 +157,6 @@ class MassCopy implements ShouldQueue
                     });
             }
 
-            // ── Directories ─────────────────────────────────────────────────────
             foreach ($this->dirIds as $id) {
                 $source = $copyableSources[$id] ?? null;
 
@@ -179,10 +167,9 @@ class MassCopy implements ShouldQueue
                 $newName = Directory::uniqueName($source->name, $this->targetId);
 
                 $newRoot = Directory::create(['name' => $newName, 'parent_id' => $this->targetId]);
-                $this->usedNames[$newRoot->id] = []; // freshly created — skip DB seed query
+                $this->usedNames[$newRoot->id] = [];
                 $newRootStoragePath = $targetDirPath.'/'.$newName;
                 $this->deepCopy($source, $newRoot, $newRootStoragePath, 0);
-                // Note: deepCopy emits progress updates per BFS directory internally
             }
 
             $this->completed(EventType::MASS_COPY->value, $this->userId);
@@ -194,8 +181,7 @@ class MassCopy implements ShouldQueue
     }
 
     /**
-     * Iterative BFS copy — avoids PHP stack overflow on deep/large trees, memory-safe.
-     * Bulk DB inserts per chunk (500 assets) instead of one INSERT per asset.
+     * Iterative BFS copy of a directory tree.
      */
     private function deepCopy(Directory $source, Directory $newParent, string $newParentStoragePath, int $initialDepth): void
     {
@@ -204,7 +190,6 @@ class MassCopy implements ShouldQueue
         $pivotTable = (new Asset)->directories()->getTable();
         $now = now()->toDateTimeString();
 
-        // Queue items: [sourceId, destDir, destPath, depth]
         $queue = [[$source->id, $newParent, $newParentStoragePath, $initialDepth]];
 
         while (! empty($queue)) {
@@ -216,7 +201,6 @@ class MassCopy implements ShouldQueue
 
             Storage::disk($disk)->makeDirectory($destPath);
 
-            // Process assets in chunks — 500 at a time, memory safe for 5k+ assets
             Asset::whereHas('directories', fn ($q) => $q->where('dam_directories.id', $srcId))
                 ->select(['file_name', 'file_type', 'extension', 'file_size', 'path', 'mime_type', 'meta_data'])
                 ->chunk(self::ASSET_CHUNK_SIZE, function ($assets) use ($disk, $destPath, $destDir, $assetTable, $pivotTable, $now) {
@@ -253,13 +237,9 @@ class MassCopy implements ShouldQueue
                         return;
                     }
 
-                    // Atomic asset + pivot write — see the top-level chunk above; a partial
-                    // failure here must not leave copied assets with no owning directory.
                     DB::transaction(function () use ($assetTable, $pivotTable, $rows, $destDir) {
-                        // Bulk insert — 1 query per 500 assets instead of 500 individual INSERTs
                         DB::table($assetTable)->insert($rows);
 
-                        // Retrieve inserted IDs by path (paths unique per disk)
                         $newIds = DB::table($assetTable)
                             ->whereIn('path', array_column($rows, 'path'))
                             ->pluck('id');
@@ -279,7 +259,6 @@ class MassCopy implements ShouldQueue
                     );
                 });
 
-            // Load only direct children (not their assets) for next BFS level
             $srcDir = Directory::with('children:id,name,parent_id')->find($srcId);
 
             if (! $srcDir) {
@@ -288,15 +267,14 @@ class MassCopy implements ShouldQueue
 
             foreach ($srcDir->children as $child) {
                 $newChild = Directory::create(['name' => $child->name, 'parent_id' => $destDir->id]);
-                $this->usedNames[$newChild->id] = []; // freshly created — skip DB seed query
+                $this->usedNames[$newChild->id] = [];
                 $queue[] = [$child->id, $newChild, $destPath.'/'.$newChild->name, $curDepth + 1];
             }
         }
     }
 
     /**
-     * Resolve a unique asset name using an in-memory set per directory.
-     * 1 query on first call per dir; O(1) hash lookup on every subsequent call.
+     * Resolve a unique asset name within a directory.
      */
     private function resolveUniqueName(string $base, string $ext, int $dirId): string
     {

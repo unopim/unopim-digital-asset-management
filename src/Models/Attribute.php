@@ -8,7 +8,7 @@ use Webkul\DAM\Rules\AssetRule;
 class Attribute extends BaseAttribute
 {
     /**
-     * {@inheritdoc}
+     * Build the validation rules for the attribute field type.
      */
     public function fieldTypeValidations(): array
     {

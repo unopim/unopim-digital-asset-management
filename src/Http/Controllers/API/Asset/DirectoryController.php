@@ -25,11 +25,7 @@ class DirectoryController
     ) {}
 
     /**
-     * Get all the directory.
-     *
-     * Pass ?with_assets=1 to include full asset eager-loading (legacy behaviour).
-     * Default returns the lightweight tree (directory nodes + counts only),
-     * which avoids loading 100k+ asset records into memory on every tree fetch.
+     * List all directories as a tree.
      */
     public function index(Request $request): JsonResponse
     {
@@ -104,8 +100,6 @@ class DirectoryController
 
     /**
      * Get a directory by its id.
-     *
-     * @throws ModelNotFoundException If a directory with the given id is not found.
      */
     public function getDirectory(int $id): JsonResponse
     {

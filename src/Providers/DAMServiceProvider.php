@@ -26,11 +26,6 @@ use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
-    /**
-     * The container bindings that should be registered.
-     *
-     * @var array
-     */
     public $bindings = [
         Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
@@ -41,15 +36,11 @@ class DAMServiceProvider extends ServiceProvider
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
     ];
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function boot(Router $router)
     {
         $router->aliasMiddleware('dam', DAM::class);
 
-        // Named rate limiters for public share routes — separate buckets per IP per route type
-        // so 200 thumbnail requests don't exhaust the bucket used by view/download routes.
         RateLimiter::for('dam-share-thumb', function ($request) {
             return Limit::perMinute(1200)->by('thumb|'.$request->ip());
         });
@@ -125,21 +116,14 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-config');
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function register()
     {
-        // Load DAM helpers here rather than composer.json autoload.files to keep DAM self-contained.
         $helpers = __DIR__.'/../Http/helpers.php';
         if (file_exists($helpers)) {
             require_once $helpers;
         }
 
-        // Share one DirectoryPermissionService per request so its memoized
-        // ACL id-sets (a pivot query + nested-set self-joins) are computed once
-        // instead of being rebuilt by the controller, repository, and each Blade
-        // helper. autoGrantToCreator()->flush() keeps it correct after a grant.
         $this->app->scoped(DirectoryPermissionService::class);
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');

@@ -11,14 +11,9 @@ use Webkul\DAM\Repositories\AssetRepository;
 
 class AssetPickerController extends Controller
 {
-    /**
-     * create controller object
-     */
     public function __construct(protected AssetRepository $assetRepository) {}
 
-    /**
-     * Asset Picker Datagrid
-     */
+    /** Asset picker datagrid. */
     public function index()
     {
         if (request()->ajax()) {
@@ -27,7 +22,7 @@ class AssetPickerController extends Controller
     }
 
     /**
-     * Fetch Assets through id
+     * Fetch assets by their ids.
      */
     public function fetchAssets(): JsonResponse
     {
@@ -53,7 +48,7 @@ class AssetPickerController extends Controller
     }
 
     /**
-     * Format the asset object
+     * Format the asset object.
      */
     protected function formatAsset(Asset $asset): array
     {

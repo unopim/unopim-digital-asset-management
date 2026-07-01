@@ -16,11 +16,6 @@ class EventServiceProvider extends ServiceProvider
 
     const ASSET_CATEGORY_FIELD_TYPE = 'asset';
 
-    /**
-     * The event handler mappings for the application.
-     *
-     * @var array
-     */
     protected $listen = [
         'catalog.product.create.after' => [
             'Webkul\DAM\Listeners\Product@afterCreateOrupdate',
@@ -39,9 +34,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    /**
-     * Load events
-     */
+    /** Load events. */
     public function boot()
     {
         Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
@@ -60,7 +53,6 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
 
-        // Create fires access_control (underscore); edit fires access-control (hyphen). Listen to both.
         Event::listen('unopim.admin.settings.roles.create.card.access_control.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
@@ -70,7 +62,6 @@ class EventServiceProvider extends ServiceProvider
                 return;
             }
 
-            // Absent marker = DAM tab hidden (bypass role) — leave grants unchanged. Present = directories[] is authoritative.
             if (! request()->boolean('dam_directory_grants_managed')) {
                 return;
             }
@@ -80,9 +71,6 @@ class EventServiceProvider extends ServiceProvider
                 fn ($id) => $id > 0
             ));
 
-            // Defensive filter against stale form data — a user can have
-            // an old edit tab open while another admin deletes a directory,
-            // so the submission may reference an id that no longer exists.
             if (! empty($directoryIds)) {
                 $directoryIds = Directory::whereIn('id', $directoryIds)
                     ->pluck('id')
@@ -90,8 +78,6 @@ class EventServiceProvider extends ServiceProvider
                     ->all();
             }
 
-            // No selection — fall back to the root grant so the role keeps
-            // a baseline entry point (mirrors the backfill migration).
             if (empty($directoryIds)) {
                 $rootId = Directory::whereNull('parent_id')
                     ->orderBy('id')
@@ -105,9 +91,6 @@ class EventServiceProvider extends ServiceProvider
             $allDirectories = request()->boolean('dam_all_directories');
             $inheritChildren = request()->boolean('dam_inherit_children');
 
-            // With inherit_children, the runtime service expands grants dynamically.
-            // Strip submitted descendants so only root selections are stored;
-            // the job will not re-expand them (inherit = expansion at query time).
             if ($inheritChildren && count($directoryIds) > 1) {
                 $existingGrants = app(DirectoryRolePermissionRepository::class)
                     ->getDirectoryIdsForRole((int) $role->id);
@@ -131,8 +114,6 @@ class EventServiceProvider extends ServiceProvider
                     ->all();
             }
 
-            // Update role settings inline so all_directories / inherit_children
-            // take effect immediately.
             DB::table('dam_role_settings')->updateOrInsert(
                 ['role_id' => (int) $role->id],
                 [

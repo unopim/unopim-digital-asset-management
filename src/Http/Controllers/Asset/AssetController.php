@@ -8,7 +8,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
@@ -38,9 +37,6 @@ class AssetController extends Controller
 {
     use DirectoryTrait;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
@@ -52,9 +48,7 @@ class AssetController extends Controller
     ) {}
 
     /**
-     * Resolve the directory id an asset belongs to. Assets are linked through
-     * the dam_asset_directory pivot; an asset typically lives in exactly one
-     * directory.
+     * Resolve the directory id an asset belongs to.
      */
     protected function assetDirectoryId(?Asset $asset): ?int
     {
@@ -68,9 +62,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Returns true when the current admin can act on this asset based on its
-     * containing directory. Strict (directly-granted only) — ancestors that are
-     * tree-visible via expansion don't count.
+     * Whether the current admin can act on this asset based on its directory.
      */
     protected function canActOnAsset(?Asset $asset): bool
     {
@@ -87,11 +79,7 @@ class AssetController extends Controller
         return $this->permissionService->canAccess($dirId);
     }
 
-    /**
-     * Main route
-     *
-     * @return void
-     */
+    /** Main route. */
     public function index()
     {
         if (request()->ajax()) {
@@ -101,11 +89,7 @@ class AssetController extends Controller
         return view('dam::asset.index');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return View
-     */
+    /** Show the form for editing the specified resource. */
     public function edit(int $id)
     {
         $asset = $this->assetRepository->find($id);
@@ -158,13 +142,7 @@ class AssetController extends Controller
         return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors', 'directory'));
     }
 
-    /**
-     * Get next and previous assets scoped to the asset's directory.
-     *
-     * @param  Asset  $asset
-     * @param  int  $id
-     * @return Asset
-     */
+    /** Get next and previous assets scoped to the asset's directory. */
     protected function getNextAndPreviousAssets($asset, $id, ?Directory $directory = null)
     {
         $assetModel = $this->assetRepository->model();
@@ -180,9 +158,7 @@ class AssetController extends Controller
         return $asset;
     }
 
-    /**
-     * Get metadata for a given by asset id
-     */
+    /** Get metadata for a given asset id. */
     public function getMetadataById($id)
     {
         try {
@@ -227,11 +203,6 @@ class AssetController extends Controller
 
     /**
      * Flatten scalar EXIF entries into the top-level metadata array.
-     *
-     * The stored `meta_data` (and the shape returned by MetadataExtractionService) contains an
-     * `exif` key whose scalar children should be merged alongside the other top-level fields,
-     * while nested array children under `exif` are preserved. The returned array no longer
-     * contains the `exif` key when flattening succeeds.
      */
     private function flattenExifMetadata(array $metaData): array
     {
@@ -250,11 +221,7 @@ class AssetController extends Controller
         return array_merge($flatExif, $metaData);
     }
 
-    /**
-     * to upload the asset
-     *
-     * @return void|JsonResponse
-     */
+    /** Upload the asset. */
     public function upload(Request $request)
     {
         set_time_limit(0);
@@ -293,8 +260,6 @@ class AssetController extends Controller
         $disk = Directory::getAssetDisk();
         $tracker = $this->resolveUploadTracker($request, (int) $directoryId);
 
-        // Writability is request-scoped (same directory for every file in the
-        // batch), so check once up front rather than re-checking inside the loop.
         if (! $directory->isWritable($directoryPath)) {
             return response()->json([
                 'success' => false,
@@ -306,8 +271,6 @@ class AssetController extends Controller
             ], 500);
         }
 
-        // Pre-fetch any existing assets that match the incoming filenames in
-        // this directory. Avoids N round-trips for an N-file batch.
         $candidatePaths = [];
         foreach ($files as $f) {
             if ($f instanceof UploadedFile) {
@@ -368,9 +331,6 @@ class AssetController extends Controller
                     $assetIds[] = $asset->id;
                 }
 
-                // Heavy work (metadata extraction, cover-art, thumbnails) is
-                // lifted into a background job so the request stays fast and
-                // low-memory and the session can be paused/cancelled/retried.
                 $this->queueAssetFinalisation($asset, $tracker);
 
                 $uploadFiles[] = $asset;
@@ -396,9 +356,7 @@ class AssetController extends Controller
     }
 
     /**
-     * For audio assets, extract embedded cover art and attach its storage path
-     * to the asset's meta_data. No-op for non-audio mime types or when no
-     * embedded artwork is found.
+     * Extract embedded cover art from audio assets and store its path in meta_data.
      */
     private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
     {
@@ -424,13 +382,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Upload a folder: accepts files with their webkitRelativePath values and
-     * recreates the entire directory structure inside the given DAM directory.
-     *
-     * Expected request fields:
-     *   - files[]          : uploaded file objects
-     *   - relative_paths[] : parallel array of webkitRelativePath strings
-     *   - directory_id     : target DAM directory id
+     * Upload a folder, recreating its directory structure inside a DAM directory.
      */
     public function uploadFolder(Request $request): JsonResponse
     {
@@ -471,18 +423,8 @@ class AssetController extends Controller
         $skippedCount = 0;
         $tracker = $this->resolveUploadTracker($request, $directoryId);
 
-        // Cache for directory id lookups keyed by "parentId/segmentName" so we
-        // don't issue a redundant query for each file that shares a subdirectory.
         $dirCache = [];
 
-        /**
-         * Recursively find or create a DAM directory by walking path segments
-         * under $rootDirectoryId.  Returns the leaf directory id.
-         *
-         * @param  int  $rootId  The DAM directory id to start under.
-         * @param  string[]  $segments  Directory name segments (no file name).
-         * @return int Leaf directory id.
-         */
         $createdIds = [];
 
         $resolveOrCreatePath = function (int $rootId, array $segments) use (&$resolveOrCreatePath, &$dirCache, &$createdIds): int {
@@ -494,7 +436,6 @@ class AssetController extends Controller
             $cacheKey = $rootId.'/'.$segment;
 
             if (! isset($dirCache[$cacheKey])) {
-                // Find existing child directory with this name.
                 $existing = Directory::where('parent_id', $rootId)
                     ->where('name', $segment)
                     ->first();
@@ -502,7 +443,6 @@ class AssetController extends Controller
                 if ($existing) {
                     $dirCache[$cacheKey] = $existing->id;
                 } else {
-                    // Create it — reuse the repository so storage is provisioned.
                     $newDir = $this->directoryRepository->create([
                         'name'      => $segment,
                         'parent_id' => $rootId,
@@ -515,13 +455,9 @@ class AssetController extends Controller
             return $resolveOrCreatePath($dirCache[$cacheKey], $segments);
         };
 
-        // Group new asset ids per directory so we can batch-attach them to
-        // the pivot table rather than attaching one by one.
         $assetsByDir = [];
 
         try {
-            // Pass 1: resolve target directories and filter files so we can
-            // batch-fetch existing assets in a single query instead of one per file.
             $fileJobs = [];
 
             foreach ($files as $index => $file) {
@@ -531,17 +467,8 @@ class AssetController extends Controller
 
                 $relativePath = $relativePaths[$index] ?? $file->getClientOriginalName();
 
-                // webkitRelativePath looks like "FolderName/sub/file.jpg".
-                // Extract the directory segments (everything except the last
-                // component, which is the file name).
                 $parts = explode('/', ltrim(str_replace('\\', '/', $relativePath), '/'));
-                array_pop($parts); // remove the file name
-                // For webkitdirectory uploads the top-level segment is the
-                // selected folder name itself, which we do NOT want to
-                // recreate inside the target directory — strip it.
-                // For drag-drop uploads (preserve_root=true) the caller
-                // already includes the folder name as a desired path segment
-                // so we keep it intact.
+                array_pop($parts);
                 if (! $preserveRoot && ! empty($parts)) {
                     array_shift($parts);
                 }
@@ -572,7 +499,6 @@ class AssetController extends Controller
                     continue;
                 }
 
-                // Resolve (or create) the target directory inside $directoryId.
                 $targetDirId = $resolveOrCreatePath($directoryId, $parts);
                 $targetDirectory = $this->directoryRepository->find($targetDirId);
                 $targetDirPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $targetDirectory->generatePath());
@@ -596,13 +522,11 @@ class AssetController extends Controller
                 ];
             }
 
-            // Batch-fetch existing assets for all candidate paths — avoids N+1.
             $candidatePaths = array_column($fileJobs, 'existingPath');
             $existingByPath = $candidatePaths
                 ? Asset::whereIn('path', $candidatePaths)->get()->keyBy('path')
                 : collect();
 
-            // Pass 2: upload each file using the pre-fetched asset map.
             foreach ($fileJobs as $job) {
                 $file = $job['file'];
                 $mimeType = $job['mimeType'];
@@ -647,13 +571,11 @@ class AssetController extends Controller
                     $assetsByDir[$targetDirId][] = $asset->id;
                 }
 
-                // Defer heavy finalisation to the background queue.
                 $this->queueAssetFinalisation($asset, $tracker);
 
                 $uploadedAssets[] = $asset;
             }
 
-            // Batch-attach new assets to their directories.
             foreach ($assetsByDir as $dirId => $ids) {
                 $this->mappedWithDirectory($ids, $dirId);
             }
@@ -681,11 +603,7 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * to Re upload the asset
-     *
-     * @return void|JsonResponse
-     */
+    /** Re-upload the asset. */
     public function reUpload(Request $request)
     {
         set_time_limit(0);
@@ -712,7 +630,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'), // asset not found
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
             ], 404);
         }
 
@@ -794,11 +712,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Resolve the upload session (tracker) for this request, if the client sent
-     * a session_uuid. The client creates the tracker up front via
-     * UploadController::startSession, but we fall back to a lazy create so a
-     * stray request never loses its progress row. A finished/cancelled session
-     * is treated as no session so its counters aren't resurrected.
+     * Resolve the upload session (tracker) for this request, if any.
      */
     protected function resolveUploadTracker(Request $request, int $directoryId): ?UploadTracker
     {
@@ -825,9 +739,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Queue background finalisation for a freshly-uploaded asset. When the
-     * upload belongs to a session, a batch row is created first so the job can
-     * report progress and honour pause/cancel/retry.
+     * Queue background finalisation for a freshly-uploaded asset.
      */
     protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
     {
@@ -845,9 +757,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Dispatch a queued job to generate a real thumbnail for non-image media
-     * (PDF first page, video frame). Audio cover art is handled inline at
-     * upload time by attachAudioCoverArt(). No-op for everything else.
+     * Dispatch a queued job to generate a thumbnail for non-image media.
      */
     protected function dispatchThumbnailJob(?Asset $asset): void
     {
@@ -867,10 +777,7 @@ class AssetController extends Controller
     }
 
     /**
-     * To Display the asset — JSON payload for SPA navigation.
-     *
-     * @param [type] $id
-     * @return void|JsonResponse
+     * Display the asset as a JSON payload for SPA navigation.
      */
     public function show($id): JsonResponse
     {
@@ -969,12 +876,7 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * To update the asset
-     *
-     * @param [type] $id
-     * @return void|JsonResponse
-     */
+    /** Update the asset. */
     public function update(Request $request, $id)
     {
         $asset = Asset::find($id);
@@ -1011,12 +913,7 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Delete asset
-     *
-     * @param [type] $id
-     * @return void|JsonResponse
-     */
+    /** Delete asset. */
     public function destroy($id)
     {
         $asset = Asset::find($id);
@@ -1024,7 +921,7 @@ class AssetController extends Controller
         if (! $asset) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'), // Asset not found to destroy
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found-to-destroy'),
             ], 404);
         }
 
@@ -1067,7 +964,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Mass delete assets
+     * Mass delete assets.
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
@@ -1077,7 +974,6 @@ class AssetController extends Controller
         try {
             $disk = Directory::getAssetDisk();
 
-            // 1 query + eager-loaded resources instead of N find() + N resources()->get()
             $assets = Asset::whereIn('id', $assetIds)->with('resources')->get()->keyBy('id');
 
             $deletableIds = [];
@@ -1113,7 +1009,6 @@ class AssetController extends Controller
             }
 
             if (! empty($deletableIds)) {
-                // Single bulk DELETE instead of N individual deletes
                 Asset::whereIn('id', $deletableIds)->delete();
 
                 foreach ($deletableIds as $deletedId) {
@@ -1140,7 +1035,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Mass update assets
+     * Mass update assets.
      */
     public function massUpdate(MassUpdateRequest $massUpdateRequest): JsonResponse
     {
@@ -1151,8 +1046,6 @@ class AssetController extends Controller
         foreach ($assetIds as $assetId) {
             Event::dispatch('dam.asset.update.before', $assetId);
 
-            // $asset = $this->assetRepository->updateStatus();
-
             Event::dispatch('dam.asset.update.after', $assetId);
         }
 
@@ -1161,9 +1054,7 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Download
-     */
+    /** Download. */
     public function download(int $id)
     {
         $asset = Asset::find($id);
@@ -1185,16 +1076,13 @@ class AssetController extends Controller
 
                 return redirect()->away($url);
             } catch (\Throwable $e) {
-                // fall through to streaming download
             }
         }
 
         return Storage::disk($disk)->download($asset->path);
     }
 
-    /**
-     * Download asset wrapped in a ZIP archive.
-     */
+    /** Download asset wrapped in a ZIP archive. */
     public function downloadCompressed(int $id)
     {
         $asset = Asset::find($id);
@@ -1222,14 +1110,7 @@ class AssetController extends Controller
         return response()->download($zipPath, $baseName.'.zip')->deleteFileAfterSend(true);
     }
 
-    /**
-     * Custom download functionality for images, allowing adjustments in size and format.
-     *
-     * Handles image assets by providing options to resize the image to specified dimensions
-     * and change the image format while initiating a download. If the asset type is image,
-     * users can specify the desired width, height, and format to customize their download.
-     * Non-image assets will be downloaded in their original form without any modifications.
-     */
+    /** Custom download for images, allowing size and format adjustments. */
     public function customDownload(Request $request, int $id)
     {
         $format = $request->query('format', null);
@@ -1253,7 +1134,6 @@ class AssetController extends Controller
             ], 403);
         }
 
-        // Svg Image Download
         if ($asset->extension === 'svg' && $format) {
             if (! extension_loaded('imagick')) {
                 return Storage::disk($disk)->download($asset->path, $asset->file_name);
@@ -1280,7 +1160,6 @@ class AssetController extends Controller
             }
         }
 
-        // Image Download
         if ($asset->file_type === 'image' && ($format || $height || $width)) {
             try {
                 $disk = Directory::getAssetDisk();
@@ -1312,7 +1191,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Rename asset file name
+     * Rename asset file name.
      */
     public function rename(Request $request): JsonResponse
     {
@@ -1397,7 +1276,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Moved asset directory location
+     * Moved asset directory location.
      */
     public function moved(Request $request): JsonResponse
     {
@@ -1465,15 +1344,12 @@ class AssetController extends Controller
     }
 
     /**
-     * Format a kilobyte value into a human readable string (e.g. "50 MB").
+     * Clear cached thumbnails, previews and cover art for an asset path.
      */
     private function clearAssetCache(string $path, string $disk, ?int $assetId = null): void
     {
         Storage::disk($disk)->delete('thumbnails/'.$path);
 
-        // Preview files live at preview/{size}/{asset_path}. Listing only the
-        // size subdirs (2–5 entries) and deleting directly avoids a full
-        // allFiles() scan that grows with the total number of cached previews.
         foreach (Storage::disk($disk)->directories('preview') as $sizeDir) {
             Storage::disk($disk)->delete($sizeDir.'/'.$path);
         }
@@ -1499,7 +1375,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Mapped asset with directory
+     * Mapped asset with directory.
      */
     protected function mappedWithDirectory($assetIds, $directoryId): ?Directory
     {

@@ -5,9 +5,7 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * A single asset awaiting background finalisation within an upload session.
- */
+/** A single asset awaiting background finalisation within an upload session. */
 class UploadBatch extends Model
 {
     const STATE_PENDING = 'pending';
@@ -29,11 +27,17 @@ class UploadBatch extends Model
         'error',
     ];
 
+    /**
+     * The upload session this batch belongs to.
+     */
     public function tracker(): BelongsTo
     {
         return $this->belongsTo(UploadTracker::class, 'upload_tracker_id');
     }
 
+    /**
+     * The asset being finalised by this batch.
+     */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'asset_id');

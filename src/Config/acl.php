@@ -73,24 +73,6 @@ return [
         'sort'  => 11,
     ],
 
-    // @TODO: Tag ACL implements the future
-    // [
-    //     'key'   => 'dam.asset.tag',
-    //     'name'  => 'dam::app.admin.acl.tag',
-    //     'route' => 'admin.dam.assets.tag',
-    //     'sort'  => 12,
-    // ], [
-    //     'key'   => 'dam.asset.tag.create',
-    //     'name'  => 'dam::app.admin.acl.create',
-    //     'route' => 'admin.dam.assets.tag',
-    //     'sort'  => 1,
-    // ], [
-    //     'key'   => 'dam.asset.tag.delete',
-    //     'name'  => 'dam::app.admin.acl.delete',
-    //     'route' => 'admin.dam.assets.remove-tag',
-    //     'sort'  => 2,
-    // ],
-
     [
         'key'   => 'dam.asset.property',
         'name'  => 'dam::app.admin.acl.property',

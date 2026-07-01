@@ -9,19 +9,12 @@ class AssetCommentsRepository extends Repository
 {
     protected $assets = [];
 
-    /**
-     * Specify model class name.
-     */
     public function model(): string
     {
         return AssetComments::class;
     }
 
-    /**
-     * Create comment
-     *
-     * @return \Webkul\DAM\Contracts\AssetComments
-     */
+    /** Create comment. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -29,13 +22,7 @@ class AssetCommentsRepository extends Repository
         return $asset;
     }
 
-    /**
-     * Update comment.
-     *
-     * @param  int  $id
-     * @param  string  $asset
-     * @return \Webkul\DAM\Contracts\AssetComments
-     */
+    /** Update comment. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);

@@ -25,7 +25,6 @@ class GenerateScaleData extends Command
 
     private string $sourceDir;
 
-    /** @var array<int,array{full_path:string,file_name:string,extension:string,mime_type:string,file_type:string,file_size:int}> */
     private array $sourceMeta = [];
 
     public function handle(): int
@@ -91,7 +90,6 @@ class GenerateScaleData extends Command
     {
         $this->info('Building directory storage-path map...');
         $pathMap = $this->buildStoragePathMap();
-        // Invert: storage_path -> directory_id
         $pathToId = array_flip($pathMap);
 
         $this->info('Finding assets with no pivot row...');
@@ -157,7 +155,6 @@ class GenerateScaleData extends Command
 
     private function buildStoragePathMap(): array
     {
-        // Single query — load all dirs into memory
         $all = DB::table('dam_directories')
             ->select(['id', 'name', 'parent_id'])
             ->get()
@@ -283,15 +280,10 @@ class GenerateScaleData extends Command
             ];
         };
 
-        // Resolve the actual root directory instead of assuming id=1. Explicit-id
-        // bulk inserts don't advance the PostgreSQL sequence and a fresh install
-        // can land the root at any id, so a hardcoded 1 breaks the parent_id
-        // foreign key on PostgreSQL (works on MySQL only by coincidence of id=1).
         $rootDir = Directory::whereNull('parent_id')->orderBy('id')->first();
         $rootId = (int) ($rootDir?->id ?? 1);
         $rootStoragePath = 'assets/'.($rootDir?->name ?? 'Root');
 
-        // L1: 200 dirs under root
         $l1 = [];
         for ($i = 0; $i < 200 && $total < $target; $i++) {
             $name = ($prefixes[$i % count($prefixes)]).'-'.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT);
@@ -301,7 +293,6 @@ class GenerateScaleData extends Command
             $total++;
         }
 
-        // L2: 10 per L1
         $l2 = [];
         foreach ($l1 as $parent) {
             for ($i = 0; $i < 10 && $total < $target; $i++) {
@@ -313,7 +304,6 @@ class GenerateScaleData extends Command
             }
         }
 
-        // L3: 5 per L2
         $l3 = [];
         foreach ($l2 as $parent) {
             for ($i = 0; $i < 5 && $total < $target; $i++) {
@@ -325,7 +315,6 @@ class GenerateScaleData extends Command
             }
         }
 
-        // L4: 3 per L3
         $l4 = [];
         foreach ($l3 as $parent) {
             for ($i = 0; $i < 3 && $total < $target; $i++) {
@@ -337,7 +326,6 @@ class GenerateScaleData extends Command
             }
         }
 
-        // L5+: deep branches on 20% of L4 nodes (up to 6 more levels each)
         if ($total < $target) {
             shuffle($l4);
             $deepPool = array_slice($l4, 0, (int) (count($l4) * 0.2));
@@ -363,7 +351,6 @@ class GenerateScaleData extends Command
 
     private function insertDirectories(array $nodes, int $chunk): void
     {
-        // Strip _storage_path (not a DB column) before insert; keep _lft/_rgt (they are real columns)
         $dbRows = array_map(fn (array $n): array => [
             'id'         => $n['id'],
             'name'       => $n['name'],
@@ -377,7 +364,6 @@ class GenerateScaleData extends Command
         $bar = $this->output->createProgressBar(count($dbRows));
         $bar->start();
 
-        // 7 cols per row; PostgreSQL limit = 65535 params
         $safeChunk = min($chunk, (int) floor(65535 / 7));
 
         foreach (array_chunk($dbRows, $safeChunk) as $batch) {
@@ -392,7 +378,6 @@ class GenerateScaleData extends Command
         (new Directory)->newNestedSetQuery()->fixTree();
         $this->info('  fixTree() complete.');
 
-        // Explicit-ID bulk inserts bypass the PostgreSQL sequence — reset it.
         $this->resetSequence('dam_directories');
     }
 
@@ -446,7 +431,6 @@ class GenerateScaleData extends Command
         $now = now()->toDateTimeString();
         $sourceCount = count($this->sourceMeta);
 
-        // Distribute assets across nodes: base quota per node + scatter remainder
         $basePerNode = (int) floor($targetAssets / $nodeCount);
         $remainder = $targetAssets - ($basePerNode * $nodeCount);
         $nodeCounts = array_fill(0, $nodeCount, $basePerNode);
@@ -474,7 +458,6 @@ class GenerateScaleData extends Command
                 $destAbs = $dirAbsPath.'/'.$newName;
                 $dbPath = $node['_storage_path'].'/'.$newName;
 
-                // Hard-link; fall back to copy if cross-device or permission issue
                 if (! @link($src['full_path'], $destAbs)) {
                     if (! copy($src['full_path'], $destAbs)) {
                         throw new \RuntimeException("Failed to link or copy '{$src['full_path']}' to '{$destAbs}'");
@@ -524,10 +507,8 @@ class GenerateScaleData extends Command
         $bar = $this->output->createProgressBar(count($dbRows));
         $bar->start();
 
-        // Capture timestamp used in rows to narrow the post-insert ID query
         $insertedBefore = (int) DB::table('dam_assets')->max('id');
 
-        // 8 cols per row; PostgreSQL limit = 65535 params
         $safeChunk = min($chunk, (int) floor(65535 / 8));
 
         foreach (array_chunk($dbRows, $safeChunk) as $batch) {
@@ -538,7 +519,6 @@ class GenerateScaleData extends Command
         $bar->finish();
         $this->newLine();
 
-        // Retrieve actual IDs assigned by the DB sequence (portable: works on both MySQL and PostgreSQL)
         $assetIds = DB::table('dam_assets')
             ->where('id', '>', $insertedBefore)
             ->orderBy('id')
@@ -554,8 +534,6 @@ class GenerateScaleData extends Command
             return;
         }
 
-        // assetIds may be > assetRows when orphaned rows from a previous partial run exist.
-        // Safe: take the last N IDs (highest) which correspond to this batch.
         if (count($assetIds) > count($assetRows)) {
             $assetIds = array_slice($assetIds, count($assetIds) - count($assetRows));
         }
@@ -581,7 +559,6 @@ class GenerateScaleData extends Command
         $bar = $this->output->createProgressBar(count($pivots));
         $bar->start();
 
-        // 4 cols per row; PostgreSQL limit = 65535 params
         $safeChunk = min($chunk, (int) floor(65535 / 4));
 
         foreach (array_chunk($pivots, $safeChunk) as $batch) {
@@ -594,9 +571,7 @@ class GenerateScaleData extends Command
     }
 
     /**
-     * After explicit-ID bulk inserts, PostgreSQL sequences are left behind.
-     * Advance the sequence to MAX(id) so the next INSERT doesn't collide.
-     * No-op on MySQL (auto_increment tracks the max automatically).
+     * Reset a PostgreSQL sequence after explicit-ID bulk inserts.
      */
     private function resetSequence(string $table): void
     {

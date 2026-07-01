@@ -10,23 +10,16 @@ use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/**
- * Session controls for the background asset uploader: the DAM equivalent of the
- * core DataTransfer import tracker actions (start / stats / pause / resume /
- * cancel / retry). All progress and cancel/pause state lives on the
- * dam_upload_trackers row; the queued ProcessAssetUpload jobs read it.
- */
+/** Session controls for the background asset uploader. */
 class UploadController extends Controller
 {
+    /** Create a new instance. */
     public function __construct(
         protected DirectoryPermissionService $permissionService,
     ) {}
 
     /**
-     * Start (or re-attach to) an upload session. The client generates the uuid
-     * and knows the file count up front, so the tracker is created with the
-     * total already set — that lets a session be paused/cancelled even before
-     * the first file lands.
+     * Start or re-attach to an upload session.
      */
     public function startSession(Request $request): JsonResponse
     {
@@ -59,7 +52,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Live progress for the polling panel.
+     * Return live progress for the polling panel.
      */
     public function stats(string $uuid): JsonResponse
     {
@@ -73,8 +66,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Pause: queued jobs will read this and abort, leaving their batch pending
-     * for a later resume. The client also stops feeding its upload worker pool.
+     * Pause the session so queued jobs abort and leave their batch pending.
      */
     public function pause(string $uuid): JsonResponse
     {
@@ -120,8 +112,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Cancel the session. Already-uploaded assets are kept (the same contract as
-     * a cancelled core import); only pending background work is abandoned.
+     * Cancel the session, keeping uploaded assets and abandoning pending work.
      */
     public function cancel(string $uuid): JsonResponse
     {
@@ -150,8 +141,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Retry only the failed batches: reset them to pending, correct the failure
-     * counter and re-dispatch. Successful assets are untouched.
+     * Retry only the failed batches, leaving successful assets untouched.
      */
     public function retry(string $uuid): JsonResponse
     {
@@ -190,9 +180,7 @@ class UploadController extends Controller
     }
 
     /**
-     * The client's worker pool has drained. Reconcile the total to the number of
-     * batches that actually reached the server (some transfers may have failed
-     * before creating one) and complete the session if nothing is left open.
+     * Reconcile totals and complete the session once no batches remain open.
      */
     public function complete(string $uuid): JsonResponse
     {
@@ -223,8 +211,7 @@ class UploadController extends Controller
     }
 
     /**
-     * Re-dispatch a fresh finalisation job for every batch in one of the given
-     * states.
+     * Re-dispatch a fresh finalisation job for every batch in the given states.
      */
     protected function redispatch(UploadTracker $tracker, array $states): void
     {
@@ -257,11 +244,17 @@ class UploadController extends Controller
         return $tracker;
     }
 
+    /**
+     * Find an upload tracker by its uuid.
+     */
     protected function findTracker(string $uuid): ?UploadTracker
     {
         return UploadTracker::where('uuid', $uuid)->first();
     }
 
+    /**
+     * Build the tracker payload returned to the client.
+     */
     protected function present(UploadTracker $tracker): array
     {
         return [
@@ -273,6 +266,9 @@ class UploadController extends Controller
         ];
     }
 
+    /**
+     * Build a 403 unauthorized JSON response.
+     */
     protected function unauthorized(): JsonResponse
     {
         return new JsonResponse([

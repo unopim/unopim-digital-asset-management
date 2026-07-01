@@ -8,9 +8,7 @@ use Webkul\DAM\Models\DamConfiguration;
 
 class DAM
 {
-    /**
-     * Handle an incoming request;
-     */
+    /** Handle an incoming request;. */
     public function handle($request, Closure $next)
     {
         if (Schema::hasTable('dam_configuration')) {

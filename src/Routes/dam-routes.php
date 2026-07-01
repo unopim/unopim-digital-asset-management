@@ -50,9 +50,6 @@ Route::group([
 
         });
 
-        // Background upload session controls — the DAM analogue of the core
-        // DataTransfer import tracker (start / stats / pause / resume / cancel /
-        // retry / complete).
         Route::controller(UploadController::class)->prefix('upload')->group(function () {
             Route::post('/tracker', 'startSession')->name('admin.dam.assets.upload.tracker');
             Route::get('/stats/{uuid}', 'stats')->name('admin.dam.assets.upload.stats');

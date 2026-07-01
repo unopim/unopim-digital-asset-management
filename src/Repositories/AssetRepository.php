@@ -10,19 +10,12 @@ class AssetRepository extends Repository
 {
     protected $assets = [];
 
-    /**
-     * Specify model class name.
-     */
     public function model(): string
     {
         return Asset::class;
     }
 
-    /**
-     * Create asset.
-     *
-     * @return \Webkul\DAM\Contracts\Asset
-     */
+    /** Create asset. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -30,13 +23,7 @@ class AssetRepository extends Repository
         return $asset;
     }
 
-    /**
-     * Update Asset.
-     *
-     * @param  int  $id
-     * @param  string  $asset
-     * @return \Webkul\DAM\Contracts\Asset
-     */
+    /** Update Asset. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);
@@ -46,11 +33,7 @@ class AssetRepository extends Repository
         return $asset;
     }
 
-    /**
-     * This function returns a query builder instance for the Asset model.
-     *
-     * @return Builder
-     */
+    /** Returns a query builder instance for the Asset model. */
     public function queryBuilder()
     {
         return $this;

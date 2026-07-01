@@ -12,40 +12,18 @@ use Webkul\User\Models\Admin;
 
 class MoveDamAssetsToS3 extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'unopim:dam:move-asset-to-s3';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Move DAM asset files to AWS S3 if they exist locally';
 
-    /**
-     * The total no of records move at a time
-     *
-     * @var int
-     */
     protected $limit = 1000;
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
     public function handle()
     {
         $this->authCheck();
     }
 
-    /**
-     * To Check user Authenticity
-     */
+    /** To Check user Authenticity. */
     public function authCheck()
     {
         $email = $this->ask('Enter your Email');
@@ -77,9 +55,7 @@ class MoveDamAssetsToS3 extends Command
         }
     }
 
-    /**
-     * Move Assets to s3 from private disk
-     */
+    /** Move Assets to s3 from private disk. */
     public function moveAssetsTos3(bool $delete, bool $migrateNew)
     {
         $offset = 0;
@@ -128,9 +104,7 @@ class MoveDamAssetsToS3 extends Command
         $this->info('Done Moving DAM Assets.');
     }
 
-    /**
-     * Migrate all Assets to s3
-     */
+    /** Migrate all Assets to s3. */
     public function migrateAll(string $filePath, bool $delete, $asset, array &$logs)
     {
         if (Storage::disk('private')->exists($filePath)) {
@@ -151,9 +125,7 @@ class MoveDamAssetsToS3 extends Command
         $this->migrateCoverArt($asset, $delete, $logs, false);
     }
 
-    /**
-     * Migrate only new Assets to s3
-     */
+    /** Migrate only new Assets to s3. */
     public function migrateNew(string $filePath, bool $delete, $asset, array &$logs)
     {
         if (Storage::disk('private')->exists($filePath)) {
@@ -178,11 +150,7 @@ class MoveDamAssetsToS3 extends Command
     }
 
     /**
-     * Move embedded audio cover art (stored at `covers/{id}.{ext}` on the asset's
-     * disk) from private to S3 alongside the asset itself. The path is recorded
-     * on the asset's `meta_data` JSON column under `cover_art_path` when the
-     * asset is uploaded; non-audio assets typically have no entry and are
-     * skipped silently.
+     * Move embedded audio cover art from private to S3 alongside the asset.
      */
     protected function migrateCoverArt($asset, bool $delete, array &$logs, bool $skipIfExists): void
     {
@@ -213,9 +181,7 @@ class MoveDamAssetsToS3 extends Command
     }
 
     /**
-     * Pull `meta_data->cover_art_path` off a raw DB row. `meta_data` is stored
-     * as JSON; on some drivers DB::table() returns it already decoded, on
-     * others it stays a string — handle both.
+     * Pull meta_data->cover_art_path off a raw DB row, decoding JSON if needed.
      */
     protected function extractCoverArtPath($asset): ?string
     {

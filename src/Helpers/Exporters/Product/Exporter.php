@@ -37,9 +37,7 @@ class Exporter extends BaseExporter
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritDoc} */
     protected function setAttributesValues(array $values, mixed $filePath)
     {
         $attributeValues = [];
@@ -112,9 +110,7 @@ class Exporter extends BaseExporter
     }
 
     /**
-     * Generates a public URL for a given file path
-     *
-     * @see https://laravel.com/docs/8.x/filesystem#retrieving-files
+     * Generates a public URL for a given file path.
      */
     public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
     {
@@ -125,9 +121,7 @@ class Exporter extends BaseExporter
         return Storage::url($filePath);
     }
 
-    /**
-     * Copy media file from a source path to a destination path.
-     */
+    /** Copy media file from a source path to a destination path. */
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
         $disk = Directory::getAssetDisk();
@@ -142,8 +136,7 @@ class Exporter extends BaseExporter
             if ($disk === Directory::ASSETS_DISK_AWS) {
                 Storage::writeStream($destinationPath, $stream);
             } else {
-                // Non-S3: AWSS3TrackerController looks for media at raw $sourcePath
-                // on the public disk; write there so the export archive includes it.
+
                 Storage::disk('public')->writeStream($sourcePath, $stream);
             }
 

@@ -10,17 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\Core\Helpers\Database\DatabaseSequenceHelper;
 use Webkul\DAM\Models\Directory;
 
-/*
- * Directory table seeder.
- */
 class DirectoryTableSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @param  array  $parameters
-     * @return void
-     */
     public function run()
     {
         $now = Carbon::now();
@@ -50,18 +41,12 @@ class DirectoryTableSeeder extends Seeder
         }
 
         if (! $rootExists) {
-            // Back-fill root grants for every existing custom role. Runs here
-            // (in addition to the standalone back-fill migration) so fresh
-            // installs — where the back-fill migration runs BEFORE this seeder
-            // and finds no root — still get the grants created.
             $this->backfillRootGrants();
         }
     }
 
     /**
-     * Grant the seeded Root directory to every existing custom role so DAM
-     * visibility is preserved out-of-the-box. Idempotent — skips rows that
-     * already exist in the pivot.
+     * Grant the seeded Root directory to every existing custom role. Idempotent.
      */
     protected function backfillRootGrants(): void
     {
