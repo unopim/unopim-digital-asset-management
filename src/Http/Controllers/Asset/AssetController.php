@@ -901,7 +901,7 @@ class AssetController extends Controller
             $height = $metaData['exif']['Height'] ?? $metaData['exif']['COMPUTED']['Height'] ?? '';
         }
 
-        $mediaUrl = route('admin.dam.file.preview', ['path' => urlencode($asset->path)]);
+        $mediaUrl = AssetHelper::getPreviewUrl($asset->path);
 
         $placeholderSvg = match ($asset->file_type) {
             'video'    => asset('storage/dam/preview/video.svg'),

@@ -1,5 +1,5 @@
 @php
-    $mediaUrl = route('admin.dam.file.preview', ['path' => urlencode($asset->path)]);
+    $mediaUrl = \Webkul\DAM\Helpers\AssetHelper::getPreviewUrl($asset->path);
 
     $placeholderSvg = match($asset->file_type) {
         'video'    => asset('storage/dam/preview/video.svg'),
