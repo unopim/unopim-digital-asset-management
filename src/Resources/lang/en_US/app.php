@@ -633,7 +633,7 @@ return [
             'shares'           => 'Shared Links',
             'tags'             => 'Tags',
             'revoke'           => 'Revoke',
-            'configuration'    => 'Configuration',
+            'configuration'    => 'DAM Configuration',
         ],
         'permissions' => [
             'title'                => 'DAM Directory Permissions',
