@@ -292,6 +292,14 @@ class TagController extends Controller
             });
         };
 
+        // The timestamp columns are selected as literals in an INSERT...SELECT.
+        // MySQL implicitly casts the string literal to its timestamp column type,
+        // but PostgreSQL rejects text→timestamp, so cast explicitly there.
+        $nowLiteral = DB::getPdo()->quote($now);
+        $nowExpr = DB::connection()->getDriverName() === 'pgsql'
+            ? "CAST($nowLiteral AS timestamp)"
+            : $nowLiteral;
+
         foreach ($tagIds as $tagId) {
             DB::table('dam_asset_tag')->insertOrIgnoreUsing(
                 ['asset_id', 'tag_id', 'created_at', 'updated_at'],
@@ -301,8 +309,8 @@ class TagController extends Controller
                     ->select(
                         'asset_id',
                         DB::raw((int) $tagId.' as tag_id'),
-                        DB::raw(DB::getPdo()->quote($now).' as created_at'),
-                        DB::raw(DB::getPdo()->quote($now).' as updated_at'),
+                        DB::raw($nowExpr.' as created_at'),
+                        DB::raw($nowExpr.' as updated_at'),
                     )
             );
         }

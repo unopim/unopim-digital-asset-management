@@ -283,9 +283,13 @@ class GenerateScaleData extends Command
             ];
         };
 
-        // Root directory is id=1, storage path is "assets/Root"
-        $rootId = 1;
-        $rootStoragePath = 'assets/Root';
+        // Resolve the actual root directory instead of assuming id=1. Explicit-id
+        // bulk inserts don't advance the PostgreSQL sequence and a fresh install
+        // can land the root at any id, so a hardcoded 1 breaks the parent_id
+        // foreign key on PostgreSQL (works on MySQL only by coincidence of id=1).
+        $rootDir = Directory::whereNull('parent_id')->orderBy('id')->first();
+        $rootId = (int) ($rootDir?->id ?? 1);
+        $rootStoragePath = 'assets/'.($rootDir?->name ?? 'Root');
 
         // L1: 200 dirs under root
         $l1 = [];

@@ -66,13 +66,15 @@
                 <div
                     v-if="activeSessions.length || sessions.length"
                     data-dam-upload-panel
-                    class="fixed bottom-4 ltr:right-4 rtl:left-4 sm:ltr:right-8 sm:rtl:left-8 z-[10005] w-[calc(100vw-2rem)] max-w-[460px] rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600"
+                    class="fixed bottom-4 ltr:right-4 rtl:left-4 z-[10005]"
+                    style="display:flex; flex-direction:row-reverse; flex-wrap:wrap-reverse; align-items:flex-end; gap:0.75rem; max-width:calc(100vw - 2rem); pointer-events:none;"
                 >
-                    <!-- Completed sessions history (stacked above, collapsed by default) -->
+                    <!-- Completed sessions history (collapsed by default) -->
                     <div
                         v-for="session in sessions"
                         :key="session.id"
-                        class="bg-white dark:bg-cherry-800 border-b-4 border-gray-200 dark:border-cherry-600"
+                        class="rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-800"
+                        style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <div
                             class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700 cursor-pointer select-none"
@@ -118,11 +120,12 @@
                         </div>
                     </div>
 
-                    <!-- Active sessions — one panel per enqueue -->
+                    <!-- Active sessions — one card per enqueue, laid out side by side -->
                     <div
                         v-for="session in activeSessions"
                         :key="session.id"
-                        class="bg-white dark:bg-cherry-800 border-b-2 border-gray-100 dark:border-cherry-700 last:border-b-0"
+                        class="rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-800"
+                        style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <!-- Header -->
                         <div
@@ -131,6 +134,35 @@
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionTitle(session) }}</span>
                             <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                                <!-- Background session controls: pause/resume/retry/cancel -->
+                                <button
+                                    v-if="sessionRemaining(session) > 0 && !session.paused"
+                                    type="button"
+                                    class="px-2 py-0.5 text-xs font-medium text-white rounded transition-colors"
+                                    style="background:rgba(255,255,255,0.18);"
+                                    @click.stop="pauseSession(session)"
+                                >@lang('dam::app.admin.dam.upload.pause')</button>
+                                <button
+                                    v-if="session.paused"
+                                    type="button"
+                                    class="px-2 py-0.5 text-xs font-medium text-white rounded transition-colors"
+                                    style="background:rgba(255,255,255,0.18);"
+                                    @click.stop="resumeSession(session)"
+                                >@lang('dam::app.admin.dam.upload.resume')</button>
+                                <button
+                                    v-if="session.errorCount > 0 && sessionRemaining(session) === 0 && !session.paused"
+                                    type="button"
+                                    class="px-2 py-0.5 text-xs font-medium text-white rounded transition-colors"
+                                    style="background:rgba(255,255,255,0.18);"
+                                    @click.stop="retrySession(session)"
+                                >@lang('dam::app.admin.dam.upload.retry')</button>
+                                <button
+                                    v-if="sessionOutstanding(session) > 0 || session.paused"
+                                    type="button"
+                                    class="px-2 py-0.5 text-xs font-medium text-white rounded transition-colors"
+                                    style="background:rgba(255,255,255,0.18);"
+                                    @click.stop="cancelSession(session)"
+                                >@lang('dam::app.admin.dam.upload.cancel')</button>
                                 <svg
                                     :class="session.minimized ? 'rotate-180' : ''"
                                     class="h-4 w-4 text-white/80 transition-transform"
@@ -147,7 +179,7 @@
                         </div>
 
                         <!-- Compact progress strip — only when minimized and still uploading -->
-                        <div v-if="sessionActiveCount(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
+                        <div v-if="sessionRemaining(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
                             <div class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
                         </div>
 
@@ -179,6 +211,17 @@
                                     <span v-if="job.isFolder && job.status === 'creating'">@lang('dam::app.admin.explorer.upload.creating')</span>
                                     <span v-else-if="!job.isFolder && job.fileSize && job.status !== 'error'">@{{ formatFileSize(job.fileSize) }}</span>
                                 </div>
+                                <button
+                                    v-if="job.status === 'error' && !job.isFolder"
+                                    type="button"
+                                    title="@lang('dam::app.admin.dam.upload.retry')"
+                                    class="flex-shrink-0 p-1 text-violet-500 hover:text-violet-600 dark:text-violet-400 dark:hover:text-violet-300 rounded transition-colors"
+                                    @click.stop="retryJob(session, job)"
+                                >
+                                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                    </svg>
+                                </button>
                                 <div class="flex-shrink-0" v-html="jobStatusIcon(job)"></div>
                             </div>
                             <div :style="{ height: jobWindow(session).padBottom + 'px' }"></div>
@@ -207,7 +250,6 @@
     <script type="module">
         const damDropUploadFailedMsg   = @js(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
         const damDropUploadCompleteMsg = @js(trans('dam::app.admin.dam.index.upload-complete'));
-        const damDropMaxFileUploads    = @js((int) ini_get('max_file_uploads'));
 
         const DAM_UPLOAD_CONCURRENCY = Math.max(1, @js((int) config('dam.explorer.upload.concurrency', 4)));
         const DAM_RESUME_ENABLED     = @js((bool) config('dam.explorer.upload.resume_enabled', true));
@@ -215,6 +257,17 @@
         const DAM_RESUME_STALE_MS    = @js((int) config('dam.explorer.upload.resume_stale_hours', 24)) * 3600 * 1000;
         const DAM_ROW_H              = 44;
         const DAM_UPLOAD_STATE_KEY   = 'dam_upload_state';
+
+        // Background upload-session (tracker) endpoints. The uuid is a runtime
+        // value so the routes carry a placeholder we swap per session.
+        const DAM_UPLOAD_ROUTES = {
+            tracker:  "{{ route('admin.dam.assets.upload.tracker') }}",
+            pause:    "{{ route('admin.dam.assets.upload.pause', ['uuid' => '__UUID__']) }}",
+            resume:   "{{ route('admin.dam.assets.upload.resume', ['uuid' => '__UUID__']) }}",
+            cancel:   "{{ route('admin.dam.assets.upload.cancel', ['uuid' => '__UUID__']) }}",
+            retry:    "{{ route('admin.dam.assets.upload.retry', ['uuid' => '__UUID__']) }}",
+            complete: "{{ route('admin.dam.assets.upload.complete', ['uuid' => '__UUID__']) }}",
+        };
 
         // The single elected manager instance; all enqueues funnel here.
         let damPrimaryManager = null;
@@ -381,16 +434,18 @@
 
                     let session = {
                         id: this.nextSessionId++,
+                        uuid: this.newUuid(),
                         targetDirId,
                         minimized: false,
                         resumable: false,
+                        paused: false,
+                        cancelled: false,
                         folderPaths: [...folderPaths],
                         jobs: [],
                         overall: 0,
                         doneCount: 0, errorCount: 0, queuedCount: 0, uploadingCount: 0,
                         bytesTotal: 0, bytesDone: 0,
                         scrollTop: 0, viewportH: 208,
-                        _sinceRefresh: 0,
                     };
                     this.activeSessions.push(session);
                     session = this.activeSessions[this.activeSessions.length - 1];
@@ -434,6 +489,10 @@
                     }
                     this.persistState();
 
+                    // Register the background upload session so it can be
+                    // paused / cancelled / retried and survive a reload.
+                    await this.startTracker(session);
+
                     // Phase 1: create the directory structure (idempotent).
                     if (folderPaths.length) {
                         try {
@@ -451,11 +510,120 @@
                     // Phase 2: upload files through the concurrency pool.
                     await this.runWorkers(session);
 
+                    await this.finishSession(session);
+                },
+
+                // ── Background session (tracker) wiring ───────────────────────
+                newUuid() {
+                    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+                    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                        const r = Math.random() * 16 | 0;
+                        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                    });
+                },
+
+                async startTracker(session) {
+                    if (! session.uuid || ! session.targetDirId) return;
+                    try {
+                        await this.$axios.post(DAM_UPLOAD_ROUTES.tracker, {
+                            session_uuid: session.uuid,
+                            directory_id: session.targetDirId,
+                            total: session.jobs.filter(j => ! j.isFolder).length,
+                        });
+                    } catch {}
+                },
+
+                trackerAction(session, action) {
+                    if (! session.uuid || ! DAM_UPLOAD_ROUTES[action]) return Promise.resolve();
+                    const url = DAM_UPLOAD_ROUTES[action].replace('__UUID__', encodeURIComponent(session.uuid));
+                    return this.$axios.post(url).catch(() => {});
+                },
+
+                // Called once the worker pool drains normally. A session that is
+                // paused or cancelled is left untouched (its handler owns it); one
+                // that finished with errors stays active so the user can Retry.
+                async finishSession(session) {
+                    if (session.cancelled || session.paused) return;
+
                     this.emitRefresh(session, true);
-                    if (! session.errorCount) {
-                        this.$emitter.emit('add-flash', { type: 'success', message: damDropUploadCompleteMsg });
+                    this.trackerAction(session, 'complete');
+
+                    if (session.errorCount > 0) {
+                        this.persistState();
+                        return;
                     }
+
+                    this.$emitter.emit('add-flash', { type: 'success', message: damDropUploadCompleteMsg });
                     this.archiveSession(session);
+                    this.persistState();
+                },
+
+                // Pause: stop feeding the pool and abort any in-flight transfers
+                // (they are re-queued). Active count falls to zero so the grid
+                // unlocks and existing assets can be browsed mid-upload.
+                pauseSession(session) {
+                    session.paused = true;
+                    session.jobs.forEach((j) => {
+                        if (j.status === 'uploading' && j._abort) { try { j._abort.abort(); } catch {} }
+                    });
+                    this.trackerAction(session, 'pause');
+                    this.persistState();
+                },
+
+                async resumeSession(session) {
+                    if (! session.paused) return;
+                    session.paused = false;
+                    await this.trackerAction(session, 'resume');
+                    await this.runWorkers(session);
+                    await this.finishSession(session);
+                },
+
+                // Retry: re-queue transfer-failed files (their bytes are retained)
+                // and ask the server to re-run any failed background finalisation.
+                async retrySession(session) {
+                    let requeued = 0;
+                    for (const job of session.jobs) {
+                        if (job.isFolder || job.status !== 'error') continue;
+                        if (! damFileBag.has(job.id)) continue;
+                        job.status = 'queued';
+                        job.error = null;
+                        job.progress = 0;
+                        session.errorCount = Math.max(0, session.errorCount - 1);
+                        requeued++;
+                    }
+                    this.recount(session);
+                    this.trackerAction(session, 'retry');
+
+                    session.paused = false;
+                    if (requeued > 0) await this.runWorkers(session);
+                    await this.finishSession(session);
+                },
+
+                // Retry a single failed file. Its bytes were retained (see
+                // afterJob), so we just re-queue it and spin the worker pool.
+                async retryJob(session, job) {
+                    if (job.isFolder || job.status !== 'error' || ! damFileBag.has(job.id)) return;
+                    job.status = 'queued';
+                    job.error = null;
+                    job.progress = 0;
+                    session.errorCount = Math.max(0, session.errorCount - 1);
+                    session.paused = false;
+                    this.recount(session);
+                    this.trackerAction(session, 'retry');
+                    await this.runWorkers(session);
+                    await this.finishSession(session);
+                },
+
+                cancelSession(session) {
+                    session.cancelled = true;
+                    session.paused = false;
+                    session.jobs.forEach((j) => {
+                        if (j._abort) { try { j._abort.abort(); } catch {} }
+                        damFileBag.delete(j.id);
+                        if (DAM_RESUME_ENABLED) damUploadStore.del(j.id);
+                    });
+                    this.trackerAction(session, 'cancel');
+                    this.activeSessions = this.activeSessions.filter(s => s.id !== session.id);
                     this.persistState();
                 },
 
@@ -471,6 +639,8 @@
                     const queue = session.jobs.filter(j => ! j.isFolder && j.status === 'queued');
                     let cursor = 0;
                     const next = () => {
+                        // Pause / cancel stops the pool from starting new transfers.
+                        if (session.paused || session.cancelled) return Promise.resolve();
                         if (cursor >= queue.length) return Promise.resolve();
                         const job = queue[cursor++];
                         return this.uploadJob(session, job).then(next);
@@ -495,6 +665,7 @@
                     const folder = !! job.preserveRoot;
                     const fd = new FormData();
                     fd.append('directory_id', session.targetDirId);
+                    if (session.uuid) fd.append('session_uuid', session.uuid);
                     fd.append('files[]', file);
                     if (folder) {
                         fd.append('preserve_root', '1');
@@ -504,8 +675,12 @@
                         ? "{{ route('admin.dam.assets.upload_folder') }}"
                         : "{{ route('admin.dam.assets.upload') }}";
 
+                    const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+                    job._abort = controller;
+
                     try {
                         const res = await this.$axios.post(endpoint, fd, {
+                            signal: controller ? controller.signal : undefined,
                             headers: { 'Content-Type': 'multipart/form-data' },
                             onUploadProgress: (e) => {
                                 if (e.total && job.status === 'uploading') {
@@ -522,26 +697,44 @@
                             job.progress = 100;
                         }
                     } catch (error) {
+                        job._abort = null;
+                        // A pause/cancel abort is not a real failure: re-queue on
+                        // pause, drop silently on cancel. Everything else is an error.
+                        const aborted = this.$axios.isCancel?.(error)
+                            || error?.code === 'ERR_CANCELED'
+                            || error?.name === 'CanceledError'
+                            || error?.name === 'AbortError';
+                        if (aborted && session.cancelled) {
+                            return;
+                        }
+                        if (aborted && session.paused) {
+                            job.status = 'queued';
+                            job.progress = 0;
+                            this.recount(session);
+                            return;
+                        }
                         job.status = 'error';
                         job.error  = error?.response?.data?.message ?? damDropUploadFailedMsg;
                     }
 
+                    job._abort = null;
                     this.afterJob(session, job);
                 },
 
                 afterJob(session, job) {
-                    damFileBag.delete(job.id);
-                    if (DAM_RESUME_ENABLED) damUploadStore.del(job.id);
+                    // Keep the bytes of a failed transfer so Retry can re-send it;
+                    // only successful jobs release their buffered file.
+                    if (job.status === 'done') {
+                        damFileBag.delete(job.id);
+                        if (DAM_RESUME_ENABLED) damUploadStore.del(job.id);
+                    }
                     this.bumpCounters(session, job);
                     this.scheduleAggregate(session);
                     this.persistState();
 
-                    session._sinceRefresh = (session._sinceRefresh || 0) + 1;
-                    const chunk = damDropMaxFileUploads > 0 ? damDropMaxFileUploads : 20;
-                    if (session._sinceRefresh >= chunk) {
-                        session._sinceRefresh = 0;
-                        this.emitRefresh(session, false);
-                    }
+                    // No mid-upload grid re-render: finalisation runs in the
+                    // background and the grid refreshes once, when the session
+                    // completes — so a bulk upload never disturbs existing assets.
                 },
 
                 // ── Progress counters (O(1) per tick instead of array re-scan) ──
@@ -602,15 +795,39 @@
                 sessionActiveCount(session) {
                     return session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating').length;
                 },
+                // Files still to settle (queued or in-flight). Unlike the active
+                // count this only decreases, so control buttons keyed off it don't
+                // flicker between batches or when a paused job is re-queued.
+                sessionRemaining(session) {
+                    return session.jobs.filter(u => ! u.isFolder && (u.status === 'queued' || u.status === 'uploading')).length;
+                },
+                // Files left interrupted by a page reload whose bytes could not be
+                // restored (large batches aren't stashed). They can't be resumed —
+                // the user must re-add them — but the session can still be cancelled.
+                sessionInterruptedCount(session) {
+                    return session.jobs.filter(u => ! u.isFolder && u.status === 'interrupted').length;
+                },
+                // Anything not yet finished successfully/failed: drives whether the
+                // Cancel control is offered (so a reload-interrupted session isn't
+                // stuck with no controls but the close button).
+                sessionOutstanding(session) {
+                    return this.sessionRemaining(session) + this.sessionInterruptedCount(session);
+                },
                 sessionFileJobCount(session) {
                     return session.jobs.filter(u => ! u.isFolder).length;
                 },
                 sessionTitle(session) {
-                    const total  = this.sessionFileJobCount(session);
-                    const active = this.sessionActiveCount(session);
-                    if (active > 0) {
+                    const total = this.sessionFileJobCount(session);
+                    if (session.paused) {
+                        return `Paused — ${session.doneCount} of ${total} uploaded`;
+                    }
+                    if (this.sessionRemaining(session) > 0) {
                         const pct = session.minimized ? ` ${session.overall}%` : '';
                         return `Uploading ${total} file${total !== 1 ? 's' : ''}…${pct}`;
+                    }
+                    const interrupted = this.sessionInterruptedCount(session);
+                    if (interrupted > 0) {
+                        return `${session.doneCount} of ${total} uploaded · ${interrupted} interrupted`;
                     }
                     if (session.errorCount > 0) return `${session.doneCount} uploaded, ${session.errorCount} failed`;
                     return `${session.doneCount} of ${total} uploaded`;
@@ -654,8 +871,8 @@
                 // ── Persistence ───────────────────────────────────────────────
                 serializeSession(s) {
                     return {
-                        id: s.id, targetDirId: s.targetDirId, minimized: s.minimized,
-                        resumable: s.resumable, folderPaths: s.folderPaths || [],
+                        id: s.id, uuid: s.uuid, targetDirId: s.targetDirId, minimized: s.minimized,
+                        resumable: s.resumable, paused: !! s.paused, folderPaths: s.folderPaths || [],
                         doneCount: s.doneCount, errorCount: s.errorCount,
                         bytesTotal: s.bytesTotal, bytesDone: s.bytesDone, overall: s.overall,
                         jobs: s.jobs.map(j => ({
@@ -702,7 +919,8 @@
                     const rehydrate = (s, viewportH) => {
                         s.scrollTop = 0;
                         s.viewportH = viewportH;
-                        s._sinceRefresh = 0;
+                        s.cancelled = false;
+                        s.paused = false;
                         s.jobs.forEach(j => {
                             // Unfinished jobs are provisionally interrupted; resumeSessions()
                             // promotes any whose bytes survive in IndexedDB back to queued.
@@ -746,11 +964,7 @@
                                 });
                             } catch {}
                         }
-                        this.runWorkers(session).then(() => {
-                            this.emitRefresh(session, true);
-                            this.archiveSession(session);
-                            this.persistState();
-                        });
+                        this.runWorkers(session).then(() => this.finishSession(session));
                     }
                 },
 

@@ -32,6 +32,16 @@ return [
                 'deleted'   => 'File deleted',
                 'not-found' => 'File not found',
             ],
+            'upload' => [
+                'pause'     => 'Pause',
+                'resume'    => 'Resume',
+                'retry'     => 'Retry',
+                'cancel'    => 'Cancel',
+                'paused'    => 'Upload paused. Existing assets are untouched — resume anytime.',
+                'resumed'   => 'Upload resumed.',
+                'cancelled' => 'Upload cancelled. Already-uploaded assets were kept.',
+                'retried'   => 'Retrying the failed uploads in the background.',
+            ],
             'image-edit' => [
                 'cannot-decode'  => 'Cannot decode image',
                 'preview-failed' => 'Preview failed',

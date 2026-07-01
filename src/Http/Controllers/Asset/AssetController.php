@@ -19,9 +19,12 @@ use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
+use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetComments;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Models\UploadBatch;
+use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
@@ -288,6 +291,7 @@ class AssetController extends Controller
         $uploadFiles = [];
         $assetIds = [];
         $disk = Directory::getAssetDisk();
+        $tracker = $this->resolveUploadTracker($request, (int) $directoryId);
 
         // Writability is request-scoped (same directory for every file in the
         // batch), so check once up front rather than re-checking inside the loop.
@@ -347,17 +351,13 @@ class AssetController extends Controller
                     options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
                 );
 
-                $localFilePath = $file->getRealPath();
-                $metaData = $this->metadataExtractionService->extractMetadata($localFilePath, disk: 'local', originalFileName: $originalName);
-
                 $payload = [
                     'file_name' => $fileName,
                     'file_type' => AssetHelper::getFileType($file),
                     'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'mime_type' => $mimeType,
                     'extension' => $file->getClientOriginalExtension(),
                     'path'      => $filePath,
-                    'meta_data' => $metaData,
                 ];
 
                 if ($isOverwrite) {
@@ -368,8 +368,10 @@ class AssetController extends Controller
                     $assetIds[] = $asset->id;
                 }
 
-                $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
-                $this->dispatchThumbnailJob($asset);
+                // Heavy work (metadata extraction, cover-art, thumbnails) is
+                // lifted into a background job so the request stays fast and
+                // low-memory and the session can be paused/cancelled/retried.
+                $this->queueAssetFinalisation($asset, $tracker);
 
                 $uploadFiles[] = $asset;
             }
@@ -467,6 +469,7 @@ class AssetController extends Controller
         $disk = Directory::getAssetDisk();
         $uploadedAssets = [];
         $skippedCount = 0;
+        $tracker = $this->resolveUploadTracker($request, $directoryId);
 
         // Cache for directory id lookups keyed by "parentId/segmentName" so we
         // don't issue a redundant query for each file that shares a subdirectory.
@@ -627,21 +630,13 @@ class AssetController extends Controller
                     options: [FileStorer::HASHED_FOLDER_NAME_KEY => false, 'disk' => $disk]
                 );
 
-                $localFilePath = $file->getRealPath();
-                $metaData = $this->metadataExtractionService->extractMetadata(
-                    $localFilePath,
-                    disk: 'local',
-                    originalFileName: $originalName
-                );
-
                 $payload = [
                     'file_name' => $fileName,
                     'file_type' => AssetHelper::getFileType($file),
                     'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'mime_type' => $mimeType,
                     'extension' => $file->getClientOriginalExtension(),
                     'path'      => $filePath,
-                    'meta_data' => $metaData,
                 ];
 
                 if ($isOverwrite) {
@@ -652,8 +647,8 @@ class AssetController extends Controller
                     $assetsByDir[$targetDirId][] = $asset->id;
                 }
 
-                $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
-                $this->dispatchThumbnailJob($asset);
+                // Defer heavy finalisation to the background queue.
+                $this->queueAssetFinalisation($asset, $tracker);
 
                 $uploadedAssets[] = $asset;
             }
@@ -796,6 +791,57 @@ class AssetController extends Controller
             'file'    => $asset,
             'message' => trans('dam::app.admin.dam.asset.edit.file-re-upload-success'),
         ], 201);
+    }
+
+    /**
+     * Resolve the upload session (tracker) for this request, if the client sent
+     * a session_uuid. The client creates the tracker up front via
+     * UploadController::startSession, but we fall back to a lazy create so a
+     * stray request never loses its progress row. A finished/cancelled session
+     * is treated as no session so its counters aren't resurrected.
+     */
+    protected function resolveUploadTracker(Request $request, int $directoryId): ?UploadTracker
+    {
+        $sessionUuid = $request->input('session_uuid');
+
+        if (! $sessionUuid) {
+            return null;
+        }
+
+        $tracker = UploadTracker::where('uuid', $sessionUuid)->first();
+
+        if (! $tracker) {
+            return UploadTracker::create([
+                'uuid'         => $sessionUuid,
+                'user_id'      => auth()->id(),
+                'directory_id' => $directoryId,
+                'state'        => UploadTracker::STATE_PROCESSING,
+                'total_files'  => 0,
+                'started_at'   => now(),
+            ]);
+        }
+
+        return $tracker->isActive() ? $tracker : null;
+    }
+
+    /**
+     * Queue background finalisation for a freshly-uploaded asset. When the
+     * upload belongs to a session, a batch row is created first so the job can
+     * report progress and honour pause/cancel/retry.
+     */
+    protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
+    {
+        $batchId = null;
+
+        if ($tracker) {
+            $batchId = UploadBatch::create([
+                'upload_tracker_id' => $tracker->id,
+                'asset_id'          => $asset->id,
+                'state'             => UploadBatch::STATE_PENDING,
+            ])->id;
+        }
+
+        ProcessAssetUpload::dispatch($asset->id, $batchId);
     }
 
     /**

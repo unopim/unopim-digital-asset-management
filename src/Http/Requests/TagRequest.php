@@ -3,7 +3,7 @@
 namespace Webkul\DAM\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class TagRequest extends FormRequest
 {
@@ -14,23 +14,31 @@ class TagRequest extends FormRequest
 
     public function rules(): array
     {
-        // dam_tags.name uses the default case-insensitive collation, so this also
-        // blocks "Summer" when "summer" already exists.
-        $unique = Rule::unique('dam_tags', 'name');
-
-        // On update the tag id arrives as a route parameter — ignore the row itself so a
-        // no-op rename passes. Only call ignore() when editing: ignore(null) would compile
-        // to "id <> NULL", which is never true and silently disables the whole check.
-        if ($tagId = $this->route('id')) {
-            $unique->ignore($tagId);
-        }
+        // On update the tag id arrives as a route parameter — ignore the row itself
+        // so a no-op rename passes.
+        $tagId = $this->route('id');
 
         return [
             'name' => [
                 'required',
                 'string',
                 'max:100',
-                $unique,
+                // Case-insensitive uniqueness portable across MySQL and PostgreSQL.
+                // MySQL's default collation is case-insensitive, but PostgreSQL is
+                // not, so compare on LOWER(name) explicitly instead of relying on the
+                // collation (otherwise "summer" would not collide with "Summer" on PG).
+                function (string $attribute, mixed $value, \Closure $fail) use ($tagId): void {
+                    $duplicate = DB::table('dam_tags')
+                        ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim((string) $value))])
+                        ->when($tagId, fn ($query) => $query->where('id', '!=', $tagId))
+                        ->exists();
+
+                    if ($duplicate) {
+                        $fail(trans('validation.unique', [
+                            'attribute' => $this->attributes()['name'] ?? $attribute,
+                        ]));
+                    }
+                },
             ],
         ];
     }

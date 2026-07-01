@@ -8,6 +8,7 @@ use Webkul\DAM\Http\Controllers\Asset\LinkedResourcesController;
 use Webkul\DAM\Http\Controllers\Asset\PropertyController;
 use Webkul\DAM\Http\Controllers\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\Asset\TagController;
+use Webkul\DAM\Http\Controllers\Asset\UploadController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
 use Webkul\DAM\Http\Controllers\ConfigurationController;
 use Webkul\DAM\Http\Controllers\DAMController;
@@ -47,6 +48,19 @@ Route::group([
 
             Route::get('metadata/{id}', 'getMetadataById')->name('admin.dam.assets.metadata')->where('id', '[0-9]+');
 
+        });
+
+        // Background upload session controls — the DAM analogue of the core
+        // DataTransfer import tracker (start / stats / pause / resume / cancel /
+        // retry / complete).
+        Route::controller(UploadController::class)->prefix('upload')->group(function () {
+            Route::post('/tracker', 'startSession')->name('admin.dam.assets.upload.tracker');
+            Route::get('/stats/{uuid}', 'stats')->name('admin.dam.assets.upload.stats');
+            Route::post('/pause/{uuid}', 'pause')->name('admin.dam.assets.upload.pause');
+            Route::post('/resume/{uuid}', 'resume')->name('admin.dam.assets.upload.resume');
+            Route::post('/cancel/{uuid}', 'cancel')->name('admin.dam.assets.upload.cancel');
+            Route::post('/retry/{uuid}', 'retry')->name('admin.dam.assets.upload.retry');
+            Route::post('/complete/{uuid}', 'complete')->name('admin.dam.assets.upload.complete');
         });
 
         Route::controller(TagController::class)->prefix('')->group(function () {
