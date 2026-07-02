@@ -26,6 +26,8 @@
 
 - **Folder upload** — Upload entire folder trees via drag-and-drop or the **Upload Folder** context-menu item. A progress panel tracks each transfer.
 
+- **Tag management datagrid** — A dedicated **DAM → Tags** page lists every tag in a datagrid with its name, per-tag asset count, and creation date, plus search, filters, sorting, inline edit/delete, and bulk delete. Tags are created here and can be assigned to assets — individually or via mass-assign — from the gallery. ACL-gated via `dam.tags.*`.
+
 - **Filterable and sortable asset property columns** — Properties marked `is_filterable` appear as dynamic filter columns in the asset datagrid.
 
 - **Metadata tab ACL gating** — The embedded metadata tab is permission-gated via `dam.asset.meta_data.view`.
@@ -92,6 +94,14 @@
 - **Picker — filter-applied indicator** — Ignores implicit `directory_id` and `directory_asset_id` filters set by clicking the tree.
 
 - **Directory tree flicker on upload** — Tree rebuilds exclusively from server response; no premature local-state push.
+
+### Security
+
+- **Blocked executable & HTML uploads** — Upload validation now rejects `.html`, `.htm`, `.xhtml`, `.shtml`, `.hta`, `.phtml`, and `.phar` files and the `text/html` content type, alongside the existing script extensions.
+
+- **Safe asset serving** — Uploaded files that are not genuine media are always served as downloads, and every asset response carries `X-Content-Type-Options: nosniff` and a restrictive `Content-Security-Policy`, so a stored HTML/SVG file can no longer execute script in the application's origin (`FileController::fetchFile`, the public share stream, and SVG thumbnails).
+
+- **Authorization on bulk & folder operations** — Asset-property mass-delete now requires the property-delete permission, asset mass-delete enforces the per-directory ACL boundary per item, and folder upload requires the `dam.asset.upload` permission.
 
 ## Version 2.0.2 - Bug Fix
 
