@@ -593,6 +593,9 @@ class DirectoryController
             $this->autoGrantToCreator($id);
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'               => true,
+            'granted_directory_ids' => $createdIds,
+        ]);
     }
 }

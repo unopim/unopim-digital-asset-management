@@ -595,9 +595,10 @@ class AssetController extends Controller
                 : trans('dam::app.admin.dam.index.directory.folder-upload-success');
 
             return response()->json([
-                'success' => true,
-                'files'   => $uploadedAssets,
-                'message' => $message,
+                'success'                => true,
+                'files'                  => $uploadedAssets,
+                'message'                => $message,
+                'granted_directory_ids'  => $createdIds,
             ], 201);
         } catch (\Exception $e) {
             report($e);

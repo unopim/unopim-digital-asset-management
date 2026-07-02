@@ -1,19 +1,3 @@
-{{--
-    v-dam-drop-upload component
-    OS drag-and-drop file/folder uploads + the unified upload manager.
-
-    Architecture:
-    - Every place that wraps content in <v-dam-drop-upload> gets its own drag
-      overlay (so each tab / the legacy datagrid is its own drop target).
-    - Exactly ONE instance is elected "primary" (the first to mount). The primary
-      owns the upload queue, the floating progress panel (teleported to <body> so
-      it stays visible regardless of which tab is active), localStorage metadata
-      persistence, and IndexedDB byte-resume.
-    - Any instance — drag-drop here, a tab's toolbar button (via $refs), or the
-      tree's "upload files" action — calls enqueueUpload(); non-primary instances
-      delegate to the primary. This is the single upload manager + single UI for
-      file AND directory uploads.
---}}
 @pushOnce('scripts')
     <script type="text/x-template" id="v-dam-drop-upload-template">
         <div
@@ -60,8 +44,6 @@
             <!-- Default slot: breadcrumb + upload button + datagrid -->
             <slot></slot>
 
-            <!-- Upload panel — rendered ONLY by the primary instance, teleported to
-                 <body> so it never lives inside a display:none (background tab) subtree. -->
             <teleport to="body" v-if="isPrimary">
                 <div
                     v-if="activeSessions.length || sessions.length"
@@ -258,8 +240,6 @@
         const DAM_ROW_H              = 44;
         const DAM_UPLOAD_STATE_KEY   = 'dam_upload_state';
 
-        // Background upload-session (tracker) endpoints. The uuid is a runtime
-        // value so the routes carry a placeholder we swap per session.
         const DAM_UPLOAD_ROUTES = {
             tracker:  "{{ route('admin.dam.assets.upload.tracker') }}",
             pause:    "{{ route('admin.dam.assets.upload.pause', ['uuid' => '__UUID__']) }}",
@@ -269,11 +249,9 @@
             complete: "{{ route('admin.dam.assets.upload.complete', ['uuid' => '__UUID__']) }}",
         };
 
-        // The single elected manager instance; all enqueues funnel here.
         let damPrimaryManager = null;
 
-        // File/Blob bytes are kept OUT of Vue reactivity — 1000 reactive File
-        // proxies would cripple the panel. Keyed by jobId; deleted as jobs settle.
+
         const damFileBag = new Map();
 
         // ── IndexedDB byte store (resume support) ─────────────────────────────
@@ -369,8 +347,8 @@
                     isDragOver: false,
                     dragCounter: 0,
                     hintCardStyle: {},
-                    activeSessions: [],    // in-progress sessions (primary only)
-                    sessions: [],          // completed history (primary only)
+                    activeSessions: [],    
+                    sessions: [],          
                     nextSessionId: 1,
                     nextJobId: 1,
                     rowHeight: DAM_ROW_H,
@@ -400,10 +378,6 @@
                     this.restoreState();
                     this.$nextTick(() => this.resumeSessions());
 
-                    // Global entry point so sources without a component ref (e.g. the
-                    // directory tree's "Upload files/folder" actions) funnel into the
-                    // same floating panel. Registered on the primary only to avoid
-                    // duplicate sessions.
                     this._onEnqueueEvent = (payload) => this.enqueueUpload(payload);
                     this.$emitter.on('dam:enqueue-upload', this._onEnqueueEvent);
                 }
@@ -420,12 +394,15 @@
             },
 
             methods: {
-                // ── Public entry point (delegates to the primary instance) ────
                 enqueueUpload(payload) {
                     if (damPrimaryManager && damPrimaryManager !== this) {
                         return damPrimaryManager.enqueueUpload(payload);
                     }
                     return this.startSession(payload);
+                },
+
+                announceGrantedDirectories(ids) {
+                    (ids || []).forEach((id) => this.$emitter.emit('dam:directory-granted', id));
                 },
 
                 // ── Session lifecycle ─────────────────────────────────────────
@@ -496,9 +473,10 @@
                     // Phase 1: create the directory structure (idempotent).
                     if (folderPaths.length) {
                         try {
-                            await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
+                            const res = await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
                                 directory_id: targetDirId, paths: [...folderPaths],
                             });
+                            this.announceGrantedDirectories(res.data?.granted_directory_ids);
                             session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') j.status = 'done'; });
                             this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: targetDirId, count: 0 });
                         } catch {
@@ -695,6 +673,7 @@
                         } else {
                             job.status = 'done';
                             job.progress = 100;
+                            if (folder) this.announceGrantedDirectories(res.data.granted_directory_ids);
                         }
                     } catch (error) {
                         job._abort = null;
@@ -959,9 +938,10 @@
                         this.recount(session);
                         if (session.folderPaths?.length) {
                             try {
-                                await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
+                                const res = await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
                                     directory_id: session.targetDirId, paths: [...session.folderPaths],
                                 });
+                                this.announceGrantedDirectories(res.data?.granted_directory_ids);
                             } catch {}
                         }
                         this.runWorkers(session).then(() => this.finishSession(session));
