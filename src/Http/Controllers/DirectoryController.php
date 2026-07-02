@@ -32,14 +32,10 @@ class DirectoryController
     ) {}
 
     /**
-     * Get the directory
+     * Get the directory tree.
      */
     public function index(Request $request): JsonResponse
     {
-        // Callers that need asset nodes in the tree (e.g. the asset picker)
-        // must pass `with_assets=1`. The main DAM directory tree only lists
-        // folders, so the default skips asset eager-loading for a lighter
-        // payload.
         $directories = $request->boolean('with_assets')
             ? $this->directoryRepository->getDirectoryTree()
             : $this->directoryRepository->getDirectoryTreeOnly();
@@ -60,8 +56,6 @@ class DirectoryController
 
         $results = $this->directoryRepository->search($q, $limit, $offset);
 
-        // Skip the extra COUNT query when the page is clearly the last one —
-        // saves a full-table LIKE scan on every partial page (the common case).
         $returned = $results->count();
         $total = ($returned < $limit)
             ? $offset + $returned
@@ -84,10 +78,9 @@ class DirectoryController
     }
 
     /**
-     * Lazy-load immediate children of a directory.
-     * Each child carries `has_children` and an empty `children` array.
+     * Lazy-load one page of immediate children of a directory.
      */
-    public function childrenDirectory(int $id): JsonResponse
+    public function childrenDirectory(int $id, Request $request): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
             return new JsonResponse([
@@ -101,17 +94,48 @@ class DirectoryController
             ], 404);
         }
 
-        $children = $this->directoryRepository->getShallowChildren($id);
+        $offset = max(0, (int) $request->query('offset', 0));
+        $limit = (int) $request->query('limit', DirectoryRepository::DEFAULT_TREE_PAGE_SIZE);
+
+        $page = $this->directoryRepository->getShallowChildren($id, null, $offset, $limit);
 
         return new JsonResponse([
-            'data' => $children->values(),
+            'data'     => $page['data']->values(),
+            'has_more' => $page['has_more'],
         ]);
     }
 
     /**
-     * Returns the ancestor chain from root to directory $id (inclusive),
-     * root-first. Used by the frontend revealDirectory to load a path that
-     * is not yet in the locally-loaded lazy tree.
+     * Lazy asset-count badges for the viewable directory ids.
+     */
+    public function assetCounts(Request $request): JsonResponse
+    {
+        $ids = collect($request->input('ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if (! $this->permissionService->bypass()) {
+            $viewable = array_flip($this->permissionService->viewableIds());
+            $ids = $ids->filter(fn ($id) => isset($viewable[$id]))->values();
+        }
+
+        if ($ids->isEmpty()) {
+            return new JsonResponse(['data' => (object) []]);
+        }
+
+        $allowedDescendantIds = ! $this->permissionService->bypass()
+            ? $this->permissionService->directlyGrantedIds()
+            : null;
+
+        $counts = $this->directoryRepository->getSubtreeAssetCounts($ids->all(), $allowedDescendantIds);
+
+        return new JsonResponse(['data' => (object) $counts]);
+    }
+
+    /**
+     * Return the ancestor chain from root to the given directory, root-first.
      */
     public function directoryPath(int $id): JsonResponse
     {
@@ -129,30 +153,22 @@ class DirectoryController
     }
 
     /**
-     * Get the directory assets
+     * Get the directory assets.
      */
     public function directoryAssets(int $id): JsonResponse
     {
-        // DAM_TREE_SHOW_ASSETS env gates the in-tree asset listing. Default
-        // off — frontend still uses the right-hand grid for asset browsing
-        // on directories with large asset counts.
         if (! config('dam.tree.show_assets')) {
             return new JsonResponse([
                 'data' => [],
             ]);
         }
 
-        // Asset listing: strict access (ancestors via expansion don't count).
         if (! $this->permissionService->canAccess($id)) {
             return new JsonResponse([
                 'data' => [],
             ]);
         }
 
-        // `getDirectoryTree($id)` returns a single Directory model (or null) when
-        // an id is supplied — calling `->first()` on it proxied to a fresh query
-        // and silently returned the table's first row, which is the wrong
-        // directory. Use the model directly.
         $directory = $this->directoryRepository->getDirectoryTree($id);
 
         if (! $directory) {
@@ -168,12 +184,10 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Create a new directory
-     */
+    /** Create a new directory. */
     public function store(DirectoryRequest $request)
     {
-        $parentDirectoryId = $request->input('parent_id', 1); // default to root directory
+        $parentDirectoryId = $request->input('parent_id', 1);
 
         if (! $this->permissionService->canAccess((int) $parentDirectoryId)) {
             return new JsonResponse([
@@ -202,7 +216,6 @@ class DirectoryController
 
     /**
      * Grant the new directory to the creator's role for custom-permission admins.
-     * Skipped when the role already bypasses (all-permission or all-directories).
      */
     private function autoGrantToCreator(int $directoryId): void
     {
@@ -227,11 +240,11 @@ class DirectoryController
     }
 
     /**
-     * Updates a directory
+     * Update a directory.
      */
     public function update(DirectoryRequest $request): JsonResponse
     {
-        $id = $request->input('id'); // default to root directory
+        $id = $request->input('id');
 
         if (! $this->permissionService->canAccess((int) $id)) {
             return new JsonResponse([
@@ -269,7 +282,7 @@ class DirectoryController
     }
 
     /**
-     * Delete the directory
+     * Delete the directory.
      */
     public function destroy(int $id): JsonResponse
     {
@@ -340,15 +353,10 @@ class DirectoryController
     }
 
     /**
-     * Copy the directory
+     * Copy the directory.
      */
     public function copy(Request $request): JsonResponse
     {
-        // @TODO: Need to future enhancement
-        // $parentDirectoryId = $request->input('parent_id', 1);
-        // $copyId = $request->input('id', 1);
-
-        // $newDirectory = $this->directoryRepository->copy($copyId, $parentDirectoryId);
 
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.index.directory.copy-success'),
@@ -357,7 +365,7 @@ class DirectoryController
     }
 
     /**
-     * Copy the directory structure
+     * Copy the directory structure.
      */
     public function copyStructure(Request $request): JsonResponse
     {
@@ -403,7 +411,7 @@ class DirectoryController
     }
 
     /**
-     * Move the directory one to another location
+     * Move the directory from one location to another.
      */
     public function moved(Request $request): JsonResponse
     {
@@ -438,9 +446,7 @@ class DirectoryController
         }
     }
 
-    /**
-     * Download archive
-     */
+    /** Download the directory subtree as a zip archive. */
     public function downloadArchive(int $id)
     {
         if (! $this->permissionService->canAccess($id)) {
@@ -471,13 +477,9 @@ class DirectoryController
 
     /**
      * Return ancestor paths for multiple directory IDs in one request.
-     * Used by the role-permission editor to resolve breadcrumb chains for
-     * all checked directories without N individual /path/{id} calls.
      */
     public function ancestorPaths(Request $request): JsonResponse
     {
-        // 'present' ensures the key exists (400-family for missing key)
-        // while allowing an empty array. 'required' rejects empty arrays in Laravel.
         $request->validate([
             'ids'   => 'present|array',
             'ids.*' => 'integer|min:1',
@@ -491,18 +493,13 @@ class DirectoryController
 
         $nodes = $this->directoryRepository->getAncestorPathsForIds($ids);
 
-        // Note: canView() is based on the editing admin's own grants.
-        // A custom-permission admin editing roles may see a filtered ancestor set
-        // if they lack access to some parent directories. This is accepted behaviour.
         $nodes = $nodes->filter(fn ($node) => $this->permissionService->canView($node->id));
 
         return new JsonResponse(['data' => $nodes->values()]);
     }
 
     /**
-     * Returns all descendant IDs for the given directory.
-     * Used by the role-permission editor to cascade-select all descendants
-     * without requiring the tree to be expanded first.
+     * Return all viewable descendant IDs for the given directory.
      */
     public function descendants(int $id): JsonResponse
     {
@@ -521,9 +518,6 @@ class DirectoryController
 
     /**
      * Create an empty directory structure under the given parent directory.
-     *
-     * Accepts an array of slash-separated relative paths (e.g. "FolderA/SubDir").
-     * Each path is walked and any missing segments are created via the repository.
      */
     public function createStructure(Request $request): JsonResponse
     {
@@ -599,6 +593,9 @@ class DirectoryController
             $this->autoGrantToCreator($id);
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'               => true,
+            'granted_directory_ids' => $createdIds,
+        ]);
     }
 }

@@ -1,14 +1,6 @@
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | DAM
-    |--------------------------------------------------------------------------
-    |
-    | All ACLs related to DAM will be placed here.
-    |
-    */
     [
         'key'   => 'api.dam',
         'name'  => 'dam::app.admin.dam.index.title',
@@ -23,6 +15,11 @@ return [
         'key'   => 'api.dam.assets.edit',
         'name'  => 'dam::app.admin.acl.edit',
         'route' => 'admin.api.dam.assets.edit',
+        'sort'  => 1,
+    ], [
+        'key'   => 'api.dam.assets.update',
+        'name'  => 'dam::app.admin.acl.update',
+        'route' => 'admin.api.dam.assets.update',
         'sort'  => 1,
     ], [
         'key'   => 'api.dam.assets.delete',

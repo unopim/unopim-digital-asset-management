@@ -24,7 +24,7 @@
             <div
                 v-for="tab in tabs"
                 :key="tab.id"
-                class="flex items-center gap-1.5 px-3 py-1.5 min-w-[110px] max-w-[180px] flex-shrink-0 rounded-t-md border border-b-0 text-sm cursor-pointer select-none transition-colors"
+                class="flex items-center gap-1.5 px-3 py-1.5 min-w-[84px] sm:min-w-[110px] max-w-[140px] sm:max-w-[180px] flex-shrink-0 rounded-t-md border border-b-0 text-sm cursor-pointer select-none transition-colors"
                 :class="[
                     tab.id === activeTabId
                         ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
@@ -159,7 +159,11 @@ app.component('v-dam-explorer', {
 
     methods: {
         uid() {
-            return (crypto.randomUUID ?? (() => Math.random().toString(36).slice(2)))();
+            // Call randomUUID as a method so `this` stays bound to `crypto`
+            // (a detached call throws "Illegal invocation" in secure contexts).
+            return (typeof crypto !== 'undefined' && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : Math.random().toString(36).slice(2);
         },
 
         makeTab(directoryId = null, label = '…') {

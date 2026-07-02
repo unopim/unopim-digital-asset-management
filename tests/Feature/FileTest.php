@@ -19,6 +19,12 @@ it('should create a file in private storage and return its path', function () {
     Storage::disk(Directory::getAssetDisk())->assertExists($response->json('path'));
 });
 
+it('should return 422 (not 500) when creating a file without an uploaded file', function () {
+    $this->postJson(route('admin.dam.file.create'), [])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['file']);
+});
+
 it('should delete an existing file from private storage', function () {
     $disk = Directory::getAssetDisk();
     $path = 'random/files/sample.png';
@@ -58,6 +64,19 @@ it('should return 404 when updating a non-existent file', function () {
     $response->assertStatus(404)->assertJson(['error' => trans('dam::app.admin.dam.file.not-found')]);
 });
 
+it('should return 422 (not 500) and keep the original when updating without a file', function () {
+    $disk = Directory::getAssetDisk();
+    $oldPath = 'random/files/keep.png';
+    Storage::disk($disk)->put($oldPath, 'original');
+
+    $this->call('PUT', route('admin.dam.file.update'), ['path' => $oldPath], [], [], ['HTTP_ACCEPT' => 'application/json'])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['file']);
+
+    Storage::disk($disk)->assertExists($oldPath);
+    expect(Storage::disk($disk)->get($oldPath))->toBe('original');
+});
+
 it('should fetch an existing file with the correct mime type', function () {
     $disk = Directory::getAssetDisk();
     $path = 'assets/Root/sample.png';
@@ -87,6 +106,49 @@ it('should serve a default thumbnail when the file is not an image', function ()
         'GET',
         route('admin.dam.file.thumbnail'),
         ['path' => $path],
+        [],
+        [],
+        ['HTTP_ACCEPT' => 'image/*']
+    );
+
+    $response->assertOk();
+});
+
+it('should serve a placeholder thumbnail when an image file is undecodable instead of 500', function () {
+    $disk = Directory::getAssetDisk();
+    $path = 'assets/Root/corrupt.png';
+
+    Storage::disk($disk)->put($path, "\x89PNG\r\n\x1a\n".str_repeat('x', 128));
+
+    Storage::fake('public');
+    Storage::disk('public')->put('dam/grid/image.svg', '<svg/>');
+
+    $response = $this->call(
+        'GET',
+        route('admin.dam.file.thumbnail'),
+        ['path' => $path],
+        [],
+        [],
+        ['HTTP_ACCEPT' => 'image/*']
+    );
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Type'))->toContain('image/svg+xml');
+});
+
+it('should serve a placeholder preview when an image file is undecodable instead of 500', function () {
+    $disk = Directory::getAssetDisk();
+    $path = 'assets/Root/corrupt-preview.png';
+
+    Storage::disk($disk)->put($path, "\x89PNG\r\n\x1a\n".str_repeat('x', 128));
+
+    Storage::fake('public');
+    Storage::disk('public')->put('dam/preview/image.svg', '<svg/>');
+
+    $response = $this->call(
+        'GET',
+        route('admin.dam.file.preview'),
+        ['path' => $path, 'size' => 300],
         [],
         [],
         ['HTTP_ACCEPT' => 'image/*']

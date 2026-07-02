@@ -24,12 +24,16 @@ class CopyDirectory implements ShouldQueue
 
     public int $timeout = 3600;
 
+    /** Create a new instance. */
     public function __construct(
         protected int $sourceId,
         protected int $targetId,
         protected int $userId
     ) {}
 
+    /**
+     * Copy the source directory and its contents into the target directory.
+     */
     public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
@@ -53,6 +57,9 @@ class CopyDirectory implements ShouldQueue
         }
     }
 
+    /**
+     * Recursively copy a directory, its assets, and child directories.
+     */
     private function deepCopyDirectory(Directory $source, Directory $newParent, int $depth): void
     {
         if ($depth > self::MAX_DEPTH) {
@@ -66,8 +73,6 @@ class CopyDirectory implements ShouldQueue
         Storage::disk($disk)->makeDirectory($newParentStoragePath);
 
         if ($source->assets->isNotEmpty()) {
-            // Load all existing names in target dir once — O(1) set lookup per asset
-            // instead of the former N EXISTS queries (one per asset + conflict retries).
             $existingNames = Asset::whereHas(
                 'directories',
                 fn ($q) => $q->where('dam_directories.id', $newParent->id)
@@ -82,7 +87,6 @@ class CopyDirectory implements ShouldQueue
 
                 Storage::disk($disk)->copy($asset->path, $newStoragePath);
 
-                // Register in set so subsequent assets in the same loop avoid collision.
                 $existingNames[$newFileName] = true;
 
                 $assetRows[] = [
@@ -92,7 +96,6 @@ class CopyDirectory implements ShouldQueue
                     'file_size'  => $asset->file_size,
                     'path'       => $newStoragePath,
                     'mime_type'  => $asset->mime_type,
-                    // meta_data is cast array on Asset model; DB::table()->insert() needs raw JSON.
                     'meta_data'  => $asset->meta_data !== null ? json_encode($asset->meta_data) : null,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -100,13 +103,10 @@ class CopyDirectory implements ShouldQueue
                 $assetPaths[] = $newStoragePath;
             }
 
-            // 1 bulk INSERT instead of N Asset::create() calls.
             DB::table((new Asset)->getTable())->insert($assetRows);
 
-            // Fetch new IDs by unique path — portable across MySQL + PostgreSQL.
             $newIds = Asset::whereIn('path', $assetPaths)->pluck('id');
 
-            // 1 bulk pivot INSERT instead of N attach() calls.
             DB::table('dam_asset_directory')->insert(
                 $newIds->map(fn ($id) => ['asset_id' => $id, 'directory_id' => $newParent->id])->all()
             );
@@ -119,10 +119,7 @@ class CopyDirectory implements ShouldQueue
     }
 
     /**
-     * Resolve a unique file name against an in-memory name set — no DB queries.
-     * Caller must register the returned name into $existingNames after use.
-     *
-     * @param  array<string, mixed>  $existingNames  Flipped pluck — keys are names, used as a hash set.
+     * Resolve a unique file name against an in-memory name set.
      */
     private function uniqueAssetNameFromSet(string $fileName, array $existingNames): string
     {

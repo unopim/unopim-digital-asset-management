@@ -34,9 +34,7 @@ class Exporter extends CategoryExporter
         EventServiceProvider::ASSET_ATTRIBUTE_TYPE,
     ];
 
-    /**
-     * Sets category field values for a product. If an category field is not present in the given values array
-     */
+    /** Sets category field values for a product. If an category field is not present in the given values array. */
     protected function setFieldsAdditionalData(array $additionalData, $filePath, $options = [])
     {
         $fieldValues = [];
@@ -99,9 +97,7 @@ class Exporter extends CategoryExporter
         return $fieldValues;
     }
 
-    /**
-     * Copy media file from a source path to a destination path.
-     */
+    /** Copy media file from a source path to a destination path. */
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
         $disk = Directory::getAssetDisk();
@@ -116,8 +112,7 @@ class Exporter extends CategoryExporter
             if ($disk === Directory::ASSETS_DISK_AWS) {
                 Storage::writeStream($destinationPath, $stream);
             } else {
-                // Non-S3: AWSS3TrackerController looks for media at raw $sourcePath
-                // on the public disk; write there so the export archive includes it.
+
                 Storage::disk('public')->writeStream($sourcePath, $stream);
             }
 
@@ -128,7 +123,7 @@ class Exporter extends CategoryExporter
     }
 
     /**
-     * Generates a public URL for a given file path
+     * Generates a public URL for a given file path.
      */
     public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
     {

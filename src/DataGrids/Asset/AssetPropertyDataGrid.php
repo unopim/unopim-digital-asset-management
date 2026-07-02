@@ -10,9 +10,6 @@ class AssetPropertyDataGrid extends DataGrid
 {
     public function __construct(protected LocaleRepository $localeRepository) {}
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $assetId = request()->id;
@@ -34,9 +31,6 @@ class AssetPropertyDataGrid extends DataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -88,11 +82,6 @@ class AssetPropertyDataGrid extends DataGrid
         ]);
     }
 
-    /**
-     * Prepare actions.
-     *
-     * @return void
-     */
     public function prepareActions()
     {
         $this->addAction([
@@ -116,11 +105,6 @@ class AssetPropertyDataGrid extends DataGrid
         ]);
     }
 
-    /**
-     * Prepare mass actions.
-     *
-     * @return void
-     */
     public function prepareMassActions()
     {
         if (bouncer()->hasPermission('dam.asset.property.delete')) {

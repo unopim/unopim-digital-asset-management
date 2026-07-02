@@ -9,19 +9,12 @@ class AssetTagRepository extends Repository
 {
     protected $assets = [];
 
-    /**
-     * Specify model class name.
-     */
     public function model(): string
     {
         return Tag::class;
     }
 
-    /**
-     * Create asset Tag.
-     *
-     * @return \Webkul\DAM\Contracts\Tag
-     */
+    /** Create asset Tag. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -29,13 +22,7 @@ class AssetTagRepository extends Repository
         return $asset;
     }
 
-    /**
-     * Update asset Tag.
-     *
-     * @param  int  $id
-     * @param  string  $asset
-     * @return \Webkul\DAM\Contracts\Tag
-     */
+    /** Update asset Tag. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);
@@ -45,9 +32,7 @@ class AssetTagRepository extends Repository
         return $asset;
     }
 
-    /**
-     * Get asset Tag.
-     */
+    /** Get asset Tag. */
     public function getTagsByAssetId(int $asset_Id)
     {
         return Tag::whereHas('assets', function ($query) use ($asset_Id) {

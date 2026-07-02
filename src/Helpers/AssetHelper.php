@@ -9,11 +9,7 @@ use Webkul\DAM\Models\Directory;
 class AssetHelper
 {
     /**
-     * Effective max upload size in KB — derived entirely from PHP's runtime
-     * upload_max_filesize and post_max_size so the validator honours whatever
-     * the server is already configured to accept.
-     * Returns PHP_INT_MAX when PHP imposes no limit, so Laravel's max: rule
-     * effectively becomes a no-op and the server is the real gatekeeper.
+     * Determine the effective max upload size from PHP's runtime limits.
      */
     public static function getMaxUploadSizeKb(): int
     {
@@ -29,7 +25,7 @@ class AssetHelper
     }
 
     /**
-     * Format a kilobyte count into a human-readable string (e.g. "512 MB", "2 GB").
+     * Format a kilobyte count into a human-readable string.
      */
     public static function humanReadableSize(int $kilobytes): string
     {
@@ -45,7 +41,7 @@ class AssetHelper
     }
 
     /**
-     * Convert a php.ini shorthand size (e.g. "50M", "1G", "2048K") to kilobytes.
+     * Convert a php.ini shorthand size to kilobytes.
      */
     protected static function iniValueToKb(string $value): int
     {
@@ -67,10 +63,9 @@ class AssetHelper
     }
 
     /**
-     * fetch file type based on the mime type
+     * Determine the file type category from its MIME type.
      *
-     * @param [type] $file
-     * @return void
+     * @return string
      */
     public static function getFileType($file)
     {
@@ -84,7 +79,6 @@ class AssetHelper
             return 'audio';
         }
 
-        // Generic MIME (e.g. application/octet-stream) — fall back to extension
         $ext = strtolower($file->getClientOriginalExtension());
 
         if (in_array($ext, ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma'])) {
@@ -99,9 +93,8 @@ class AssetHelper
     }
 
     /**
-     * fetch file type based on the extension
+     * fetch file type based on the extension.
      *
-     * @param [type] $file
      * @return void
      */
     public static function getFileTypeUsingExtension(string $extension)
@@ -130,7 +123,7 @@ class AssetHelper
     }
 
     /**
-     * Displayable File name
+     * Displayable File name.
      */
     public static function getDisplayFileName(string $fileName): string
     {
@@ -176,11 +169,7 @@ class AssetHelper
         return $previewUrl;
     }
 
-    /**
-     * Check if the MIME type corresponds to a supported media file
-     *
-     * Supported types include SVG images, PDF, video, and audio formats.
-     */
+    /** Check if the MIME type corresponds to a supported media file. */
     public static function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
@@ -190,12 +179,55 @@ class AssetHelper
     }
 
     /**
-     * Check if given extension or mime type is forbidden for upload
+     * Whether a MIME type is safe to serve inline in the browser.
+     *
+     * Only genuine media types are safe. Anything else (HTML, XML, text, etc.)
+     * must be forced to download so a stored file cannot execute script in the
+     * application's own origin. SVG is XML and can carry script, so it is only
+     * ever served inline behind a restrictive Content-Security-Policy.
      */
-    public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null): bool
+    public static function isInlineSafeMime(?string $mimeType): bool
+    {
+        $mimeType = strtolower(trim((string) $mimeType));
+
+        if ($mimeType === '') {
+            return false;
+        }
+
+        if ($mimeType === 'image/svg+xml') {
+            return true;
+        }
+
+        return Str::startsWith($mimeType, ['image/', 'video/', 'audio/'])
+            || $mimeType === 'application/pdf';
+    }
+
+    /**
+     * Security headers applied to every asset-content response.
+     *
+     * Blocks MIME sniffing and (via CSP) any script/plugin execution for
+     * documents rendered inline, neutralising stored-XSS through uploaded
+     * HTML/SVG while still allowing images, styles and media to render.
+     *
+     * @return array<string, string>
+     */
+    public static function assetResponseHeaders(): array
+    {
+        return [
+            'X-Content-Type-Options'  => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'",
+        ];
+    }
+
+    /**
+     * Check if given extension or mime type is forbidden for upload.
+     */
+    public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = [
             'php',
+            'phtml',
+            'phar',
             'js',
             'py',
             'sh',
@@ -208,6 +240,11 @@ class AssetHelper
             'exe',
             'rb',
             'jar',
+            'html',
+            'htm',
+            'xhtml',
+            'shtml',
+            'hta',
         ];
 
         $forbiddenMimeTypes = [
@@ -226,6 +263,8 @@ class AssetHelper
             'application/x-msdownload',
             'application/java-archive',
             'application/x-ruby',
+            'text/html',
+            'application/xhtml+xml',
         ];
 
         $forbiddenFileNames = [
@@ -247,6 +286,62 @@ class AssetHelper
             return true;
         }
 
+        if (self::isPlaceholderImage($extension, $mimeType, $fileName, $realPath)) {
+            return true;
+        }
+
         return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));
+    }
+
+    /**
+     * The DAM ships a "no records found" placeholder SVG (no-records-found.svg).
+     */
+    public static function isPlaceholderImage(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
+    {
+        $isSvg = $extension === 'svg' || $mimeType === 'image/svg+xml';
+
+        if (! $isSvg) {
+            return false;
+        }
+
+        if ($fileName) {
+            $stem = strtolower(pathinfo(basename($fileName), PATHINFO_FILENAME));
+
+            if (Str::startsWith($stem, 'no-records-found')) {
+                return true;
+            }
+        }
+
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $contents = @file_get_contents($realPath, false, null, 0, 65536);
+
+        if ($contents === false || $contents === '') {
+            return false;
+        }
+
+        $normalize = fn (string $value): string => strtolower(preg_replace('/\s+/', '', $value));
+
+        $haystack = $normalize($contents);
+
+        if (! str_contains($haystack, '#7c3aec')) {
+            return false;
+        }
+
+        $pathSignatures = [
+            'M44 88H42.908C29.868 88 23.34 88 18.812 84.808',
+            'M12 48C12 44.4641 13.4046 41.0731 15.9049 38.5729',
+            'M76.9143 80.5715L84.1143 87.7715',
+        ];
+
+        foreach ($pathSignatures as $signature) {
+            if (str_contains($haystack, $normalize($signature))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

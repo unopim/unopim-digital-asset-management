@@ -6,7 +6,7 @@
 --}}
 @once('v-dam-explorer-toolbar')
         {{-- Row 2: search + filters + pagination --}}
-        <template v-if="loading">
+        <template v-if="loading && ! meta">
             <x-admin::shimmer.datagrid.toolbar />
         </template>
 
@@ -15,7 +15,7 @@
             {{-- Left: search + results count --}}
             <div class="flex flex-1 min-w-[120px] items-center gap-x-1">
                 {{-- Select-all checkbox (always visible) --}}
-                <label class="flex items-center cursor-pointer shrink-0 mr-2">
+                <label class="flex items-center cursor-pointer shrink-0 mr-2" data-select-all>
                     <input
                         type="checkbox"
                         class="peer hidden"
@@ -33,7 +33,7 @@
 
                 {{-- Action bar (selection mode) --}}
                 <template v-if="selection.ids.length > 0">
-                    @if (bouncer()->hasPermission('dam.asset.mass_delete'))
+                    @if (bouncer()->hasPermission('dam.asset.mass_delete') || bouncer()->hasPermission('dam.asset.update'))
                     <x-admin::dropdown>
                         <x-slot:toggle>
                             <button
@@ -46,6 +46,7 @@
                         </x-slot:toggle>
 
                         <x-slot:menu class="shadow-md !p-0 z-10">
+                            @if (bouncer()->hasPermission('dam.asset.mass_delete'))
                             <li
                                 class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
                                 @click="openFolderPicker('move')"
@@ -59,13 +60,25 @@
                             >
                                 @lang('dam::app.admin.explorer.mass-actions.copy-to')
                             </li>
+                            @endif
 
+                            @if (bouncer()->hasPermission('dam.asset.update'))
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="openAssignTagsModal"
+                            >
+                                @lang('dam::app.admin.dam.tag.mass-action.assign-tags')
+                            </li>
+                            @endif
+
+                            @if (bouncer()->hasPermission('dam.asset.mass_delete'))
                             <li
                                 class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
                                 @click="performMassDelete"
                             >
                                 @lang('dam::app.admin.explorer.mass-actions.delete')
                             </li>
+                            @endif
                         </x-slot:menu>
                     </x-admin::dropdown>
                     @endif
@@ -90,7 +103,7 @@
                             <button
                                 v-if="searchInput"
                                 @click="clearSearch"
-                                class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 text-base leading-none"
+                                class="absolute ltr:right-2.5 rtl:left-2.5 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 text-base leading-none"
                             >×</button>
                             <div v-else class="icon-search pointer-events-none absolute ltr:right-2.5 rtl:left-2.5 top-2 flex items-center text-2xl"></div>
                         </div>

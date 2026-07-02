@@ -18,6 +18,7 @@ use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
@@ -25,11 +26,6 @@ use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
-    /**
-     * The container bindings that should be registered.
-     *
-     * @var array
-     */
     public $bindings = [
         Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
@@ -40,15 +36,11 @@ class DAMServiceProvider extends ServiceProvider
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
     ];
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function boot(Router $router)
     {
         $router->aliasMiddleware('dam', DAM::class);
 
-        // Named rate limiters for public share routes — separate buckets per IP per route type
-        // so 200 thumbnail requests don't exhaust the bucket used by view/download routes.
         RateLimiter::for('dam-share-thumb', function ($request) {
             return Limit::perMinute(1200)->by('thumb|'.$request->ip());
         });
@@ -124,16 +116,15 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-config');
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function register()
     {
-        // Load DAM helpers here rather than composer.json autoload.files to keep DAM self-contained.
         $helpers = __DIR__.'/../Http/helpers.php';
         if (file_exists($helpers)) {
             require_once $helpers;
         }
+
+        $this->app->scoped(DirectoryPermissionService::class);
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
 

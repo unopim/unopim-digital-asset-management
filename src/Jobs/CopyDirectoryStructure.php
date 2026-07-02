@@ -17,10 +17,11 @@ class CopyDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Create a new instance. */
     public function __construct(protected int $directoryId, protected int $userId) {}
 
     /**
-     * Handle the event.
+     * Replicate the directory structure into a new copy.
      *
      * @return void
      */
@@ -56,21 +57,15 @@ class CopyDirectoryStructure implements ShouldQueue
     }
 
     /**
-     * Copy the directory tree iteratively using BFS.
-     *
-     * Replaces the former recursive method that would stack-overflow on deep trees.
-     * Children for each BFS level are loaded in a single query (one per level)
-     * instead of lazy-loading one directory at a time.
+     * Copy a directory tree iteratively using BFS.
      */
     public function copyDirectoryAndChildren(ModelDirectory $root, ModelDirectory $newRoot, DirectoryRepository $directoryRepository): void
     {
-        // Each queue entry: [sourceDir, newParentDir]
         $queue = [[$root, $newRoot]];
 
         while (! empty($queue)) {
             $nextLevel = [];
 
-            // Batch-load all children for this BFS level in one query.
             $sourceIds = array_map(fn ($pair) => $pair[0]->id, $queue);
             $childrenByParent = ModelDirectory::whereIn('parent_id', $sourceIds)
                 ->get()

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\DAM\Contracts\AssetComments as AssetCommentsContract;
 use Webkul\DAM\Database\Factories\CommentFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
@@ -19,9 +20,6 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
 
     protected $historyTags = ['asset'];
 
-    /**
-     * These columns history will not be generated
-     */
     protected $auditExclude = [
         'id',
         'parent_id',
@@ -32,16 +30,27 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
 
     protected $fillable = ['admin_id', 'parent_id', 'comments', 'dam_asset_id'];
 
+    /**
+     * Get the asset this comment belongs to.
+     */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'dam_asset_id');
     }
 
+    /**
+     * Get the admin who authored the comment.
+     */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'admin_id');
     }
 
+    /**
+     * Get the reply comments for this comment.
+     *
+     * @return HasMany
+     */
     public function children()
     {
         return $this->hasMany(AssetComments::class, 'parent_id');
@@ -56,7 +65,7 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
     }
 
     /**
-     * {@inheritdoc}
+     * Get the asset id used as the history primary model.
      */
     public function getPrimaryModelIdForHistory(): int
     {

@@ -77,33 +77,13 @@
             <input
                 type="file" multiple name="files[]"
                 :id="`explorer-upload-${tabId}`" class="hidden"
-                :disabled="uploading"
                 @change="onFileChange"
             />
             <input
                 type="file" webkitdirectory multiple name="folder_files[]"
                 :id="`explorer-folder-upload-${tabId}`" class="hidden"
-                :disabled="folderUploading"
                 @change="onFolderChange"
             />
-            <!-- <template v-if="canUploadHere">
-                <label
-                    :for="`explorer-upload-${tabId}`"
-                    class="secondary-button cursor-pointer"
-                    :class="{ 'opacity-60 pointer-events-none': uploading || folderUploading }"
-                >
-                    <svg v-if="uploading || folderUploading" class="animate-spin inline-block h-4 w-4 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <span v-else class="icon-dam-upload"></span>
-                    <span v-if="uploading || folderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
-                    <span v-else>@lang('dam::app.admin.dam.index.upload')</span>
-                </label>
-                <button v-if="uploading || folderUploading" type="button" class="secondary-button" @click="uploading ? cancelUpload() : cancelFolderUpload()">
-                    @lang('dam::app.admin.dam.index.cancel')
-                </button>
-            </template> -->
             @endif
 
             {{-- Grid / List view toggle --}}
@@ -137,27 +117,15 @@
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
         </div>
 
-        {{-- Content area — v-dam-drop-upload handles OS file/folder drops --}}
+        {{-- Content area — v-dam-drop-upload handles OS file/folder drops and is
+             the single upload manager; toolbar uploads enqueue into it via $refs. --}}
         <v-dam-drop-upload
+            ref="dropUpload"
             class="flex-1 overflow-y-auto flex flex-col"
             :current-directory="currentDirId ? { id: currentDirId } : null"
             :can-upload="canUploadHere"
             @refresh-datagrid="fetch()"
         >
-            {{-- Upload blocking overlay (button upload only) --}}
-            <div
-                v-if="uploading"
-                class="absolute inset-0 z-40 bg-white/70 dark:bg-cherry-900/70 backdrop-blur-sm flex items-center justify-center rounded-lg pointer-events-all"
-            >
-                <div class="flex flex-col items-center gap-3">
-                    <svg class="animate-spin h-8 w-8 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <p class="text-sm font-semibold text-violet-700 dark:text-violet-300">@lang('dam::app.admin.dam.index.uploading')</p>
-                </div>
-            </div>
-
             <v-dam-explorer-grid
                 v-if="viewMode === 'grid'"
                 class="flex-1"
@@ -281,10 +249,6 @@ app.component('v-dam-tab', {
             sortOrder:    'asc',
             page:         this.initialPage,
             perPage:      this.initialPerPage,
-            uploading:          false,
-            abort:              null,
-            folderUploading:    false,
-            folderAbort:        null,
             uploadTargetDirId:  null,
             localAccessibleIds: [...(this.accessibleIds || [])],
             debounce:        null,
@@ -358,6 +322,15 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
+
+        // Shared tag modal finished assigning tags to assets selected in THIS tab —
+        // clear the selection and refresh so the change is reflected.
+        this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
+            if (context !== `explorer:${this.tabId}`) return;
+            this.clearSelection();
+            this.fetch();
+        });
+
         this.$emitter.on(`dam:operation-overlay:show:${this.tabId}`, ({ label, progress = null, fileCount = null }) => {
             this.operationOverlay = { show: true, label: label ?? '', progress, fileCount };
         });
@@ -372,28 +345,25 @@ app.component('v-dam-tab', {
         });
         this.$emitter.on('dam:directory-mutated', () => this.fetch());
 
-        // Tree "Upload files" → emit dam:upload-files with pre-built FormData
+        // Tree "Upload files" → route the pre-built FormData through the unified
+        // upload manager so it shows the same progress panel as every other upload.
         this.$emitter.on('dam:upload-files', (formData) => {
-            if (this.uploading) return;
-            this.uploading = true;
-            this.abort = new AbortController();
-            this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                signal: this.abort.signal,
-            }).then(() => {
-                this.fetch();
-                this.$emitter.emit('dam:tree-reload');
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-            }).catch(err => {
-                if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                }
-            }).finally(() => { this.uploading = false; this.abort = null; });
+            const files = formData.getAll('files[]');
+            if (! files.length) return;
+            const targetDirId = formData.get('directory_id') ?? this.currentDirId;
+            this.$refs.dropUpload?.enqueueUpload({
+                items: files.map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                folderPaths: [],
+                targetDirId,
+            });
         });
 
-        // Tree folder upload state → mirror on explorer breadcrumb button
-        this.$emitter.on('dam:folder-upload-start', () => { this.folderUploading = true; });
-        this.$emitter.on('dam:folder-upload-end',   () => { this.folderUploading = false; });
+        // Refresh the listing whenever the upload manager finishes a batch that
+        // targeted this tab's current directory.
+        this.$emitter.on('dam:uploads-refresh', ({ directoryId } = {}) => {
+            if (! directoryId || Number(directoryId) === Number(this.currentDirId)) this.fetch();
+        });
+
         this.$emitter.on('dam:directory-granted', (id) => {
             const numId = Number(id);
             if (! this.localAccessibleIds.map(Number).includes(numId)) {
@@ -500,6 +470,27 @@ app.component('v-dam-tab', {
             this.selection.mode = 'none';
         },
 
+        openAssignTagsModal() {
+            // Tag the explicitly selected assets AND every asset inside the selected folders
+            // (recursively, resolved server-side) — so picking folders tags their contents too.
+            const assetIds     = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+            const directoryIds = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+
+            if (! assetIds.length && ! directoryIds.length) {
+                this.$emitter.emit('add-flash', {
+                    type: 'warning',
+                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-items')",
+                });
+                return;
+            }
+
+            this.$emitter.emit('dam:open-tag-assign-modal', {
+                assetIds,
+                directoryIds,
+                context: `explorer:${this.tabId}`,
+            });
+        },
+
         performMassDelete() {
             const count = this.selection.ids.length;
 
@@ -508,6 +499,7 @@ app.component('v-dam-tab', {
                 agree: async () => {
                     const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
                     const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+                    const sourceName = this.currentFolderName();
 
                     this.$emitter.emit(`dam:operation-overlay:show:${this.tabId}`, {
                         label: "@lang('dam::app.admin.explorer.mass-actions.deleting')".replace(':count', count),
@@ -518,7 +510,9 @@ app.component('v-dam-tab', {
                             await this.$axios.post('{{ route("admin.dam.assets.mass_delete") }}', { indices: assetIds });
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
-                                message: "@lang('dam::app.admin.explorer.mass-actions.deleted-assets')".replace(':count', assetIds.length),
+                                message: "@lang('dam::app.admin.explorer.mass-actions.deleted-assets')"
+                                    .replace(':count', assetIds.length)
+                                    .replace(':source', sourceName),
                             });
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
@@ -540,7 +534,7 @@ app.component('v-dam-tab', {
                                             if (d.status === 'completed') {
                                                 dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
                                                 this.$emitter.emit('dam:tree-reload');
-                                                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.mass-actions.deleted-dirs')".replace(':count', dirIds.length) });
+                                                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.mass-actions.deleted-dirs')".replace(':count', dirIds.length).replace(':source', sourceName) });
                                                 resolve();
                                             } else if (d.status === 'failed') {
                                                 this.$emitter.emit('add-flash', { type: 'error', message: d.message });
@@ -573,19 +567,29 @@ app.component('v-dam-tab', {
             this.folderPicker = { open: false, mode: null };
         },
 
-        onFolderPickerPicked(targetDirId) {
+        onFolderPickerPicked(payload) {
+            // Picker emits { id, name }; tolerate a bare id for safety.
+            const targetDirId   = payload?.id ?? payload;
+            const targetDirName = payload?.name ?? '';
             const mode = this.folderPicker.mode;
             this.folderPicker = { open: false, mode: null };
             if (mode === 'move') {
-                this.performMassMove(targetDirId);
+                this.performMassMove(targetDirId, targetDirName);
             } else {
-                this.performMassCopy(targetDirId);
+                this.performMassCopy(targetDirId, targetDirName);
             }
         },
 
-        performMassMove(targetDirId) {
+        // Name of the folder currently open in this tab — used as the "source"
+        // in move/copy/delete success alerts.
+        currentFolderName() {
+            return this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
+        },
+
+        performMassMove(targetDirId, targetDirName = '') {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const sourceName = this.currentFolderName();
 
             // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.moving')", progress: 0, fileCount: null };
@@ -624,7 +628,10 @@ app.component('v-dam-tab', {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.move-done')"
+                                                .replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length))
+                                                .replace(':source', sourceName)
+                                                .replace(':destination', targetDirName),
                                         });
                                         dirIds.forEach(id => this.$emitter.emit('dam:directory-deleted', { id }));
                                         this.$emitter.emit('dam:tree-reload');
@@ -655,9 +662,10 @@ app.component('v-dam-tab', {
             })();
         },
 
-        performMassCopy(targetDirId) {
+        performMassCopy(targetDirId, targetDirName = '') {
             const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
+            const sourceName = this.currentFolderName();
 
             // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.copying')", progress: 0, fileCount: null };
@@ -696,7 +704,10 @@ app.component('v-dam-tab', {
                                     if (d.status === 'completed') {
                                         this.$emitter.emit('add-flash', {
                                             type: 'success',
-                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')".replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length)),
+                                            message: "@lang('dam::app.admin.explorer.mass-actions.copy-done')"
+                                                .replace(':count', this.operationOverlay.fileCount ?? (assetIds.length + dirIds.length))
+                                                .replace(':source', sourceName)
+                                                .replace(':destination', targetDirName),
                                         });
                                         this.$emitter.emit('dam:tree-reload');
                                         resolve();
@@ -918,7 +929,7 @@ app.component('v-dam-tab', {
             const asset = this.dialog.extra?.asset;
             this.$axios.post("{{ route('admin.dam.assets.rename') }}", { id: asset.id, file_name: name })
                 .then(({ data }) => {
-                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? 'Done.' });
+                    this.$emitter.emit('add-flash', { type: 'success', message: data.message ?? "@lang('dam::app.admin.explorer.action-completed')" });
                     this.closeDialog();
                     this.fetch();
                 })
@@ -1041,31 +1052,16 @@ app.component('v-dam-tab', {
 
         onFileChange(e) {
             const files = e.target.files;
-            if (! files?.length) return;
+            if (! files?.length) { e.target.value = ''; return; }
             const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
             this.uploadTargetDirId = null;
-            const fd = new FormData();
-            Array.from(files).forEach(f => fd.append('files[]', f));
-            fd.append('directory_id', targetDirId);
-            this.uploading = true;
-            this.abort     = new AbortController();
-            this.$axios.post("{{ route('admin.dam.assets.upload') }}", fd, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                signal: this.abort.signal,
-            }).then(() => {
-                this.fetch();
-                this.$emitter.emit('dam:tree-reload');
-                this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-            }).catch(err => {
-                if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                }
-            }).finally(() => { this.uploading = false; this.abort = null; e.target.value = ''; });
+            this.$refs.dropUpload?.enqueueUpload({
+                items: Array.from(files).map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                folderPaths: [],
+                targetDirId,
+            });
+            e.target.value = '';
         },
-
-        cancelUpload() { this.abort?.abort(); },
-
-        cancelFolderUpload() { this.folderAbort?.abort(); this.$emitter.emit('dam:cancel-folder-upload'); },
 
         onInternalDrop({ payload, targetDir }) {
             if (! this.aclBypass && ! this.accessibleIds.map(Number).includes(Number(targetDir.id))) {
@@ -1131,56 +1127,26 @@ app.component('v-dam-tab', {
 
         onFolderChange(e) {
             const files = Array.from(e.target.files ?? []);
-            if (! files.length) return;
+            if (! files.length) { e.target.value = ''; return; }
             const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
             this.uploadTargetDirId = null;
 
-            const hasFiles = files.some(f => f.size > 0);
+            // Every directory level along each path becomes a folder to create;
+            // files with content become upload jobs. Both flow through the manager.
+            const folderPaths = new Set();
+            files.forEach(f => {
+                const rel  = f.webkitRelativePath || f.name;
+                const segs = rel.split('/');
+                for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+            });
 
-            if (hasFiles) {
-                const fd = new FormData();
-                files.forEach(f => {
-                    fd.append('files[]', f);
-                    fd.append('relative_paths[]', f.webkitRelativePath || f.name);
-                });
-                fd.append('directory_id', targetDirId);
-                fd.append('preserve_root', '1');
-
-                this.folderUploading = true;
-                this.folderAbort     = new AbortController();
-
-                this.$axios.post("{{ route('admin.dam.assets.upload_folder') }}", fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    signal: this.folderAbort.signal,
-                }).then(() => {
-                    this.fetch();
-                    this.$emitter.emit('dam:tree-reload');
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-                }).catch(err => {
-                    if (! (this.$axios.isCancel?.(err) || err.code === 'ERR_CANCELED')) {
-                        this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')" });
-                    }
-                }).finally(() => { this.folderUploading = false; this.folderAbort = null; e.target.value = ''; });
-            } else {
-                const paths = [...new Set(
-                    files.map(f => f.webkitRelativePath || f.name)
-                         .map(p => p.split('/').slice(0, -1).join('/'))
-                         .filter(Boolean)
-                )];
-
-                if (! paths.length) { e.target.value = ''; return; }
-
-                this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
-                    directory_id: targetDirId,
-                    paths,
-                }).then(() => {
-                    this.fetch();
-                    this.$emitter.emit('dam:tree-reload');
-                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.dam.index.upload-complete')" });
-                }).catch(err => {
-                    this.$emitter.emit('add-flash', { type: 'error', message: err?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.something-wrong')" });
-                }).finally(() => { e.target.value = ''; });
-            }
+            this.$refs.dropUpload?.enqueueUpload({
+                items: files.filter(f => f.size > 0)
+                            .map(f => ({ file: f, relativePath: f.webkitRelativePath || f.name, preserveRoot: true })),
+                folderPaths: [...folderPaths],
+                targetDirId,
+            });
+            e.target.value = '';
         },
 
         executePaste(targetDirId) {

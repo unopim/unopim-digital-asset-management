@@ -481,6 +481,7 @@ it('should download asset as a zip file', function () {
 
     $response->assertOk();
     $response->assertHeader('Content-Disposition');
+    expect(glob(public_path('*.zip')))->toBe([]);
 });
 
 it('should return 404 when compressed-download targets a non-existent asset', function () {

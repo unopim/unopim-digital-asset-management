@@ -18,11 +18,6 @@ trait StreamsZipDownload
 {
     /**
      * Stream a directory's files as a ZIP archive directly to the browser.
-     *
-     * Uses SIMULATE_STRICT to predict Content-Length before streaming,
-     * so the browser can show accurate download progress.
-     *
-     * @param  string[]  $files  Paths from Storage::allFiles()
      */
     protected function buildZipStreamResponse(
         array $files,
@@ -72,9 +67,7 @@ trait StreamsZipDownload
     }
 
     /**
-     * Stream assets from a DB cursor as a ZIP — no allFiles() scan, no pre-size simulation.
-     * Starts streaming immediately; uses set_time_limit(0) inside the closure so large
-     * directories are not cut off by PHP's max_execution_time.
+     * Stream assets from a DB cursor as a ZIP archive.
      */
     protected function buildZipStreamFromAssets(
         Builder $query,
@@ -133,7 +126,6 @@ trait StreamsZipDownload
                         }
                     }
                 } catch (\Throwable) {
-                    // Skip unreadable/missing files rather than aborting the archive
                 }
             }
 
@@ -146,8 +138,7 @@ trait StreamsZipDownload
     }
 
     /**
-     * Derive the current storage path from the asset's immediate parent directory ID.
-     * Returns null when the directories relation is not loaded or yields no result.
+     * Derive the current storage path from the asset's immediate parent directory.
      */
     private function derivePath(Asset $asset): ?string
     {
@@ -167,9 +158,7 @@ trait StreamsZipDownload
     }
 
     /**
-     * Predict the final ZIP byte-count using SIMULATE_STRICT + STORE compression.
-     * No file content is read — only file sizes are needed.
-     * Returns null on any failure so the caller can stream without Content-Length.
+     * Predict the final ZIP byte-count without reading file content.
      */
     private function simulateZipSize(array $files, string $folderPath, string $disk): ?int
     {

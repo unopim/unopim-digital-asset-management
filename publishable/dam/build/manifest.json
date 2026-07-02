@@ -1,76 +1,84 @@
 {
   "src/Resources/assets/css/app.css": {
-    "file": "assets/app-e433bfbb.css",
+    "file": "assets/app-Dw9j6z4n.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "src/Resources/assets/css/app.css",
     "isEntry": true,
-    "src": "src/Resources/assets/css/app.css"
+    "assets": [
+      "assets/UnoPim-DAM-DzGW7QOn.woff"
+    ]
   },
   "src/Resources/assets/fonts/UnoPim-DAM.woff": {
-    "file": "assets/UnoPim-DAM-2598470d.woff",
+    "file": "assets/UnoPim-DAM-DzGW7QOn.woff",
     "src": "src/Resources/assets/fonts/UnoPim-DAM.woff"
   },
   "src/Resources/assets/images/grid/audio.svg": {
-    "file": "assets/audio-800f7378.svg",
+    "file": "assets/audio-BbmUgpvq.svg",
     "src": "src/Resources/assets/images/grid/audio.svg"
   },
   "src/Resources/assets/images/grid/csv.svg": {
-    "file": "assets/csv-c2bae3b6.svg",
+    "file": "assets/csv-G_xsPvx_.svg",
     "src": "src/Resources/assets/images/grid/csv.svg"
   },
   "src/Resources/assets/images/grid/file.svg": {
-    "file": "assets/file-c6f5d804.svg",
+    "file": "assets/file-DGthS4_I.svg",
     "src": "src/Resources/assets/images/grid/file.svg"
   },
   "src/Resources/assets/images/grid/image.svg": {
-    "file": "assets/image-f71fad7b.svg",
+    "file": "assets/image-CtibLiMw.svg",
     "src": "src/Resources/assets/images/grid/image.svg"
   },
   "src/Resources/assets/images/grid/sheet.svg": {
-    "file": "assets/sheet-e14ae836.svg",
+    "file": "assets/sheet-CT3hCK4c.svg",
     "src": "src/Resources/assets/images/grid/sheet.svg"
   },
   "src/Resources/assets/images/grid/unspecified.svg": {
-    "file": "assets/unspecified-129b3d58.svg",
+    "file": "assets/unspecified-j104ePes.svg",
     "src": "src/Resources/assets/images/grid/unspecified.svg"
   },
   "src/Resources/assets/images/grid/video.svg": {
-    "file": "assets/video-0c8f92bc.svg",
+    "file": "assets/video-Bceqy86P.svg",
     "src": "src/Resources/assets/images/grid/video.svg"
   },
   "src/Resources/assets/images/no-records-found.svg": {
-    "file": "assets/no-records-found-25a92b4f.svg",
+    "file": "assets/no-records-found-Dw1Lp69h.svg",
     "src": "src/Resources/assets/images/no-records-found.svg"
   },
   "src/Resources/assets/images/preview/audio.svg": {
-    "file": "assets/audio-5cbf1c11.svg",
+    "file": "assets/audio-1fgSyPvq.svg",
     "src": "src/Resources/assets/images/preview/audio.svg"
   },
   "src/Resources/assets/images/preview/csv.svg": {
-    "file": "assets/csv-1d6f7bbf.svg",
+    "file": "assets/csv-Jsje1D7K.svg",
     "src": "src/Resources/assets/images/preview/csv.svg"
   },
   "src/Resources/assets/images/preview/file.svg": {
-    "file": "assets/file-848a150d.svg",
+    "file": "assets/file-CQm7eSOd.svg",
     "src": "src/Resources/assets/images/preview/file.svg"
   },
   "src/Resources/assets/images/preview/image.svg": {
-    "file": "assets/image-290d2c9b.svg",
+    "file": "assets/image-C4_Bob3O.svg",
     "src": "src/Resources/assets/images/preview/image.svg"
   },
   "src/Resources/assets/images/preview/sheet.svg": {
-    "file": "assets/sheet-442bac4a.svg",
+    "file": "assets/sheet-DDoe34vl.svg",
     "src": "src/Resources/assets/images/preview/sheet.svg"
   },
   "src/Resources/assets/images/preview/unspecified.svg": {
-    "file": "assets/unspecified-6133a393.svg",
+    "file": "assets/unspecified-JQ-FB04g.svg",
     "src": "src/Resources/assets/images/preview/unspecified.svg"
   },
   "src/Resources/assets/images/preview/video.svg": {
-    "file": "assets/video-24e7b8da.svg",
+    "file": "assets/video-BhFHaXpv.svg",
     "src": "src/Resources/assets/images/preview/video.svg"
   },
   "src/Resources/assets/js/app.js": {
-    "file": "assets/app-4ed993c7.js",
-    "isEntry": true,
-    "src": "src/Resources/assets/js/app.js"
+    "file": "assets/app-BvRk9kiK.js",
+    "name": "app",
+    "src": "src/Resources/assets/js/app.js",
+    "isEntry": true
   }
 }

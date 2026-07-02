@@ -12,29 +12,18 @@ use Webkul\DataGrid\Enums\ColumnTypeEnum;
 
 class AssetDataGrid extends DataGrid
 {
-    /**
-     * Default sort column of datagrid.
-     *
-     * @var ?string
-     */
     protected $sortColumn = 'dam_assets.updated_at';
 
     protected $sortOrder = 'desc';
 
     protected $customFilterColumns = [];
 
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 50;
 
     public function __construct(
         protected FileController $fileController
     ) {}
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $prefix = DB::getTablePrefix();
@@ -75,7 +64,6 @@ class AssetDataGrid extends DataGrid
         $service = app(DirectoryPermissionService::class);
 
         if (! $service->bypass()) {
-            // Only assets in directly-granted dirs — tree-visible ancestors must not leak assets.
             $allowedIds = $service->directlyGrantedIds();
 
             if (empty($allowedIds)) {
@@ -88,9 +76,6 @@ class AssetDataGrid extends DataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -180,9 +165,6 @@ class AssetDataGrid extends DataGrid
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function formatData(): array
     {
         $formattedData = parent::formatData();
@@ -192,9 +174,6 @@ class AssetDataGrid extends DataGrid
         return $formattedData;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function processRequestedFilters(array $requestedFilters)
     {
         $prefix = DB::getTablePrefix();
@@ -218,7 +197,6 @@ class AssetDataGrid extends DataGrid
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
 
                 if ($requestedColumn === 'directory_id') {
-                    // Nested-set BETWEEN on _lft covers the full subtree without loading descendant IDs into PHP.
                     $this->queryBuilder->where(function ($q) use ($requestedValues) {
                         foreach ($requestedValues as $rootId) {
                             $root = Directory::select('_lft', '_rgt')->find((int) $rootId);
@@ -331,13 +309,17 @@ class AssetDataGrid extends DataGrid
         return $this->queryBuilder;
     }
 
-    /**
-     * Prepare mass actions.
-     *
-     * @return void
-     */
     public function prepareMassActions()
     {
+        if (bouncer()->hasPermission('dam.asset.update')) {
+            $this->addMassAction([
+                'title'   => trans('dam::app.admin.dam.tag.mass-action.assign-tags'),
+                'url'     => route('admin.dam.assets.mass_assign_tags'),
+                'method'  => 'POST',
+                'options' => ['actionType' => 'assign-tags'],
+            ]);
+        }
+
         if (bouncer()->hasPermission('dam.asset.mass_delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),

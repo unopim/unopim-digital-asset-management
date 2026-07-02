@@ -25,7 +25,23 @@
                             $showSidebar   = $showTree || $showBookmarks;
                         @endphp
                         @if ($showSidebar)
-                        <div class="flex flex-col gap-3 w-[280px] max-w-full max-sm:w-full shrink-0" {!! config('dam.explorer.enabled') ? 'v-show="showSidebar"' : '' !!}>
+                        @if (config('dam.explorer.enabled'))
+                        {{-- Mobile/tablet drawer backdrop (below lg) --}}
+                        <div
+                            v-show="drawerOpen"
+                            @click="drawerOpen = false"
+                            class="fixed inset-0 z-[1000] bg-black/40 lg:hidden"
+                            aria-hidden="true"
+                        ></div>
+                        @endif
+                        <div
+                            class="flex flex-col gap-3 shrink-0 {{ config('dam.explorer.enabled')
+                                ? 'lg:static lg:w-[280px] lg:max-w-full lg:translate-x-0 lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:p-0 lg:overflow-visible max-lg:fixed max-lg:top-14 max-lg:bottom-0 max-lg:left-0 max-lg:z-[1001] max-lg:w-[280px] max-lg:max-w-[85vw] max-lg:bg-gray-50 dark:max-lg:bg-cherry-900 max-lg:shadow-2xl max-lg:overflow-y-auto max-lg:p-3 transition-transform duration-200'
+                                : 'w-[280px] max-w-full max-sm:w-full' }}"
+                            @if (config('dam.explorer.enabled'))
+                            :class="[ showSidebar ? '' : 'lg:hidden', drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
+                            @endif
+                        >
 
                             <!-- directories card -->
                             @if ($showTree)
@@ -105,7 +121,9 @@
                         const s = localStorage.getItem('dam_show_sidebar');
                         if (s !== null) showSidebar = s !== 'false';
                     } catch {}
-                    return { showSidebar };
+                    // drawerOpen drives the off-canvas sidebar below the lg breakpoint;
+                    // it is transient (never persisted) and always starts closed.
+                    return { showSidebar, drawerOpen: false };
                 },
 
                 mounted() {
@@ -146,15 +164,39 @@
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
 
+                    // Below lg the sidebar is an off-canvas drawer: the toggle button
+                    // opens/closes it. At lg+ the same button collapses the static
+                    // sidebar (the persisted desktop behavior).
                     this.$emitter.on('dam:toggle-sidebar', () => {
-                        this.showSidebar = !this.showSidebar;
-                        try { localStorage.setItem('dam_show_sidebar', this.showSidebar); } catch {}
-                        this.$emitter.emit('dam:sidebar-visibility-changed', this.showSidebar);
+                        if (this.isDesktop()) {
+                            this.showSidebar = !this.showSidebar;
+                            try { localStorage.setItem('dam_show_sidebar', this.showSidebar); } catch {}
+                            this.$emitter.emit('dam:sidebar-visibility-changed', this.showSidebar);
+                        } else {
+                            this.drawerOpen = !this.drawerOpen;
+                        }
                     });
+
+                    // Close the mobile drawer on Escape, on navigating into a folder,
+                    // and whenever the viewport grows back to desktop.
+                    this._onSidebarKeydown = (e) => { if (e.key === 'Escape') this.drawerOpen = false; };
+                    window.addEventListener('keydown', this._onSidebarKeydown);
+
+                    this._onSidebarResize = () => { if (this.isDesktop()) this.drawerOpen = false; };
+                    window.addEventListener('resize', this._onSidebarResize);
+
+                    this.$emitter.on('current-directory', () => { if (! this.isDesktop()) this.drawerOpen = false; });
+                },
+
+                beforeUnmount() {
+                    if (this._onSidebarKeydown) window.removeEventListener('keydown', this._onSidebarKeydown);
+                    if (this._onSidebarResize) window.removeEventListener('resize', this._onSidebarResize);
                 },
 
                 methods: {
-
+                    isDesktop() {
+                        try { return window.matchMedia('(min-width: 1024px)').matches; } catch { return true; }
+                    },
                 }
             })
         </script>
@@ -548,4 +590,7 @@
     @endPushOnce
 
     <v-share-link-modal></v-share-link-modal>
+
+    {{-- Shared "Assign Tags" mass-action modal — used by both the legacy datagrid and the explorer --}}
+    <x-dam::tag.assign-modal />
 </x-admin::layouts>

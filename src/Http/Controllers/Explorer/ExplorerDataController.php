@@ -14,10 +14,14 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class ExplorerDataController extends Controller
 {
+    /** Create a new instance. */
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}
 
+    /**
+     * Return the available file types and filterable property names for the explorer.
+     */
     public function filterOptions(): JsonResponse
     {
         $properties = DB::table('dam_asset_properties')
@@ -67,7 +71,6 @@ class ExplorerDataController extends Controller
         $perPage = $request->integer('per_page', 50);
         $page = $request->integer('page', 1);
 
-        // Collect filter params
         $filterFileName = $request->input('filter_file_name');
         $filterExtension = $request->input('filter_extension');
         $filterFileType = $request->input('filter_file_type');
@@ -77,26 +80,20 @@ class ExplorerDataController extends Controller
         $filterUpdatedFrom = $request->input('filter_updated_from');
         $filterUpdatedTo = $request->input('filter_updated_to');
 
-        // Dynamic property filters: filter_prop_{name}
         $filterProps = collect($request->all())
             ->filter(fn ($v, $k) => str_starts_with($k, 'filter_prop_') && is_string($v) && $v !== '')
             ->mapWithKeys(fn ($v, $k) => [substr($k, strlen('filter_prop_')) => $v]);
 
-        // --- Directories ---
         $dirQuery = Directory::query();
 
         if ($search) {
-            // whereDescendantOf uses the nested-set _lft/_rgt range — one efficient index scan
             $dirQuery->whereDescendantOf($dir)
                 ->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($search).'%')
-                ->limit(200); // cap search results — full subtree scan on large trees otherwise unbounded
+                ->limit(200);
         } else {
             $dirQuery->where('parent_id', $dir->id);
         }
 
-        // viewableIds() includes ancestors of granted dirs so that transit
-        // directories (e.g. "webkul" when the user only has "webkul/akeneo")
-        // appear in the listing and allow the user to navigate down.
         if (! $this->permissionService->bypass()) {
             $dirQuery->whereIn('id', $this->permissionService->viewableIds());
         }
@@ -106,7 +103,6 @@ class ExplorerDataController extends Controller
             default      => 'name',
         };
 
-        // Memoised per request — safe to call here without re-querying.
         $directlyGrantedIds = $this->permissionService->bypass()
             ? null
             : $this->permissionService->directlyGrantedIds();
@@ -121,12 +117,9 @@ class ExplorerDataController extends Controller
                 'assets_count'   => $d->assets_count ?? 0,
                 'children_count' => $d->children_count ?? 0,
                 'updated_at'     => $d->updated_at,
-                // true = user may upload/rename/delete inside this dir;
-                // false = transit ancestor, visible for navigation only.
                 'can_access'     => $directlyGrantedIds === null || in_array($d->id, $directlyGrantedIds),
             ]);
 
-        // --- Assets ---
         $buildAssetQuery = function () use (
             $dir, $search,
             $filterFileName, $filterExtension, $filterFileType, $filterTag,
@@ -145,7 +138,6 @@ class ExplorerDataController extends Controller
                 );
 
             if ($search) {
-                // Subquery keeps all IDs in the DB — never loads 10k dir IDs into PHP
                 $dirTable = (new Directory)->getTable();
                 $subtreeSubquery = DB::table($dirTable)
                     ->select('id')
@@ -154,7 +146,16 @@ class ExplorerDataController extends Controller
 
                 $lowerSearch = '%'.strtolower($search).'%';
                 $q->whereIn('dam_asset_directory.directory_id', $subtreeSubquery)
-                    ->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch]);
+                    ->where(function ($w) use ($prefix, $lowerSearch) {
+                        $w->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch])
+                            ->orWhereExists(
+                                DB::table('dam_tags')
+                                    ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
+                                    ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
+                                    ->whereRaw('LOWER('.$prefix.'dam_tags.name) LIKE ?', [$lowerSearch])
+                                    ->select(DB::raw(1))
+                            );
+                    });
             } else {
                 $q->where('dam_asset_directory.directory_id', $dir->id);
             }
@@ -166,7 +167,6 @@ class ExplorerDataController extends Controller
                 );
             }
 
-            // Apply filters
             if ($filterFileName) {
                 $q->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', ['%'.strtolower($filterFileName).'%']);
             }
@@ -225,7 +225,6 @@ class ExplorerDataController extends Controller
             default      => 'dam_assets.file_name',
         };
 
-        // Build once — clone for count to avoid re-running the subtree subquery
         $assetQuery = $buildAssetQuery();
         $totalAssets = (clone $assetQuery)->distinct()->count('dam_assets.id');
 
@@ -264,14 +263,12 @@ class ExplorerDataController extends Controller
             'assets'      => $assets,
             'breadcrumb'  => $breadcrumb,
             'meta'        => [
-                'directory_id'      => $dir->id,
-                'total_assets'      => $totalAssets,
-                'total_directories' => $directories->count(),
-                'current_page'      => $page,
-                'last_page'         => max(1, (int) ceil($totalAssets / max($perPage, 1))),
-                'per_page'          => $perPage,
-                // Whether the current user may perform write operations in this dir.
-                // false when the dir is only visible as a transit ancestor.
+                'directory_id'       => $dir->id,
+                'total_assets'       => $totalAssets,
+                'total_directories'  => $directories->count(),
+                'current_page'       => $page,
+                'last_page'          => max(1, (int) ceil($totalAssets / max($perPage, 1))),
+                'per_page'           => $perPage,
                 'can_access_current' => $this->permissionService->bypass() || $this->permissionService->canAccess($dir->id),
             ],
         ]);
@@ -292,7 +289,6 @@ class ExplorerDataController extends Controller
         $fileCount = count($assetIds);
 
         if (! empty($dirIds)) {
-            // Load roots once, then get all subtree IDs in ONE range-union query
             $roots = Directory::whereIn('id', $dirIds)->get(['id', '_lft', '_rgt']);
 
             $subtreeQuery = Directory::query();

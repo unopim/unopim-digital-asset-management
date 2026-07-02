@@ -31,7 +31,7 @@
                     :checked="isSelected"
                     @change="$emit('toggle-select')"
                 >
-                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl bg-white/80 dark:bg-cherry-900/80"></span>
+                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl bg-white/80 dark:bg-cherry-900/80"></span>
             </label>
         </div>
         <i class="icon-dam-folder text-6xl text-violet-400 dark:text-violet-500 shrink-0 leading-none"></i>

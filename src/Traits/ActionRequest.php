@@ -27,8 +27,8 @@ trait ActionRequest
     }
 
     /**
-     * Start the action
-     * */
+     * Start the action.
+     */
     public function start(string $eventType, array $options = []): self
     {
         $this->user = Admin::find(Auth::id());
@@ -55,7 +55,7 @@ trait ActionRequest
     }
 
     /**
-     * completed Action
+     * completed Action.
      */
     public function completed(string $eventType, int $userId, array $options = []): self
     {

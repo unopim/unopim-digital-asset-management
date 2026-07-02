@@ -190,7 +190,7 @@ app.component('v-dam-explorer-ctx', {
             const r  = el.getBoundingClientRect();
             const vw = window.innerWidth;
             const vh = window.innerHeight;
-            const pad = 6;
+            const pad = 8;
             let top, left;
 
             if (this.y + r.height + pad <= vh) {
@@ -252,7 +252,7 @@ app.component('v-dam-explorer-ctx', {
                         this.$axios.get(`{{ route('admin.dam.action_request.status', ':et') }}`.replace(':et', 'copy_directory_structure'))
                             .then(({ data: d }) => {
                                 if (d.status === 'completed') {
-                                    this.$emitter.emit('add-flash', { type: 'success', message: 'Action completed successfully' });
+                                    this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.action-completed')" });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
                                 } else if (d.status === 'failed') {
                                     this.$emitter.emit('add-flash', { type: 'error', message: d.message });

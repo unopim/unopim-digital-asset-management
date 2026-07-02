@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
@@ -27,9 +27,7 @@ class SharedViewerController extends Controller
         protected ShareRepository $shareRepository,
     ) {}
 
-    /**
-     * Public landing page for a share token.
-     */
+    /** Public landing page for a share token. */
     public function show(string $token)
     {
         $share = $this->shareRepository->findByToken($token);
@@ -121,9 +119,7 @@ class SharedViewerController extends Controller
         ]);
     }
 
-    /**
-     * Download the asset referenced by an asset-share token.
-     */
+    /** Download the asset referenced by an asset-share token. */
     public function download(Request $request, string $token)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -144,9 +140,7 @@ class SharedViewerController extends Controller
         );
     }
 
-    /**
-     * Detail view for a single asset that lives inside a shared directory.
-     */
+    /** Detail view for a single asset that lives inside a shared directory. */
     public function assetView(string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -165,8 +159,6 @@ class SharedViewerController extends Controller
             return $this->renderNotFound();
         }
 
-        // Cursor-based prev/next: never loads all asset IDs into memory.
-        // Order is updated_at DESC; id DESC is the tiebreaker for equal timestamps.
         $prevAssetId = $this->subtreeAssetQuery($directory)
             ->where(fn ($q) => $q
                 ->where('updated_at', '<', $asset->updated_at)
@@ -191,9 +183,7 @@ class SharedViewerController extends Controller
         ]);
     }
 
-    /**
-     * Download an asset that lives inside a shared directory.
-     */
+    /** Download an asset that lives inside a shared directory. */
     public function assetDownload(Request $request, string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -214,10 +204,7 @@ class SharedViewerController extends Controller
         );
     }
 
-    /**
-     * Serve a 300px thumbnail for an asset reachable through this share.
-     * Mirrors FileController::thumbnail() but scoped strictly to the share.
-     */
+    /** Serve a 300px thumbnail for an asset reachable through this share. */
     public function thumbnail(string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -261,7 +248,7 @@ class SharedViewerController extends Controller
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
 
                 return response($imageData, 200)->header('Content-Type', $mimeType);
-            } catch (NotReadableException $e) {
+            } catch (\Throwable $e) {
                 Log::warning('DAM share thumbnail generation failed: '.$e->getMessage(), ['asset' => $asset->id]);
             }
         } elseif ($this->isSvgFile($path)) {
@@ -270,15 +257,14 @@ class SharedViewerController extends Controller
             }
 
             return response(Storage::disk($disk)->get($thumbnailPath), 200)
-                ->header('Content-Type', 'image/svg+xml');
+                ->header('Content-Type', 'image/svg+xml')
+                ->withHeaders(AssetHelper::assetResponseHeaders());
         }
 
         return $this->placeholderResponse($asset);
     }
 
-    /**
-     * Download all assets in a shared directory (and its subdirectories) as a ZIP archive.
-     */
+    /** Download all assets in a shared directory (and subdirectories) as a ZIP. */
     public function downloadZip(string $token)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -306,11 +292,7 @@ class SharedViewerController extends Controller
         );
     }
 
-    /**
-     * Stream a file. For S3, redirect to a short-lived presigned URL; for the
-     * local/private disk, response()->file() handles range requests so video
-     * scrubbing in the public viewer works.
-     */
+    /** Stream a file, redirecting to a presigned URL for S3. */
     protected function streamAsset(Asset $asset, string $disposition, ?callable $onSuccess = null)
     {
         $disk = Directory::getAssetDisk();
@@ -328,6 +310,15 @@ class SharedViewerController extends Controller
         $disposition = in_array(strtolower($disposition), ['inline', 'attachment'], true)
             ? strtolower($disposition)
             : 'attachment';
+
+        /**
+         * Never serve non-media content inline: a stored HTML/SVG/text file must
+         * not be able to execute script in the application's origin when opened
+         * through a public share link.
+         */
+        if (! AssetHelper::isInlineSafeMime($mimeType)) {
+            $disposition = 'attachment';
+        }
 
         $filename = $asset->file_name;
         $contentDisposition = $disposition.'; filename="'.addslashes($filename).'"';
@@ -351,16 +342,14 @@ class SharedViewerController extends Controller
             }
         }
 
-        return response()->file(Storage::disk($disk)->path($path), [
+        return response()->file(Storage::disk($disk)->path($path), array_merge([
             'Content-Type'        => $mimeType,
             'Content-Disposition' => $contentDisposition,
-        ]);
+        ], AssetHelper::assetResponseHeaders()));
     }
 
     /**
      * Resolve the effective storage path for a shared asset.
-     * If the stored path is stale (e.g. directory renamed with a pending queue job),
-     * derive the current path from the asset's immediate parent directory by ID.
      */
     protected function resolveEffectiveAssetPath(Asset $asset, string $disk): ?string
     {
@@ -386,8 +375,7 @@ class SharedViewerController extends Controller
     }
 
     /**
-     * Range query for all assets in directory's subtree using nested-set _lft/_rgt.
-     * No PHP-side ID collection — one EXISTS subquery, fully index-backed.
+     * Range query for all assets in a directory's subtree.
      */
     protected function subtreeAssetQuery(Directory $directory): Builder
     {
@@ -395,7 +383,9 @@ class SharedViewerController extends Controller
             ->whereHas('directories', fn ($q) => $q->whereBetween('_lft', [$directory->_lft, $directory->_rgt]));
     }
 
-    /** Look up an asset that lives within the share's directory tree. */
+    /**
+     * Look up an asset that lives within the share's directory tree.
+     */
     protected function resolveDirectoryAsset(Share $share, int $assetId): ?Asset
     {
         $directory = $share->directory;
@@ -504,10 +494,7 @@ class SharedViewerController extends Controller
         ], 410);
     }
 
-    /**
-     * For non-show endpoints, treat both expired and not-found uniformly so
-     * we don't leak whether a token ever existed; show a 404.
-     */
+    /** Treat expired and not-found uniformly to avoid leaking token existence. */
     protected function renderExpiredOrNotFound(string $token)
     {
         $share = $this->shareRepository->findByToken($token);

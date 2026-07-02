@@ -7,15 +7,10 @@ use Webkul\DAM\Models\Directory;
 
 class DirectoryPermissionService
 {
-    /**
-     * Cache of viewable directory ids resolved for the current admin within a request.
-     */
+    /** Cache of viewable directory ids resolved for the current admin within a request. */
     protected ?array $viewableIdsCache = null;
 
-    /**
-     * The admin id that produced the cached viewable ids. Used to invalidate the cache
-     * if the resolver is re-used across guard switches in long-lived processes.
-     */
+    /** The admin id that produced the cached viewable ids. */
     protected ?int $cachedForAdminId = null;
 
     /** Cached bypass decision for the current request. */
@@ -29,9 +24,6 @@ class DirectoryPermissionService
 
     /**
      * True when directory ACL filtering should be skipped for the current request.
-     *
-     * Skipped for: anonymous requests, admins whose role has `permission_type != 'custom'`,
-     * and custom-role admins whose role has `all_directories = true` in dam_role_settings.
      */
     public function bypass(): bool
     {
@@ -56,14 +48,7 @@ class DirectoryPermissionService
     }
 
     /**
-     * Resolve all directory ids the current admin is allowed to view.
-     * Memoised per request. Returns every directory id when the request bypasses
-     * the filter (anonymous requests or admins with `permission_type = 'all'`).
-     *
-     * Granting a deep directory (e.g. Root/Audio and Video/Audio) implicitly
-     * exposes its ancestors so the tree can render the path down to it.
-     * Ancestors are visibility-only; write actions are still gated by the
-     * explicit pivot grants via `directlyGrantedIds()`.
+     * Resolve all directory ids the current admin is allowed to view (memoised per request).
      */
     public function viewableIds(): array
     {
@@ -86,7 +71,6 @@ class DirectoryPermissionService
             return [];
         }
 
-        // Self + ancestors, computed in a single nested-set query.
         $ids = DB::table('dam_directories as ancestor')
             ->join('dam_directories as descendant', function ($join) {
                 $join->whereColumn('ancestor._lft', '<=', 'descendant._lft')
@@ -105,16 +89,7 @@ class DirectoryPermissionService
     }
 
     /**
-     * Directly granted directory ids for the current admin's role.
-     *
-     * When the role has `inherit_children = true` in dam_role_settings, the
-     * explicit pivot grants are expanded to include all nested descendants
-     * (full subtree, unlimited depth) using the existing nested-set columns.
-     *
-     * Result is memoised per request. Used for write-action gating (canAccess)
-     * and as the seed for viewableIds() ancestor expansion.
-     *
-     * @return array<int>
+     * Directly granted directory ids for the current admin's role (memoised per request).
      */
     public function directlyGrantedIds(): array
     {
@@ -163,8 +138,6 @@ class DirectoryPermissionService
 
     /**
      * Whether the directory is visible in the tree for the current admin.
-     * Ancestors of a granted directory count as visible so the tree can render
-     * the path down to the grant. Use this for tree navigation only.
      */
     public function canView(int $directoryId): bool
     {
@@ -176,10 +149,7 @@ class DirectoryPermissionService
     }
 
     /**
-     * Whether the current admin can act on a directory's contents — list assets,
-     * create children, rename, move, delete, upload. Stricter than canView():
-     * only directly-granted directories pass; ancestors that became "visible"
-     * through expansion do NOT.
+     * Whether the current admin can act on a directory's contents (stricter than canView).
      */
     public function canAccess(int $directoryId): bool
     {
@@ -191,7 +161,7 @@ class DirectoryPermissionService
     }
 
     /**
-     * Reset the request-local cache. Useful in tests that switch the auth user.
+     * Reset the request-local cache.
      */
     public function flush(): void
     {
@@ -202,12 +172,7 @@ class DirectoryPermissionService
         $this->directlyGrantedForAdminId = null;
     }
 
-    /**
-     * Resolve the authenticated Admin for the current request.
-     * Checks the web `admin` guard first, then the Passport `api` guard,
-     * so both web sessions and API tokens resolve to the same Admin model
-     * and go through identical directory permission filtering.
-     */
+    /** Resolve the authenticated Admin for the current request (admin guard, then api guard). */
     protected function currentAdmin()
     {
         try {

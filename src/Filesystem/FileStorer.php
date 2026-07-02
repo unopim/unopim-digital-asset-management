@@ -7,7 +7,9 @@ use Webkul\Core\Filesystem\FileStorer as BaseFileStorer;
 class FileStorer extends BaseFileStorer
 {
     /**
-     * {@inheritdoc}
+     * Store the given file using its resolved file name.
+     *
+     * @return string
      */
     public function store(string $path, mixed $file, $fileName = null, array $options = [])
     {
@@ -17,10 +19,9 @@ class FileStorer extends BaseFileStorer
     }
 
     /**
-     * {@inheritdoc}
+     * Store the file under the given name, throwing on storage failure.
      *
-     * Throws on storage failure so callers receive an error instead of
-     * silently persisting false/0 as the asset path.
+     * @return string
      */
     public function storeAs(string $path, string $name, mixed $file, array $options = [])
     {

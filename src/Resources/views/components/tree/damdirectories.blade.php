@@ -154,7 +154,7 @@
                 class="text-sm"
                 :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
-            <v-asset-count-badge :count="item?.assets_total_count ?? 0" />
+            <v-asset-count-badge :count="item?.assets_total_count ?? null" />
         </div>
         <div
             v-show="isOpen"
@@ -194,6 +194,18 @@
                     </div>
                 </template>
             </draggable>
+
+            <!-- Load more children (wide levels paginate) -->
+            <button
+                v-if="childrenHasMore"
+                type="button"
+                @click.stop="loadMoreChildren"
+                :disabled="childrenLoadingMore"
+                class="flex items-center gap-1.5 ml-2 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+            >
+                <span v-if="childrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
+                <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
+            </button>
 
             <!-- Asset -->
             <draggable
@@ -295,8 +307,8 @@
                 assetsLoaded: false,
                 assetsLoading: false,
                 assetsStale: false,
-                childrenLoaded: false,
                 childrenLoading: false,
+                childrenLoadingMore: false,
                 // Local reactive asset list — own data, never reassigned, so
                 // vuedraggable's Sortable stays bound to a stable array ref
                 // for the lifetime of this component instance. Avoids the
@@ -310,6 +322,14 @@
             // (picker path with `with_assets=1`). Splice keeps the same ref.
             if (Array.isArray(this.item.assets) && this.item.assets.length) {
                 this.localAssets.splice(0, 0, ...this.item.assets);
+            }
+
+            // Children pre-loaded by the lazy tree (root + depth-2): mark as
+            // loaded so expanding won't re-fetch, and fetch their badge counts
+            // lazily (kept off the structural endpoint).
+            if (Array.isArray(this.item.children) && this.item.children.length) {
+                this.item._loaded = true;
+                this.fetchChildCounts(this.item.children.map((child) => child.id));
             }
 
             this.$emitter.on('current-item-expanded', (data) => {
@@ -359,6 +379,22 @@
             },
         },
         computed: {
+            // Children-loaded state lives on the item so the root component's
+            // reveal logic and this component share it — preventing an expand
+            // from re-fetching page 1 and wiping reveal-loaded deeper pages.
+            childrenLoaded: {
+                get() {
+                    return !! this.item._loaded;
+                },
+                set(value) {
+                    this.item._loaded = value;
+                },
+            },
+
+            childrenHasMore() {
+                return !! this.item.children_has_more;
+            },
+
             isDirectory: function() {
                 return (this.item.children && Object.keys(this.item.children).length)
                     || this.item.has_children;
@@ -497,19 +533,63 @@
                 if (this.childrenLoading || this.childrenLoaded) return;
                 this.childrenLoading = true;
                 this.$axios
-                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id))
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id), { params: { offset: 0 } })
                     .then((response) => {
                         const children = response.data.data || [];
                         if (! Array.isArray(this.item.children)) {
-                            this.$set(this.item, 'children', []);
+                            this.item.children = [];
                         }
                         this.item.children.splice(0, this.item.children.length, ...children);
+                        this.item.children_has_more = !! response.data.has_more;
                         this.childrenLoaded = true;
                         this.childrenLoading = false;
+                        this.fetchChildCounts(children.map((child) => child.id));
                     })
                     .catch(() => {
                         this.childrenLoading = false;
                     });
+            },
+
+            // Append the next page of children (wide levels load incrementally).
+            loadMoreChildren() {
+                if (this.childrenLoadingMore || ! this.childrenHasMore) return;
+                this.childrenLoadingMore = true;
+                const offset = Array.isArray(this.item.children) ? this.item.children.length : 0;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id), { params: { offset } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(this.item.children)) {
+                            this.item.children = [];
+                        }
+                        this.item.children.push(...children);
+                        this.item.children_has_more = !! response.data.has_more;
+                        this.childrenLoadingMore = false;
+                        this.fetchChildCounts(children.map((child) => child.id));
+                    })
+                    .catch(() => {
+                        this.childrenLoadingMore = false;
+                    });
+            },
+
+            // Lazily fetch the subtree asset-count badges for the given child
+            // ids and assign them, so the structure renders before the heavy
+            // nested-set roll-up resolves.
+            fetchChildCounts(ids) {
+                ids = (ids || []).filter((id) => id != null);
+                if (! ids.length) return;
+                this.$axios
+                    .post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                    .then((response) => {
+                        const counts = response.data.data || {};
+                        (this.item.children || []).forEach((child) => {
+                            const value = counts[child.id];
+                            if (value !== undefined) {
+                                child.assets_total_count = value;
+                            }
+                        });
+                    })
+                    .catch(() => {});
             },
 
             invalidateAssetCache() {
@@ -541,10 +621,15 @@
     });
 </script>
 <script type="text/x-template" id="v-tree-view-template">
+    <template v-if="treeLoading">
+        <div class="tree-container overflow-hidden" style="max-height: calc(100vh - 360px);">
+            <x-admin::shimmer.tree />
+        </div>
+    </template>
     <div
             class="relative"
             ref="treeContainer"
-            v-if="formattedItems"
+            v-else-if="formattedItems"
         >
             <!-- Move-in-flight overlay (directory or asset drag-move) -->
             <div
@@ -585,7 +670,7 @@
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
                     >@{{ formattedItems[0].name }}</span>
-                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? 0" />
+                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? null" />
                 </div>
                 <draggable
                     id="root-tree-groups"
@@ -619,6 +704,17 @@
                         </div>
                     </template>
                 </draggable>
+
+                <button
+                    v-if="rootChildrenHasMore"
+                    type="button"
+                    @click.stop="loadMoreRootChildren"
+                    :disabled="rootChildrenLoadingMore"
+                    class="flex items-center gap-1.5 ml-6 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+                >
+                    <span v-if="rootChildrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
+                    <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
+                </button>
 
                 <draggable
                     id="assets-items"
@@ -1048,6 +1144,7 @@
                 requestType: null,
                 parentItem: null,
                 isLoading: false,
+                treeLoading: false,
                 actionStatus: null,
                 dragStart: false,
                 movingDirectoryId: null,
@@ -1055,6 +1152,7 @@
                 copyingDirectoryId: null,
                 gridBusy: false,
                 moveStatusLabel: '',
+                rootChildrenLoadingMore: false,
                 _folderAbortController: null,
                 _awaitingFolderFiles: false,
                 localAccessibleIds: [...(this.accessibleIds || [])],
@@ -1203,6 +1301,12 @@
             treeBusy() {
                 return this.treeMutating || this.gridBusy;
             },
+            // The root's direct children are rendered by THIS component (not a
+            // v-tree-item), so it needs its own "load more" — wide root levels
+            // (more than the page size) would otherwise be capped silently.
+            rootChildrenHasMore() {
+                return !! (this.formattedItems && this.formattedItems[0] && this.formattedItems[0].children_has_more);
+            },
         },
 
         watch: {
@@ -1335,20 +1439,43 @@
                 this.setFilters(target);
             },
 
-            // Load direct children of a node into its `children` array.
-            // Returns a Promise that resolves once children are spliced in.
-            loadNodeChildren(node) {
-                return this.$axios
-                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', node.id))
-                    .then((response) => {
-                        const children = response.data.data || [];
-                        if (! Array.isArray(node.children)) {
-                            node.children = [];
-                        }
-                        node.children.splice(0, node.children.length, ...children);
-                        return children;
-                    })
-                    .catch(() => []);
+            // Load successive pages of a node's children until `targetId` is
+            // present (or pages run out). Reveal uses this so a deep target on a
+            // later page of a wide level still surfaces. Marks the node loaded so
+            // a later expand won't re-fetch page 1 and drop the extra pages, and
+            // lazily fills the loaded children's count badges.
+            async loadNodeChildrenUntilFound(node, targetId) {
+                if (! Array.isArray(node.children)) node.children = [];
+                node.children.splice(0, node.children.length);
+
+                let hasMore = true;
+                let guard = 0;
+
+                while (hasMore && guard++ < 100) {
+                    const offset = node.children.length;
+                    let response;
+                    try {
+                        response = await this.$axios.get(
+                            `{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', node.id),
+                            { params: { offset } }
+                        );
+                    } catch (e) {
+                        break;
+                    }
+
+                    const children = response.data.data || [];
+                    node.children.push(...children);
+                    hasMore = !! response.data.has_more;
+
+                    if (! children.length) break;
+                    if (node.children.some((child) => Number(child.id) === Number(targetId))) break;
+                }
+
+                node._loaded = true;
+                node.children_has_more = hasMore;
+                this.fetchCountsForNodes(node.children);
+
+                return node.children;
             },
 
             // Fetches the ancestor path for `id` from the backend, injects any
@@ -1392,7 +1519,7 @@
 
                     const parentNode = this.findItemDirectoryById(this.formattedItems, ancestor.parent_id, null);
                     if (parentNode) {
-                        await this.loadNodeChildren(parentNode.item);
+                        await this.loadNodeChildrenUntilFound(parentNode.item, ancestor.id);
                     }
                 }
 
@@ -1929,49 +2056,29 @@
 
                 const fileEntries = await collectFiles(dirHandle, '');
 
-                if (emptyDirs.length > 0) {
-                    try {
-                        await this.$axios.post(
-                            "{{ route('admin.dam.directory.create_structure') }}",
-                            { directory_id: this.selectedItem.id, paths: emptyDirs }
-                        );
-                    } catch (e) {
-                        // non-fatal
-                    }
-                }
-
-                if (fileEntries.length === 0) {
-                    if (emptyDirs.length > 0) {
-                        this.$emitter.emit('add-flash', {
-                            type: 'success',
-                            message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                        });
-                        this.loadDirectories();
-                        this.$emitter.emit('data-grid:refresh');
-                        this.$emitter.emit('dam:directory-mutated');
-                    } else {
-                        this.$emitter.emit('add-flash', {
-                            type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
-                        });
-                    }
+                if (fileEntries.length === 0 && emptyDirs.length === 0) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'warning',
+                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                    });
                     return;
                 }
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries, emptyDirs);
             },
 
             handleFileChange(event) {
                 const files = event.target.files;
                 if (! files || files.length === 0) return;
+                if (! this.selectedItem) { event.target.value = ''; return; }
 
-                const formData = new FormData();
-                for (let i = 0; i < files.length; i++) {
-                    formData.append('files[]', files[i]);
-                }
-                formData.append('directory_id', this.selectedItem.id);
-
-                this.$emitter.emit('dam:upload-files', formData);
+                // Funnel into the shared upload manager so the floating progress
+                // panel (with per-file progress) shows, identical to a drag-drop.
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items: Array.from(files).map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                    folderPaths: [],
+                    targetDirId: this.selectedItem.id,
+                });
                 event.target.value = '';
             },
 
@@ -1994,89 +2101,31 @@
 
                 event.target.value = '';
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries);
             },
 
-            async chunkedFolderUpload(fileEntries) {
-                if (! fileEntries.length) return;
+            // Funnel a folder (files + any empty directories) into the shared upload
+            // manager so it shows the floating progress panel with per-file progress,
+            // identical to a drag-drop. The manager creates the directory structure
+            // (create_structure) then uploads each file (upload_folder) concurrently.
+            enqueueFolderUpload(fileEntries, emptyDirs = []) {
+                if (! this.selectedItem) return;
+                if (! fileEntries.length && ! emptyDirs.length) return;
 
-                if (this._folderAbortController) {
-                    this._folderAbortController.abort();
-                }
-                this._folderAbortController = new AbortController();
-                const signal = this._folderAbortController.signal;
-
-                const chunkSize = Math.max(1, damTreeMaxFileUploads - 2);
-                const chunks = [];
-                for (let i = 0; i < fileEntries.length; i += chunkSize) {
-                    chunks.push(fileEntries.slice(i, i + chunkSize));
-                }
-
-                this.$emitter.emit('dam:grid-busy', true);
-                this.$emitter.emit('dam:folder-upload-start');
-
-                let totalUploaded = 0;
-
-                for (const chunk of chunks) {
-                    if (signal.aborted) break;
-
-                    const formData = new FormData();
-                    formData.append('directory_id', this.selectedItem.id);
-                    formData.append('preserve_root', '1');
-                    chunk.forEach(({ file, relativePath }) => {
-                        formData.append('files[]', file);
-                        formData.append('relative_paths[]', relativePath);
-                    });
-
-                    try {
-                        const response = await this.$axios.post(
-                            "{{ route('admin.dam.assets.upload_folder') }}",
-                            formData,
-                            { headers: { 'Content-Type': 'multipart/form-data' }, signal }
-                        );
-                        totalUploaded += (response.data.files || []).length;
-                    } catch (error) {
-                        this._folderAbortController = null;
-                        this.$emitter.emit('dam:grid-busy', false);
-                        this.$emitter.emit('dam:folder-upload-end');
-
-                        if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED' || signal.aborted) {
-                            this.$emitter.emit('add-flash', {
-                                type: 'warning',
-                                message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                            });
-                        } else {
-                            this.$emitter.emit('add-flash', {
-                                type: 'error',
-                                message: error?.response?.data?.message || "@lang('dam::app.admin.dam.index.directory.creation-failed')",
-                            });
-                        }
-                        return;
-                    }
+                const folderPaths = new Set(emptyDirs);
+                const items = [];
+                for (const { file, relativePath } of fileEntries) {
+                    const rel  = relativePath || file.name;
+                    const segs = rel.split('/');
+                    for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+                    items.push({ file, relativePath: rel, preserveRoot: true });
                 }
 
-                this._folderAbortController = null;
-                this.$emitter.emit('dam:grid-busy', false);
-                this.$emitter.emit('dam:folder-upload-end');
-
-                if (totalUploaded > 0 && this.selectedItem) {
-                    this.adjustAncestorCounts(this.selectedItem.id, totalUploaded);
-                }
-
-                if (! signal.aborted) {
-                    this.$emitter.emit('add-flash', {
-                        type: 'success',
-                        message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                    });
-                    this.loadDirectories();
-                    this.$emitter.emit('data-grid:refresh');
-                    this.$emitter.emit('dam:directory-mutated');
-                } else {
-                    this.$emitter.emit('add-flash', {
-                        type: 'warning',
-                        message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                    });
-                }
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items,
+                    folderPaths: [...folderPaths],
+                    targetDirId: this.selectedItem.id,
+                });
             },
 
             setAssets(data) {
@@ -2145,8 +2194,14 @@
             },
 
             loadDirectories() {
+                this.treeLoading = true;
                 this.$axios.get("{{ route('admin.dam.directory.index') }}")
                         .then((response) => {
+                            // Clear the shimmer flag synchronously in this same
+                            // reactive flush (before the reveal/scroll $nextTick
+                            // below) so the real tree container is mounted when
+                            // that callback queries this.$refs.treeContainer.
+                            this.treeLoading = false;
                             const tree = response.data.data;
 
                             // Default Root.assets to an empty array synchronously
@@ -2161,6 +2216,18 @@
                             }
 
                             this.formattedItems = tree;
+
+                            // Lazily fill count badges for the initially-rendered
+                            // nodes (roots + their pre-loaded children). Iterate the
+                            // REACTIVE formattedItems (not the raw `tree`) so the
+                            // assignments actually re-render. Deeper levels are
+                            // filled by each node's fetchChildCounts as it loads.
+                            const initialCountNodes = [];
+                            (this.formattedItems || []).forEach((root) => {
+                                initialCountNodes.push(root);
+                                (root.children || []).forEach((child) => initialCountNodes.push(child));
+                            });
+                            this.fetchCountsForNodes(initialCountNodes);
 
                             this.$nextTick(() => {
                                 if (this.selectedItem) {
@@ -2215,11 +2282,16 @@
                             });
                         })
                         .catch((error) => {
+                            this.treeLoading = false;
                             console.error('Error fetching directories:', error);
                         });
             },
 
             loadRootAssets() {
+                // The directory-assets endpoint returns [] when DAM_TREE_SHOW_ASSETS
+                // is off (the default) — skip the round-trip entirely in that case.
+                if (! this.showAssets) return;
+
                 const root = this.formattedItems[0];
                 if (! root) return;
                 this.$axios
@@ -2238,6 +2310,53 @@
                         }
                     })
                     .catch(() => {});
+            },
+
+            // Lazily fetch and assign subtree asset-count badges for the given
+            // node objects (root nodes + reveal-loaded nodes). Each node is a
+            // live reference in the reactive tree, so the assignment updates its
+            // badge once the count arrives.
+            fetchCountsForNodes(nodes) {
+                const list = (nodes || []).filter((node) => node && node.id != null);
+                if (! list.length) return;
+                this.$axios
+                    .post("{{ route('admin.dam.directory.asset_counts') }}", { ids: list.map((node) => node.id) })
+                    .then((response) => {
+                        const counts = response.data.data || {};
+                        list.forEach((node) => {
+                            const value = counts[node.id];
+                            if (value !== undefined) {
+                                node.assets_total_count = value;
+                            }
+                        });
+                    })
+                    .catch(() => {});
+            },
+
+            // Append the next page of the ROOT's direct children. Mirrors the
+            // v-tree-item `loadMoreChildren`, but for the root level which this
+            // component renders itself (root-tree-groups). Without it, roots
+            // with more children than the page size are silently truncated.
+            loadMoreRootChildren() {
+                const root = this.formattedItems && this.formattedItems[0];
+                if (! root || this.rootChildrenLoadingMore || ! root.children_has_more) return;
+                this.rootChildrenLoadingMore = true;
+                const offset = Array.isArray(root.children) ? root.children.length : 0;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', root.id), { params: { offset } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(root.children)) {
+                            root.children = [];
+                        }
+                        root.children.push(...children);
+                        root.children_has_more = !! response.data.has_more;
+                        this.rootChildrenLoadingMore = false;
+                        this.fetchCountsForNodes(children);
+                    })
+                    .catch(() => {
+                        this.rootChildrenLoadingMore = false;
+                    });
             },
 
             loadDirectoryChildrens() {
@@ -2305,7 +2424,7 @@
 
                     this.$emitter.emit('add-flash', {
                         type: 'success',
-                        message: 'Action completed successfully'
+                        message: "@lang('dam::app.admin.explorer.action-completed')"
                     });
 
                     return true;

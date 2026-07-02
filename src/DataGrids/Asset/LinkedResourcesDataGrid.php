@@ -9,14 +9,8 @@ class LinkedResourcesDataGrid extends DataGrid
 {
     protected $sortOrder = 'desc';
 
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 10;
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $queryBuilder = DB::table('dam_asset_resource_mappings')
@@ -45,9 +39,6 @@ class LinkedResourcesDataGrid extends DataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -90,11 +81,6 @@ class LinkedResourcesDataGrid extends DataGrid
         ]);
     }
 
-    /**
-     * Prepare actions.
-     *
-     * @return void
-     */
     public function prepareActions()
     {
         $this->addAction([

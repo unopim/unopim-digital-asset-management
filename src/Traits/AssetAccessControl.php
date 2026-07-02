@@ -5,10 +5,7 @@ namespace Webkul\DAM\Traits;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/**
- * Per-asset directory ACL gate. Layered on top of bouncer() — both the route ACL and
- * the directory grant must pass. Bypass roles skip the directory check transparently.
- */
+/** Per-asset directory ACL gate. Layered on top of bouncer() — both the route ACL and. */
 trait AssetAccessControl
 {
     protected function damPermissionService(): DirectoryPermissionService
@@ -31,8 +28,7 @@ trait AssetAccessControl
     }
 
     /**
-     * Returns true when the current admin can act on the given asset id based
-     * on its containing directory grant. Bypass roles always pass.
+     * Returns true when the current admin can act on the given asset id based.
      */
     protected function damCanAccessAsset(int $assetId): bool
     {

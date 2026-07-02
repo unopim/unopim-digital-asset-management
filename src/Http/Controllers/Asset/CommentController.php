@@ -14,18 +14,13 @@ class CommentController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetCommentsRepository $assetCommentRepository,
         protected AdminRepository $adminRepository,
     ) {}
 
-    /**
-     * To fetch the comments
-     */
+    /** Fetch the comments. */
     public function comments($id)
     {
         $this->damAuthorizeAsset((int) $id);
@@ -36,9 +31,7 @@ class CommentController extends Controller
     }
 
     /**
-     * To fetch User Info
-     *
-     * @param  int  $id
+     * Fetch user info.
      */
     public function getUserInfo($id): JsonResponse
     {
@@ -69,9 +62,7 @@ class CommentController extends Controller
         ]);
     }
 
-    /**
-     * create new comment
-     */
+    /** Create a new comment. */
     public function commentCreate($id)
     {
         $this->damAuthorizeAsset((int) $id);
@@ -101,7 +92,7 @@ class CommentController extends Controller
     }
 
     /**
-     * update the comment message.
+     * Update the comment message.
      */
     public function commentUpdate(): JsonResponse
     {
@@ -135,7 +126,7 @@ class CommentController extends Controller
     }
 
     /**
-     * Delete the comment thread
+     * Delete the comment thread.
      */
     public function commentDelete(): JsonResponse
     {

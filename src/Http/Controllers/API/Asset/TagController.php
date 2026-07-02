@@ -13,9 +13,6 @@ class TagController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
@@ -39,9 +36,7 @@ class TagController extends Controller
         ], 200);
     }
 
-    /**
-     * To add the asset tag
-     */
+    /** Add a tag to an asset. */
     public function addTag(Request $request)
     {
         $request->validate([
@@ -98,9 +93,7 @@ class TagController extends Controller
         ], 201);
     }
 
-    /**
-     * To remove the asset tag
-     */
+    /** Remove a tag from an asset. */
     public function removeTag(Request $request)
     {
         $request->validate([

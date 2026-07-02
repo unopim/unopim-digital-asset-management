@@ -11,25 +11,21 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class DirectoryRepository extends Repository
 {
+    /** Default number of children loaded per tree level. */
+    public const DEFAULT_TREE_PAGE_SIZE = 100;
+
     protected $copyDirectory;
 
-    /**
-     * Specify model class name.
-     */
     public function model(): string
     {
         return Directory::class;
     }
 
-    // Method to find a directory with its children
     public function findWithChildren($id)
     {
         return Directory::with('children')->find($id);
     }
 
-    /**
-     * Create a new directory
-     */
     public function create(array $data)
     {
         $parentDirectory = $this->find($data['parent_id']);
@@ -44,9 +40,6 @@ class DirectoryRepository extends Repository
         return $directory;
     }
 
-    /**
-     * Update a directory
-     */
     public function update(array $data, $id)
     {
         $oldDirectory = $this->find($id);
@@ -76,9 +69,6 @@ class DirectoryRepository extends Repository
         return $newDirectory;
     }
 
-    /**
-     * Delete a directory
-     */
     public function delete($id)
     {
         $directory = $this->find($id);
@@ -92,9 +82,6 @@ class DirectoryRepository extends Repository
         $this->deleteDirectoryWithStorage($path);
     }
 
-    /**
-     * Copy directory
-     */
     public function copy($copyId, $parentId)
     {
         $directory = $this->find($copyId);
@@ -109,35 +96,24 @@ class DirectoryRepository extends Repository
         return $this->findWithChildren($newDirectory->id);
     }
 
-    /**
-     * Copy a directory with children
-     */
     public function copyWithChildren($directory, $newParentId = null)
     {
-        // Step 1: Replicate the node itself (without its children)
         $childrens = $directory->children()->get();
 
-        // @TODO: Need to improve this
-
-        $newDirectory = $directory->replicate();   // Create a copy of the node
-        $newDirectory->parent_id = $newParentId;  // Assign the new parent ID (or set it to null for root)
-        $newDirectory->save();  // Save the new node to the database
+        $newDirectory = $directory->replicate();
+        $newDirectory->parent_id = $newParentId;
+        $newDirectory->save();
         if (! $this->copyDirectory) {
             $this->copyDirectory = $newDirectory;
         }
 
-        // Step 2: Recursively copy the children of this node
         foreach ($childrens as $childNode) {
-            // For each child node, call the method recursively
             $this->copyWithChildren($childNode, $newDirectory->id);
         }
 
         return $newDirectory;
     }
 
-    /**
-     * Create a directory with storage
-     */
     public function createDirectoryWithStorage($newPath, $oldPath = null)
     {
         try {
@@ -152,10 +128,6 @@ class DirectoryRepository extends Repository
 
             $oldDirectory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
 
-            // On object stores like S3 there are no real directories; asset
-            // files are moved individually by the caller (see
-            // MoveDirectoryStructure::moveAssets), so just clean up the old
-            // prefix if anything is left and ensure the new one exists.
             if ($disk === Directory::ASSETS_DISK_AWS) {
                 Storage::disk($disk)->deleteDirectory($oldDirectory);
                 Storage::disk($disk)->makeDirectory($newDirectory);
@@ -163,7 +135,6 @@ class DirectoryRepository extends Repository
                 return;
             }
 
-            // Check if a directory exists
             if (Storage::disk($disk)->exists($oldDirectory)) {
                 Storage::disk($disk)->move($oldDirectory, $newDirectory);
             } else {
@@ -174,9 +145,6 @@ class DirectoryRepository extends Repository
         }
     }
 
-    /**
-     * Delete a directory from storage
-     */
     public function deleteDirectoryWithStorage($path)
     {
         $directory = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $path);
@@ -187,9 +155,6 @@ class DirectoryRepository extends Repository
         }
     }
 
-    /**
-     * Copy a directory with storage
-     */
     public function copyDirectoryWithStorage($newPath, $oldPath)
     {
         $sourcePath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $oldPath);
@@ -199,12 +164,7 @@ class DirectoryRepository extends Repository
         }
     }
 
-    /**
-     * Specify directory tree.
-     *
-     * @param  int  $id
-     * @return Directory
-     */
+    /** Specify directory tree. */
     public function getDirectoryTree($id = null)
     {
         $service = app(DirectoryPermissionService::class);
@@ -236,22 +196,10 @@ class DirectoryRepository extends Repository
             ->toTree();
     }
 
-    /**
-     * Lazy-load entry point for the main DAM directory tree.
-     *
-     * Returns root nodes with their direct children pre-loaded (depth 2).
-     * Each child carries `has_children: bool` so the UI knows whether to
-     * show an expand chevron without fetching deeper levels. Grandchildren
-     * (depth 3+) are loaded on demand via `getShallowChildren()` when the
-     * user expands a node.
-     *
-     * Drops the O(n²) `getAssetCountsRollup()` entirely — `assets_count`
-     * (direct-only, from `withCount`) is used as `assets_total_count`.
-     */
+    /** Lazy-load entry point for the main DAM directory tree (roots + direct children). */
     public function getDirectoryTreeOnly()
     {
         $service = app(DirectoryPermissionService::class);
-        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
 
         $rootQuery = $this->model->withCount('children')->whereNull('parent_id');
 
@@ -261,27 +209,26 @@ class DirectoryRepository extends Repository
 
         $roots = $rootQuery->get();
 
-        $rootCounts = $this->getSubtreeAssetCounts($roots->pluck('id')->all(), $allowedDescendantIds);
-
         foreach ($roots as $root) {
-            $root->assets_total_count = $rootCounts[$root->id] ?? 0;
             $root->has_children = $root->children_count > 0;
-            $root->children = $this->getShallowChildren($root->id, $service)->values()->all();
+
+            $page = $this->getShallowChildren($root->id, $service);
+            $root->children = $page['data']->all();
+            $root->children_has_more = $page['has_more'];
         }
 
         return $roots;
     }
 
     /**
-     * Returns the immediate (depth-1) children of a directory, each stamped
-     * with `has_children` (true when they have children of their own) and an
-     * empty `children` array so the frontend tree can render the expand chevron
-     * without a round-trip.
+     * Returns one paginated page of immediate (depth-1) children, each stamped with has_children.
      */
-    public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null): Collection
+    public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null, int $offset = 0, int $limit = self::DEFAULT_TREE_PAGE_SIZE): array
     {
         $service ??= app(DirectoryPermissionService::class);
-        $allowedDescendantIds = ! $service->bypass() ? $service->directlyGrantedIds() : null;
+
+        $limit = max(1, $limit);
+        $offset = max(0, $offset);
 
         $query = $this->model
             ->withCount('children')
@@ -292,30 +239,25 @@ class DirectoryRepository extends Repository
             $query->whereIn('id', $service->viewableIds());
         }
 
-        $children = $query->get()->map(function ($dir) {
+        $rows = $query->skip($offset)->take($limit + 1)->get();
+
+        $hasMore = $rows->count() > $limit;
+
+        $children = $rows->take($limit)->map(function ($dir) {
             $dir->has_children = $dir->children_count > 0;
             $dir->children = [];
 
             return $dir;
-        });
+        })->values();
 
-        $counts = $this->getSubtreeAssetCounts($children->pluck('id')->all(), $allowedDescendantIds);
-
-        $children->each(function ($dir) use ($counts) {
-            $dir->assets_total_count = $counts[$dir->id] ?? 0;
-        });
-
-        return $children;
+        return [
+            'data'     => $children,
+            'has_more' => $hasMore,
+        ];
     }
 
     /**
-     * Returns the ancestor chain from the root down to directory `$id`
-     * (inclusive), ordered root-first. Used by `revealDirectory` on the
-     * frontend when the target node is not yet in the locally-loaded tree.
-     *
-     * Each node in the result carries `has_children` but an empty `children`
-     * array — the frontend loads each level via `getShallowChildren` as it
-     * walks down the path.
+     * Returns the ancestor chain from root down to directory $id (inclusive), root-first.
      */
     public function getAncestorPath(int $id): Collection
     {
@@ -325,7 +267,7 @@ class DirectoryRepository extends Repository
             return collect();
         }
 
-        $nodes = $this->model
+        return $this->model
             ->withCount('children')
             ->where('_lft', '<=', $target->_lft)
             ->where('_rgt', '>=', $target->_rgt)
@@ -337,27 +279,10 @@ class DirectoryRepository extends Repository
 
                 return $dir;
             });
-
-        $counts = $this->getSubtreeAssetCounts($nodes->pluck('id')->all());
-
-        $nodes->each(function ($dir) use ($counts) {
-            $dir->assets_total_count = $counts[$dir->id] ?? 0;
-        });
-
-        return $nodes;
     }
 
     /**
      * Recursive asset count for each of the given directory IDs in one query.
-     * Counts assets in the directory itself plus all descendants via nested-set range.
-     * Returns [id => count]. IDs absent from the result had zero assets.
-     *
-     * When `$allowedDescendantIds` is provided, only descendants whose id is in
-     * that list contribute to the count (ACL-filtered rollup for the lazy tree).
-     *
-     * @param  array<int>  $ids
-     * @param  array<int>|null  $allowedDescendantIds  null = count all descendants
-     * @return array<int, int>
      */
     public function getSubtreeAssetCounts(array $ids, ?array $allowedDescendantIds = null): array
     {
@@ -380,7 +305,6 @@ class DirectoryRepository extends Repository
         if ($allowedDescendantIds !== null) {
             $dPlaceholders = implode(',', array_fill(0, count($allowedDescendantIds), '?'));
             $descendantFilter = "AND descendant.id IN ({$dPlaceholders})";
-            // ON-clause bindings come before WHERE-clause bindings
             $bindings = array_merge($allowedDescendantIds, $ids);
         }
 
@@ -401,12 +325,7 @@ class DirectoryRepository extends Repository
             ->all();
     }
 
-    /**
-     * Full directory tree without ACL filtering. Used by the directory
-     * permission manager UI, which must always show every directory so an
-     * admin can grant access to any of them. Callers must enforce their own
-     * authorization before invoking this.
-     */
+    /** Full directory tree without ACL filtering (used by the permission manager UI). */
     public function getFullDirectoryTreeOnly()
     {
         $rollup = $this->getAssetCountsRollup();
@@ -418,23 +337,7 @@ class DirectoryRepository extends Repository
     }
 
     /**
-     * Returns all unique ancestor nodes (inclusive) for the given directory IDs
-     * in a single nested-set query, ordered by `_lft` ascending.
-     *
-     * "Inclusive" means each node in `$ids` is included in the result because
-     * a node is its own ancestor in nested-set terms
-     * (ancestor._lft <= self._lft AND ancestor._rgt >= self._rgt).
-     *
-     * Each returned model carries `has_children` (bool) and an empty `children`
-     * array so the frontend can pre-expand the tree without further round-trips.
-     *
-     * Two queries total:
-     *  1. Raw SQL self-join to discover the distinct ancestor ID set (portable
-     *     across MySQL + PostgreSQL, prefix-aware via DB::getTablePrefix()).
-     *  2. Eloquent `whereIn` + `withCount('children')` to hydrate full models
-     *     and compute `has_children` the same way `getShallowChildren` does.
-     *
-     * @param  array<int>  $ids
+     * Returns all unique ancestor nodes (inclusive) for the given directory IDs.
      */
     public function getAncestorPathsForIds(array $ids): Collection
     {
@@ -444,17 +347,9 @@ class DirectoryRepository extends Repository
             return collect();
         }
 
-        // Step 1: discover distinct ancestor IDs via nested-set self-join.
-        // Raw SQL is required here for the same reason as getAssetCountsRollup:
-        // the query builder would prefix table aliases (e.g. "ancestor" ->
-        // "prefix_ancestor") which then mismatches subsequent column references
-        // on Postgres. DB::getTablePrefix() keeps everything portable.
         $prefix = DB::getTablePrefix();
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-        // ANSI SQL requires ORDER BY columns to appear in the SELECT list when
-        // DISTINCT is used (PostgreSQL enforces this strictly; MySQL is lenient).
-        // Selecting ancestor._lft alongside ancestor.id satisfies both drivers.
         $rows = DB::select("
             SELECT DISTINCT ancestor.id, ancestor._lft
             FROM {$prefix}dam_directories AS ancestor
@@ -471,9 +366,6 @@ class DirectoryRepository extends Repository
             return collect();
         }
 
-        // Step 2: hydrate as Eloquent models with has_children.
-        // Reuses the withCount('children') -> has_children pattern from
-        // getShallowChildren() and getAncestorPath() for consistency.
         return $this->model
             ->withCount('children')
             ->whereIn('id', $ancestorIds)
@@ -490,9 +382,6 @@ class DirectoryRepository extends Repository
 
     /**
      * Returns all descendant IDs for a directory using the nested-set columns.
-     * Single query — no model hydration. Portable across MySQL + PostgreSQL.
-     *
-     * @return array<int>
      */
     public function getDescendantIds(int $id): array
     {
@@ -511,33 +400,13 @@ class DirectoryRepository extends Repository
     }
 
     /**
-     * Recursive asset-count rollup per directory using the nested-set
-     * `_lft`/`_rgt` columns. Returns `[directory_id => total]` where total
-     * counts distinct assets attached anywhere in the subtree rooted at
-     * the directory (own + every descendant).
-     *
-     * When `$allowedDirectoryIds` is provided, only descendants whose id is in
-     * that list contribute to the count. Pass `directlyGrantedIds()` here when
-     * rendering a permission-filtered tree so ancestor nodes only reflect assets
-     * from directories the current role has been explicitly granted.
-     *
-     * Single query, portable across MySQL + PostgreSQL — no driver-specific
-     * syntax, no raw table names, prefix-aware via the query builder.
-     *
-     * @param  array<int>|null  $allowedDirectoryIds  null = count all descendants
-     * @return array<int, int>
+     * Recursive asset-count rollup per directory using the nested-set columns.
      */
     public function getAssetCountsRollup(?array $allowedDirectoryIds = null): array
     {
-        // Raw SQL because Laravel's query builder prefixes table aliases too
-        // (e.g. `as d` → `prefix_d`) which then mismatches alias references
-        // in subsequent column expressions on Postgres. Composing the SQL
-        // ourselves with `DB::getTablePrefix()` keeps the joins portable
-        // across MySQL + Postgres and works with any prefix configuration.
         $prefix = DB::getTablePrefix();
 
         if ($allowedDirectoryIds !== null && empty($allowedDirectoryIds)) {
-            // Role has no grants at all — every directory gets a zero count.
             $rows = DB::select("SELECT id FROM {$prefix}dam_directories");
 
             return collect($rows)
@@ -571,11 +440,7 @@ class DirectoryRepository extends Repository
             ->all();
     }
 
-    /**
-     * Substring directory search filtered by ACL visibility.
-     *
-     * @return Collection
-     */
+    /** Substring directory search filtered by ACL visibility. */
     public function search(string $query, int $limit = 20, int $offset = 0)
     {
         $builder = $this->buildSearchQuery($query);
@@ -624,11 +489,7 @@ class DirectoryRepository extends Repository
         return $builder;
     }
 
-    /**
-     * Attach path_names + path_ids to a collection of directory results in ONE query.
-     * Replaces the old N×2 per-row ancestor queries (20 results → 40 queries before).
-     * Self-join on _lft/_rgt: anc covers child iff anc._lft <= child._lft AND anc._rgt >= child._rgt.
-     */
+    /** Attach path_names + path_ids to a collection of directory results in one query. */
     protected function attachAncestorPaths($directories)
     {
         if ($directories->isEmpty()) {

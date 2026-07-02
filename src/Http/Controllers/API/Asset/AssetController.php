@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
-use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\ApiDataSource\AssetDataSource;
 use Webkul\DAM\Filesystem\FileStorer;
@@ -32,9 +32,7 @@ class AssetController extends Controller
     use AssetAccessControl;
     use DirectoryTrait;
 
-    /**
-     *  Create instance
-     */
+    /** Create a new instance. */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
@@ -45,9 +43,7 @@ class AssetController extends Controller
     ) {}
 
     /**
-     * Main route
-     *
-     * @return void
+     * Return the asset datagrid listing.
      */
     public function index(): JsonResponse
     {
@@ -55,7 +51,9 @@ class AssetController extends Controller
     }
 
     /**
-     * Helper function to upload Asset by using Public Url
+     * Download files from public URLs and convert them to uploaded files.
+     *
+     * @return array|JsonResponse
      */
     public function downloadAndConvertFiles(Request $request)
     {
@@ -134,7 +132,7 @@ class AssetController extends Controller
     }
 
     /**
-     * to upload the asset
+     * Upload one or more assets to a directory.
      */
     public function upload(Request $request): JsonResponse
     {
@@ -197,7 +195,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName(), $file->getRealPath())) {
                 $errors[] = trans('dam::app.admin.dam.asset.datagrid.file-forbidden-type').': '.$file->getClientOriginalName();
 
                 continue;
@@ -238,7 +236,6 @@ class AssetController extends Controller
 
                 $this->attachAudioCoverArt($asset, $localFilePath, $mimeType, $metaData, $disk);
 
-                // Real Cloudinary-style thumbnail: queued so the response stays fast.
                 if ($asset->file_type === 'video') {
                     GenerateVideoThumbnail::dispatch($asset->id)->afterCommit();
                 } elseif (strtolower((string) $asset->extension) === 'pdf') {
@@ -273,7 +270,7 @@ class AssetController extends Controller
     }
 
     /**
-     * to reupload the asset
+     * Re-upload and replace an existing asset's file.
      *
      * @return JsonResponse
      */
@@ -327,7 +324,7 @@ class AssetController extends Controller
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $file->getMimeType();
 
-            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName())) {
+            if (AssetHelper::isForbiddenFile($extension, $mimeType, $file->getClientOriginalName(), $file->getRealPath())) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('dam::app.admin.dam.index.directory.not-allowed'),
@@ -378,9 +375,7 @@ class AssetController extends Controller
     }
 
     /**
-     * For audio assets, extract embedded cover art and attach its storage path
-     * to the asset's meta_data. No-op for non-audio mime types or when no
-     * embedded artwork is found.
+     * Extract embedded cover art from audio assets and store it in meta_data.
      */
     private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
     {
@@ -406,7 +401,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Format a kilobyte value into a human readable string (e.g. "50 MB").
+     * Format a kilobyte value into a human readable size string.
      */
     protected function humanReadableSize(int $kilobytes): string
     {
@@ -475,9 +470,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @return View|JsonResponse
+     * Return data for editing the specified asset.
      */
     public function edit(int $id): JsonResponse
     {
@@ -527,10 +520,7 @@ class AssetController extends Controller
     }
 
     /**
-     * To update the asset
-     *
-     * @param [type] $id
-     * @return void
+     * Update the specified asset.
      */
     public function update(Request $request, $id): JsonResponse
     {
@@ -578,10 +568,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Delete asset
-     *
-     * @param [type] $id
-     * @return void
+     * Delete the specified asset.
      */
     public function destroy($id): JsonResponse
     {
@@ -624,6 +611,11 @@ class AssetController extends Controller
         ]);
     }
 
+    /**
+     * Download the asset file via a signed URL.
+     *
+     * @return StreamedResponse
+     */
     public function signedUrl(int $id)
     {
         $asset = Asset::find($id);

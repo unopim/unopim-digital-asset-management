@@ -17,7 +17,6 @@ class BackfillThumbnails extends Command
     {
         $sync = (bool) $this->option('sync');
 
-        // COUNT queries only — avoids loading asset records into memory upfront.
         $videoCount = Asset::where('file_type', 'video')->count();
         $pdfCount = Asset::whereRaw('LOWER(extension) = ?', ['pdf'])->count();
 
@@ -26,9 +25,6 @@ class BackfillThumbnails extends Command
         $skipped = 0;
         $queued = 0;
 
-        // lazy() chunks through the table (1000 rows at a time) and yields one
-        // model at a time — constant memory regardless of asset count.
-        // select() limits columns to what the loop actually needs.
         Asset::where('file_type', 'video')
             ->select(['id', 'meta_data'])
             ->lazy()

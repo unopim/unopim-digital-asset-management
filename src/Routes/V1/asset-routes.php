@@ -13,7 +13,6 @@ Route::group([
         'auth:api',
     ],
 ], function () {
-    /** Assets API Routes */
     Route::controller(AssetController::class)->prefix('assets')->group(function () {
         Route::get('', 'index')->name('admin.api.dam.assets.index');
         Route::put('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
@@ -25,7 +24,6 @@ Route::group([
         Route::get('/download/{id}', 'download')->name('admin.api.dam.assets.download');
     });
 
-    /** Directory API Routes */
     Route::controller(DirectoryController::class)->prefix('directories')->group(function () {
         Route::get('', 'index')->name('admin.api.dam.directory.index');
         Route::get('{id}', 'getDirectory')->name('admin.api.dam.directory.get');
@@ -34,7 +32,6 @@ Route::group([
         Route::delete('{id}', 'destroy')->name('admin.api.dam.directory.delete');
     });
 
-    /** Comment API Routes */
     Route::controller(CommentController::class)->prefix('comments')->group(function () {
         Route::get('{id}', 'comments')->name('admin.api.dam.comment.get');
         Route::put('/{id}', 'update')->name('admin.api.dam.comment.update');
@@ -42,14 +39,12 @@ Route::group([
         Route::post('', 'createComment')->name('admin.api.dam.comment.store');
     });
 
-    /** Tag API Routes */
     Route::controller(TagController::class)->prefix('tags')->group(function () {
         Route::get('{id}', 'tags')->name('admin.api.dam.tags.get');
         Route::post('', 'addTag')->name('admin.api.dam.tag.add');
         Route::delete('', 'removeTag')->name('admin.api.dam.tag.delete');
     });
 
-    /** Property API Routes */
     Route::controller(PropertyController::class)->prefix('properties')->group(function () {
         Route::get('{id}', 'properties')->name('admin.api.dam.property.get');
         Route::post('/{id}', 'addProperty')->name('admin.api.dam.property.add');
@@ -57,7 +52,6 @@ Route::group([
         Route::delete('/{id}', 'delete')->name('admin.api.dam.property.delete');
     });
 
-    /** LinkedResource API Routes */
     Route::controller(LinkedResourcesController::class)->prefix('linked-resource')->group(function () {
         Route::get('{id}', 'getLinkedResource')->name('admin.api.dam.linked_resource.get');
     });
