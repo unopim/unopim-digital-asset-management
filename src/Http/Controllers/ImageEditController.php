@@ -411,7 +411,7 @@ class ImageEditController
             if (isset($gd) && $gd) {
                 imagedestroy($gd);
             }
-            \Log::error('bgPreview failed', ['asset_id' => $id, 'error' => $e->getMessage()]);
+            Log::error('bgPreview failed', ['asset_id' => $id, 'error' => $e->getMessage()]);
 
             return response()->json(['error' => trans('dam::app.admin.dam.image-edit.preview-failed')], 422);
         }

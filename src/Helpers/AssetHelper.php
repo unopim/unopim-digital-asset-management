@@ -179,12 +179,55 @@ class AssetHelper
     }
 
     /**
+     * Whether a MIME type is safe to serve inline in the browser.
+     *
+     * Only genuine media types are safe. Anything else (HTML, XML, text, etc.)
+     * must be forced to download so a stored file cannot execute script in the
+     * application's own origin. SVG is XML and can carry script, so it is only
+     * ever served inline behind a restrictive Content-Security-Policy.
+     */
+    public static function isInlineSafeMime(?string $mimeType): bool
+    {
+        $mimeType = strtolower(trim((string) $mimeType));
+
+        if ($mimeType === '') {
+            return false;
+        }
+
+        if ($mimeType === 'image/svg+xml') {
+            return true;
+        }
+
+        return Str::startsWith($mimeType, ['image/', 'video/', 'audio/'])
+            || $mimeType === 'application/pdf';
+    }
+
+    /**
+     * Security headers applied to every asset-content response.
+     *
+     * Blocks MIME sniffing and (via CSP) any script/plugin execution for
+     * documents rendered inline, neutralising stored-XSS through uploaded
+     * HTML/SVG while still allowing images, styles and media to render.
+     *
+     * @return array<string, string>
+     */
+    public static function assetResponseHeaders(): array
+    {
+        return [
+            'X-Content-Type-Options'  => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'; object-src 'none'; frame-ancestors 'self'",
+        ];
+    }
+
+    /**
      * Check if given extension or mime type is forbidden for upload.
      */
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = [
             'php',
+            'phtml',
+            'phar',
             'js',
             'py',
             'sh',
@@ -197,6 +240,11 @@ class AssetHelper
             'exe',
             'rb',
             'jar',
+            'html',
+            'htm',
+            'xhtml',
+            'shtml',
+            'hta',
         ];
 
         $forbiddenMimeTypes = [
@@ -215,6 +263,8 @@ class AssetHelper
             'application/x-msdownload',
             'application/java-archive',
             'application/x-ruby',
+            'text/html',
+            'application/xhtml+xml',
         ];
 
         $forbiddenFileNames = [

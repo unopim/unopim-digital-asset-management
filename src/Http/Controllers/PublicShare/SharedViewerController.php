@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
@@ -256,7 +257,8 @@ class SharedViewerController extends Controller
             }
 
             return response(Storage::disk($disk)->get($thumbnailPath), 200)
-                ->header('Content-Type', 'image/svg+xml');
+                ->header('Content-Type', 'image/svg+xml')
+                ->withHeaders(AssetHelper::assetResponseHeaders());
         }
 
         return $this->placeholderResponse($asset);
@@ -309,6 +311,15 @@ class SharedViewerController extends Controller
             ? strtolower($disposition)
             : 'attachment';
 
+        /**
+         * Never serve non-media content inline: a stored HTML/SVG/text file must
+         * not be able to execute script in the application's origin when opened
+         * through a public share link.
+         */
+        if (! AssetHelper::isInlineSafeMime($mimeType)) {
+            $disposition = 'attachment';
+        }
+
         $filename = $asset->file_name;
         $contentDisposition = $disposition.'; filename="'.addslashes($filename).'"';
 
@@ -331,10 +342,10 @@ class SharedViewerController extends Controller
             }
         }
 
-        return response()->file(Storage::disk($disk)->path($path), [
+        return response()->file(Storage::disk($disk)->path($path), array_merge([
             'Content-Type'        => $mimeType,
             'Content-Disposition' => $contentDisposition,
-        ]);
+        ], AssetHelper::assetResponseHeaders()));
     }
 
     /**

@@ -166,19 +166,27 @@ class PropertyController extends Controller
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.property.delete'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $assetPropertyIds = $massDestroyRequest->input('indices');
 
         try {
             foreach ($assetPropertyIds as $assetPropertyId) {
-                $asset = $this->assetPropertyRepository->find($assetPropertyId);
+                $property = $this->assetPropertyRepository->find($assetPropertyId);
 
-                if (isset($asset)) {
-                    Event::dispatch('dam.asset.property.delete.before', $assetPropertyId);
-
-                    $this->assetPropertyRepository->delete($assetPropertyId);
-
-                    Event::dispatch('dam.asset.property.delete.after', $assetPropertyId);
+                if (! $property || ! $this->damCanAccessAsset((int) $property->dam_asset_id)) {
+                    continue;
                 }
+
+                Event::dispatch('dam.asset.property.delete.before', $assetPropertyId);
+
+                $this->assetPropertyRepository->delete($assetPropertyId);
+
+                Event::dispatch('dam.asset.property.delete.after', $assetPropertyId);
             }
 
             return new JsonResponse([

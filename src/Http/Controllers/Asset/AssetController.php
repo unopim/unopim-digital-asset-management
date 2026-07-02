@@ -386,6 +386,12 @@ class AssetController extends Controller
      */
     public function uploadFolder(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         set_time_limit(0);
         ignore_user_abort(true);
 
@@ -982,6 +988,10 @@ class AssetController extends Controller
                 $asset = $assets->get($assetId);
 
                 if (! $asset) {
+                    continue;
+                }
+
+                if (! $this->canActOnAsset($asset)) {
                     continue;
                 }
 

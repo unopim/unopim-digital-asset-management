@@ -152,13 +152,17 @@ class FileController
 
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
-            $mimeType = Storage::disk($disk)->mimeType($path);
+            $mimeType = Storage::disk($disk)->mimeType($path) ?: 'application/octet-stream';
 
             $response = response(Storage::disk($disk)->get($path), 200)
-                ->header('Content-Type', $mimeType);
+                ->header('Content-Type', $mimeType)
+                ->withHeaders(AssetHelper::assetResponseHeaders());
 
-            if ($mimeType === 'image/svg+xml') {
-                $response->header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline';");
+            if (! AssetHelper::isInlineSafeMime($mimeType)) {
+                $response->header(
+                    'Content-Disposition',
+                    'attachment; filename="'.addslashes(basename($path)).'"'
+                );
             }
 
             return $response;
@@ -247,7 +251,8 @@ class FileController
             }
 
             return response(Storage::disk($disk)->get($thumbnailPath), 200)
-                ->header('Content-Type', 'image/svg+xml');
+                ->header('Content-Type', 'image/svg+xml')
+                ->withHeaders(AssetHelper::assetResponseHeaders());
         }
 
         if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
