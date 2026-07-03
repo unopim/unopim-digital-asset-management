@@ -5,7 +5,7 @@ namespace Webkul\DAM\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Controllers\Concerns\StreamsZipDownload;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
@@ -13,7 +13,7 @@ use Webkul\DAM\Http\Requests\DirectorySearchRequest;
 use Webkul\DAM\Jobs\CopyDirectoryStructure as CopyDirectoryStructureJob;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
 use Webkul\DAM\Jobs\MoveDirectoryStructure as MoveDirectoryStructureJob;
-use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
@@ -32,14 +32,10 @@ class DirectoryController
     ) {}
 
     /**
-     * Get the directory
+     * Get the directory tree.
      */
     public function index(Request $request): JsonResponse
     {
-        // Callers that need asset nodes in the tree (e.g. the asset picker)
-        // must pass `with_assets=1`. The main DAM directory tree only lists
-        // folders, so the default skips asset eager-loading for a lighter
-        // payload.
         $directories = $request->boolean('with_assets')
             ? $this->directoryRepository->getDirectoryTree()
             : $this->directoryRepository->getDirectoryTreeOnly();
@@ -59,7 +55,11 @@ class DirectoryController
         $offset = (int) ($request->validated('offset') ?? 0);
 
         $results = $this->directoryRepository->search($q, $limit, $offset);
-        $total = $this->directoryRepository->searchCount($q);
+
+        $returned = $results->count();
+        $total = ($returned < $limit)
+            ? $offset + $returned
+            : $this->directoryRepository->searchCount($q);
 
         return new JsonResponse([
             'data' => $results->map(fn ($directory) => [
@@ -67,6 +67,7 @@ class DirectoryController
                 'name'       => $directory->name,
                 'parent_id'  => $directory->parent_id,
                 'path_names' => $directory->path_names,
+                'path_ids'   => $directory->path_ids,
             ])->values(),
             'meta' => [
                 'total'  => $total,
@@ -77,9 +78,9 @@ class DirectoryController
     }
 
     /**
-     * Get the children directory
+     * Lazy-load one page of immediate children of a directory.
      */
-    public function childrenDirectory(int $id): JsonResponse
+    public function childrenDirectory(int $id, Request $request): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
             return new JsonResponse([
@@ -87,44 +88,87 @@ class DirectoryController
             ], 403);
         }
 
-        $directory = $this->directoryRepository->getDirectoryTree($id)?->first();
-
-        if (! $directory) {
+        if (! $this->directoryRepository->find($id)) {
             return new JsonResponse([
                 'message' => trans('dam::app.admin.dam.index.directory.not-found'),
             ], 404);
         }
 
+        $offset = max(0, (int) $request->query('offset', 0));
+        $limit = (int) $request->query('limit', DirectoryRepository::DEFAULT_TREE_PAGE_SIZE);
+
+        $page = $this->directoryRepository->getShallowChildren($id, null, $offset, $limit);
+
         return new JsonResponse([
-            'data' => $directory,
+            'data'     => $page['data']->values(),
+            'has_more' => $page['has_more'],
         ]);
     }
 
     /**
-     * Get the directory assets
+     * Lazy asset-count badges for the viewable directory ids.
+     */
+    public function assetCounts(Request $request): JsonResponse
+    {
+        $ids = collect($request->input('ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if (! $this->permissionService->bypass()) {
+            $viewable = array_flip($this->permissionService->viewableIds());
+            $ids = $ids->filter(fn ($id) => isset($viewable[$id]))->values();
+        }
+
+        if ($ids->isEmpty()) {
+            return new JsonResponse(['data' => (object) []]);
+        }
+
+        $allowedDescendantIds = ! $this->permissionService->bypass()
+            ? $this->permissionService->directlyGrantedIds()
+            : null;
+
+        $counts = $this->directoryRepository->getSubtreeAssetCounts($ids->all(), $allowedDescendantIds);
+
+        return new JsonResponse(['data' => (object) $counts]);
+    }
+
+    /**
+     * Return the ancestor chain from root to the given directory, root-first.
+     */
+    public function directoryPath(int $id): JsonResponse
+    {
+        if (! $this->permissionService->canView($id)) {
+            return new JsonResponse([
+                'message' => trans('dam::app.admin.permissions.unauthorized'),
+            ], 403);
+        }
+
+        $path = $this->directoryRepository->getAncestorPath($id);
+
+        return new JsonResponse([
+            'data' => $path->values(),
+        ]);
+    }
+
+    /**
+     * Get the directory assets.
      */
     public function directoryAssets(int $id): JsonResponse
     {
-        // DAM_TREE_SHOW_ASSETS env gates the in-tree asset listing. Default
-        // off — frontend still uses the right-hand grid for asset browsing
-        // on directories with large asset counts.
         if (! config('dam.tree.show_assets')) {
             return new JsonResponse([
                 'data' => [],
             ]);
         }
 
-        // Asset listing: strict access (ancestors via expansion don't count).
         if (! $this->permissionService->canAccess($id)) {
             return new JsonResponse([
                 'data' => [],
             ]);
         }
 
-        // `getDirectoryTree($id)` returns a single Directory model (or null) when
-        // an id is supplied — calling `->first()` on it proxied to a fresh query
-        // and silently returned the table's first row, which is the wrong
-        // directory. Use the model directly.
         $directory = $this->directoryRepository->getDirectoryTree($id);
 
         if (! $directory) {
@@ -140,12 +184,10 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Create a new directory
-     */
+    /** Create a new directory. */
     public function store(DirectoryRequest $request)
     {
-        $parentDirectoryId = $request->input('parent_id', 1); // default to root directory
+        $parentDirectoryId = $request->input('parent_id', 1);
 
         if (! $this->permissionService->canAccess((int) $parentDirectoryId)) {
             return new JsonResponse([
@@ -174,7 +216,6 @@ class DirectoryController
 
     /**
      * Grant the new directory to the creator's role for custom-permission admins.
-     * Skipped when the role already bypasses (all-permission or all-directories).
      */
     private function autoGrantToCreator(int $directoryId): void
     {
@@ -199,11 +240,11 @@ class DirectoryController
     }
 
     /**
-     * Updates a directory
+     * Update a directory.
      */
     public function update(DirectoryRequest $request): JsonResponse
     {
-        $id = $request->input('id'); // default to root directory
+        $id = $request->input('id');
 
         if (! $this->permissionService->canAccess((int) $id)) {
             return new JsonResponse([
@@ -225,9 +266,8 @@ class DirectoryController
                     'name' => $request->input('name'),
                 ], $id);
 
-                $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
-
-                RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+                $this->start(EventType::RENAME_DIRECTORY->value);
+                $this->completed(EventType::RENAME_DIRECTORY->value, $this->getUser()->id);
             }
 
             return new JsonResponse([
@@ -242,7 +282,7 @@ class DirectoryController
     }
 
     /**
-     * Delete the directory
+     * Delete the directory.
      */
     public function destroy(int $id): JsonResponse
     {
@@ -285,15 +325,38 @@ class DirectoryController
     }
 
     /**
-     * Copy the directory
+     * Mass delete multiple directories.
+     */
+    public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
+    {
+        $ids = $massDestroyRequest->input('indices');
+
+        $requestAction = $this->start(EventType::DELETE_DIRECTORY->value);
+
+        foreach ($ids as $id) {
+            if (! $this->permissionService->canAccess($id)) {
+                continue;
+            }
+
+            $directory = $this->directoryRepository->find($id);
+
+            if (! $directory || ! $directory->isDeletable()) {
+                continue;
+            }
+
+            DeleteDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+        }
+
+        return new JsonResponse([
+            'message' => trans('dam::app.admin.dam.index.directory.deleting-in-progress'),
+        ]);
+    }
+
+    /**
+     * Copy the directory.
      */
     public function copy(Request $request): JsonResponse
     {
-        // @TODO: Need to future enhancement
-        // $parentDirectoryId = $request->input('parent_id', 1);
-        // $copyId = $request->input('id', 1);
-
-        // $newDirectory = $this->directoryRepository->copy($copyId, $parentDirectoryId);
 
         return new JsonResponse([
             'message' => trans('dam::app.admin.dam.index.directory.copy-success'),
@@ -302,7 +365,7 @@ class DirectoryController
     }
 
     /**
-     * Copy the directory structure
+     * Copy the directory structure.
      */
     public function copyStructure(Request $request): JsonResponse
     {
@@ -348,7 +411,7 @@ class DirectoryController
     }
 
     /**
-     * Move the directory one to another location
+     * Move the directory from one location to another.
      */
     public function moved(Request $request): JsonResponse
     {
@@ -383,9 +446,7 @@ class DirectoryController
         }
     }
 
-    /**
-     * Download archive
-     */
+    /** Download the directory subtree as a zip archive. */
     public function downloadArchive(int $id)
     {
         if (! $this->permissionService->canAccess($id)) {
@@ -394,24 +455,69 @@ class DirectoryController
 
         $directory = $this->directoryRepository->findOrFail($id);
 
-        $folderPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
+        $folderBase = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $directory->generatePath());
         $disk = Directory::getAssetDisk();
-        $files = Storage::disk($disk)->allFiles($folderPath);
 
-        if (empty($files)) {
+        $subtreeQuery = Asset::query()
+            ->whereHas('directories', fn ($q) => $q->whereBetween('_lft', [$directory->_lft, $directory->_rgt]));
+
+        if (! $subtreeQuery->exists()) {
             return back()->with('error', trans('dam::app.admin.dam.index.directory.empty-directory'));
         }
 
         $zipName = sprintf('%s.zip', $directory->name);
 
-        return $this->buildZipStreamResponse($files, $folderPath, $disk, $zipName);
+        return $this->buildZipStreamFromAssets(
+            $subtreeQuery->select(['path', 'file_name']),
+            $folderBase,
+            $disk,
+            $zipName,
+        );
+    }
+
+    /**
+     * Return ancestor paths for multiple directory IDs in one request.
+     */
+    public function ancestorPaths(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids'   => 'present|array',
+            'ids.*' => 'integer|min:1',
+        ]);
+
+        $ids = $request->input('ids');
+
+        if (empty($ids)) {
+            return new JsonResponse(['data' => []]);
+        }
+
+        $nodes = $this->directoryRepository->getAncestorPathsForIds($ids);
+
+        $nodes = $nodes->filter(fn ($node) => $this->permissionService->canView($node->id));
+
+        return new JsonResponse(['data' => $nodes->values()]);
+    }
+
+    /**
+     * Return all viewable descendant IDs for the given directory.
+     */
+    public function descendants(int $id): JsonResponse
+    {
+        $node = $this->directoryRepository->find($id);
+
+        if (! $node || ! $this->permissionService->canView($node->id)) {
+            return new JsonResponse(['data' => []]);
+        }
+
+        $ids = $this->directoryRepository->getDescendantIds($id);
+
+        $ids = array_values(array_filter($ids, fn ($did) => $this->permissionService->canView($did)));
+
+        return new JsonResponse(['data' => $ids]);
     }
 
     /**
      * Create an empty directory structure under the given parent directory.
-     *
-     * Accepts an array of slash-separated relative paths (e.g. "FolderA/SubDir").
-     * Each path is walked and any missing segments are created via the repository.
      */
     public function createStructure(Request $request): JsonResponse
     {
@@ -487,6 +593,9 @@ class DirectoryController
             $this->autoGrantToCreator($id);
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'               => true,
+            'granted_directory_ids' => $createdIds,
+        ]);
     }
 }

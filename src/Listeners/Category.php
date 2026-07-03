@@ -21,9 +21,8 @@ class Category
     ) {}
 
     /**
-     * After category update
+     * After category update.
      *
-     * @param  \Webkul\Category\Contracts\Category  $category
      * @return void
      */
     public function afterUpdateOrCreate($category)
@@ -60,7 +59,7 @@ class Category
     }
 
     /**
-     * Return value from category data
+     * Return value from category data.
      */
     protected function getCategoryValue(
         array $additionalData,

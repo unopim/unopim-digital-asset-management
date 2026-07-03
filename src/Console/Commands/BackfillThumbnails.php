@@ -17,37 +17,43 @@ class BackfillThumbnails extends Command
     {
         $sync = (bool) $this->option('sync');
 
-        $videos = Asset::where('file_type', 'video')->get();
-        $pdfs = Asset::whereRaw('LOWER(extension) = ?', ['pdf'])->get();
+        $videoCount = Asset::where('file_type', 'video')->count();
+        $pdfCount = Asset::whereRaw('LOWER(extension) = ?', ['pdf'])->count();
 
-        $this->info("Found {$videos->count()} videos and {$pdfs->count()} PDFs.");
+        $this->info("Found {$videoCount} videos and {$pdfCount} PDFs.");
 
         $skipped = 0;
         $queued = 0;
 
-        foreach ($videos as $asset) {
-            if (! empty(($asset->meta_data['thumbnail_path'] ?? null))) {
-                $skipped++;
+        Asset::where('file_type', 'video')
+            ->select(['id', 'meta_data'])
+            ->lazy()
+            ->each(function (Asset $asset) use ($sync, &$skipped, &$queued) {
+                if (! empty($asset->meta_data['thumbnail_path'] ?? null)) {
+                    $skipped++;
 
-                continue;
-            }
-            $sync
-                ? (new GenerateVideoThumbnail($asset->id))->handle()
-                : GenerateVideoThumbnail::dispatch($asset->id);
-            $queued++;
-        }
+                    return;
+                }
+                $sync
+                    ? (new GenerateVideoThumbnail($asset->id))->handle()
+                    : GenerateVideoThumbnail::dispatch($asset->id);
+                $queued++;
+            });
 
-        foreach ($pdfs as $asset) {
-            if (! empty(($asset->meta_data['thumbnail_path'] ?? null))) {
-                $skipped++;
+        Asset::whereRaw('LOWER(extension) = ?', ['pdf'])
+            ->select(['id', 'meta_data'])
+            ->lazy()
+            ->each(function (Asset $asset) use ($sync, &$skipped, &$queued) {
+                if (! empty($asset->meta_data['thumbnail_path'] ?? null)) {
+                    $skipped++;
 
-                continue;
-            }
-            $sync
-                ? (new GeneratePdfThumbnail($asset->id))->handle()
-                : GeneratePdfThumbnail::dispatch($asset->id);
-            $queued++;
-        }
+                    return;
+                }
+                $sync
+                    ? (new GeneratePdfThumbnail($asset->id))->handle()
+                    : GeneratePdfThumbnail::dispatch($asset->id);
+                $queued++;
+            });
 
         $action = $sync ? 'processed' : 'queued';
         $this->info("Done. {$queued} {$action}, {$skipped} skipped (already had thumbnails).");

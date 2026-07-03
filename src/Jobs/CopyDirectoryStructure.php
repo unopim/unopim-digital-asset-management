@@ -17,10 +17,11 @@ class CopyDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Create a new instance. */
     public function __construct(protected int $directoryId, protected int $userId) {}
 
     /**
-     * Handle the event.
+     * Replicate the directory structure into a new copy.
      *
      * @return void
      */
@@ -51,25 +52,37 @@ class CopyDirectoryStructure implements ShouldQueue
 
             $this->completed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::COPY_DIRECTORY_STRUCTURE->value, $this->userId, $e->getMessage());
         }
     }
 
     /**
-     * Copy the directory with the children directory
+     * Copy a directory tree iteratively using BFS.
      */
-    public function copyDirectoryAndChildren(ModelDirectory $originalDirectory, ModelDirectory $newDirectory, $directoryRepository): void
+    public function copyDirectoryAndChildren(ModelDirectory $root, ModelDirectory $newRoot, DirectoryRepository $directoryRepository): void
     {
-        foreach ($originalDirectory->children as $child) {
-            $newChild = $child->replicate();
-            $newChild->save();
+        $queue = [[$root, $newRoot]];
 
-            // Set the new child to the new directory
-            $newChild->appendToNode($newDirectory)->save();
-            $newPath = $newChild->generatePath();
-            $directoryRepository->createDirectoryWithStorage($newPath);
+        while (! empty($queue)) {
+            $nextLevel = [];
 
-            $this->copyDirectoryAndChildren($child, $newChild, $directoryRepository);
+            $sourceIds = array_map(fn ($pair) => $pair[0]->id, $queue);
+            $childrenByParent = ModelDirectory::whereIn('parent_id', $sourceIds)
+                ->get()
+                ->groupBy('parent_id');
+
+            foreach ($queue as [$source, $newParent]) {
+                foreach ($childrenByParent->get($source->id, collect()) as $child) {
+                    $newChild = $child->replicate();
+                    $newChild->appendToNode($newParent)->save();
+
+                    $directoryRepository->createDirectoryWithStorage($newChild->generatePath());
+
+                    $nextLevel[] = [$child, $newChild];
+                }
+            }
+
+            $queue = $nextLevel;
         }
     }
 }

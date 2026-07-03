@@ -8,11 +8,14 @@ use Webkul\DAM\Http\Controllers\Asset\LinkedResourcesController;
 use Webkul\DAM\Http\Controllers\Asset\PropertyController;
 use Webkul\DAM\Http\Controllers\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\Asset\TagController;
+use Webkul\DAM\Http\Controllers\Asset\UploadController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
+use Webkul\DAM\Http\Controllers\ConfigurationController;
 use Webkul\DAM\Http\Controllers\DAMController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Http\Controllers\ImageEditController;
+use Webkul\DAM\Http\Controllers\TagController as TagManagementController;
 
 Route::group([
     'middleware' => ['admin', 'dam'],
@@ -47,9 +50,20 @@ Route::group([
 
         });
 
+        Route::controller(UploadController::class)->prefix('upload')->group(function () {
+            Route::post('/tracker', 'startSession')->name('admin.dam.assets.upload.tracker');
+            Route::get('/stats/{uuid}', 'stats')->name('admin.dam.assets.upload.stats');
+            Route::post('/pause/{uuid}', 'pause')->name('admin.dam.assets.upload.pause');
+            Route::post('/resume/{uuid}', 'resume')->name('admin.dam.assets.upload.resume');
+            Route::post('/cancel/{uuid}', 'cancel')->name('admin.dam.assets.upload.cancel');
+            Route::post('/retry/{uuid}', 'retry')->name('admin.dam.assets.upload.retry');
+            Route::post('/complete/{uuid}', 'complete')->name('admin.dam.assets.upload.complete');
+        });
+
         Route::controller(TagController::class)->prefix('')->group(function () {
             Route::post('/tag', 'addOrUpdateTag')->name('admin.dam.assets.tag');
             Route::post('/remove-tag', 'removeTag')->name('admin.dam.assets.remove-tag');
+            Route::post('/mass-assign-tags', 'massAssignTags')->name('admin.dam.assets.mass_assign_tags');
         });
 
         Route::controller(PropertyController::class)->prefix('')->group(function () {
@@ -109,10 +123,21 @@ Route::group([
             ->where('targetId', '[0-9]+');
     });
 
+    Route::controller(TagManagementController::class)->prefix('tags')->group(function () {
+        Route::get('', 'index')->name('admin.dam.tags.index');
+        Route::get('/list', 'list')->name('admin.dam.tags.list');
+        Route::post('', 'store')->name('admin.dam.tags.store');
+        Route::post('/mass-delete', 'massDestroy')->name('admin.dam.tags.mass_delete');
+        Route::put('/{id}', 'update')->name('admin.dam.tags.update')->where('id', '[0-9]+');
+        Route::delete('/{id}', 'destroy')->name('admin.dam.tags.destroy')->where('id', '[0-9]+');
+    });
+
     Route::controller(DirectoryController::class)->prefix('directory')->group(function () {
         Route::get('', 'index')->name('admin.dam.directory.index');
         Route::get('/search', 'search')->name('admin.dam.directory.search');
         Route::get('/children-directory/{id}', 'childrenDirectory')->name('admin.dam.directory.children');
+        Route::post('/asset-counts', 'assetCounts')->name('admin.dam.directory.asset_counts');
+        Route::get('/path/{id}', 'directoryPath')->name('admin.dam.directory.path');
         Route::get('/directory-assets/{id}', 'directoryAssets')->name('admin.dam.directory.assets');
         Route::post('/store', 'store')->name('admin.dam.directory.store');
         Route::post('/update', 'update')->name('admin.dam.directory.update');
@@ -122,6 +147,9 @@ Route::group([
         Route::post('/copy-structure', 'copyStructure')->name('admin.dam.directory.copy_structure');
         Route::post('/moved', 'moved')->name('admin.dam.directory.moved');
         Route::post('/create-structure', 'createStructure')->name('admin.dam.directory.create_structure');
+        Route::post('/paths', 'ancestorPaths')->name('admin.dam.directory.paths');
+        Route::get('/{id}/descendants', 'descendants')->name('admin.dam.directory.descendants');
+        Route::post('/mass-delete', 'massDestroy')->name('admin.dam.directory.mass_destroy');
     });
 
     Route::controller(ActionRequestController::class)->prefix('action-request')->group(function () {
@@ -133,5 +161,13 @@ Route::group([
 
         Route::get('/get', 'fetchAssets')->name('admin.dam.asset_picker.get_assets');
     });
+
+    Route::controller(ConfigurationController::class)
+        ->prefix('configuration')
+        ->name('admin.dam.configuration.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'update')->name('update');
+        });
 
 });

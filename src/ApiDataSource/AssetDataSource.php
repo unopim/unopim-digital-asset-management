@@ -11,11 +11,7 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetDataSource extends ApiDataSource
 {
-    /**
-     * Default sort column of datagrid.
-     *
-     * @var ?string
-     */
+    /** Default sort column of datagrid. */
     protected $sortColumn = 'dam_assets.id';
 
     /**
@@ -46,11 +42,7 @@ class AssetDataSource extends ApiDataSource
         return $this->assetRepository->queryBuilder();
     }
 
-    /**
-     * Inject directory permission scope into every query.
-     * Called inside the scopeQuery closure in ApiDataSource::processRequestedFilters,
-     * so $queryBuilder is the underlying Eloquent builder — mutations apply in place.
-     */
+    /** Inject directory permission scope into every query. */
     public function setDefaultFilters($queryBuilder)
     {
         $service = app(DirectoryPermissionService::class);
@@ -90,8 +82,6 @@ class AssetDataSource extends ApiDataSource
      * Get asset by its unique code (e.g. file name or identifier).
      *
      * @return array
-     *
-     * @throws ModelNotFoundException
      */
     public function getByCode(string $code)
     {
@@ -122,9 +112,6 @@ class AssetDataSource extends ApiDataSource
     /**
      * Apply custom filters and operators.
      *
-     * @param  Builder  $scopeQueryBuilder
-     * @param  string  $requestedColumn
-     * @param  array  $value
      * @return Builder
      */
     public function operatorByFilter($scopeQueryBuilder, $requestedColumn, $value)
@@ -157,7 +144,7 @@ class AssetDataSource extends ApiDataSource
 
             case 'created_at':
             case 'updated_at':
-                // Allow date range filtering if 'from' and 'to' keys exist
+
                 if (isset($value['from']) && isset($value['to'])) {
                     $scopeQueryBuilder->whereBetween($filterTable.$requestedColumn, [$value['from'], $value['to']]);
                 } else {

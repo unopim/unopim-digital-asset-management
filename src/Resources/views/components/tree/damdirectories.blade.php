@@ -1,3 +1,4 @@
+@props(['visible' => true])
 <div class="flex flex-col gap-2">
     <x-dam::tree.search />
     <x-dam::tree.asset-count-badge />
@@ -6,6 +7,7 @@
         :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
         :accessible-ids='@json(dam_accessible_dir_ids())'
         :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
+        :visible="{{ $visible ? 'true' : 'false' }}"
     >
         <x-admin::shimmer.tree />
     </v-tree-view>
@@ -152,7 +154,7 @@
                 class="text-sm"
                 :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
-            <v-asset-count-badge :count="item?.assets_total_count ?? 0" />
+            <v-asset-count-badge :count="item?.assets_total_count ?? null" />
         </div>
         <div
             v-show="isOpen"
@@ -192,6 +194,18 @@
                     </div>
                 </template>
             </draggable>
+
+            <!-- Load more children (wide levels paginate) -->
+            <button
+                v-if="childrenHasMore"
+                type="button"
+                @click.stop="loadMoreChildren"
+                :disabled="childrenLoadingMore"
+                class="flex items-center gap-1.5 ml-2 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+            >
+                <span v-if="childrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
+                <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
+            </button>
 
             <!-- Asset -->
             <draggable
@@ -293,6 +307,8 @@
                 assetsLoaded: false,
                 assetsLoading: false,
                 assetsStale: false,
+                childrenLoading: false,
+                childrenLoadingMore: false,
                 // Local reactive asset list — own data, never reassigned, so
                 // vuedraggable's Sortable stays bound to a stable array ref
                 // for the lifetime of this component instance. Avoids the
@@ -308,9 +324,20 @@
                 this.localAssets.splice(0, 0, ...this.item.assets);
             }
 
+            // Children pre-loaded by the lazy tree (root + depth-2): mark as
+            // loaded so expanding won't re-fetch, and fetch their badge counts
+            // lazily (kept off the structural endpoint).
+            if (Array.isArray(this.item.children) && this.item.children.length) {
+                this.item._loaded = true;
+                this.fetchChildCounts(this.item.children.map((child) => child.id));
+            }
+
             this.$emitter.on('current-item-expanded', (data) => {
                 if (data.id !== this.item.id) return;
                 this.isOpen = true;
+                if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                    this.loadChildDirectories();
+                }
                 if (! this.assetsLoaded && ! this.assetsLoading) {
                     this.loadDirectoryAssets();
                 }
@@ -337,12 +364,40 @@
                 this.assetsLoaded = false;
                 this.assetsLoading = false;
                 this.assetsStale = false;
+                this.childrenLoaded = false;
+                this.childrenLoading = false;
                 this.localAssets.splice(0, this.localAssets.length);
+            },
+            // When the tree reloads (same id, new prop object), the fresh item
+            // has children = [] so lazy-loaded grandchildren are discarded.
+            // Reset childrenLoaded so the next expand re-fetches them instead
+            // of rendering an empty list.
+            'item.children'(newChildren) {
+                if (Array.isArray(newChildren) && newChildren.length === 0 && this.childrenLoaded) {
+                    this.childrenLoaded = false;
+                }
             },
         },
         computed: {
+            // Children-loaded state lives on the item so the root component's
+            // reveal logic and this component share it — preventing an expand
+            // from re-fetching page 1 and wiping reveal-loaded deeper pages.
+            childrenLoaded: {
+                get() {
+                    return !! this.item._loaded;
+                },
+                set(value) {
+                    this.item._loaded = value;
+                },
+            },
+
+            childrenHasMore() {
+                return !! this.item.children_has_more;
+            },
+
             isDirectory: function() {
-                return this.item.children && Object.keys(this.item.children).length;
+                return (this.item.children && Object.keys(this.item.children).length)
+                    || this.item.has_children;
             },
 
             isAssets: function() {
@@ -409,8 +464,13 @@
                     this.isOpen = willOpen;
                 }
 
-                if (willOpen && ! this.assetsLoaded && ! this.assetsLoading) {
-                    this.loadDirectoryAssets();
+                if (willOpen) {
+                    if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                        this.loadChildDirectories();
+                    }
+                    if (! this.assetsLoaded && ! this.assetsLoading) {
+                        this.loadDirectoryAssets();
+                    }
                 }
 
                 this.$emit("set-filters", item);
@@ -461,9 +521,75 @@
                 if (! this.isOpen) {
                     this.isOpen = true;
                 }
+                if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
+                    this.loadChildDirectories();
+                }
                 if (! this.assetsLoaded) {
                     this.loadDirectoryAssets();
                 }
+            },
+
+            loadChildDirectories() {
+                if (this.childrenLoading || this.childrenLoaded) return;
+                this.childrenLoading = true;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id), { params: { offset: 0 } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(this.item.children)) {
+                            this.item.children = [];
+                        }
+                        this.item.children.splice(0, this.item.children.length, ...children);
+                        this.item.children_has_more = !! response.data.has_more;
+                        this.childrenLoaded = true;
+                        this.childrenLoading = false;
+                        this.fetchChildCounts(children.map((child) => child.id));
+                    })
+                    .catch(() => {
+                        this.childrenLoading = false;
+                    });
+            },
+
+            // Append the next page of children (wide levels load incrementally).
+            loadMoreChildren() {
+                if (this.childrenLoadingMore || ! this.childrenHasMore) return;
+                this.childrenLoadingMore = true;
+                const offset = Array.isArray(this.item.children) ? this.item.children.length : 0;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id), { params: { offset } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(this.item.children)) {
+                            this.item.children = [];
+                        }
+                        this.item.children.push(...children);
+                        this.item.children_has_more = !! response.data.has_more;
+                        this.childrenLoadingMore = false;
+                        this.fetchChildCounts(children.map((child) => child.id));
+                    })
+                    .catch(() => {
+                        this.childrenLoadingMore = false;
+                    });
+            },
+
+            // Lazily fetch the subtree asset-count badges for the given child
+            // ids and assign them, so the structure renders before the heavy
+            // nested-set roll-up resolves.
+            fetchChildCounts(ids) {
+                ids = (ids || []).filter((id) => id != null);
+                if (! ids.length) return;
+                this.$axios
+                    .post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                    .then((response) => {
+                        const counts = response.data.data || {};
+                        (this.item.children || []).forEach((child) => {
+                            const value = counts[child.id];
+                            if (value !== undefined) {
+                                child.assets_total_count = value;
+                            }
+                        });
+                    })
+                    .catch(() => {});
             },
 
             invalidateAssetCache() {
@@ -495,10 +621,15 @@
     });
 </script>
 <script type="text/x-template" id="v-tree-view-template">
+    <template v-if="treeLoading">
+        <div class="tree-container overflow-hidden" style="max-height: calc(100vh - 360px);">
+            <x-admin::shimmer.tree />
+        </div>
+    </template>
     <div
             class="relative"
             ref="treeContainer"
-            v-if="formattedItems"
+            v-else-if="formattedItems"
         >
             <!-- Move-in-flight overlay (directory or asset drag-move) -->
             <div
@@ -539,7 +670,7 @@
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
                         :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
                     >@{{ formattedItems[0].name }}</span>
-                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? 0" />
+                    <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? null" />
                 </div>
                 <draggable
                     id="root-tree-groups"
@@ -573,6 +704,17 @@
                         </div>
                     </template>
                 </draggable>
+
+                <button
+                    v-if="rootChildrenHasMore"
+                    type="button"
+                    @click.stop="loadMoreRootChildren"
+                    :disabled="rootChildrenLoadingMore"
+                    class="flex items-center gap-1.5 ml-6 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+                >
+                    <span v-if="rootChildrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
+                    <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
+                </button>
 
                 <draggable
                     id="assets-items"
@@ -773,10 +915,12 @@
         
 
         <!-- Create And Rename Directory Modal Form -->
+        <teleport to="body">
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"
             as="div"
             ref="modalForm"
+            class="z-[10002]"
         >
             <form
                 @submit="handleSubmit($event, createOrRenameDirectory)"
@@ -872,8 +1016,10 @@
                 </x-admin::modal>
             </form>
         </x-admin::form>
+        </teleport>
 
         <!-- Asset Rename -->
+        <teleport to="body">
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"
             as="div"
@@ -940,6 +1086,7 @@
                 </x-admin::modal>
             </form>
         </x-admin::form>
+        </teleport>
 
     </script>
 <script type="module">
@@ -963,6 +1110,10 @@
             showAssets: {
                 type: Boolean,
                 default: false,
+            },
+            visible: {
+                type: Boolean,
+                default: true,
             },
         },
         provide() {
@@ -993,6 +1144,7 @@
                 requestType: null,
                 parentItem: null,
                 isLoading: false,
+                treeLoading: false,
                 actionStatus: null,
                 dragStart: false,
                 movingDirectoryId: null,
@@ -1000,6 +1152,7 @@
                 copyingDirectoryId: null,
                 gridBusy: false,
                 moveStatusLabel: '',
+                rootChildrenLoadingMore: false,
                 _folderAbortController: null,
                 _awaitingFolderFiles: false,
                 localAccessibleIds: [...(this.accessibleIds || [])],
@@ -1082,7 +1235,77 @@
                 this.revealDirectory(id, silent);
             });
 
-            this.loadDirectories();
+            // Explorer navigation → select in tree without looping back.
+            // __explorerSync guards setFilters so it skips emitting current-directory.
+            // fromTree=true: navigation was initiated by a tree click (toggle already
+            // ran), so only ancestors are expanded — the target's open state is left
+            // intact so collapse is not overridden by this roundtrip.
+            // fromTree=false: navigation from grid/bookmark/breadcrumb, so expand all
+            // including the target so its children become visible in the tree.
+            this.$emitter.on('dam:explorer-tree-sync', async ({ id, fromTree } = {}) => {
+                if (id == null) return;
+                if (! this.formattedItems || ! this.formattedItems[0]) {
+                    // Tree not loaded yet — piggyback on _pendingReveal so it runs once ready.
+                    // fromExplorerSync=true tells the drain to apply .finally(__explorerSync=false).
+                    this._pendingReveal = { id, silent: true, fromExplorerSync: true };
+                    this.__explorerSync = true;
+                    return;
+                }
+                this.__explorerSync = true;
+                let path = this.findPathToDirectory(id);
+                if (! path) {
+                    path = await this.fetchAndRevealPath(id, true);
+                    if (! path) {
+                        this.__explorerSync = false;
+                        return;
+                    }
+                }
+                const expandCount = fromTree ? path.length - 1 : path.length;
+                for (let i = 0; i < expandCount; i++) {
+                    this.$emitter.emit('current-item-expanded', path[i]);
+                }
+                this.$nextTick().then(() => this.$nextTick().then(() => {
+                    const target = path[path.length - 1];
+                    const el = this.$refs.treeContainer
+                        && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
+                    if (el) {
+                        const container = this.$refs.treeContainer;
+                        const containerRect = container.getBoundingClientRect();
+                        const elRect = el.getBoundingClientRect();
+                        const scrollTop = container.scrollTop + elRect.top - containerRect.top - (containerRect.height / 2 - el.offsetHeight / 2);
+                        container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+                    }
+                    this.setFilters(target);
+                    this.__explorerSync = false;
+                }));
+            });
+
+            // Explorer delete completed → reload tree to remove the deleted node.
+            this.$emitter.on('dam:tree-reload', () => {
+                this.loadDirectories();
+            });
+
+            // Explorer context menu → open tree's create modal with the target as parent.
+            this.$emitter.on('dam:open-create-dir', ({ item } = {}) => {
+                if (! item?.id) return;
+                this.selectedItem = item;
+                this.directoryCreate = true;
+                this.__explorerTriggeredCreate = true;
+                this.$refs.directoryCreateOrRenameModal.toggle();
+            });
+
+            // Explorer context menu → open tree's rename modal for the target dir.
+            this.$emitter.on('dam:open-rename-dir', ({ item } = {}) => {
+                if (! item?.id) return;
+                this.selectedItem = item;
+                this.directoryCreate = false;
+                this.__explorerTriggeredRename = true;
+                this.$refs.directoryCreateOrRenameModal.toggle();
+            });
+
+            if (this.visible) {
+                this.loadDirectories();
+            }
         },
 
         computed: {
@@ -1100,6 +1323,12 @@
             // grid is busy on the other side. Drives `treeLocked` prop chain.
             treeBusy() {
                 return this.treeMutating || this.gridBusy;
+            },
+            // The root's direct children are rendered by THIS component (not a
+            // v-tree-item), so it needs its own "load more" — wide root levels
+            // (more than the page size) would otherwise be capped silently.
+            rootChildrenHasMore() {
+                return !! (this.formattedItems && this.formattedItems[0] && this.formattedItems[0].children_has_more);
             },
         },
 
@@ -1199,19 +1428,17 @@
             // `silent=true` suppresses the not-found flash — used for non-user
             // initiated reveals (deep link from edit page, breadcrumb click).
             async revealDirectory(id, silent = false) {
-                const path = this.findPathToDirectory(id);
+                let path = this.findPathToDirectory(id);
+
                 if (! path) {
-                    if (! silent) {
-                        this.$emitter.emit('add-flash', {
-                            type: 'error',
-                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
-                        });
-                    }
-                    return;
+                    // Node not yet in the lazy-loaded tree — fetch the ancestor
+                    // chain from the backend and load each missing level.
+                    path = await this.fetchAndRevealPath(id, silent);
+                    if (! path) return;
                 }
 
-                // Expand every ancestor (all but the last node).
-                for (let i = 0; i < path.length - 1; i++) {
+                // Expand every ancestor AND the target itself so its children are visible.
+                for (let i = 0; i < path.length; i++) {
                     this.$emitter.emit('current-item-expanded', path[i]);
                 }
 
@@ -1224,11 +1451,109 @@
                 const target = path[path.length - 1];
                 const el = this.$refs.treeContainer
                     && this.$refs.treeContainer.querySelector(`[data-dir-id="${target.id}"]`);
-                if (el && typeof el.scrollIntoView === 'function') {
-                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                if (el) {
+                    const container = this.$refs.treeContainer;
+                    const containerRect = container.getBoundingClientRect();
+                    const elRect = el.getBoundingClientRect();
+                    const scrollTop = container.scrollTop + elRect.top - containerRect.top - (containerRect.height / 2 - el.offsetHeight / 2);
+                    container.scrollTo({ top: scrollTop, behavior: 'smooth' });
                 }
 
                 this.setFilters(target);
+            },
+
+            // Load successive pages of a node's children until `targetId` is
+            // present (or pages run out). Reveal uses this so a deep target on a
+            // later page of a wide level still surfaces. Marks the node loaded so
+            // a later expand won't re-fetch page 1 and drop the extra pages, and
+            // lazily fills the loaded children's count badges.
+            async loadNodeChildrenUntilFound(node, targetId) {
+                if (! Array.isArray(node.children)) node.children = [];
+                node.children.splice(0, node.children.length);
+
+                let hasMore = true;
+                let guard = 0;
+
+                while (hasMore && guard++ < 100) {
+                    const offset = node.children.length;
+                    let response;
+                    try {
+                        response = await this.$axios.get(
+                            `{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', node.id),
+                            { params: { offset } }
+                        );
+                    } catch (e) {
+                        break;
+                    }
+
+                    const children = response.data.data || [];
+                    node.children.push(...children);
+                    hasMore = !! response.data.has_more;
+
+                    if (! children.length) break;
+                    if (node.children.some((child) => Number(child.id) === Number(targetId))) break;
+                }
+
+                node._loaded = true;
+                node.children_has_more = hasMore;
+                this.fetchCountsForNodes(node.children);
+
+                return node.children;
+            },
+
+            // Fetches the ancestor path for `id` from the backend, injects any
+            // missing levels into the local tree, then returns the path array so
+            // revealDirectory can expand it. Returns null on error or not-found.
+            async fetchAndRevealPath(id, silent = false) {
+                let ancestors;
+                try {
+                    const response = await this.$axios.get(
+                        `{{ route('admin.dam.directory.path', ':id') }}`.replace(':id', id)
+                    );
+                    ancestors = response.data.data || [];
+                } catch (e) {
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
+                    return null;
+                }
+
+                if (! ancestors.length) {
+                    if (! silent) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                        });
+                    }
+                    return null;
+                }
+
+                // Walk down the ancestor chain. For each ancestor, if it is not
+                // yet in the local tree, load its parent's children so it appears.
+                for (const ancestor of ancestors) {
+                    const inTree = this.findItemDirectoryById(this.formattedItems, ancestor.id, null);
+                    if (inTree) continue;
+
+                    // Not in tree — load children of its parent to inject it.
+                    if (ancestor.parent_id == null) continue; // root already there
+
+                    const parentNode = this.findItemDirectoryById(this.formattedItems, ancestor.parent_id, null);
+                    if (parentNode) {
+                        await this.loadNodeChildrenUntilFound(parentNode.item, ancestor.id);
+                    }
+                }
+
+                const path = this.findPathToDirectory(id);
+                if (! path && ! silent) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'error',
+                        message: "@lang('dam::app.admin.dam.index.directory.search.not-found-flash')",
+                    });
+                }
+                return path;
             },
 
             setFilters(item, type = "directory") {
@@ -1242,7 +1567,9 @@
                 let column = type == 'directory' ? 'directory_id' : 'directory_asset_id';
                 let value = [this.selectedItem.id];
 
-                this.$emitter.emit('current-directory', this.parentItem);
+                if (! this.__explorerSync) {
+                    this.$emitter.emit('current-directory', this.parentItem);
+                }
                 this.emitBreadcrumb(this.parentItem);
                 this.$emitter.emit('data-grid:reset-all-filters');
                 this.$emitter.emit('data-grid:filter', {
@@ -1339,13 +1666,28 @@
                             // it as the active item instead of staying on the parent.
                             this.selectedItem = response.data.data;
                             this.parentItem = response.data.data;
+
+                            // Create triggered from explorer: suppress navigation into
+                            // the new directory — explorer should stay on the parent.
+                            if (this.__explorerTriggeredCreate) {
+                                this.$emitter.emit('dam:suppress-nav-once');
+                                this.__explorerTriggeredCreate = false;
+                            }
                         } else {
                             this.selectedItem = response.data.data;
+                            // Rename triggered from explorer: tell explorer to skip
+                            // the next current-directory navigation so it doesn't
+                            // navigate INTO the renamed directory on tree reload.
+                            if (this.__explorerTriggeredRename) {
+                                this.$emitter.emit('dam:suppress-nav-once');
+                                this.__explorerTriggeredRename = false;
+                            }
                         }
 
                         this.loadDirectories();
 
                         this.$emitter.emit('current-item-expanded', this.selectedItem);
+                        this.$emitter.emit('dam:directory-mutated');
 
                         this.$emitter.emit('add-flash', {
                             type: 'success',
@@ -1737,48 +2079,29 @@
 
                 const fileEntries = await collectFiles(dirHandle, '');
 
-                if (emptyDirs.length > 0) {
-                    try {
-                        await this.$axios.post(
-                            "{{ route('admin.dam.directory.create_structure') }}",
-                            { directory_id: this.selectedItem.id, paths: emptyDirs }
-                        );
-                    } catch (e) {
-                        // non-fatal
-                    }
-                }
-
-                if (fileEntries.length === 0) {
-                    if (emptyDirs.length > 0) {
-                        this.$emitter.emit('add-flash', {
-                            type: 'success',
-                            message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                        });
-                        this.loadDirectories();
-                        this.$emitter.emit('data-grid:refresh');
-                    } else {
-                        this.$emitter.emit('add-flash', {
-                            type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
-                        });
-                    }
+                if (fileEntries.length === 0 && emptyDirs.length === 0) {
+                    this.$emitter.emit('add-flash', {
+                        type: 'warning',
+                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                    });
                     return;
                 }
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries, emptyDirs);
             },
 
             handleFileChange(event) {
                 const files = event.target.files;
                 if (! files || files.length === 0) return;
+                if (! this.selectedItem) { event.target.value = ''; return; }
 
-                const formData = new FormData();
-                for (let i = 0; i < files.length; i++) {
-                    formData.append('files[]', files[i]);
-                }
-                formData.append('directory_id', this.selectedItem.id);
-
-                this.$emitter.emit('dam:upload-files', formData);
+                // Funnel into the shared upload manager so the floating progress
+                // panel (with per-file progress) shows, identical to a drag-drop.
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items: Array.from(files).map(f => ({ file: f, relativePath: f.name, preserveRoot: false })),
+                    folderPaths: [],
+                    targetDirId: this.selectedItem.id,
+                });
                 event.target.value = '';
             },
 
@@ -1801,88 +2124,31 @@
 
                 event.target.value = '';
 
-                await this.chunkedFolderUpload(fileEntries);
+                this.enqueueFolderUpload(fileEntries);
             },
 
-            async chunkedFolderUpload(fileEntries) {
-                if (! fileEntries.length) return;
+            // Funnel a folder (files + any empty directories) into the shared upload
+            // manager so it shows the floating progress panel with per-file progress,
+            // identical to a drag-drop. The manager creates the directory structure
+            // (create_structure) then uploads each file (upload_folder) concurrently.
+            enqueueFolderUpload(fileEntries, emptyDirs = []) {
+                if (! this.selectedItem) return;
+                if (! fileEntries.length && ! emptyDirs.length) return;
 
-                if (this._folderAbortController) {
-                    this._folderAbortController.abort();
-                }
-                this._folderAbortController = new AbortController();
-                const signal = this._folderAbortController.signal;
-
-                const chunkSize = Math.max(1, damTreeMaxFileUploads - 2);
-                const chunks = [];
-                for (let i = 0; i < fileEntries.length; i += chunkSize) {
-                    chunks.push(fileEntries.slice(i, i + chunkSize));
-                }
-
-                this.$emitter.emit('dam:grid-busy', true);
-                this.$emitter.emit('dam:folder-upload-start');
-
-                let totalUploaded = 0;
-
-                for (const chunk of chunks) {
-                    if (signal.aborted) break;
-
-                    const formData = new FormData();
-                    formData.append('directory_id', this.selectedItem.id);
-                    formData.append('preserve_root', '1');
-                    chunk.forEach(({ file, relativePath }) => {
-                        formData.append('files[]', file);
-                        formData.append('relative_paths[]', relativePath);
-                    });
-
-                    try {
-                        const response = await this.$axios.post(
-                            "{{ route('admin.dam.assets.upload_folder') }}",
-                            formData,
-                            { headers: { 'Content-Type': 'multipart/form-data' }, signal }
-                        );
-                        totalUploaded += (response.data.files || []).length;
-                    } catch (error) {
-                        this._folderAbortController = null;
-                        this.$emitter.emit('dam:grid-busy', false);
-                        this.$emitter.emit('dam:folder-upload-end');
-
-                        if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED' || signal.aborted) {
-                            this.$emitter.emit('add-flash', {
-                                type: 'warning',
-                                message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                            });
-                        } else {
-                            this.$emitter.emit('add-flash', {
-                                type: 'error',
-                                message: error?.response?.data?.message || "@lang('dam::app.admin.dam.index.directory.creation-failed')",
-                            });
-                        }
-                        return;
-                    }
+                const folderPaths = new Set(emptyDirs);
+                const items = [];
+                for (const { file, relativePath } of fileEntries) {
+                    const rel  = relativePath || file.name;
+                    const segs = rel.split('/');
+                    for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+                    items.push({ file, relativePath: rel, preserveRoot: true });
                 }
 
-                this._folderAbortController = null;
-                this.$emitter.emit('dam:grid-busy', false);
-                this.$emitter.emit('dam:folder-upload-end');
-
-                if (totalUploaded > 0 && this.selectedItem) {
-                    this.adjustAncestorCounts(this.selectedItem.id, totalUploaded);
-                }
-
-                if (! signal.aborted) {
-                    this.$emitter.emit('add-flash', {
-                        type: 'success',
-                        message: "@lang('dam::app.admin.dam.index.upload-complete')",
-                    });
-                    this.loadDirectories();
-                    this.$emitter.emit('data-grid:refresh');
-                } else {
-                    this.$emitter.emit('add-flash', {
-                        type: 'warning',
-                        message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
-                    });
-                }
+                this.$emitter.emit('dam:enqueue-upload', {
+                    items,
+                    folderPaths: [...folderPaths],
+                    targetDirId: this.selectedItem.id,
+                });
             },
 
             setAssets(data) {
@@ -1951,8 +2217,14 @@
             },
 
             loadDirectories() {
+                this.treeLoading = true;
                 this.$axios.get("{{ route('admin.dam.directory.index') }}")
                         .then((response) => {
+                            // Clear the shimmer flag synchronously in this same
+                            // reactive flush (before the reveal/scroll $nextTick
+                            // below) so the real tree container is mounted when
+                            // that callback queries this.$refs.treeContainer.
+                            this.treeLoading = false;
                             const tree = response.data.data;
 
                             // Default Root.assets to an empty array synchronously
@@ -1968,11 +2240,31 @@
 
                             this.formattedItems = tree;
 
+                            // Lazily fill count badges for the initially-rendered
+                            // nodes (roots + their pre-loaded children). Iterate the
+                            // REACTIVE formattedItems (not the raw `tree`) so the
+                            // assignments actually re-render. Deeper levels are
+                            // filled by each node's fetchChildCounts as it loads.
+                            const initialCountNodes = [];
+                            (this.formattedItems || []).forEach((root) => {
+                                initialCountNodes.push(root);
+                                (root.children || []).forEach((child) => initialCountNodes.push(child));
+                            });
+                            this.fetchCountsForNodes(initialCountNodes);
+
                             this.$nextTick(() => {
                                 if (this.selectedItem) {
-                                    this.$emitter.emit('current-item-expanded', this.selectedItem);
-                                    this.setFilters(this.selectedItem);
-                                } else {
+                                    // With lazy loading the full path is not in the new
+                                    // shallow tree — use revealDirectory so ancestors are
+                                    // fetched and expanded, not just the target node.
+                                    this.revealDirectory(this.selectedItem.id, true);
+                                } else if (! this._pendingReveal) {
+                                    // Only set default selection when no pending reveal exists.
+                                    // If _pendingReveal is set, revealDirectory will handle
+                                    // selection and emit current-directory — calling
+                                    // setDefaultSeletedItem here too would emit a conflicting
+                                    // current-directory(root) that fights the reveal and can
+                                    // cause an infinite navigation loop via goTo → dam:explorer-tree-sync.
                                     this.setDefaultSeletedItem();
                                 }
 
@@ -1983,18 +2275,46 @@
                                 // Drain any reveal request that arrived while
                                 // the tree was still fetching its directories.
                                 if (this._pendingReveal) {
-                                    const { id, silent } = this._pendingReveal;
+                                    const { id, silent, fromExplorerSync } = this._pendingReveal;
                                     this._pendingReveal = null;
-                                    this.revealDirectory(id, silent);
+                                    // Only reset __explorerSync in .finally() when it
+                                    // was pre-set by the dam:explorer-tree-sync branch
+                                    // (line 1074). If it was false (dam:reveal-directory
+                                    // branch), revealDirectory → setFilters → current-directory
+                                    // → goTo → dam:explorer-tree-sync will own the reset via
+                                    // its own $nextTick callback — resetting here first
+                                    // would let that callback emit current-directory again,
+                                    // creating an infinite navigation loop.
+                                    const reveal = this.revealDirectory(id, silent);
+                                    if (fromExplorerSync) {
+                                        // _pendingReveal was queued by dam:explorer-tree-sync
+                                        // which set __explorerSync=true. revealDirectory will
+                                        // call setFilters with __explorerSync=true → skips
+                                        // current-directory, so goTo is never called and no
+                                        // dam:explorer-tree-sync resets __explorerSync for us.
+                                        // Reset it here once revealDirectory completes.
+                                        reveal.finally(() => {
+                                            this.__explorerSync = false;
+                                        });
+                                    }
+                                    // When fromExplorerSync=false (dam:reveal-directory branch),
+                                    // revealDirectory → setFilters → current-directory → goTo →
+                                    // dam:explorer-tree-sync owns the __explorerSync reset via its
+                                    // own $nextTick callback. No .finally() needed here.
                                 }
                             });
                         })
                         .catch((error) => {
+                            this.treeLoading = false;
                             console.error('Error fetching directories:', error);
                         });
             },
 
             loadRootAssets() {
+                // The directory-assets endpoint returns [] when DAM_TREE_SHOW_ASSETS
+                // is off (the default) — skip the round-trip entirely in that case.
+                if (! this.showAssets) return;
+
                 const root = this.formattedItems[0];
                 if (! root) return;
                 this.$axios
@@ -2013,6 +2333,53 @@
                         }
                     })
                     .catch(() => {});
+            },
+
+            // Lazily fetch and assign subtree asset-count badges for the given
+            // node objects (root nodes + reveal-loaded nodes). Each node is a
+            // live reference in the reactive tree, so the assignment updates its
+            // badge once the count arrives.
+            fetchCountsForNodes(nodes) {
+                const list = (nodes || []).filter((node) => node && node.id != null);
+                if (! list.length) return;
+                this.$axios
+                    .post("{{ route('admin.dam.directory.asset_counts') }}", { ids: list.map((node) => node.id) })
+                    .then((response) => {
+                        const counts = response.data.data || {};
+                        list.forEach((node) => {
+                            const value = counts[node.id];
+                            if (value !== undefined) {
+                                node.assets_total_count = value;
+                            }
+                        });
+                    })
+                    .catch(() => {});
+            },
+
+            // Append the next page of the ROOT's direct children. Mirrors the
+            // v-tree-item `loadMoreChildren`, but for the root level which this
+            // component renders itself (root-tree-groups). Without it, roots
+            // with more children than the page size are silently truncated.
+            loadMoreRootChildren() {
+                const root = this.formattedItems && this.formattedItems[0];
+                if (! root || this.rootChildrenLoadingMore || ! root.children_has_more) return;
+                this.rootChildrenLoadingMore = true;
+                const offset = Array.isArray(root.children) ? root.children.length : 0;
+                this.$axios
+                    .get(`{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', root.id), { params: { offset } })
+                    .then((response) => {
+                        const children = response.data.data || [];
+                        if (! Array.isArray(root.children)) {
+                            root.children = [];
+                        }
+                        root.children.push(...children);
+                        root.children_has_more = !! response.data.has_more;
+                        this.rootChildrenLoadingMore = false;
+                        this.fetchCountsForNodes(children);
+                    })
+                    .catch(() => {
+                        this.rootChildrenLoadingMore = false;
+                    });
             },
 
             loadDirectoryChildrens() {
@@ -2080,7 +2447,7 @@
 
                     this.$emitter.emit('add-flash', {
                         type: 'success',
-                        message: 'Action completed successfully'
+                        message: "@lang('dam::app.admin.explorer.action-completed')"
                     });
 
                     return true;

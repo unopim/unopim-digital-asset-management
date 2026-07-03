@@ -1,23 +1,11 @@
 @props(['isMultiRow' => false])
 
+@include('dam::components.shared.asset-card')
+
 <v-gallery-table>
     {{ $slot }}
 </v-gallery-table>
 
-@pushOnce('styles')
-    {{-- Responsive grid overrides pushed after admin CSS so they win the cascade --}}
-    <style>
-        @media (min-width: 768px) {
-            .dam-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1240px) {
-            .dam-gallery-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
-        @media (min-width: 1920px) {
-            .dam-gallery-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-        }
-    </style>
-@endPushOnce
 
 @pushOnce('scripts')
     <script
@@ -61,7 +49,7 @@
 
             <!-- Records grid -->
             <div
-                class="dam-gallery-grid grid grid-cols-2 gap-4"
+                class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4"
                 v-if="$parent.available.records.length"
             >
                 <slot name="body">
@@ -74,78 +62,13 @@
                             v-for="record in $parent.available.records"
                             :key="record.id"
                         >
-                            <!-- Card -->
-                            <div
-                                class="image-card relative overflow-hidden rounded-lg border border-gray-200 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900 transition-colors group{{ bouncer()->hasPermission('dam.asset.view') ? ' cursor-pointer' : '' }}"
-                                @if (bouncer()->hasPermission('dam.asset.view'))
-                                    @click="previewImage(record.id)"
-                                @endif
-                            >
-                                <!-- Thumbnail -->
-                                <img
-                                    :src="getAssetSrc(record)"
-                                    :alt="record.file_name"
-                                    class="w-full h-full"
-                                    :class="record.file_type === 'image' ? 'object-cover object-center' : 'object-contain p-4 sm:p-6'"
-                                    v-on:error="onImageError($event, record)"
-                                >
-
-                                <!-- File-type badge (top-right) -->
-                                <span
-                                    v-if="record.extension"
-                                    class="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md"
-                                    :class="{
-                                        'bg-violet-600': record.file_type === 'video' || record.file_type === 'audio',
-                                        'bg-red-600':    (record.extension || '').toLowerCase() === 'pdf',
-                                        'bg-gray-600':   record.file_type !== 'video' && record.file_type !== 'audio' && (record.extension || '').toLowerCase() !== 'pdf',
-                                    }"
-                                    v-text="(record.extension || '').toUpperCase()"
-                                ></span>
-
-                                <!-- Play / audio centred overlay -->
-                                <div
-                                    v-if="record.file_type === 'video' || record.file_type === 'audio'"
-                                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                >
-                                    <span
-                                        class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/55 text-white text-xl sm:text-2xl shadow-lg"
-                                        :class="record.file_type === 'video' ? 'icon-play' : 'icon-information'"
-                                        aria-hidden="true"
-                                    ></span>
-                                </div>
-
-                                <!-- Action overlay: always visible on mobile, hover-only on sm+ -->
-                                <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 transition-opacity max-sm:opacity-100 opacity-0 group-hover:opacity-100">
-                                    <div class="flex gap-1">
-                                        @if (bouncer()->hasPermission('dam.asset.view'))
-                                            <button
-                                                type="button"
-                                                class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors"
-                                                title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
-                                                @click.stop="previewImage(record.id)"
-                                            ></button>
-                                        @endif
-
-                                        @if (bouncer()->hasPermission('dam.asset.edit'))
-                                            <button
-                                                type="button"
-                                                class="icon-edit text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors"
-                                                title="@lang('dam::app.admin.dam.index.directory.actions.edit')"
-                                                @click.stop="editImage(record.id)"
-                                            ></button>
-                                        @endif
-
-                                        @if (bouncer()->hasPermission('dam.asset.destroy'))
-                                            <button
-                                                type="button"
-                                                class="icon-delete text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-red-600 transition-colors"
-                                                title="@lang('dam::app.admin.dam.index.directory.actions.delete')"
-                                                @click.stop="deleteImage(record.id)"
-                                            ></button>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
+                            <v-dam-asset-card
+                                :asset="record"
+                                :draggable="false"
+                                @preview="previewImage(record.id)"
+                                @edit="editImage(record.id)"
+                                @delete="deleteImage(record.id)"
+                            ></v-dam-asset-card>
 
                             <!-- Filename + optional mass-action checkbox -->
                             <div class="flex gap-1.5 items-center mt-2">
@@ -178,19 +101,9 @@
             </div>
 
             <!-- Empty state -->
-            <div
-                class="flex flex-col items-center justify-center gap-4 py-16 text-center"
-                v-else
-            >
-                <img
-                    src="{{ unopim_asset('images/no-records-found.svg', 'dam') }}"
-                    alt=""
-                    class="w-32 h-32 opacity-60"
-                />
-                <p class="text-xl font-bold text-zinc-800 dark:text-slate-50">
-                    @lang('admin::app.components.datagrid.table.no-records-available')
-                </p>
-            </div>
+            <template v-else>
+                @include('dam::components.shared.empty-state')
+            </template>
         </div>
     </script>
 
@@ -199,18 +112,7 @@
             template: '#v-gallery-table-template',
 
             data() {
-                return {
-                    assetPlaceholders: {
-                        video:       '{{ unopim_asset('images/grid/video.svg', 'dam') }}',
-                        audio:       '{{ unopim_asset('images/grid/audio.svg', 'dam') }}',
-                        pdf:         '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
-                        spreadsheet: '{{ unopim_asset('images/grid/sheet.svg', 'dam') }}',
-                        csv:         '{{ unopim_asset('images/grid/csv.svg', 'dam') }}',
-                        document:    '{{ unopim_asset('images/grid/file.svg', 'dam') }}',
-                        image:       '{{ unopim_asset('images/grid/image.svg', 'dam') }}',
-                    },
-                    fallbackSrc: '{{ unopim_asset('images/grid/unspecified.svg', 'dam') }}',
-                };
+                return {};
             },
 
             computed: {
@@ -230,20 +132,6 @@
             },
 
             methods: {
-                getAssetSrc(record) {
-                    if (record.path) {
-                        return record.path;
-                    }
-
-                    return this.assetPlaceholders[record.file_type] ?? this.fallbackSrc;
-                },
-
-                onImageError(event, record) {
-                    event.target.src = this.assetPlaceholders[record.file_type] ?? this.fallbackSrc;
-                    event.target.classList.remove('object-cover', 'object-center');
-                    event.target.classList.add('object-contain', 'p-4');
-                },
-
                 deleteImage(recordId) {
                     this.$emitter.emit('open-delete-modal', {
                         agree: () => {

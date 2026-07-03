@@ -73,7 +73,7 @@
                     </p>
                 </div>
             @else
-                <div id="dam-asset-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div id="dam-asset-grid" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
                     @foreach ($assets as $asset)
                         @php
                             $thumbnailUrl   = route('dam.share.thumbnail', ['token' => $share->token, 'assetId' => $asset->id]);

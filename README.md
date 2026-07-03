@@ -43,6 +43,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
   
 ![Metadata and Tagging](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/metadata-tagging.png)
 
+- **Tag Management**  
+  Manage tags from a dedicated **DAM → Tags** page: a datagrid listing each tag with its asset count and creation date, with search, filters, sorting, inline edit/delete, and bulk delete. Tags can be created here and assigned to assets — individually or in bulk — from the gallery.
+
 - **History Tracking**
  Maintain a complete history of changes made to assets, ensuring transparency and easy tracking of modifications over time
 ![History Tracking](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/history.png)
@@ -56,6 +59,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
   Export asset details as part of the product CSV export job, enabling smooth data transfer and management by including asset information directly in product CSV files.
 
 ![Asset Assignment via Export / Import](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-assignment.png)
+
+- **Secure Asset Handling**  
+  Uploads reject executable and HTML/script file types, and stored files are served with safe content types so they never execute inline in the browser. Bulk delete, property mass-delete, and folder uploads enforce the same per-directory permissions as their single-item counterparts.
 
 ## Installation with Composer
 

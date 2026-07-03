@@ -15,6 +15,10 @@
     <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" />
 </v-asset-field>
 
+@once('dam-grid-preview-modal')
+    @include('dam::asset.grid-preview-modal')
+@endonce
+
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-field-template">
         <!-- Panel Content -->
@@ -194,7 +198,6 @@
                         <span
                             class="icon-dam-full text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
                             @click="preview"
-                            v-if="'image' === asset.file_type"
                             title="@lang('dam::app.admin.components.asset.field.preview')"
                         ></span>
 
@@ -213,28 +216,6 @@
             <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold break-all" v-text="asset.file_name"></p>
         </div>
 
-        <!-- Modal Component for Preview -->
-        <x-dam::modal ref="assetPreviewModal" no-class="true">
-            <x-slot:content class="flex items-center">
-                <div class="flex flex-row gap-3 justify-between w-full">
-                    <div class="flex justify-center w-full">
-                        <img 
-                            :src="asset.previewUrl" 
-                            alt="Preview" 
-                            class="w-max"
-                            v-if="asset"
-                        />
-                    </div>
-                    <div>
-                        <span
-                            class="icon-cancel text-3xl cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 hover:rounded-md"
-                            @click="toggle"
-                        >
-                        </span>
-                    </div>
-                </div>
-            </x-slot>
-        </x-dam::modal>
     </script>
 
     <script type="module">
@@ -409,18 +390,8 @@
                     window.open(downloadLink, '_self');
                 },
 
-                preview(record) {
-                    if (! this.asset.previewUrl) {
-                        this.setPreviewUrl();
-                    }
-
-                    this.$refs.assetPreviewModal.open();
-                },
-
-                setPreviewUrl() {
-                    let filePath = encodeURIComponent(this.asset.storage_file_path);
-
-                    this.asset.previewUrl = `{{ route('admin.dam.file.preview', '') }}?path=${filePath}`;
+                preview() {
+                    this.$emitter.emit('dam-open-preview', this.asset.id);
                 },
             }
         });

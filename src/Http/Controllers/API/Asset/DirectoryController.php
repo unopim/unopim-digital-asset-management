@@ -3,11 +3,11 @@
 namespace Webkul\DAM\Http\Controllers\API\Asset;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
-use Webkul\DAM\Jobs\RenameDirectory as RenameDirectoryJob;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
@@ -25,11 +25,13 @@ class DirectoryController
     ) {}
 
     /**
-     * Get all the directory.
+     * List all directories as a tree.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $directories = $this->directoryRepository->getDirectoryTree();
+        $directories = $request->boolean('with_assets')
+            ? $this->directoryRepository->getDirectoryTree()
+            : $this->directoryRepository->getDirectoryTreeOnly();
 
         return new JsonResponse([
             'success' => true,
@@ -98,8 +100,6 @@ class DirectoryController
 
     /**
      * Get a directory by its id.
-     *
-     * @throws ModelNotFoundException If a directory with the given id is not found.
      */
     public function getDirectory(int $id): JsonResponse
     {
@@ -150,8 +150,8 @@ class DirectoryController
                 $directory = $this->directoryRepository->update([
                     'name' => $request->input('name'),
                 ], $id);
-                $requestAction = $this->start(EventType::RENAME_DIRECTORY->value);
-                RenameDirectoryJob::dispatch($id, $requestAction->getUser()->id);
+                $this->start(EventType::RENAME_DIRECTORY->value);
+                $this->completed(EventType::RENAME_DIRECTORY->value, $this->getUser()->id);
             }
 
             return response()->json([

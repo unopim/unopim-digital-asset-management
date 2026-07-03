@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Webkul\DAM\Http\Controllers\Concerns;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use ZipStream\CompressionMethod;
 use ZipStream\OperationMode;
@@ -67,6 +69,97 @@ trait StreamsZipDownload
 
             $zip->finish();
         }, Response::HTTP_OK, $headers);
+    }
+
+    /**
+     * Stream assets from a DB cursor as a ZIP archive.
+     */
+    protected function buildZipStreamFromAssets(
+        Builder $query,
+        string $folderBase,
+        string $disk,
+        string $zipName,
+    ): StreamedResponse {
+        $parentBase = dirname($folderBase).'/';
+
+        return response()->stream(function () use ($query, $parentBase, $disk): void {
+            set_time_limit(0);
+
+            $outputStream = fopen('php://output', 'wb');
+
+            $zip = new ZipStream(
+                outputStream: $outputStream,
+                sendHttpHeaders: false,
+                defaultCompressionMethod: CompressionMethod::STORE,
+                flushOutput: true,
+            );
+
+            foreach ($query->lazy(500) as $asset) {
+                $path = $asset->path;
+
+                try {
+                    if ($disk === Directory::ASSETS_DISK_AWS) {
+                        $stream = Storage::disk($disk)->readStream($path);
+
+                        if (! $stream) {
+                            $path = $this->derivePath($asset) ?? $path;
+                            $stream = Storage::disk($disk)->readStream($path);
+                        }
+
+                        if ($stream) {
+                            $entryName = str_starts_with($path, $parentBase)
+                                ? substr($path, strlen($parentBase))
+                                : ($asset->file_name ?: basename($path));
+                            $zip->addFileFromStream(fileName: $entryName, stream: $stream);
+                        }
+                    } else {
+                        $fullPath = Storage::disk($disk)->path($path);
+
+                        if (! file_exists($fullPath)) {
+                            $derived = $this->derivePath($asset);
+                            if ($derived) {
+                                $path = $derived;
+                                $fullPath = Storage::disk($disk)->path($path);
+                            }
+                        }
+
+                        if (file_exists($fullPath)) {
+                            $entryName = str_starts_with($path, $parentBase)
+                                ? substr($path, strlen($parentBase))
+                                : ($asset->file_name ?: basename($path));
+                            $zip->addFileFromPath(fileName: $entryName, path: $fullPath);
+                        }
+                    }
+                } catch (\Throwable) {
+                }
+            }
+
+            $zip->finish();
+        }, Response::HTTP_OK, [
+            'Content-Type'        => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="'.str_replace(['"', "\r", "\n", "\0"], '', $zipName).'"',
+            'Cache-Control'       => 'no-store',
+        ]);
+    }
+
+    /**
+     * Derive the current storage path from the asset's immediate parent directory.
+     */
+    private function derivePath(Asset $asset): ?string
+    {
+        $directory = $asset->relationLoaded('directories')
+            ? $asset->directories->first()
+            : null;
+
+        if (! $directory) {
+            return null;
+        }
+
+        return sprintf('%s/%s/%s',
+            Directory::ASSETS_DIRECTORY,
+            $directory->generatePath(),
+            $asset->file_name,
+        );
     }
 
     /**

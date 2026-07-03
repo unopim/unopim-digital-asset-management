@@ -80,15 +80,15 @@
                             class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
                             :style="`grid-template-columns: repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(160px, 1fr)`"
                         >
-                            <p v-html="record.share_type" class="truncate"></p>
-                            <p v-html="record.target_name" class="truncate"></p>
-                            <p v-html="record.share_name" class="truncate"></p>
-                            <p v-html="record.created_by_name" class="truncate"></p>
+                            <p class="truncate">@{{ record.share_type }}</p>
+                            <p class="truncate">@{{ record.target_name }}</p>
+                            <p class="truncate">@{{ record.share_name }}</p>
+                            <p class="truncate">@{{ record.created_by_name }}</p>
                             <p v-html="record.status"></p>
-                            <p v-html="record.expires_at" class="truncate"></p>
-                            <p v-html="record.view_count"></p>
-                            <p v-html="record.download_count"></p>
-                            <p v-html="record.created_at" class="truncate"></p>
+                            <p class="truncate">@{{ record.expires_at }}</p>
+                            <p>@{{ record.view_count }}</p>
+                            <p>@{{ record.download_count }}</p>
+                            <p class="truncate">@{{ record.created_at }}</p>
 
                             <div class="flex justify-end whitespace-nowrap" @click.stop>
                                 <a

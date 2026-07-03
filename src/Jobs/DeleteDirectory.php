@@ -7,7 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
+use Webkul\DAM\Models\Asset;
+use Webkul\DAM\Models\Directory as ModelDirectory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 
@@ -15,10 +18,11 @@ class DeleteDirectory implements ShouldQueue
 {
     use ActionRequestTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Create a new instance. */
     public function __construct(protected int $directoryId, protected int $userId) {}
 
     /**
-     * Handle the event.
+     * Delete the directory and its children.
      *
      * @return void
      */
@@ -35,31 +39,51 @@ class DeleteDirectory implements ShouldQueue
 
             $this->completed(EventType::DELETE_DIRECTORY->value, $this->userId);
         } catch (\Exception $e) {
-            $this->failed(EventType::DELETE_DIRECTORY->value, $this->userId, $e->getMessage());
+            $this->markFailed(EventType::DELETE_DIRECTORY->value, $this->userId, $e->getMessage());
         }
     }
 
     /**
-     * Delete the directory with the children directory
+     * Delete a directory and its children.
      */
     public function deleteDirectoryAndChildren(int $directoryId, DirectoryRepository $directoryRepository): void
     {
-        $directory = $directoryRepository->find($directoryId);
+        $root = $directoryRepository->find($directoryId);
 
-        $directoryRepository->isDirectoryWritable($directory->parent, 'delete');
+        if (! $root) {
+            return;
+        }
 
-        if ($directory) {
-            foreach ($directory->children as $child) {
-                $this->deleteDirectoryAndChildren($child->id, $directoryRepository);
+        $directoryRepository->isDirectoryWritable($root->parent, 'delete');
+
+        $rootPath = $root->generatePath();
+        $lft = $root->_lft;
+        $rgt = $root->_rgt;
+        $width = $rgt - $lft + 1;
+        $table = (new ModelDirectory)->getTable();
+
+        $subtreeDirIds = $root->descendants()->pluck('id')->prepend($root->id);
+
+        DB::transaction(function () use ($subtreeDirIds, $table, $rgt, $width) {
+            $assetIds = DB::table('dam_asset_directory')
+                ->whereIn('directory_id', $subtreeDirIds)
+                ->distinct()
+                ->pluck('asset_id');
+
+            if ($assetIds->isNotEmpty()) {
+                Asset::whereIn('id', $assetIds)->delete();
             }
 
-            $path = $directory->generatePath();
+            DB::table('dam_asset_directory')->whereIn('directory_id', $subtreeDirIds)->delete();
 
-            $directory->assets()->delete();
+            DB::table($table)->whereIn('id', $subtreeDirIds)->update(['parent_id' => null]);
 
-            $directory->delete();
+            DB::table($table)->whereIn('id', $subtreeDirIds)->delete();
 
-            $directoryRepository->deleteDirectoryWithStorage($path);
-        }
+            DB::table($table)->where('_rgt', '>', $rgt)->decrement('_rgt', $width);
+            DB::table($table)->where('_lft', '>', $rgt)->decrement('_lft', $width);
+        });
+
+        $directoryRepository->deleteDirectoryWithStorage($rootPath);
     }
 }

@@ -13,12 +13,13 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\DamInstaller;
+use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
-use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
@@ -26,11 +27,6 @@ use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
-    /**
-     * The container bindings that should be registered.
-     *
-     * @var array
-     */
     public $bindings = [
         Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
@@ -41,9 +37,7 @@ class DAMServiceProvider extends ServiceProvider
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
     ];
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function boot(Router $router)
     {
         $router->aliasMiddleware('dam', DAM::class);
@@ -62,6 +56,10 @@ class DAMServiceProvider extends ServiceProvider
             return Limit::perMinute(20)->by('dl|'.$request->ip());
         });
 
+        Route::middleware(['web', 'admin', 'dam'])
+            ->prefix(config('app.admin_url').'/dam')
+            ->group(__DIR__.'/../Routes/explorer-routes.php');
+
         Route::middleware('web')->group(__DIR__.'/../Routes/web.php');
 
         Route::group([], __DIR__.'/../Routes/share-public.php');
@@ -79,6 +77,7 @@ class DAMServiceProvider extends ServiceProvider
                 DamInstaller::class,
                 BackfillThumbnails::class,
                 SeedDamDemoData::class,
+                GenerateScaleData::class,
             ]);
         }
 
@@ -93,33 +92,22 @@ class DAMServiceProvider extends ServiceProvider
                 : null;
 
             $grantedIds = $role
-                ? app(DirectoryRolePermissionRepository::class)->getDirectoryIdsForRole($role->id)
+                ? app(DirectoryRolePermissionRepository::class)->getAllGrantedIds($role->id)
                 : [];
             $inheritChildren = (bool) ($settings?->inherit_children ?? false);
 
-            if ($inheritChildren && ! empty($grantedIds)) {
-                $descendants = DB::table('dam_directories as ancestor')
-                    ->join('dam_directories as descendant', function ($join) {
-                        $join->whereColumn('descendant._lft', '>=', 'ancestor._lft')
-                            ->whereColumn('descendant._rgt', '<=', 'ancestor._rgt');
-                    })
-                    ->whereIn('ancestor.id', $grantedIds)
-                    ->distinct()
-                    ->pluck('descendant.id')
-                    ->map(fn ($id) => (int) $id)
-                    ->all();
-                $expandedGrantedIds = array_values(array_unique(array_merge($grantedIds, $descendants)));
-            } else {
-                $expandedGrantedIds = $grantedIds;
-            }
+            $damEnabled = true;
 
             $view->with([
-                'role'               => $role,
-                'directoryTree'      => app(DirectoryRepository::class)->getFullDirectoryTreeOnly(),
-                'grantedIds'         => $grantedIds,
-                'expandedGrantedIds' => $expandedGrantedIds,
-                'allDirectories'     => (bool) ($settings?->all_directories ?? false),
-                'inheritChildren'    => $inheritChildren,
+                'role'                       => $role,
+                'grantedIds'                 => $grantedIds,
+                'allDirectories'             => (bool) ($settings?->all_directories ?? false),
+                'inheritChildren'            => $inheritChildren,
+                'damEnabled'                 => $damEnabled,
+                'routeDirectory'             => route('admin.dam.directory.index'),
+                'routeDirectoryPaths'        => route('admin.dam.directory.paths'),
+                'routeDirectoryChildren'     => route('admin.dam.directory.children', ['id' => '__ID__']),
+                'routeDirectoryDescendants'  => route('admin.dam.directory.descendants', ['id' => '__ID__']),
             ]);
         });
 
@@ -132,18 +120,15 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-config');
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public function register()
     {
-        // Load DAM-only global helper functions (dam_can_view_dir, etc.).
-        // Loaded here rather than via composer.json `autoload.files` so DAM
-        // stays self-contained without touching the root composer.json.
         $helpers = __DIR__.'/../Http/helpers.php';
         if (file_exists($helpers)) {
             require_once $helpers;
         }
+
+        $this->app->scoped(DirectoryPermissionService::class);
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
 

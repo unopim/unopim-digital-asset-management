@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Traits;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Webkul\DAM\Models\ActionRequest as ActionRequestModel;
 use Webkul\User\Models\Admin;
 
@@ -26,8 +27,8 @@ trait ActionRequest
     }
 
     /**
-     * Start the action
-     * */
+     * Start the action.
+     */
     public function start(string $eventType, array $options = []): self
     {
         $this->user = Admin::find(Auth::id());
@@ -54,7 +55,7 @@ trait ActionRequest
     }
 
     /**
-     * completed Action
+     * completed Action.
      */
     public function completed(string $eventType, int $userId, array $options = []): self
     {
@@ -70,14 +71,16 @@ trait ActionRequest
 
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
-        $request->update(['status' => 'completed']);
+        if ($request) {
+            $request->update(['status' => 'completed']);
+        }
 
         $this->actionRequest = $request;
 
         return $this;
     }
 
-    public function failed(string $eventType, int $userId, ?string $error = null, array $options = []): self
+    public function markFailed(string $eventType, int $userId, ?string $error = null, array $options = []): self
     {
         $whereCondition = [
             'event_type' => $eventType,
@@ -91,19 +94,33 @@ trait ActionRequest
 
         $request = ActionRequestModel::findOneWhere($whereCondition);
 
-        $request->update([
-            'status'        => 'failed',
-            'error_message' => $error,
-        ]);
+        if ($request) {
+            $request->update([
+                'status'        => 'failed',
+                'error_message' => $error,
+            ]);
+        }
 
         $this->actionRequest = $request;
 
         return $this;
     }
 
+    public function updateProgress(string $eventType, int $userId, int $percent): void
+    {
+        $percent = max(0, min(100, $percent));
+
+        Cache::put("dam.progress.{$eventType}.{$userId}", $percent, now()->addHours(2));
+    }
+
+    public function clearProgress(string $eventType, int $userId): void
+    {
+        Cache::forget("dam.progress.{$eventType}.{$userId}");
+    }
+
     public function checkedUser($userId)
     {
-        $this->user = Admin::find($this->userId);
+        $this->user = Admin::find($userId);
 
         return $this->user;
     }

@@ -15,7 +15,7 @@ class AssetProperty implements HistoryPresenterInterface
     ];
 
     /**
-     * {@inheritdoc}
+     * Format asset property values for history display.
      */
     public static function representValueForHistory(mixed $oldValues, mixed $newValues, string $fieldName): array
     {

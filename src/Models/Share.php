@@ -25,10 +25,7 @@ class Share extends Model implements HistoryContract, ShareContract
 
     protected $historyTags = ['Share'];
 
-    /**
-     * Internal bookkeeping columns whose churn would spam the history feed.
-     * The user-visible fields (name, expires_at, revoked_at, token) stay tracked.
-     */
+    /** Internal bookkeeping columns excluded from the history feed. */
     protected $auditExclude = [
         'view_count',
         'download_count',

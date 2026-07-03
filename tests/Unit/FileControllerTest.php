@@ -15,6 +15,7 @@ use Webkul\DAM\Models\Directory;
 // After:  Storage::path() + response()->file($absolutePath) → BinaryFileResponse
 
 it('getFileResponse on local disk returns BinaryFileResponse for cached thumbnail', function () {
+    config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
     Storage::fake(Directory::ASSETS_DISK_PRIVATE);
     Auth::shouldReceive('check')->andReturn(true);
 
@@ -31,6 +32,7 @@ it('getFileResponse on local disk returns BinaryFileResponse for cached thumbnai
 });
 
 it('getFileResponse on local disk returns BinaryFileResponse for cached preview', function () {
+    config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
     Storage::fake(Directory::ASSETS_DISK_PRIVATE);
     Auth::shouldReceive('check')->andReturn(true);
 
@@ -48,6 +50,7 @@ it('getFileResponse on local disk returns BinaryFileResponse for cached preview'
 });
 
 it('getFileResponse on local disk returns BinaryFileResponse for SVG thumbnail', function () {
+    config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
     Storage::fake(Directory::ASSETS_DISK_PRIVATE);
     Auth::shouldReceive('check')->andReturn(true);
 
@@ -63,6 +66,7 @@ it('getFileResponse on local disk returns BinaryFileResponse for SVG thumbnail',
 });
 
 it('getFileResponse on local disk returns BinaryFileResponse for PDF preview via supported-media path', function () {
+    config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
     Storage::fake(Directory::ASSETS_DISK_PRIVATE);
     Auth::shouldReceive('check')->andReturn(true);
 

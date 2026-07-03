@@ -3,15 +3,16 @@
 </template>
 
 <template v-else>
-    <div class="relative mt-7 flex items-center justify-between gap-4 max-md:flex-wrap">
+    <div class="relative mt-7 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <!-- Left Toolbar -->
-        <div class="flex gap-x-1">
+        <div class="flex flex-1 min-w-[120px] gap-x-1">
             <!-- Mass Actions Panel -->
             <div
                 class="flex w-full items-center gap-x-1"
                 v-if="applied.massActions.indices.length"
             >
                 <!-- Mass Action Dropdown -->
+                <div class="relative z-20">
                 <x-admin::dropdown>
                     <!-- Dropdown Toggler -->
                     <x-slot:toggle>
@@ -84,6 +85,7 @@
                         </template>
                     </x-slot>
                 </x-admin::dropdown>
+                </div>
 
                 <div class="ltr:pl-2.5 rtl:pr-2.5">
                     <p class="text-sm font-light text-gray-800 dark:text-white">
@@ -129,7 +131,7 @@
         </div>
 
         <!-- Right Toolbar -->
-        <div class="flex gap-x-4">
+        <div class="flex gap-x-4 items-center">
             <!-- Filters Activation Button -->
             <x-admin::drawer width="350px" ref="filterDrawer">
                 <x-slot:toggle>
@@ -177,6 +179,7 @@
             </x-admin::drawer>
 
             <div class="flex items-center gap-x-2">
+                <div class="relative z-20">
                 <x-admin::dropdown>
                     <!-- Dropdown Toggler -->
                     <x-slot:toggle>
@@ -200,8 +203,9 @@
                         </x-admin::dropdown.menu.item>
                     </x-slot>
                 </x-admin::dropdown>
+                </div>
 
-                <p class="whitespace-nowrap text-gray-600 dark:text-gray-300 max-sm:hidden">
+                <p class="whitespace-nowrap text-gray-600 dark:text-gray-300">
                     @lang('admin::app.components.datagrid.toolbar.per-page')
                 </p>
 
@@ -220,19 +224,49 @@
 
                 <!-- Pagination -->
                 <div class="flex items-center gap-1">
-                    <div
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
-                        @click="changePage('previous')"
+                    <button
+                        type="button"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
+                        @click="changePage('first')"
+                        title="@lang('admin::app.components.datagrid.toolbar.pagination.first-page')"
+                        aria-label="@lang('admin::app.components.datagrid.toolbar.pagination.first-page')"
                     >
-                        <span class="icon-chevron-left text-2xl"></span>
-                    </div>
+                        <span class="text-2xl" aria-hidden="true">&#171;</span>
+                    </button>
 
-                    <div
+                    <button
+                        type="button"
                         class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
-                        @click="changePage('next')"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
+                        @click="changePage('previous')"
+                        title="@lang('admin::app.components.datagrid.toolbar.pagination.previous-page')"
+                        aria-label="@lang('admin::app.components.datagrid.toolbar.pagination.previous-page')"
                     >
-                        <span class="icon-chevron-right text-2xl"></span>
-                    </div>
+                        <span class="text-2xl" aria-hidden="true">&#8249;</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
+                        @click="changePage('next')"
+                        title="@lang('admin::app.components.datagrid.toolbar.pagination.next-page')"
+                        aria-label="@lang('admin::app.components.datagrid.toolbar.pagination.next-page')"
+                    >
+                        <span class="text-2xl" aria-hidden="true">&#8250;</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
+                        @click="changePage('last')"
+                        title="@lang('admin::app.components.datagrid.toolbar.pagination.last-page')"
+                        aria-label="@lang('admin::app.components.datagrid.toolbar.pagination.last-page')"
+                    >
+                        <span class="text-2xl" aria-hidden="true">&#187;</span>
+                    </button>
                 </div>
             </div>
         </div>

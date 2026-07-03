@@ -3,6 +3,7 @@
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
 
+
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
     <v-dam-main></v-dam-main>
@@ -14,12 +15,37 @@
             type="text/x-template"
             id="v-dam-main-template"
         >
-            <div>
+            <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col min-w-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
-                    <div class="flex gap-2.5 mt-3.5 max-xl:flex-wrap">
-                        <!-- left sub component -->
-                        <div class="flex flex-col max-w-[360px] gap-5 h-full max-sm:w-full p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
-                            
+                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap min-w-0' }}">
+                        <!-- left side: stacked cards (visible when tree or bookmarks should appear) -->
+                        @php
+                            $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
+                            $showBookmarks = config('dam.explorer.bookmarks_enabled');
+                            $showSidebar   = $showTree || $showBookmarks;
+                        @endphp
+                        @if ($showSidebar)
+                        @if (config('dam.explorer.enabled'))
+                        {{-- Mobile/tablet drawer backdrop (below lg) --}}
+                        <div
+                            v-show="drawerOpen"
+                            @click="drawerOpen = false"
+                            class="fixed inset-0 z-[1000] bg-black/40 lg:hidden"
+                            aria-hidden="true"
+                        ></div>
+                        @endif
+                        <div
+                            class="flex flex-col gap-3 shrink-0 {{ config('dam.explorer.enabled')
+                                ? 'lg:static lg:w-[280px] lg:max-w-full lg:translate-x-0 lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:p-0 lg:overflow-visible max-lg:fixed max-lg:top-14 max-lg:bottom-0 max-lg:left-0 max-lg:z-[1001] max-lg:w-[280px] max-lg:max-w-[85vw] max-lg:bg-gray-50 dark:max-lg:bg-cherry-900 max-lg:shadow-2xl max-lg:overflow-y-auto max-lg:p-3 transition-transform duration-200'
+                                : 'w-[280px] max-w-full max-sm:w-full' }}"
+                            @if (config('dam.explorer.enabled'))
+                            :class="[ showSidebar ? '' : 'lg:hidden', drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
+                            @endif
+                        >
+
+                            <!-- directories card -->
+                            @if ($showTree)
+                            <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 {!! view_render_event('dam.admin.main.form.directory.before') !!}
                                 <div class="flex flex-col gap-2">
                                     <div class="flex justify-between items-center gap-2">
@@ -35,23 +61,50 @@
                                 <div class="dark:bg-cherry-700 border-b dark:border-cherry-800"></div>
                                 @if (bouncer()->hasPermission('dam.directory.index'))
                                     <div class="flex flex-col gap-5">
-                                        <p class="text-base	text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
+                                        <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
                                             @lang('dam::app.admin.dam.index.directory.title')
                                         </p>
                                         <x-dam::tree.damdirectories />
                                     </div>
                                 @endif
                                 {!! view_render_event('dam.admin.main.form.directory.after') !!}
+                            </div>
+                            @endif
+
+                            <!-- bookmarks card (separate component below directories) -->
+                            @if ($showBookmarks)
+                            <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                                <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
+                                    @lang('dam::app.admin.explorer.bookmarks.title')
+                                </p>
+                                <div class="dark:bg-cherry-700 border-b dark:border-cherry-800"></div>
+                                <x-dam::explorer.bookmarks />
+                            </div>
+                            @endif
+
                         </div>
+                        @endif
+
+                        {{-- Hidden tree mount: keeps Vue component (and its modal listeners) alive
+                             when explorer is enabled but show_tree is off. Modals teleport to body. --}}
+                        @if (config('dam.explorer.enabled') && !$showTree && bouncer()->hasPermission('dam.directory.index'))
+                        <div class="hidden" aria-hidden="true">
+                            <x-dam::tree.damdirectories :visible="false" />
+                        </div>
+                        @endif
 
                         <!-- right sub-component -->
-                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
+                        <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto min-w-0 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
-                            <v-dam-upload
-                        :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
-                        :accessible-ids='@json(dam_accessible_dir_ids())'
-                    ></v-dam-upload>
-                            {!! view_render_event('dam.admin.main.form.grid.before') !!}
+                            @if (config('dam.explorer.enabled'))
+                                <x-dam::explorer.index />
+                            @else
+                                <v-dam-upload
+                                    :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
+                                    :accessible-ids='@json(dam_accessible_dir_ids())'
+                                ></v-dam-upload>
+                            @endif
+                            {!! view_render_event('dam.admin.main.form.grid.after') !!}
                         </div>
                     </div>
                 {!! view_render_event('dam.admin.main.form.after') !!}
@@ -63,7 +116,14 @@
                 template: '#v-dam-main-template',
 
                 data() {
-                    return {}
+                    let showSidebar = true;
+                    try {
+                        const s = localStorage.getItem('dam_show_sidebar');
+                        if (s !== null) showSidebar = s !== 'false';
+                    } catch {}
+                    // drawerOpen drives the off-canvas sidebar below the lg breakpoint;
+                    // it is transient (never persisted) and always starts closed.
+                    return { showSidebar, drawerOpen: false };
                 },
 
                 mounted() {
@@ -74,15 +134,69 @@
                     // silent flag suppresses a flash if the directory turns
                     // out to be missing (e.g. it was deleted while we were
                     // away on the edit page).
-                    const params = new URLSearchParams(window.location.search);
-                    const dirId = params.get('directory_id');
+                    let dirId = null;
+
+                    // 1. Asset-edit breadcrumb return (highest priority).
+                    try { dirId = sessionStorage.getItem('dam_return_dir'); sessionStorage.removeItem('dam_return_dir'); } catch {}
+
+                    // 2. URL param — format is filters[directory_id][]=X (datagrid convention).
+                    if (! dirId) {
+                        try {
+                            const urlDirId = new URLSearchParams(window.location.search).get('filters[directory_id][]');
+                            if (urlDirId) dirId = urlDirId;
+                        } catch {}
+                    }
+
+                    // 3. localStorage — the datagrid persists applied filters under key
+                    //    'datagrids' as an array of {src, applied} objects. Find the DAM
+                    //    assets datagrid entry and read its directory_id column filter.
+                    if (! dirId) {
+                        try {
+                            const datagrids = JSON.parse(localStorage.getItem('datagrids') || '[]');
+                            const damSrc = "{{ route('admin.dam.assets.index') }}";
+                            const entry = datagrids.find(d => d.src === damSrc);
+                            const col = entry?.applied?.filters?.columns?.find(c => c.index === 'directory_id');
+                            if (col?.value?.[0]) dirId = String(col.value[0]);
+                        } catch {}
+                    }
+
                     if (dirId) {
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
+
+                    // Below lg the sidebar is an off-canvas drawer: the toggle button
+                    // opens/closes it. At lg+ the same button collapses the static
+                    // sidebar (the persisted desktop behavior).
+                    this.$emitter.on('dam:toggle-sidebar', () => {
+                        if (this.isDesktop()) {
+                            this.showSidebar = !this.showSidebar;
+                            try { localStorage.setItem('dam_show_sidebar', this.showSidebar); } catch {}
+                            this.$emitter.emit('dam:sidebar-visibility-changed', this.showSidebar);
+                        } else {
+                            this.drawerOpen = !this.drawerOpen;
+                        }
+                    });
+
+                    // Close the mobile drawer on Escape, on navigating into a folder,
+                    // and whenever the viewport grows back to desktop.
+                    this._onSidebarKeydown = (e) => { if (e.key === 'Escape') this.drawerOpen = false; };
+                    window.addEventListener('keydown', this._onSidebarKeydown);
+
+                    this._onSidebarResize = () => { if (this.isDesktop()) this.drawerOpen = false; };
+                    window.addEventListener('resize', this._onSidebarResize);
+
+                    this.$emitter.on('current-directory', () => { if (! this.isDesktop()) this.drawerOpen = false; });
+                },
+
+                beforeUnmount() {
+                    if (this._onSidebarKeydown) window.removeEventListener('keydown', this._onSidebarKeydown);
+                    if (this._onSidebarResize) window.removeEventListener('resize', this._onSidebarResize);
                 },
 
                 methods: {
-
+                    isDesktop() {
+                        try { return window.matchMedia('(min-width: 1024px)').matches; } catch { return true; }
+                    },
                 }
             })
         </script>
@@ -417,19 +531,28 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-breadcrumb-template">
             <nav class="flex items-center gap-1 flex-wrap text-sm" aria-label="Directory breadcrumb">
-                <template v-for="(crumb, i) in crumbs" :key="crumb.id">
-                    <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
-                    <button
-                        type="button"
-                        class="px-1 py-0.5 rounded transition-colors"
-                        :class="i === crumbs.length - 1
-                            ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                            : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
-                        :disabled="i === crumbs.length - 1"
-                        @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
-                    >@{{ crumb.name }}</button>
+                <template v-if="loading">
+                    <div class="shimmer h-4 w-10 rounded"></div>
+                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                    <div class="shimmer h-4 w-24 rounded"></div>
+                    <span class="text-gray-400 dark:text-gray-500">/</span>
+                    <div class="shimmer h-4 w-16 rounded"></div>
                 </template>
-                <span v-if="!crumbs.length" class="text-base text-gray-600 dark:text-gray-300 font-bold">@lang('dam::app.admin.dam.index.root')</span>
+                <template v-else>
+                    <template v-for="(crumb, i) in crumbs" :key="crumb.id">
+                        <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
+                        <button
+                            type="button"
+                            class="px-1 py-0.5 rounded transition-colors"
+                            :class="i === crumbs.length - 1
+                                ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
+                                : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
+                            :disabled="i === crumbs.length - 1"
+                            @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
+                        >@{{ crumb.name }}</button>
+                    </template>
+                    <span v-if="!crumbs.length" class="text-base text-gray-600 dark:text-gray-300 font-bold">@lang('dam::app.admin.dam.index.root')</span>
+                </template>
             </nav>
         </script>
 
@@ -437,10 +560,13 @@
             app.component('v-dam-breadcrumb', {
                 template: '#v-dam-breadcrumb-template',
                 data() {
-                    return { crumbs: [] };
+                    return { crumbs: [], loading: true };
                 },
                 mounted() {
-                    this._onBreadcrumb = (crumbs) => { this.crumbs = Array.isArray(crumbs) ? crumbs : []; };
+                    this._onBreadcrumb = (crumbs) => {
+                        this.loading = false;
+                        this.crumbs = Array.isArray(crumbs) ? crumbs : [];
+                    };
                     this.$emitter.on('current-directory-breadcrumb', this._onBreadcrumb);
                 },
                 beforeUnmount() {
@@ -448,11 +574,6 @@
                 },
                 methods: {
                     navigateTo(crumb) {
-                        // Crumbs are clickable — reveal the directory in the tree,
-                        // which triggers setFilters() and reloads the grid.
-                        // Silent: the crumb was built from the current tree
-                        // state, so a "not found" here is a transient race
-                        // (mid-refresh / deleted-elsewhere), not a real error.
                         this.$emitter.emit('dam:reveal-directory', { id: crumb.id, silent: true });
                     },
                 },
@@ -469,4 +590,7 @@
     @endPushOnce
 
     <v-share-link-modal></v-share-link-modal>
+
+    {{-- Shared "Assign Tags" mass-action modal — used by both the legacy datagrid and the explorer --}}
+    <x-dam::tag.assign-modal />
 </x-admin::layouts>

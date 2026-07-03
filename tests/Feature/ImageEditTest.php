@@ -419,3 +419,26 @@ it('should return 404 when bg-ai targets a non-existent asset', function () {
         'model'       => 'gpt-image-1',
     ])->assertNotFound();
 });
+
+it('returns 422 (not 500) for every edit op when the asset file is missing on disk', function () {
+    $asset = Asset::factory()->create([
+        'file_name' => 'missing.png',
+        'path'      => 'assets/Root/missing-'.uniqid().'.png',
+        'extension' => 'png',
+        'file_type' => 'image',
+    ]);
+
+    $expected = trans('dam::app.admin.dam.asset.edit.image-source-not-readable');
+
+    $this->postJson(route('admin.dam.assets.image_edit.resize', $asset->id), ['width' => 100])
+        ->assertStatus(422)->assertJson(['message' => $expected]);
+
+    $this->postJson(route('admin.dam.assets.image_edit.adjust', $asset->id), ['brightness' => 10])
+        ->assertStatus(422)->assertJson(['message' => $expected]);
+
+    $this->postJson(route('admin.dam.assets.image_edit.filters', $asset->id), ['greyscale' => true])
+        ->assertStatus(422)->assertJson(['message' => $expected]);
+
+    $this->postJson(route('admin.dam.assets.image_edit.transform', $asset->id), ['rotation' => 90])
+        ->assertStatus(422)->assertJson(['message' => $expected]);
+});

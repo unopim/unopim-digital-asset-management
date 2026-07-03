@@ -10,10 +10,7 @@ use Webkul\DAM\Helpers\AssetHelper;
 
 class MetadataExtractionService
 {
-    /**
-     * Keys to strip from exiftool output before returning.
-     * These leak temp paths or add system-level noise unrelated to the asset.
-     */
+    /** Keys to strip from exiftool output before returning. */
     private array $strippedExiftoolKeys = [
         'ExifToolVersion'     => true,
         'SourceFile'          => true,
@@ -23,10 +20,11 @@ class MetadataExtractionService
         'FileInodeChangeDate' => true,
     ];
 
+    /** Create a new instance. */
     public function __construct() {}
 
     /**
-     * Extract metadata from a file with proper error handling.
+     * Extract metadata from a file, dispatching by detected media type.
      */
     public function extractMetadata(string $path, string $disk = 'local', ?string $localPath = null, bool $isPartial = false, ?string $originalFileName = null): array
     {
@@ -52,11 +50,6 @@ class MetadataExtractionService
                 return [];
             }
 
-            // Small extension fallbacks for image/video/audio only — mime_content_type can
-            // mis-detect MP4/MOV as application/octet-stream, SVG as text/xml, and HEIC/AVIF
-            // on older PHP builds. Keeping these ensures the correct exiftool branch still
-            // fires. Everything else (zip, pdf, office, unknown) falls through to the
-            // generic branch by design.
             $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff', 'svg', 'heic', 'heif', 'avif'];
             $videoExts = ['mp4', 'mov', 'mkv', 'webm', 'avi', 'wmv', 'flv', 'm4v', '3gp', 'mpg', 'mpeg'];
             $audioExts = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma', 'opus'];
@@ -76,9 +69,6 @@ class MetadataExtractionService
                 return $this->extractMediaMetadata($tempPath, $originalFileName);
             }
 
-            // Generic exiftool branch: pdf, office, opendocument, rtf, txt, csv, zip, epub,
-            // psd, ai, application/octet-stream for non-media containers, etc. Anything not
-            // forbidden and not routed above lands here.
             return $this->extractDocumentMetadata($tempPath, $originalFileName);
         } finally {
             if (! $localPath) {
@@ -88,13 +78,7 @@ class MetadataExtractionService
     }
 
     /**
-     * Run exiftool against a local temp path and return the first JSON record as an assoc array.
-     * Strips noise keys (temp paths, system-level metadata) and optionally overrides FileName
-     * with the original asset filename so the response never leaks internal temp names.
-     * Returns [] on any failure (missing binary, non-zero exit, empty output, non-array JSON).
-     *
-     * Note: -fast is intentionally omitted — it can skip metadata stored deep in video
-     * container atoms (MP4/MOV/MKV), which caused empty video metadata previously.
+     * Run exiftool against a local temp path and read the first JSON record.
      */
     private function runExiftool(string $tempPath, string $context, ?string $originalFileName = null): array
     {
@@ -144,7 +128,6 @@ class MetadataExtractionService
 
     /**
      * Extract metadata for video/audio files using exiftool.
-     * Returns the same flat array shape as the image branch (with an empty "exif" key preserved).
      */
     protected function extractMediaMetadata(string $tempPath, ?string $originalFileName = null): array
     {
@@ -154,11 +137,7 @@ class MetadataExtractionService
     }
 
     /**
-     * Generic exiftool extraction branch for anything that isn't image/video/audio and
-     * isn't forbidden — PDF, Office, OpenDocument, RTF, plain text, CSV, ZIP, EPUB, PSD,
-     * AI, application/octet-stream for non-media containers, etc. The method name is kept
-     * for signature stability; the context string is 'generic'.
-     * Returns the same flat array shape as the image branch (with an empty "exif" key preserved).
+     * Extract metadata for files that are not image/video/audio via exiftool.
      */
     protected function extractDocumentMetadata(string $tempPath, ?string $originalFileName = null): array
     {
@@ -168,7 +147,7 @@ class MetadataExtractionService
     }
 
     /**
-     * Check if response is an error.
+     * Determine whether the given data represents an error response.
      */
     protected function isErrorResponse($data): bool
     {
@@ -216,7 +195,6 @@ class MetadataExtractionService
             $image = (new ImageManager(new Driver))->read($tempPath);
             $exif = $image->exif();
 
-            // Convert Collection to array if needed
             if ($exif && ! is_array($exif)) {
                 $exif = $exif->toArray();
             }
@@ -239,9 +217,6 @@ class MetadataExtractionService
 
     /**
      * Optimized full metadata extraction.
-     *
-     * Note: -fast is intentionally omitted so metadata stored deep in container atoms
-     * (for any non-standard image formats that round-trip through this path) is preserved.
      */
     public function extractFullMetadata(string $path, string $disk = 'local', ?string $localPath = null, bool $isPartial = false, ?string $originalFileName = null): array
     {
@@ -272,9 +247,6 @@ class MetadataExtractionService
 
     /**
      * Expand exiftool group-prefixed keys to their alternative casings.
-     * Adds `File:*` aliases for `System:*` keys and uppercase-group aliases
-     * (e.g. `ExifIFD:*` -> `EXIFIFD:*`) for well-known EXIF groups.
-     * Existing keys are never overwritten.
      */
     private function expandExifGroupAliases(array $data): array
     {
@@ -307,7 +279,6 @@ class MetadataExtractionService
 
     /**
      * Get temporary file path with optimized storage handling.
-     * Use $isPartial = true for metadata-only extraction to save bandwidth and time.
      */
     public function getFileTempPath(string $path, string $disk, bool $isPartial = false): ?string
     {
@@ -338,8 +309,6 @@ class MetadataExtractionService
                 CURLOPT_URL            => $url,
                 CURLOPT_FILE           => $fp,
                 CURLOPT_FOLLOWLOCATION => true,
-                // 0 = no timeout for full downloads so large files don't fail mid-transfer.
-                // Partial header-only fetches keep a short timeout since only 64 KB is read.
                 CURLOPT_TIMEOUT        => $isPartial ? 10 : 0,
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLOPT_SSL_VERIFYPEER => false,
@@ -351,7 +320,6 @@ class MetadataExtractionService
             ];
 
             if ($isPartial) {
-                // 64KB is usually enough for most image headers
                 $curlOptions[CURLOPT_RANGE] = '0-65535';
             }
 
@@ -380,8 +348,7 @@ class MetadataExtractionService
     }
 
     /**
-     * Check whether the exiftool binary is available on this system.
-     * Result is cached for the lifetime of the request.
+     * Check whether the exiftool binary is available on this system (cached per request).
      */
     public function exiftoolExists(): bool
     {
@@ -398,11 +365,6 @@ class MetadataExtractionService
 
     /**
      * Extract the embedded cover-art image from a local audio file.
-     * Returns the raw binary image data, or null when exiftool is absent
-     * or the file has no embedded picture frame.
-     *
-     * The caller always supplies a local path — for S3 assets at upload time
-     * this is the PHP temp file (still present because FileStorer copies, not moves it).
      */
     public function extractCoverArtData(string $localPath): ?string
     {
@@ -432,10 +394,7 @@ class MetadataExtractionService
     }
 
     /**
-     * Persist cover-art binary data to the asset disk under covers/{assetId}.{ext}
-     * and return the storage-relative path.  Works for both local and S3 disks
-     * because it uses Storage::disk()->put() in both cases.
-     * Returns null on empty data or storage failure.
+     * Persist cover-art binary data to the asset disk and return the storage-relative path.
      */
     public function storeCoverArt(string $imageData, int $assetId, string $disk): ?string
     {
@@ -443,7 +402,6 @@ class MetadataExtractionService
             return null;
         }
 
-        // Detect mime from the raw bytes via a short-lived temp file.
         $sniffFile = sys_get_temp_dir().DIRECTORY_SEPARATOR.'dam_cover_sniff_'.uniqid('', true).'.tmp';
         file_put_contents($sniffFile, $imageData);
         $mime = @mime_content_type($sniffFile) ?: 'image/jpeg';

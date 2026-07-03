@@ -29,9 +29,7 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
         'sort_order'    => 'integer',
     ];
 
-    /**
-     * These columns history will not be generated
-     */
+    /** Columns excluded from history generation. */
     protected $auditExclude = [
         'id',
         'dam_asset_id',
@@ -43,7 +41,7 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getPrimaryModelIdForHistory(): int
     {
@@ -51,7 +49,7 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public static function getPresenters(): array
     {

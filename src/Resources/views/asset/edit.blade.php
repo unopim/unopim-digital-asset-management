@@ -1,4 +1,4 @@
-<x-dam::layouts.with-history.asset>
+<x-dam::layouts.with-history.asset :return-directory-id="$directory?->id" >
     <x-slot:title>
         @lang('dam::app.admin.dam.asset.edit.title')
     </x-slot:title>
