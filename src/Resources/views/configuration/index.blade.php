@@ -87,10 +87,8 @@
                             onchange="
                                 var row  = document.getElementById('bookmarks-row');
                                 var tree = document.getElementById('show-tree-row');
-                                var bm   = document.getElementById('dam_explorer_bookmarks_enabled');
-                                var st   = document.getElementById('dam_explorer_show_tree');
                                 if (this.checked) { row.classList.remove('hidden'); tree.classList.remove('hidden'); }
-                                else { row.classList.add('hidden'); bm.checked = false; tree.classList.add('hidden'); st.checked = false; }
+                                else { row.classList.add('hidden'); tree.classList.add('hidden'); }
                             "
                         >
                         <label
