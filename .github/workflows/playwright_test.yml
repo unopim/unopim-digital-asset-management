@@ -42,11 +42,11 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GROQ_INVALID_KEY: ${{ secrets.GROQ_INVALID_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      UNOPIM_URL: ${{ vars.UNOPIM_URL }}
-      ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
-      ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
-      INVALID_ADMIN_EMAIL: ${{ vars.INVALID_ADMIN_EMAIL }}
-      INVALID_ADMIN_PASSWORD: ${{ vars.INVALID_ADMIN_PASSWORD }}
+      UNOPIM_URL: ${{ secrets.UNOPIM_URL }}
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      INVALID_ADMIN_EMAIL: ${{ secrets.INVALID_ADMIN_EMAIL }}
+      INVALID_ADMIN_PASSWORD: ${{ secrets.INVALID_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout DAM
