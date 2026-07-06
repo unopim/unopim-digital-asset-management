@@ -13,6 +13,9 @@ use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\DamInstaller;
+use Webkul\DAM\Console\Commands\DamUpdate;
+use Webkul\DAM\Console\Commands\DamUpdateRestore;
+use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
@@ -78,6 +81,9 @@ class DAMServiceProvider extends ServiceProvider
                 BackfillThumbnails::class,
                 SeedDamDemoData::class,
                 GenerateScaleData::class,
+                DamVersion::class,
+                DamUpdate::class,
+                DamUpdateRestore::class,
             ]);
         }
 

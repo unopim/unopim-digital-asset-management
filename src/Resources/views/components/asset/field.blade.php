@@ -110,14 +110,37 @@
                                             <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white"  >@lang("Select All")</span>
                                         </div>
                                         
-                                        @if (bouncer()->hasPermission('dam.asset_assign'))
-                                            <span 
-                                                @click="saveAssets"
-                                                class="secondary-button"
-                                            >
-                                                Assign
-                                            </span>
-                                        @endif
+                                        <div class="flex items-center gap-2">
+                                            @if (bouncer()->hasPermission('dam.asset.upload'))
+                                                {{-- Upload straight into the directory currently open in the picker. --}}
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    name="picker_upload_files[]"
+                                                    :id="$.uid + '_pickerUpload'"
+                                                    class="hidden"
+                                                    :disabled="pickerUploading"
+                                                    @change="uploadToPicker"
+                                                />
+                                                <label
+                                                    :for="$.uid + '_pickerUpload'"
+                                                    class="secondary-button cursor-pointer"
+                                                    :class="{ 'opacity-60 pointer-events-none': pickerUploading }"
+                                                >
+                                                    <span v-if="pickerUploading" class="icon-spinner animate-spin"></span>
+                                                    <span>@lang('dam::app.admin.dam.index.upload')</span>
+                                                </label>
+                                            @endif
+
+                                            @if (bouncer()->hasPermission('dam.asset_assign'))
+                                                <span
+                                                    @click="saveAssets"
+                                                    class="secondary-button"
+                                                >
+                                                    Assign
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </template>
                                 <template #body="{ columns, records, performAction, setCurrentSelectionMode, meta, applied, isLoading }">
@@ -259,6 +282,11 @@
                     currentAssets: [],
 
                     isLoading: false,
+
+                    // Directory currently selected in the picker's tree — upload target.
+                    pickerCurrentDirectory: null,
+
+                    pickerUploading: false,
                 }
             },
 
@@ -266,6 +294,9 @@
                 this.fetchAssets(this.assetValues, true);
 
                 this.$emitter.on('change-datagrid', this.loadAssetValues);
+
+                // Track the directory the picker is browsing so uploads land there.
+                this.$emitter.on('current-directory', (dir) => { this.pickerCurrentDirectory = dir; });
             },
 
             methods: {
@@ -300,6 +331,50 @@
                     ];
 
                     this.$refs.assetPickerModal.close();
+                },
+
+                uploadToPicker(e) {
+                    const files = e.target.files;
+                    if (! files || ! files.length) { e.target.value = ''; return; }
+
+                    const dirId = this.pickerCurrentDirectory?.id;
+                    if (! dirId) {
+                        this.$emitter.emit('add-flash', { type: 'warning', message: 'Select a directory to upload into.' });
+                        e.target.value = '';
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('files[]', files[i]);
+                    }
+                    formData.append('directory_id', dirId);
+
+                    this.pickerUploading = true;
+
+                    this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    }).then(({ data }) => {
+                        const newIds = (data.files || []).map(f => f.id).filter(Boolean);
+
+                        Promise.resolve(this.$refs.datagrid.get()).then(() => {
+                            if (newIds.length) {
+                                const indices = this.$refs.datagrid.applied.massActions.indices;
+                                newIds.forEach(id => { if (! indices.includes(id)) indices.push(id); });
+                                this.$refs.datagrid.setCurrentSelectionMode();
+                            }
+                        });
+
+                        this.$emitter.emit('add-flash', { type: 'success', message: data.message });
+                    }).catch(error => {
+                        this.$emitter.emit('add-flash', {
+                            type: 'error',
+                            message: error?.response?.data?.message || "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')",
+                        });
+                    }).finally(() => {
+                        this.pickerUploading = false;
+                        e.target.value = '';
+                    });
                 },
 
                 parseJson(value, silent = false) {

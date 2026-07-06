@@ -19,7 +19,7 @@
                 :data-bookmark-id="bm.id"
                 @click="navigate(bm)"
             >
-                <i class="icon-dam-folder text-lg text-violet-400 shrink-0"></i>
+                <i class="icon-star text-lg text-violet-400 shrink-0"></i>
                 <span class="text-sm flex-1 truncate">@{{ bm.name }}</span>
                 <span
                     class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-base leading-none px-1 rounded transition-colors shrink-0"
@@ -40,7 +40,7 @@
             v-if="dragOver"
             class="absolute inset-0 rounded-lg border-2 border-dashed border-violet-400 bg-violet-50/80 dark:bg-violet-900/40 flex flex-col items-center justify-center gap-2 pointer-events-none z-10"
         >
-            <i class="icon-dam-folder text-3xl text-violet-400 dark:text-violet-500"></i>
+            <i class="icon-star text-3xl text-violet-400 dark:text-violet-500"></i>
             <span class="text-xs font-semibold text-violet-600 dark:text-violet-300 text-center px-2">
                 @lang('dam::app.admin.explorer.bookmarks.drag-hint')
             </span>
@@ -74,6 +74,12 @@ app.component('v-dam-bookmarks', {
         this.$emitter.on('dam:directory-deleted', () => {
             this.reloadBookmarks();
         });
+
+        // A tab's toolbar star toggles by directory_id (it doesn't know the
+        // bookmark row id) — resolve it here, where the list lives.
+        this.$emitter.on('dam:remove-bookmark', ({ directoryId }) => {
+            this.removeByDirectory(directoryId);
+        });
     },
 
     methods: {
@@ -81,12 +87,12 @@ app.component('v-dam-bookmarks', {
             this.$axios.get("{{ route('admin.dam.explorer.bookmarks.index') }}")
                 .then(({ data }) => { this.bookmarks = data; })
                 .catch(() => { this.bookmarks = []; })
-                .finally(() => { this.$emitter.emit('dam:bookmarks-ready'); });
+                .finally(() => { this.broadcast(); this.$emitter.emit('dam:bookmarks-ready'); });
         },
 
         reloadBookmarks() {
             this.$axios.get("{{ route('admin.dam.explorer.bookmarks.index') }}")
-                .then(({ data }) => { this.bookmarks = data; })
+                .then(({ data }) => { this.bookmarks = data; this.broadcast(); })
                 .catch(() => {});
         },
 
@@ -97,14 +103,24 @@ app.component('v-dam-bookmarks', {
                 return;
             }
             this.$axios.post("{{ route('admin.dam.explorer.bookmarks.store') }}", { directory_id: dir.id, name: dir.name })
-                .then(({ data }) => { this.bookmarks.push(data); })
+                .then(({ data }) => { this.bookmarks.push(data); this.broadcast(); })
                 .catch(() => {});
         },
 
         remove(id) {
             this.$axios.delete(`{{ route('admin.dam.explorer.bookmarks.destroy', ':id') }}`.replace(':id', id))
-                .then(() => { this.bookmarks = this.bookmarks.filter(b => b.id !== id); })
+                .then(() => { this.bookmarks = this.bookmarks.filter(b => b.id !== id); this.broadcast(); })
                 .catch(() => {});
+        },
+
+        removeByDirectory(directoryId) {
+            const bm = this.bookmarks.find(b => Number(b.directory_id) === Number(directoryId));
+            if (bm) this.remove(bm.id);
+        },
+
+        /** Tell the rest of the explorer which directories are currently bookmarked. */
+        broadcast() {
+            this.$emitter.emit('dam:bookmarks-changed', this.bookmarks.map(b => b.directory_id));
         },
 
         navigate(bm) {

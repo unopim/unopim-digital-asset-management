@@ -88,6 +88,93 @@ test.describe('DAM Explorer UI improvements', () => {
     expect(await adminPage.evaluate(() => localStorage.getItem('dam_picker_view'))).toBe('list');
   });
 
+  test('sidebar toggle collapses and restores the sidebar on desktop', async ({ adminPage }) => {
+    // Regression: the admin core theme bundle loads after the DAM bundle and
+    // re-declares a plain `.flex{display:flex}`, which overrode a non-important
+    // `lg:hidden` — so on desktop the collapse toggle updated its state but the
+    // sidebar never actually hid. The fix uses `lg:!hidden` (important) so the
+    // DAM rule wins the cascade. This test guards the desktop viewport (the
+    // default 1280px is >= the lg breakpoint) against that regression.
+    const sidebar = adminPage.locator('[data-explorer-sidebar]').first();
+    const toggle = adminPage.locator('[data-sidebar-toggle]').first();
+
+    await expect(sidebar).toBeVisible();
+    await expect(toggle).toBeVisible();
+
+    const display = () => sidebar.evaluate((el) => getComputedStyle(el).display);
+    const persisted = () => adminPage.evaluate(() => localStorage.getItem('dam_show_sidebar'));
+
+    // Starts expanded.
+    expect(await display()).not.toBe('none');
+
+    // Collapse: the sidebar is actually removed from layout (display:none), not
+    // just flagged in state, and the choice is persisted.
+    await toggle.click();
+    await expect.poll(display).toBe('none');
+    expect(await persisted()).toBe('false');
+
+    // Restore: the sidebar comes back and the persisted flag flips.
+    await toggle.click();
+    await expect.poll(display).not.toBe('none');
+    expect(await persisted()).toBe('true');
+  });
+
+  test('toolbar star indicates and toggles the current directory bookmark', async ({ adminPage }) => {
+    // The star only exists when the bookmarks feature is on
+    // (DAM_EXPLORER_BOOKMARKS_ENABLED). Skip cleanly otherwise.
+    const star = adminPage.locator('[data-bookmark-toggle]').first();
+    const ready = await star
+      .waitFor({ state: 'visible', timeout: 40000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!ready, 'Bookmarks feature disabled — no toolbar star.');
+
+    const bookmarked = () => star.getAttribute('data-bookmarked');
+    const panelCount = () => adminPage.locator('[data-bookmark-id]').count();
+
+    // Normalize to a known "not bookmarked" starting point.
+    if ((await bookmarked()) === 'true') {
+      await star.click();
+      await expect.poll(bookmarked).toBe('false');
+    }
+    const before = await panelCount();
+
+    // Add via the star: it lights up (data-bookmarked=true) and a row is added
+    // to the Bookmarks panel — the two stay in sync via dam:bookmarks-changed.
+    await star.click();
+    await expect.poll(bookmarked).toBe('true');
+    await expect.poll(panelCount).toBe(before + 1);
+
+    // Remove via the star: it clears and the panel row is removed again.
+    await star.click();
+    await expect.poll(bookmarked).toBe('false');
+    await expect.poll(panelCount).toBe(before);
+  });
+
+  test('changing the per-page limit keeps the current selection', async ({ adminPage }) => {
+    // Changing the page size shows the same rows in a different page size, so the
+    // selection must be preserved (not wiped). (Regression.)
+    await adminPage.waitForLoadState('networkidle').catch(() => {});
+    await adminPage.locator('[data-select-all]').first().waitFor({ state: 'visible', timeout: 40000 });
+    await adminPage.locator('[data-dir-id]').first().waitFor({ state: 'visible', timeout: 40000 });
+
+    const selectedCount = adminPage.getByText(/\d+\s+selected/i);
+    const perPageToggle = adminPage.locator('[data-per-page-toggle]').first();
+
+    // Select every row on the current page → the "N selected" indicator appears.
+    await adminPage.locator('[data-select-all]').first().click();
+    await expect(selectedCount).toBeVisible({ timeout: 20000 });
+
+    // Switch the per-page limit to a different value.
+    const current = (await perPageToggle.locator('span').first().textContent())?.trim();
+    const target = current === '100' ? '150' : '100';
+    await perPageToggle.click();
+    await adminPage.locator(`[data-per-page-option="${target}"]`).first().click();
+
+    // Selection is preserved — the "N selected" indicator is still shown.
+    await expect(selectedCount).toBeVisible({ timeout: 20000 });
+  });
+
   test('can create a folder inline in the destination picker and it is auto-selected', async ({ adminPage }) => {
     await adminPage.waitForLoadState('networkidle').catch(() => {});
     await adminPage.locator('[data-dir-id]').first().waitFor({ state: 'visible', timeout: 40000 });

@@ -7,6 +7,7 @@
             <x-slot:toggle>
                 <button
                     type="button"
+                    data-per-page-toggle
                     class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
                 >
                     <span v-text="perPage"></span>
@@ -14,7 +15,7 @@
                 </button>
             </x-slot>
             <x-slot:menu>
-                <x-admin::dropdown.menu.item v-for="opt in [50, 100, 150, 200, 250]" v-text="opt" @click="$emit('per-page-change', opt)"></x-admin::dropdown.menu.item>
+                <x-admin::dropdown.menu.item v-for="opt in [50, 100, 150, 200, 250]" ::data-per-page-option="opt" v-text="opt" @click="$emit('per-page-change', opt)"></x-admin::dropdown.menu.item>
             </x-slot>
         </x-admin::dropdown>
         </div>

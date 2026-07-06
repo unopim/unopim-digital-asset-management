@@ -135,6 +135,11 @@
             mounted() {
                 this.get();
                 this.$emitter.on('dam:reveal-directory', ({ id }) => this.revealDirectory(id));
+
+                this.$emitter.on('picker:navigate-directory', ({ id }) => {
+                    const path = this.findPathToDirectory(id);
+                    if (path && path.length) this.setFilters(path[path.length - 1]);
+                });
             },
 
             methods: {
@@ -158,8 +163,8 @@
                         this.parentItem = this.formattedItems[0];
                     }
 
-                    // Skip setFilters — datagrid does its own ACL-scoped initial fetch.
                     this.$emitter.emit('current-directory', this.selectedItem);
+                    this.emitBreadcrumb(this.selectedItem);
                 },
 
                 setFilters(item, type = "directory") {
@@ -171,8 +176,16 @@
                     let value = [this.selectedItem.id];
 
                     this.$emitter.emit('current-directory', this.selectedItem);
+                    if (type === 'directory') {
+                        this.emitBreadcrumb(item);
+                    }
                     this.$emitter.emit('data-grid:reset-all-filters');
                     this.$emitter.emit('data-grid:filter', { column: {column: column, index: column}, value});
+                },
+
+                emitBreadcrumb(item) {
+                    const path = this.findPathToDirectory(item.id);
+                    this.$emitter.emit('picker:breadcrumb', path ? path.map(n => ({ id: n.id, name: n.name })) : []);
                 },
 
                 findPathToDirectory(id) {
@@ -202,8 +215,6 @@
                         return;
                     }
 
-                    // Ask each ancestor item to open. v-directory-tree-item listens
-                    // for 'picker:expand-directory' on $emitter and toggles isOpen.
                     for (let i = 1; i < path.length; i++) {
                         this.$emitter.emit('picker:expand-directory', { id: path[i].id });
                     }

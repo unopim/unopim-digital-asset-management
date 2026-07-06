@@ -418,6 +418,10 @@
                         this.applied.pagination.page = 1;
                     }
 
+                    /**
+                     * Keep the current selection when only the page size changes — the
+                     * same rows are still shown, just paginated differently.
+                     */
                     this.get();
                 },
 

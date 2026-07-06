@@ -10,6 +10,7 @@
             @if (config('dam.explorer.show_tree') || config('dam.explorer.bookmarks_enabled'))
             <button
                 type="button"
+                data-sidebar-toggle
                 class="w-8 h-8 flex items-center justify-center rounded-md transition-colors shrink-0"
                 :class="sidebarVisible ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
                 title="@lang('dam::app.admin.explorer.toolbar.toggle-sidebar')"
@@ -62,12 +63,18 @@
             </button>
             @endif
             @if (config('dam.explorer.bookmarks_enabled'))
+            {{-- Star glows violet when the current directory is bookmarked; acts as an add/remove toggle. --}}
             <button
                 v-if="currentDirId"
                 type="button"
-                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer shrink-0"
-                title="@lang('dam::app.admin.explorer.context.bookmark')"
-                @click="bookmarkCurrentDir"
+                data-bookmark-toggle
+                :data-bookmarked="currentDirBookmarked"
+                class="w-8 h-8 flex items-center justify-center rounded-md transition-colors cursor-pointer shrink-0"
+                :class="currentDirBookmarked
+                    ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30'
+                    : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
+                :title="bookmarkTitle"
+                @click="toggleBookmarkCurrentDir"
             >
                 <i class="icon-star text-xl"></i>
             </button>
@@ -262,6 +269,7 @@ app.component('v-dam-tab', {
             folderPicker:       { open: false, mode: null },
             ctxTarget:          null,
             sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
+            bookmarkedDirIds:   [],
             available: {
                 id: 'dam-explorer',
                 columns: [
@@ -300,6 +308,15 @@ app.component('v-dam-tab', {
                 c.value && c.value.length > 0 && c.value.some(v => Array.isArray(v) ? v.some(Boolean) : Boolean(v))
             ).length;
         },
+        currentDirBookmarked() {
+            if (! this.currentDirId) return false;
+            return this.bookmarkedDirIds.map(Number).includes(Number(this.currentDirId));
+        },
+        bookmarkTitle() {
+            return this.currentDirBookmarked
+                ? "@lang('dam::app.admin.explorer.bookmarks.remove')"
+                : "@lang('dam::app.admin.explorer.context.bookmark')";
+        },
     },
 
     mounted() {
@@ -320,6 +337,11 @@ app.component('v-dam-tab', {
 
         this._onSidebarVisibility = (visible) => { this.sidebarVisible = visible; };
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
+
+        // Keep the toolbar star's bookmarked-state in sync with the bookmarks
+        // panel (the source of truth), whichever way a bookmark is added/removed.
+        this._onBookmarksChanged = (ids) => { this.bookmarkedDirIds = ids ?? []; };
+        this.$emitter.on('dam:bookmarks-changed', this._onBookmarksChanged);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
 
@@ -440,6 +462,7 @@ app.component('v-dam-tab', {
 
     beforeUnmount() {
         if (this._onSidebarVisibility) this.$emitter.off('dam:sidebar-visibility-changed', this._onSidebarVisibility);
+        if (this._onBookmarksChanged) this.$emitter.off('dam:bookmarks-changed', this._onBookmarksChanged);
     },
 
     methods: {
@@ -909,8 +932,12 @@ app.component('v-dam-tab', {
             this.$emitter.emit('open-share-modal', { targetType: 'directory', targetId: this.currentDirId });
         },
 
-        bookmarkCurrentDir() {
+        toggleBookmarkCurrentDir() {
             if (! this.currentDirId) return;
+            if (this.currentDirBookmarked) {
+                this.$emitter.emit('dam:remove-bookmark', { directoryId: this.currentDirId });
+                return;
+            }
             const label = this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
             this.$emitter.emit('dam:add-bookmark', { id: this.currentDirId, name: label });
         },
@@ -1038,6 +1065,8 @@ app.component('v-dam-tab', {
 
         onPage(p) { this.page = p; this.fetch(); },
 
+        {{-- Changing the page size keeps the current selection — the same rows are
+             still there, just paginated differently. --}}
         onPerPage(pp) { this.perPage = pp; this.page = 1; this.fetch(); },
 
         sync() {

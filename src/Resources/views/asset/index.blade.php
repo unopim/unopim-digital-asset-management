@@ -21,7 +21,10 @@
                         <!-- left side: stacked cards (visible when tree or bookmarks should appear) -->
                         @php
                             $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
-                            $showBookmarks = config('dam.explorer.bookmarks_enabled');
+                            // Bookmarks are an Explorer-only feature (navigation runs through the
+                            // explorer), so never show the box when the Explorer is disabled — even
+                            // if the bookmarks flag itself is still on.
+                            $showBookmarks = config('dam.explorer.enabled') && config('dam.explorer.bookmarks_enabled');
                             $showSidebar   = $showTree || $showBookmarks;
                         @endphp
                         @if ($showSidebar)
@@ -35,11 +38,16 @@
                         ></div>
                         @endif
                         <div
+                            data-explorer-sidebar
                             class="flex flex-col gap-3 shrink-0 {{ config('dam.explorer.enabled')
                                 ? 'lg:static lg:w-[280px] lg:max-w-full lg:translate-x-0 lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:p-0 lg:overflow-visible max-lg:fixed max-lg:top-14 max-lg:bottom-0 max-lg:left-0 max-lg:z-[1001] max-lg:w-[280px] max-lg:max-w-[85vw] max-lg:bg-gray-50 dark:max-lg:bg-cherry-900 max-lg:shadow-2xl max-lg:overflow-y-auto max-lg:p-3 transition-transform duration-200'
                                 : 'w-[280px] max-w-full max-sm:w-full' }}"
                             @if (config('dam.explorer.enabled'))
-                            :class="[ showSidebar ? '' : 'lg:hidden', drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
+                            {{-- lg:!hidden (important): the admin core theme's stylesheet loads after
+                                 the DAM bundle and re-declares plain `.flex{display:flex}`, which would
+                                 otherwise override a non-important `lg:hidden` and leave the sidebar
+                                 visible on desktop. The important modifier wins that cascade. --}}
+                            :class="[ showSidebar ? '' : 'lg:!hidden', drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
                             @endif
                         >
 

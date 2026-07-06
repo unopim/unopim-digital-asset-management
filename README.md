@@ -211,3 +211,31 @@ This collection provides ready-to-use API requests for various UnoPim DAM API fe
   - **Delete Asset:** `DELETE /api/v1/rest/assets/{asset_id}`
   - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
   - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`
+
+## 🔄 Updating
+
+Update DAM safely — every update backs up your DAM tables and asset files, runs migrations, republishes assets, and verifies no rows were lost before finishing.
+
+**Composer install:**
+
+```bash
+composer update unopim/dam && php artisan dam:update
+```
+
+**Manual install** (from the Unopim project root):
+
+```bash
+bash packages/Webkul/DAM/upgrade-dam.sh
+```
+
+This fetches the latest release, swaps `packages/Webkul/DAM` (code only — your DB and asset files stay untouched), then runs `php artisan dam:update`.
+
+### Commands
+
+| Command | What it does |
+|---------|--------------|
+| `php artisan dam:version` | Print the installed DAM version. |
+| `php artisan dam:update` | Back up, migrate, publish, and verify. Add `--dry-run` to preview or `--skip-backup` to skip the pre-update backup. |
+| `php artisan dam:update:restore [timestamp]` | Restore tables and asset files from a backup. Run without a timestamp to list available backups. |
+
+Backups are written to `storage/dam-backups/`. If an update ever detects lost rows it fails and points you to the restore command.

@@ -185,6 +185,7 @@
                     <x-slot:toggle>
                         <button
                             type="button"
+                            data-dam-per-page-toggle
                             class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
                         >
                             <span v-text="applied.pagination.perPage"></span>
@@ -197,6 +198,7 @@
                     <x-slot:menu>
                         <x-admin::dropdown.menu.item
                             v-for="perPageOption in available.meta.per_page_options"
+                            ::data-dam-per-page-option="perPageOption"
                             v-text="perPageOption"
                             @click="changePerPageOption(perPageOption)"
                         >
