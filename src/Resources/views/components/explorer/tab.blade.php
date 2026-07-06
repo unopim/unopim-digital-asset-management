@@ -820,6 +820,8 @@ app.component('v-dam-tab', {
                 this.assets = data.assets;
                 this.meta   = data.meta;
 
+                this.computeSelectionMode();
+
                 if (Array.isArray(data.breadcrumb) && data.breadcrumb.length) {
                     this.breadcrumb = data.breadcrumb;
                     if (this.navHistory[this.navIdx]) {
