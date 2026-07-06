@@ -417,6 +417,7 @@
                         resumable: false,
                         paused: false,
                         cancelled: false,
+                        uploadedAssetIds: [],
                         folderPaths: [...folderPaths],
                         jobs: [],
                         overall: 0,
@@ -674,6 +675,13 @@
                             job.status = 'done';
                             job.progress = 100;
                             if (folder) this.announceGrantedDirectories(res.data.granted_directory_ids);
+                            // Track the ids of the assets this session created so
+                            // consumers (e.g. the product edit asset picker) can
+                            // auto-select freshly uploaded assets once it finishes.
+                            if (! session.uploadedAssetIds) session.uploadedAssetIds = [];
+                            (res.data.files || []).forEach(f => {
+                                if (f && f.id != null) session.uploadedAssetIds.push(f.id);
+                            });
                         }
                     } catch (error) {
                         job._abort = null;
@@ -765,7 +773,10 @@
                 // ── Refresh wiring ────────────────────────────────────────────
                 emitRefresh(session, final) {
                     this.$emit('refresh-datagrid');
-                    this.$emitter.emit('dam:uploads-refresh', { directoryId: session.targetDirId });
+                    this.$emitter.emit('dam:uploads-refresh', {
+                        directoryId: session.targetDirId,
+                        assetIds: session.uploadedAssetIds ? [...session.uploadedAssetIds] : [],
+                    });
                     this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: session.targetDirId, count: session.doneCount });
                     if (final) this.$emitter.emit('dam:tree-reload');
                 },

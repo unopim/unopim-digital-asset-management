@@ -19,10 +19,23 @@
     @include('dam::asset.grid-preview-modal')
 @endonce
 
+{{-- Register the shared DAM upload manager so v-dam-drop-upload is available on
+     the product edit page for the picker's Upload button and drag-and-drop. --}}
+@once('dam-asset-field-drop-upload')
+    <x-dam::asset.drop-upload />
+@endonce
+
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-field-template">
         <!-- Panel Content -->
         <div class="grid">
+            {{-- Persistent DAM upload manager. Owns the floating progress panel
+                 and processes every upload enqueued from the picker (Upload
+                 button + drag-and-drop), identical to the DAM module. Kept
+                 outside the modal — whose content is v-if-destroyed on close —
+                 so uploads keep running even if the user closes the modal. --}}
+            <v-dam-drop-upload class="hidden"></v-dam-drop-upload>
+
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
             <div class="flex flex-wrap gap-3" v-else>
@@ -73,12 +86,21 @@
 
                     <!--Modal Content -->
                     <x-slot:content>
+                        {{-- Drop zone: drag files or folders anywhere in the picker
+                             to upload them into the selected directory, exactly like
+                             the DAM module. This non-primary manager delegates the
+                             actual transfer to the persistent manager above, so the
+                             progress panel survives the modal being closed. --}}
+                        <v-dam-drop-upload
+                            :current-directory="pickerCurrentDirectory"
+                            :can-upload="canUploadAssets"
+                        >
                         <div class="flex gap-3">
                             @if (bouncer()->hasPermission('dam.directory.index'))
                                 <x-dam::asset.picker.directory-tree />
                             @endif
 
-                            <x-dam::asset.picker 
+                            <x-dam::asset.picker
                                 :src="route('admin.dam.asset_picker.index')"
                                 ref="datagrid"
                             >
@@ -112,22 +134,21 @@
                                         
                                         <div class="flex items-center gap-2">
                                             @if (bouncer()->hasPermission('dam.asset.upload'))
-                                                {{-- Upload straight into the directory currently open in the picker. --}}
+                                                {{-- Upload straight into the directory currently open in the
+                                                     picker. Files are handed to the shared upload manager, which
+                                                     shows progress in the floating panel — same as the DAM module. --}}
                                                 <input
                                                     type="file"
                                                     multiple
                                                     name="picker_upload_files[]"
                                                     :id="$.uid + '_pickerUpload'"
                                                     class="hidden"
-                                                    :disabled="pickerUploading"
                                                     @change="uploadToPicker"
                                                 />
                                                 <label
                                                     :for="$.uid + '_pickerUpload'"
                                                     class="secondary-button cursor-pointer"
-                                                    :class="{ 'opacity-60 pointer-events-none': pickerUploading }"
                                                 >
-                                                    <span v-if="pickerUploading" class="icon-spinner animate-spin"></span>
                                                     <span>@lang('dam::app.admin.dam.index.upload')</span>
                                                 </label>
                                             @endif
@@ -185,6 +206,7 @@
                                 </template>
                             </x-dam::asset.picker>
                         </div>
+                        </v-dam-drop-upload>
                     </x-slot>
                 </x-dam::modal>
 
@@ -286,7 +308,8 @@
                     // Directory currently selected in the picker's tree — upload target.
                     pickerCurrentDirectory: null,
 
-                    pickerUploading: false,
+                    // Whether the current user may upload assets — gates the drop zone.
+                    canUploadAssets: @js(bouncer()->hasPermission('dam.asset.upload')),
                 }
             },
 
@@ -297,6 +320,32 @@
 
                 // Track the directory the picker is browsing so uploads land there.
                 this.$emitter.on('current-directory', (dir) => { this.pickerCurrentDirectory = dir; });
+
+                // The shared upload manager finished a batch (Upload button or
+                // drag-and-drop). Refresh the picker grid and auto-select the newly
+                // uploaded assets. Guarded by the target directory so unrelated
+                // fields stay untouched; a closed picker has no datagrid ref, so
+                // this is a safe no-op there.
+                this.$emitter.on('dam:uploads-refresh', ({ directoryId, assetIds = [] } = {}) => {
+                    if (! this.pickerCurrentDirectory || this.pickerCurrentDirectory.id !== directoryId) {
+                        return;
+                    }
+
+                    const datagrid = this.$refs.datagrid;
+                    if (! datagrid?.get) {
+                        return;
+                    }
+
+                    Promise.resolve(datagrid.get()).then(() => {
+                        if (! assetIds.length || ! datagrid.applied?.massActions) {
+                            return;
+                        }
+
+                        const indices = datagrid.applied.massActions.indices;
+                        assetIds.forEach(id => { if (! indices.includes(id)) indices.push(id); });
+                        datagrid.setCurrentSelectionMode();
+                    });
+                });
             },
 
             methods: {
@@ -344,37 +393,20 @@
                         return;
                     }
 
-                    const formData = new FormData();
-                    for (let i = 0; i < files.length; i++) {
-                        formData.append('files[]', files[i]);
-                    }
-                    formData.append('directory_id', dirId);
+                    // Hand the files to the shared DAM upload manager. It uploads each
+                    // file through its concurrency pool with per-file progress in the
+                    // floating panel and, once the batch finishes, emits
+                    // dam:uploads-refresh so the grid refreshes and the new assets are
+                    // auto-selected (see the listener in mounted()).
+                    const items = Array.from(files).map(file => ({
+                        file,
+                        relativePath: file.name,
+                        preserveRoot: false,
+                    }));
 
-                    this.pickerUploading = true;
+                    this.$emitter.emit('dam:enqueue-upload', { items, folderPaths: [], targetDirId: dirId });
 
-                    this.$axios.post("{{ route('admin.dam.assets.upload') }}", formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                    }).then(({ data }) => {
-                        const newIds = (data.files || []).map(f => f.id).filter(Boolean);
-
-                        Promise.resolve(this.$refs.datagrid.get()).then(() => {
-                            if (newIds.length) {
-                                const indices = this.$refs.datagrid.applied.massActions.indices;
-                                newIds.forEach(id => { if (! indices.includes(id)) indices.push(id); });
-                                this.$refs.datagrid.setCurrentSelectionMode();
-                            }
-                        });
-
-                        this.$emitter.emit('add-flash', { type: 'success', message: data.message });
-                    }).catch(error => {
-                        this.$emitter.emit('add-flash', {
-                            type: 'error',
-                            message: error?.response?.data?.message || "@lang('dam::app.admin.dam.asset.datagrid.files-upload-failed')",
-                        });
-                    }).finally(() => {
-                        this.pickerUploading = false;
-                        e.target.value = '';
-                    });
+                    e.target.value = '';
                 },
 
                 parseJson(value, silent = false) {

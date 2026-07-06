@@ -212,30 +212,20 @@ This collection provides ready-to-use API requests for various UnoPim DAM API fe
   - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
   - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`
 
-## 🔄 Updating
+## Updating (manual install)
 
-Update DAM safely — every update backs up your DAM tables and asset files, runs migrations, republishes assets, and verifies no rows were lost before finishing.
+From the Unopim project root:
 
-**Composer install:**
+    bash packages/Webkul/DAM/upgrade-dam.sh
 
-```bash
-composer update unopim/dam && php artisan dam:update
-```
+This fetches the latest release of `unopim/unopim-digital-asset-management`,
+swaps `packages/Webkul/DAM` (code only — your DB and asset files are
+untouched), then runs `php artisan dam:update`, which backs up DAM tables +
+asset files, runs migrations, republishes assets, and verifies no data was
+lost. Back up first if you can.
 
-**Manual install** (from the Unopim project root):
+Restore a backup with:
 
-```bash
-bash packages/Webkul/DAM/upgrade-dam.sh
-```
+    php artisan dam:update:restore <timestamp>
 
-This fetches the latest release, swaps `packages/Webkul/DAM` (code only — your DB and asset files stay untouched), then runs `php artisan dam:update`.
-
-### Commands
-
-| Command | What it does |
-|---------|--------------|
-| `php artisan dam:version` | Print the installed DAM version. |
-| `php artisan dam:update` | Back up, migrate, publish, and verify. Add `--dry-run` to preview or `--skip-backup` to skip the pre-update backup. |
-| `php artisan dam:update:restore [timestamp]` | Restore tables and asset files from a backup. Run without a timestamp to list available backups. |
-
-Backups are written to `storage/dam-backups/`. If an update ever detects lost rows it fails and points you to the restore command.
+Composer installs update with `composer update unopim/dam && php artisan dam:update`.
