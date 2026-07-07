@@ -45,6 +45,10 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
         });
 
+        Event::listen('unopim.admin.catalog.products.bulk-edit.editor.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
+        });
+
         Event::listen('unopim.admin.layout.head.before', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::style');
         });

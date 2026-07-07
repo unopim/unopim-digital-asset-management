@@ -19,8 +19,6 @@
     @include('dam::asset.grid-preview-modal')
 @endonce
 
-{{-- Register the shared DAM upload manager so v-dam-drop-upload is available on
-     the product edit page for the picker's Upload button and drag-and-drop. --}}
 @once('dam-asset-field-drop-upload')
     <x-dam::asset.drop-upload />
 @endonce
@@ -86,11 +84,6 @@
 
                     <!--Modal Content -->
                     <x-slot:content>
-                        {{-- Drop zone: drag files or folders anywhere in the picker
-                             to upload them into the selected directory, exactly like
-                             the DAM module. This non-primary manager delegates the
-                             actual transfer to the persistent manager above, so the
-                             progress panel survives the modal being closed. --}}
                         <v-dam-drop-upload
                             :current-directory="pickerCurrentDirectory"
                             :can-upload="canUploadAssets"
@@ -134,9 +127,7 @@
                                         
                                         <div class="flex items-center gap-2">
                                             @if (bouncer()->hasPermission('dam.asset.upload'))
-                                                {{-- Upload straight into the directory currently open in the
-                                                     picker. Files are handed to the shared upload manager, which
-                                                     shows progress in the floating panel — same as the DAM module. --}}
+
                                                 <input
                                                     type="file"
                                                     multiple
@@ -308,7 +299,6 @@
                     // Directory currently selected in the picker's tree — upload target.
                     pickerCurrentDirectory: null,
 
-                    // Whether the current user may upload assets — gates the drop zone.
                     canUploadAssets: @js(bouncer()->hasPermission('dam.asset.upload')),
                 }
             },
@@ -321,11 +311,6 @@
                 // Track the directory the picker is browsing so uploads land there.
                 this.$emitter.on('current-directory', (dir) => { this.pickerCurrentDirectory = dir; });
 
-                // The shared upload manager finished a batch (Upload button or
-                // drag-and-drop). Refresh the picker grid and auto-select the newly
-                // uploaded assets. Guarded by the target directory so unrelated
-                // fields stay untouched; a closed picker has no datagrid ref, so
-                // this is a safe no-op there.
                 this.$emitter.on('dam:uploads-refresh', ({ directoryId, assetIds = [] } = {}) => {
                     if (! this.pickerCurrentDirectory || this.pickerCurrentDirectory.id !== directoryId) {
                         return;
@@ -393,11 +378,6 @@
                         return;
                     }
 
-                    // Hand the files to the shared DAM upload manager. It uploads each
-                    // file through its concurrency pool with per-file progress in the
-                    // floating panel and, once the batch finishes, emits
-                    // dam:uploads-refresh so the grid refreshes and the new assets are
-                    // auto-selected (see the listener in mounted()).
                     const items = Array.from(files).map(file => ({
                         file,
                         relativePath: file.name,
