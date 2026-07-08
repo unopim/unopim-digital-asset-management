@@ -8,39 +8,26 @@
 <v-asset-field
     name="{{ $name }}"
     asset-values="{{ (is_array($assetValues) ? implode(',', $assetValues) : $assetValues) }}"
-    width="{{ $width }}"    
+    width="{{ $width }}"
     height="{{ $height }}"
     :errors="errors"
 >
     <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" />
 </v-asset-field>
 
-@once('dam-grid-preview-modal')
-    @include('dam::asset.grid-preview-modal')
-@endonce
-
-@once('dam-asset-field-drop-upload')
-    <x-dam::asset.drop-upload />
-@endonce
+@include('dam::asset.picker-modal')
 
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-field-template">
         <!-- Panel Content -->
         <div class="grid">
-            {{-- Persistent DAM upload manager. Owns the floating progress panel
-                 and processes every upload enqueued from the picker (Upload
-                 button + drag-and-drop), identical to the DAM module. Kept
-                 outside the modal — whose content is v-if-destroyed on close —
-                 so uploads keep running even if the user closes the modal. --}}
-            <v-dam-drop-upload class="hidden"></v-dam-drop-upload>
-
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
             <div class="flex flex-wrap gap-3" v-else>
                 <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
                 <!-- Uploaded assets -->
-                <div 
+                <div
                     v-bind="{animation: 200}"
                     v-for="(element, index) in assets"
                 >
@@ -60,7 +47,7 @@
                     class="grid justify-items-center items-center w-full h-[120px] max-w-[210px] max-h-[120px] border border-dashed dark:border-gray-300 rounded cursor-pointer transition-all hover:border-gray-400 border-gray-300"
                     :style="{'max-width': this.width, 'max-height': this.height}"
                     :for="$.uid + '_assetImageInput'"
-                    @click="setCurrentAssets();$refs.assetPickerModal.open()"
+                    @click="openPicker"
                 >
                     <div class="flex flex-col items-center">
                         <span class="icon-dam-folder text-2xl"></span>
@@ -70,139 +57,9 @@
                     </div>
                 </label>
 
-                <x-dam::modal ref="assetPickerModal">
-                    <x-slot:header>
-                        <div class="flex gap-x-2.5">
-                            <!-- save selected assets -->
-                            <span 
-                                class="text-gray-800 dark:text-white font-semibold"
-                            >
-                                @lang('dam::app.admin.components.asset.field.assign-assets')
-                            </span>
-                        </div>
-                    </x-slot>
-
-                    <!--Modal Content -->
-                    <x-slot:content>
-                        <v-dam-drop-upload
-                            :current-directory="pickerCurrentDirectory"
-                            :can-upload="canUploadAssets"
-                        >
-                        <div class="flex gap-3">
-                            @if (bouncer()->hasPermission('dam.directory.index'))
-                                <x-dam::asset.picker.directory-tree />
-                            @endif
-
-                            <x-dam::asset.picker
-                                :src="route('admin.dam.asset_picker.index')"
-                                ref="datagrid"
-                            >
-                                <template #body-header="{ records, meta, massActions, selectAllRecords }">
-                                    <div class="flex gap-2 items-center justify-between pb-4" v-if="records.length">
-                                        <!-- Select All -->
-                                        <div class="flex gap-2">
-                                            <label for="mass_action_select_all_records">
-                                                <input
-                                                    type="checkbox"
-                                                    name="mass_action_select_all_records"
-                                                    id="mass_action_select_all_records"
-                                                    class="peer hidden"
-                                                    :checked="['all', 'partial'].includes(meta.mode)"
-                                                    @change="selectAllRecords"
-                                                >
-    
-                                                <span
-                                                    class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
-                                                    :class="[
-                                                        meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-violet-700 ' : (
-                                                        meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-violet-700' : ''
-                                                        ),
-                                                    ]"
-                                                >
-                                                </span>
-                                                
-                                            </label>
-                                            <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white"  >@lang("Select All")</span>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-2">
-                                            @if (bouncer()->hasPermission('dam.asset.upload'))
-
-                                                <input
-                                                    type="file"
-                                                    multiple
-                                                    name="picker_upload_files[]"
-                                                    :id="$.uid + '_pickerUpload'"
-                                                    class="hidden"
-                                                    @change="uploadToPicker"
-                                                />
-                                                <label
-                                                    :for="$.uid + '_pickerUpload'"
-                                                    class="secondary-button cursor-pointer"
-                                                >
-                                                    <span>@lang('dam::app.admin.dam.index.upload')</span>
-                                                </label>
-                                            @endif
-
-                                            @if (bouncer()->hasPermission('dam.asset_assign'))
-                                                <span
-                                                    @click="saveAssets"
-                                                    class="secondary-button"
-                                                >
-                                                    Assign
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </template>
-                                <template #body="{ columns, records, performAction, setCurrentSelectionMode, meta, applied, isLoading }">
-                                    <template v-if="! isLoading && records.length">
-                                        <div
-                                            v-for="record in records"
-                                        >
-
-                                            <!-- Select asset -->
-                                            <label :for="`mass_action_select_record_${record[meta.primary_column]}`" class="cursor-pointer">
-                                                <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
-                                                    <img 
-                                                        :src="record.path"
-                                                        :alt="record.file_name"
-                                                        class="w-full h-full object-cover object-top"
-                                                    >
-                                                </div>
-                                                <div class="flex gap-2 items-center mt-2.5">
-                                                    <input
-                                                        type="checkbox"
-                                                        class="peer hidden"
-                                                        :name="`mass_action_select_record_${record[meta.primary_column]}`"
-                                                        :value="record[meta.primary_column]"
-                                                        :id="`mass_action_select_record_${record[meta.primary_column]}`"
-                                                        v-model="applied.massActions.indices"
-                                                        @change="setCurrentSelectionMode"
-                                                    >
-                                                    
-                                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
-                                                    </span>
-
-                                                    <h2 class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </template>
-    
-                                    <template v-else>
-                                        <x-admin::shimmer.datagrid.table.body isMultiRow="false" />
-                                    </template>
-    
-                                </template>
-                            </x-dam::asset.picker>
-                        </div>
-                        </v-dam-drop-upload>
-                    </x-slot>
-                </x-dam::modal>
-
+                <v-dam-asset-picker ref="assetPicker" @assign="onAssign"></v-dam-asset-picker>
             </div>
-        </div>  
+        </div>
     </script>
 
     <script type="text/x-template" id="v-asset-field-item-template">
@@ -260,7 +117,7 @@
 
             props: {
                 name: {
-                    type: String, 
+                    type: String,
                     default: 'images',
                 },
 
@@ -289,48 +146,14 @@
                 return {
                     assets: [],
 
-                    placeholders: [
-                    ],
-
                     currentAssets: [],
 
                     isLoading: false,
-
-                    // Directory currently selected in the picker's tree — upload target.
-                    pickerCurrentDirectory: null,
-
-                    canUploadAssets: @js(bouncer()->hasPermission('dam.asset.upload')),
                 }
             },
 
             mounted() {
                 this.fetchAssets(this.assetValues, true);
-
-                this.$emitter.on('change-datagrid', this.loadAssetValues);
-
-                // Track the directory the picker is browsing so uploads land there.
-                this.$emitter.on('current-directory', (dir) => { this.pickerCurrentDirectory = dir; });
-
-                this.$emitter.on('dam:uploads-refresh', ({ directoryId, assetIds = [] } = {}) => {
-                    if (! this.pickerCurrentDirectory || this.pickerCurrentDirectory.id !== directoryId) {
-                        return;
-                    }
-
-                    const datagrid = this.$refs.datagrid;
-                    if (! datagrid?.get) {
-                        return;
-                    }
-
-                    Promise.resolve(datagrid.get()).then(() => {
-                        if (! assetIds.length || ! datagrid.applied?.massActions) {
-                            return;
-                        }
-
-                        const indices = datagrid.applied.massActions.indices;
-                        assetIds.forEach(id => { if (! indices.includes(id)) indices.push(id); });
-                        datagrid.setCurrentSelectionMode();
-                    });
-                });
             },
 
             methods: {
@@ -340,14 +163,20 @@
                     this.assets.splice(index, 1);
                 },
 
-                async saveAssets() {
-                    let selectedIds = [];
+                openPicker() {
+                    this.setCurrentAssets();
 
+                    this.$refs.assetPicker.open(this.currentAssets);
+                },
+
+                async onAssign(ids) {
                     const prevAssets = this.assets;
 
                     this.assets = [];
 
-                    this.$refs.datagrid.applied.massActions.indices.forEach(id => {
+                    let selectedIds = [];
+
+                    ids.forEach(id => {
                         let existing = prevAssets.filter(asset => asset.id === id);
 
                         if (existing.length === 1) {
@@ -357,63 +186,12 @@
                         }
                     });
 
-                    selectedIds = await this.fetchAssets(selectedIds);
+                    const fetched = selectedIds.length ? await this.fetchAssets(selectedIds) : [];
 
                     this.assets = [
                         ...this.assets,
-                        ...selectedIds
+                        ...(fetched || [])
                     ];
-
-                    this.$refs.assetPickerModal.close();
-                },
-
-                uploadToPicker(e) {
-                    const files = e.target.files;
-                    if (! files || ! files.length) { e.target.value = ''; return; }
-
-                    const dirId = this.pickerCurrentDirectory?.id;
-                    if (! dirId) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: 'Select a directory to upload into.' });
-                        e.target.value = '';
-                        return;
-                    }
-
-                    const items = Array.from(files).map(file => ({
-                        file,
-                        relativePath: file.name,
-                        preserveRoot: false,
-                    }));
-
-                    this.$emitter.emit('dam:enqueue-upload', { items, folderPaths: [], targetDirId: dirId });
-
-                    e.target.value = '';
-                },
-
-                parseJson(value, silent = false) {
-                    try {
-                        return JSON.parse(value);
-                    } catch (e) {
-                        if (! silent) {
-                            console.error(e);
-                        }
-
-                        return value;
-                    }
-                },
-
-                loadAssetValues() {
-                    if (this.currentAssets.length && this.$refs?.datagrid?.applied?.massActions?.indices) {
-                        let selectedIndices = this.$refs.datagrid.applied.massActions.indices;
-
-                        this.$refs.datagrid.applied.massActions.indices = [
-                            ...this.currentAssets.filter(id => ! selectedIndices.includes(id)),
-                            ...selectedIndices
-                        ];
-
-                        this.currentAssets = [];
-
-                        this.$refs.datagrid.setCurrentSelectionMode()
-                    }
                 },
 
                 fetchAssets(assetIds, initialize = false) {

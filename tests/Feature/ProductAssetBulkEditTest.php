@@ -47,8 +47,8 @@ it('injects the asset bulk-edit cell and shared picker modal into the bulk edit 
 
 
     expect($content)->toContain('v-spreadsheet-asset-template');
-    expect($content)->toContain('v-bulkedit-asset-picker');
-    expect($content)->toContain('bulkedit-asset-picker:open');
+    expect($content)->toContain('v-dam-asset-picker');
+    expect($content)->toContain('dam-asset-picker:open');
 });
 
 it('persists selected asset ids and syncs asset mappings on bulk save', function () {
