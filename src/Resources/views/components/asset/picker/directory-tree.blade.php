@@ -151,10 +151,37 @@
 
                             this.formattedItems = response.data.data;
                             this.setDefaultSeletedItem();
+                            this.fetchAssetCounts();
                         })
                        .catch((error) => {
                             console.error('Error fetching directories:', error);
                         });
+                },
+
+                fetchAssetCounts() {
+                    const ids = [];
+                    const collect = (node) => {
+                        if (! node) return;
+                        if (node.id != null) ids.push(node.id);
+                        (node.children || []).forEach(collect);
+                    };
+                    (this.formattedItems || []).forEach(collect);
+
+                    if (! ids.length) return;
+
+                    this.$axios.post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                        .then((response) => {
+                            const counts = response.data.data || {};
+                            const stamp = (node) => {
+                                if (! node) return;
+                                if (node.id != null && counts[node.id] !== undefined) {
+                                    node.assets_total_count = counts[node.id];
+                                }
+                                (node.children || []).forEach(stamp);
+                            };
+                            (this.formattedItems || []).forEach(stamp);
+                        })
+                        .catch(() => {});
                 },
 
                 setDefaultSeletedItem() {
@@ -324,7 +351,8 @@
 
             computed: {
                 isFolder: function() {
-                    return this.item.children && Object.keys(this.item.children).length;
+                    return !! this.item.has_children
+                        || (this.item.children && this.item.children.length > 0);
                 },
 
                 isAssets: function() {
@@ -336,7 +364,8 @@
             data() {
                 return {
                     assetItem: this.item,
-                    isOpen: false
+                    isOpen: false,
+                    childrenLoaded: false,
                 };
             },
 
@@ -344,6 +373,7 @@
                 this.$emitter.on('picker:expand-directory', ({ id }) => {
                     if (Number(id) === Number(this.item.id) && (this.isFolder || this.isAssets)) {
                         this.isOpen = true;
+                        this.ensureChildrenLoaded();
                     }
                 });
             },
@@ -356,9 +386,53 @@
                 toggle: function(item) {
                     if (this.isFolder || this.isAssets) {
                         this.isOpen = !this.isOpen;
+
+                        if (this.isOpen) {
+                            this.ensureChildrenLoaded();
+                        }
                     }
 
                     this.setFilters(item);
+                },
+
+                ensureChildrenLoaded: function() {
+                    if (this.childrenLoaded || (this.item.children && this.item.children.length)) {
+                        return;
+                    }
+
+                    if (! this.item.has_children) {
+                        return;
+                    }
+
+                    this.childrenLoaded = true;
+
+                    const url = `{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id);
+
+                    this.$axios.get(url, { params: { offset: 0 } })
+                        .then((response) => {
+                            this.item.children = response.data.data || [];
+                            this.fetchChildCounts(this.item.children.map(c => c.id));
+                        })
+                        .catch((error) => {
+                            this.childrenLoaded = false;
+                            console.error('Error loading subdirectories:', error);
+                        });
+                },
+
+                fetchChildCounts: function(ids) {
+                    ids = (ids || []).filter(id => id != null);
+                    if (! ids.length) return;
+
+                    this.$axios.post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                        .then((response) => {
+                            const counts = response.data.data || {};
+                            (this.item.children || []).forEach((child) => {
+                                if (counts[child.id] !== undefined) {
+                                    child.assets_total_count = counts[child.id];
+                                }
+                            });
+                        })
+                        .catch(() => {});
                 },
             },
         });

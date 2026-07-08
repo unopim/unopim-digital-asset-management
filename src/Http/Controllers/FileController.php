@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
@@ -22,6 +23,8 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 /** Manages file operations and image thumbnails/previews on the asset disk. */
 class FileController
 {
+    private const ASSET_CACHE_SECONDS = 86400;
+
     /**
      * Resolve the underlying asset path from a thumbnail/preview path, if any.
      */
@@ -165,7 +168,7 @@ class FileController
                 );
             }
 
-            return $response;
+            return $this->applyAssetCache($response);
         } else {
             return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
@@ -241,7 +244,7 @@ class FileController
 
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
 
-                return response($imageData, 200)->header('Content-Type', $mimeType);
+                return $this->applyAssetCache(response($imageData, 200)->header('Content-Type', $mimeType));
             } catch (\Throwable $e) {
                 Log::warning('DAM thumbnail generation failed: '.$e->getMessage(), ['path' => $path]);
             }
@@ -250,9 +253,11 @@ class FileController
                 Storage::disk($disk)->copy($path, $thumbnailPath);
             }
 
-            return response(Storage::disk($disk)->get($thumbnailPath), 200)
-                ->header('Content-Type', 'image/svg+xml')
-                ->withHeaders(AssetHelper::assetResponseHeaders());
+            return $this->applyAssetCache(
+                response(Storage::disk($disk)->get($thumbnailPath), 200)
+                    ->header('Content-Type', 'image/svg+xml')
+                    ->withHeaders(AssetHelper::assetResponseHeaders())
+            );
         }
 
         if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
@@ -329,6 +334,21 @@ class FileController
     }
 
     /** Returns an HTTP response containing the requested file. */
+    private function applyAssetCache($response)
+    {
+        if ($response instanceof BinaryFileResponse) {
+            $response->setAutoEtag();
+            $response->setAutoLastModified();
+        }
+
+        $response->setPrivate();
+        $response->setMaxAge(self::ASSET_CACHE_SECONDS);
+
+        $response->isNotModified(request());
+
+        return $response;
+    }
+
     private function getFileResponse($path)
     {
         $disk = Directory::getAssetDisk();
@@ -349,7 +369,7 @@ class FileController
 
         $absolutePath = Storage::disk($disk)->path($path);
 
-        return response()->file($absolutePath);
+        return $this->applyAssetCache(response()->file($absolutePath));
     }
 
     /** Resize the given image to the specified width while maintaining aspect ratio. */
@@ -425,8 +445,9 @@ class FileController
             $mimeType = Storage::disk('public')->mimeType($placeholderPath);
             $fileContent = Storage::disk('public')->get($placeholderPath);
 
-            return response($fileContent, 200)
-                ->header('Content-Type', $mimeType);
+            return $this->applyAssetCache(
+                response($fileContent, 200)->header('Content-Type', $mimeType)
+            );
         }
 
         return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);

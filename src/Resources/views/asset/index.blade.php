@@ -3,7 +3,6 @@
         @lang('dam::app.admin.dam.index.title')
     </x-slot:title>
 
-
     {!! view_render_event('unopim.dam.admin.main.before') !!}
 
     <v-dam-main></v-dam-main>
@@ -43,11 +42,8 @@
                                 ? 'lg:static lg:w-[280px] lg:max-w-full lg:translate-x-0 lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:p-0 lg:overflow-visible max-lg:fixed max-lg:top-14 max-lg:bottom-0 max-lg:left-0 max-lg:z-[1001] max-lg:w-[280px] max-lg:max-w-[85vw] max-lg:bg-gray-50 dark:max-lg:bg-cherry-900 max-lg:shadow-2xl max-lg:overflow-y-auto max-lg:p-3 transition-transform duration-200'
                                 : 'w-[280px] max-w-full max-sm:w-full' }}"
                             @if (config('dam.explorer.enabled'))
-                            {{-- lg:!hidden (important): the admin core theme's stylesheet loads after
-                                 the DAM bundle and re-declares plain `.flex{display:flex}`, which would
-                                 otherwise override a non-important `lg:hidden` and leave the sidebar
-                                 visible on desktop. The important modifier wins that cascade. --}}
-                            :class="[ showSidebar ? '' : 'lg:!hidden', drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
+                            :class="[ drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
+                            :style="(! showSidebar && isDesktopView) ? 'display: none !important' : ''"
                             @endif
                         >
 
@@ -129,9 +125,10 @@
                         const s = localStorage.getItem('dam_show_sidebar');
                         if (s !== null) showSidebar = s !== 'false';
                     } catch {}
-                    // drawerOpen drives the off-canvas sidebar below the lg breakpoint;
-                    // it is transient (never persisted) and always starts closed.
-                    return { showSidebar, drawerOpen: false };
+                    let isDesktopView = true;
+                    try { isDesktopView = window.matchMedia('(min-width: 1024px)').matches; } catch {}
+
+                    return { showSidebar, drawerOpen: false, isDesktopView };
                 },
 
                 mounted() {
@@ -190,7 +187,7 @@
                     this._onSidebarKeydown = (e) => { if (e.key === 'Escape') this.drawerOpen = false; };
                     window.addEventListener('keydown', this._onSidebarKeydown);
 
-                    this._onSidebarResize = () => { if (this.isDesktop()) this.drawerOpen = false; };
+                    this._onSidebarResize = () => { this.isDesktopView = this.isDesktop(); if (this.isDesktop()) this.drawerOpen = false; };
                     window.addEventListener('resize', this._onSidebarResize);
 
                     this.$emitter.on('current-directory', () => { if (! this.isDesktop()) this.drawerOpen = false; });

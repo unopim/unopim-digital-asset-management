@@ -20,7 +20,7 @@
             <div
                 v-if="isDragOver"
                 :style="hintCardStyle"
-                class="fixed z-[51] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 rounded-2xl px-10 py-8 shadow-lg pointer-events-none"
+                class="fixed z-[10011] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 rounded-2xl px-10 py-8 shadow-lg pointer-events-none"
                 :class="canUpload
                     ? 'bg-violet-50 dark:bg-violet-950/80 border border-violet-200 dark:border-violet-700'
                     : 'bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-700'"

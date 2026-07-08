@@ -208,7 +208,6 @@
             },
         });
 
-        // Map the DAM `asset` attribute type to the DAM cell (core switch has no `asset` case).
         const damCellComponent = app.component('v-spreadsheet-cell');
 
         if (damCellComponent?.methods?.getComponentType) {

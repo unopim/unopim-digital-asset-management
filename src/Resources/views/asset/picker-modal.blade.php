@@ -102,6 +102,8 @@
                                                 <img
                                                     :src="record.path"
                                                     :alt="record.file_name"
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     class="w-full h-full object-cover object-top"
                                                 >
 
@@ -234,7 +236,16 @@
                 },
 
                 onUploadsRefresh({ directoryId, assetIds = [] } = {}) {
-                    if (! this.pickerCurrentDirectory || this.pickerCurrentDirectory.id !== directoryId) {
+                    if (directoryId == null) {
+                        return;
+                    }
+
+                    const currentId = this.pickerCurrentDirectory?.id;
+                    const isCurrent = currentId != null && Number(currentId) === Number(directoryId);
+
+                    if (! isCurrent) {
+                        this.$emitter.emit('dam:reveal-directory', { id: directoryId });
+
                         return;
                     }
 
