@@ -19,14 +19,13 @@
 
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-field-template">
-        <!-- Panel Content -->
+
         <div class="grid">
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
             <div class="flex flex-wrap gap-3" v-else>
                 <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
-                <!-- Uploaded assets -->
                 <div
                     v-bind="{animation: 200}"
                     v-for="(element, index) in assets"
@@ -42,7 +41,6 @@
                     </v-asset-field-item>
                 </div>
 
-                <!-- Add Asset -->
                 <label
                     class="grid justify-items-center items-center w-full h-[120px] max-w-[210px] max-h-[120px] border border-dashed dark:border-gray-300 rounded cursor-pointer transition-all hover:border-gray-400 border-gray-300"
                     :style="{'max-width': this.width, 'max-height': this.height}"
@@ -65,7 +63,7 @@
     <script type="text/x-template" id="v-asset-field-item-template">
         <div class="grid gap-2">
             <div class="grid justify-items-center min-w-[120px] max-h-[120px] relative rounded overflow-hidden transition-all hover:border-gray-400 group" :style="{'width': this.width, 'height': this.height}">
-                <!-- Image Preview -->
+
                 <img
                     :src="asset.url"
                     class="w-full h-full object-cover object-top"
@@ -80,7 +78,7 @@
                     @click="window.location.href = asset.url"
                 />
                 <div class="flex flex-col justify-between invisible w-full p-3 bg-white dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
-                    <!-- Actions -->
+
                     <div class="flex items-center justify-center h-full">
                         <span
                             class="icon-dam-download text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
@@ -105,7 +103,6 @@
                 </div>
             </div>
 
-            <!-- Image Name -->
             <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold break-all" v-text="asset.file_name"></p>
         </div>
 

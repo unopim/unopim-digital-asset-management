@@ -45,14 +45,6 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
         });
 
-        /**
-         * Inject the DAM asset cell + picker into the product bulk-edit spreadsheet.
-         *
-         * The core bulk-edit editor exposes no dedicated hook, so we ride the global
-         * layout event that fires inside `#app` (Vue's mount root) and before the
-         * `scripts` stack — guarding on the route so nothing loads on other pages.
-         * This keeps the whole feature inside the DAM package: no core file changes.
-         */
         Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             if (! request()->routeIs('admin.catalog.products.bulkedit')) {
                 return;

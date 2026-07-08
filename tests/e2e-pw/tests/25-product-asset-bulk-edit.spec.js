@@ -3,7 +3,6 @@ const { test, expect } = require('../utils/fixtures');
 
 test.describe('Product asset bulk edit', () => {
   test('asset attribute renders the asset cell and opens the DAM picker modal', async ({ adminPage }) => {
-    // --- Discover an asset-type attribute (paginated, no CSRF needed for GET). ---
     let assetAttribute = null;
     for (let page = 1; page <= 20 && !assetAttribute; page++) {
       const res = await adminPage.request.get(
@@ -24,7 +23,6 @@ test.describe('Product asset bulk edit', () => {
       return;
     }
 
-    // --- Open the products grid and select a product for the mass action. ---
     await adminPage.goto('/admin/catalog/products', { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     const appVisible = await adminPage.locator('#app')
@@ -39,7 +37,6 @@ test.describe('Product asset bulk edit', () => {
 
     await adminPage.getByPlaceholder('Search').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
 
-    // First checkbox is the header "select all"; the mass-action bar appears either way.
     const selectAll = adminPage.locator('.icon-checkbox-normal').first();
     await selectAll.waitFor({ state: 'visible', timeout: 30000 });
     await selectAll.click();
@@ -63,11 +60,9 @@ test.describe('Product asset bulk edit', () => {
 
     await adminPage.getByRole('button', { name: 'Proceed' }).click();
 
-    // --- On the bulk-edit page, the asset column must render the asset cell. ---
     await adminPage.waitForURL(/\/catalog\/products\/bulkedit/, { timeout: 30000 });
     await adminPage.locator('#app').waitFor({ state: 'visible', timeout: 30000 });
 
-    // The asset attribute's column header should be present.
     await expect(
       adminPage.getByRole('columnheader', { name: new RegExp(escapeRegExp(assetAttribute.name), 'i') })
     ).toBeVisible({ timeout: 30000 });
@@ -88,15 +83,12 @@ test.describe('Product asset bulk edit', () => {
       .catch(() => false);
 
     if (hasAsset) {
-      // Reveal the hover overlay, then open the fullscreen viewer.
       await previewButton.hover();
       await previewButton.click();
 
-      // The fullscreen viewer (z-[10010]) stacks above the picker (z-[10002]).
       const viewer = adminPage.locator('.z-\\[10010\\]').first();
       await expect(viewer).toBeVisible({ timeout: 15000 });
 
-      // Escape closes the viewer but leaves the picker open underneath.
       await adminPage.keyboard.press('Escape');
       await expect(viewer).toBeHidden({ timeout: 15000 });
       await expect(adminPage.getByText('Assign Assets').first()).toBeVisible();

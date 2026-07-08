@@ -3,7 +3,7 @@
 <v-dam-asset-picker></v-dam-asset-picker>
 
 @pushOnce('scripts')
-    {{-- ============================ Spreadsheet cell ============================ --}}
+
     <script type="text/x-template" id="v-spreadsheet-asset-template">
         <div class="w-full h-full flex items-center gap-1.5 px-1">
 
@@ -122,8 +122,6 @@
                     this.syncInput();
                     this.fetchAssets();
 
-                    // Reflect external changes (paste / fill-down / clear) into the
-                    // save payload as an array of ids.
                     this.$emitter.emit('update-spreadsheet-data', {
                         value: this.assetIds,
                         entityId: this.entityId,
@@ -168,7 +166,6 @@
 
                     damBulkFetchAssets(this.$axios, "{{ route('admin.dam.asset_picker.get_assets') }}", ids)
                         .then(list => {
-                            // Guard against a stale response if the value changed meanwhile.
                             if (this.assetIds.join(',') !== key) {
                                 return;
                             }
@@ -182,7 +179,6 @@
 
                 openPicker() {
                     this.$emitter.emit('dam-asset-picker:open', {
-                        // Picker record ids are numeric; match them so checkboxes pre-check.
                         ids: this.assetIds.map(id => (isNaN(id) ? id : Number(id))),
                         onAssign: ids => this.applyIds(ids),
                     });
@@ -193,7 +189,6 @@
                     this.syncInput();
                     this.fetchAssets();
 
-                    // CSV keeps copy / paste / fill-down working like the gallery cell.
                     this.$emit('update:modelValue', this.assetIds.join(','));
 
                     this.$emitter.emit('update-spreadsheet-data', {
@@ -213,17 +208,7 @@
             },
         });
 
-        /**
-         * Teach the core bulk-edit cell how to render DAM asset attributes.
-         *
-         * `admin::components.bulkedit.cell` maps an attribute type to its cell
-         * component via `getComponentType(type)`, whose switch has no `asset`
-         * case and falls back to a plain text cell. We augment that method here
-         * (the `v-spreadsheet-asset` component is registered above) instead of
-         * editing the core file. This module runs before `app.mount('#app')`
-         * (fired on window `load`), so every asset cell picks up the mapping on
-         * its first render.
-         */
+        // Map the DAM `asset` attribute type to the DAM cell (core switch has no `asset` case).
         const damCellComponent = app.component('v-spreadsheet-cell');
 
         if (damCellComponent?.methods?.getComponentType) {

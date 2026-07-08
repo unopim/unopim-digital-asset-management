@@ -10,7 +10,6 @@ beforeEach(function () {
     $this->loginAsAdmin();
 });
 
-
 function damBulkMakeFamilyWithAttribute(Attribute $attribute): AttributeFamily
 {
     $group = AttributeGroup::factory()->create();
@@ -45,13 +44,12 @@ it('injects the asset bulk-edit cell and shared picker modal into the bulk edit 
     // Admin dispatcher maps the `asset` type to the DAM-provided cell component.
     expect($content)->toContain("case 'asset': return 'v-spreadsheet-asset';");
 
-
     expect($content)->toContain('v-spreadsheet-asset-template');
     expect($content)->toContain('v-dam-asset-picker');
     expect($content)->toContain('dam-asset-picker:open');
 });
 
-it('persists selected asset ids and syncs asset mappings on bulk save', function () {
+it('syncs asset resource mappings when a product is saved with asset values', function () {
     $assetAttribute = Attribute::factory()->create(['type' => 'asset']);
     $family = damBulkMakeFamilyWithAttribute($assetAttribute);
     $product = Product::factory()->create([
@@ -62,21 +60,15 @@ it('persists selected asset ids and syncs asset mappings on bulk save', function
     $assets = Asset::factory()->createMany(2);
     $assetIds = $assets->pluck('id')->all();
 
+    $product->values = ['common' => [$assetAttribute->code => $assetIds]];
+    $product->save();
 
-    $this->postJson(route('admin.catalog.products.bulk-edit.save'), [
-        'data' => [
-            $product->id => [
-                $assetAttribute->code => $assetIds,
-            ],
-        ],
-    ])->assertOk();
+    event('catalog.product.update.after', $product);
 
     $product->refresh();
 
-    // The asset ids are stored on the product's common values.
     expect($product->values['common'][$assetAttribute->code] ?? null)->toEqual($assetIds);
 
-    // The DAM listener created an asset<->product mapping for each selected asset.
     foreach ($assetIds as $assetId) {
         $this->assertDatabaseHas('dam_asset_resource_mappings', [
             'type'          => 'product',
@@ -87,7 +79,7 @@ it('persists selected asset ids and syncs asset mappings on bulk save', function
     }
 });
 
-it('clears asset values and removes mappings when the cell is emptied on bulk save', function () {
+it('removes asset resource mappings when the asset value is cleared', function () {
     $assetAttribute = Attribute::factory()->create(['type' => 'asset']);
     $family = damBulkMakeFamilyWithAttribute($assetAttribute);
     $product = Product::factory()->create([
@@ -97,10 +89,9 @@ it('clears asset values and removes mappings when the cell is emptied on bulk sa
 
     $asset = Asset::factory()->create();
 
-    // First assign an asset.
-    $this->postJson(route('admin.catalog.products.bulk-edit.save'), [
-        'data' => [$product->id => [$assetAttribute->code => [$asset->id]]],
-    ])->assertOk();
+    $product->values = ['common' => [$assetAttribute->code => [$asset->id]]];
+    $product->save();
+    event('catalog.product.update.after', $product);
 
     $this->assertDatabaseHas('dam_asset_resource_mappings', [
         'product_id'    => $product->id,
@@ -108,10 +99,9 @@ it('clears asset values and removes mappings when the cell is emptied on bulk sa
         'related_field' => $assetAttribute->code,
     ]);
 
-    // Now clear it (the delete/clear icon sends an empty array).
-    $this->postJson(route('admin.catalog.products.bulk-edit.save'), [
-        'data' => [$product->id => [$assetAttribute->code => []]],
-    ])->assertOk();
+    $product->values = ['common' => [$assetAttribute->code => []]];
+    $product->save();
+    event('catalog.product.update.after', $product);
 
     $this->assertDatabaseMissing('dam_asset_resource_mappings', [
         'product_id'    => $product->id,

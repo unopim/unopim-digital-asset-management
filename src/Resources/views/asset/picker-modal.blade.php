@@ -1,11 +1,4 @@
-{{--
-    Shared DAM "Assign Assets" picker modal.
 
-    Single source of truth for the asset picker used by the product/category
-    asset field and the product bulk-edit cell. Open it two ways:
-      - ref:     this.$refs.assetPicker.open(ids)  then listen @assign="fn"
-      - emitter: this.$emitter.emit('dam-asset-picker:open', { ids, onAssign })
---}}
 
 @once('dam-grid-preview-modal')
     @include('dam::asset.grid-preview-modal')
@@ -15,8 +8,6 @@
     <x-dam::asset.drop-upload />
 @endonce
 
-{{-- Persistent upload manager (owns the floating progress panel); kept outside
-     the modal so uploads keep running after it closes. One per page. --}}
 @once('dam-asset-picker-persistent-upload')
     <v-dam-drop-upload class="hidden"></v-dam-drop-upload>
 @endonce
@@ -114,8 +105,6 @@
                                                     class="w-full h-full object-cover object-top"
                                                 >
 
-                                                {{-- Hover eye opens the fullscreen viewer; the overlay is
-                                                     click-through so the card still toggles selection. --}}
                                                 <div class="absolute inset-0 flex items-center justify-center bg-black/60 dark:bg-cherry-800/70 transition-opacity opacity-0 group-hover:opacity-100 pointer-events-none">
                                                     <button
                                                         type="button"
