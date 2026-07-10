@@ -1,6 +1,6 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## **Version 3.0** - UnoPim v2.1.x Compatibility
+## **Version 2.2.1** - UnoPim v2.1.x Compatibility
 
 ### Features & Enhancements
 
@@ -11,6 +11,8 @@
 * **Lazy In-Tree Asset Directory Listing** — Implemented lazy loading for the asset directory tree to improve performance. Directories are now loaded in batches of **100 items** at a time, with a **"Load More"** option to fetch additional directories on demand, ensuring faster initial loading and better scalability for large directory structures.
 
 
+* **Asset Bulk Edit** — Updated and implemented the **Asset Bulk Edit** feature using the core product datagrid. The functionality is now fully integrated and working as expected.
+
 ### Fixed
 
 - **AWS S3 Video Support** — Added proper video support for AWS S3 by fixing the asset handling logic, ensuring video files stored in S3 are correctly detected, processed, and accessible across the DAM.
@@ -18,6 +20,9 @@
 - **Newly-created subdirectories inaccessible until page reload** — Folder upload and bulk folder-structure creation auto-grant new subdirectories to the creator's role, but the client never learned which directories were created, so they showed as "View only" in the tree/explorer/grid until a manual refresh. Both endpoints now report the granted directory IDs and the UI updates immediately, matching the existing behaviour for the "New Folder" action.
 
 - **Untranslated Tag management and upload-control strings** — The Tag feature (datagrid, create/edit modals, mass-assign) and the background-upload pause/resume/cancel/retry controls were shipped with English text in every non-English locale. Native translations added across all 29 supported locales.
+
+- **Drag and Drop** — Updated the DAM modal by adding the **Asset Picker**, **Asset Full View**, and **file upload** functionality with drag-and-drop support.
+
 
 
 ### Security
