@@ -16,7 +16,7 @@
         >
             <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col min-w-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
-                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-xl:flex-wrap min-w-0' }}">
+                    <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-lg:flex-wrap min-w-0' }}">
                         <!-- left side: stacked cards (visible when tree or bookmarks should appear) -->
                         @php
                             $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
@@ -40,7 +40,7 @@
                             data-explorer-sidebar
                             class="flex flex-col gap-3 shrink-0 {{ config('dam.explorer.enabled')
                                 ? 'lg:static lg:w-[280px] lg:max-w-full lg:translate-x-0 lg:bg-transparent lg:dark:bg-transparent lg:shadow-none lg:p-0 lg:overflow-visible max-lg:fixed max-lg:top-14 max-lg:bottom-0 max-lg:left-0 max-lg:z-[1001] max-lg:w-[280px] max-lg:max-w-[85vw] max-lg:bg-gray-50 dark:max-lg:bg-cherry-900 max-lg:shadow-2xl max-lg:overflow-y-auto max-lg:p-3 transition-transform duration-200'
-                                : 'w-[280px] max-w-full max-sm:w-full' }}"
+                                : 'w-[280px] max-w-full max-lg:w-full' }}"
                             @if (config('dam.explorer.enabled'))
                             :class="[ drawerOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full' ]"
                             :style="(! showSidebar && isDesktopView) ? 'display: none !important' : ''"
