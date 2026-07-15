@@ -71,6 +71,8 @@ class ExplorerDataController extends Controller
         $perPage = $request->integer('per_page', 50);
         $page = $request->integer('page', 1);
 
+        $likeOperator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
         $filterFileName = $request->input('filter_file_name');
         $filterExtension = $request->input('filter_extension');
         $filterFileType = $request->input('filter_file_type');
@@ -88,7 +90,7 @@ class ExplorerDataController extends Controller
 
         if ($search) {
             $dirQuery->whereDescendantOf($dir)
-                ->where('name', 'like', '%'.strtolower($search).'%')
+                ->where('name', $likeOperator, '%'.strtolower($search).'%')
                 ->limit(200);
         } else {
             $dirQuery->where('parent_id', $dir->id);
@@ -121,7 +123,7 @@ class ExplorerDataController extends Controller
             ]);
 
         $buildAssetQuery = function () use (
-            $dir, $search, $directlyGrantedIds,
+            $dir, $search, $directlyGrantedIds, $likeOperator,
             $filterFileName, $filterExtension, $filterFileType, $filterTag,
             $filterCreatedFrom, $filterCreatedTo,
             $filterUpdatedFrom, $filterUpdatedTo,
@@ -151,24 +153,24 @@ class ExplorerDataController extends Controller
 
             if ($search) {
                 $lowerSearch = '%'.strtolower($search).'%';
-                $q->where(function ($w) use ($lowerSearch) {
-                    $w->where('dam_assets.file_name', 'like', $lowerSearch)
+                $q->where(function ($w) use ($lowerSearch, $likeOperator) {
+                    $w->where('dam_assets.file_name', $likeOperator, $lowerSearch)
                         ->orWhereExists(
                             DB::table('dam_tags')
                                 ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
                                 ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
-                                ->where('dam_tags.name', 'like', $lowerSearch)
+                                ->where('dam_tags.name', $likeOperator, $lowerSearch)
                                 ->select(DB::raw(1))
                         );
                 });
             }
 
             if ($filterFileName) {
-                $q->where('dam_assets.file_name', 'like', '%'.strtolower($filterFileName).'%');
+                $q->where('dam_assets.file_name', $likeOperator, '%'.strtolower($filterFileName).'%');
             }
 
             if ($filterExtension) {
-                $q->where('dam_assets.extension', 'like', '%'.strtolower($filterExtension).'%');
+                $q->where('dam_assets.extension', $likeOperator, '%'.strtolower($filterExtension).'%');
             }
 
             if ($filterFileType) {
@@ -181,7 +183,7 @@ class ExplorerDataController extends Controller
                     DB::table('dam_tags')
                         ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
                         ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
-                        ->where('dam_tags.name', 'like', $lowerTag)
+                        ->where('dam_tags.name', $likeOperator, $lowerTag)
                         ->select(DB::raw(1))
                 );
             }
@@ -203,12 +205,12 @@ class ExplorerDataController extends Controller
             }
 
             foreach ($filterProps as $propName => $propValue) {
-                $q->whereExists(function ($sub) use ($prefix, $propName, $propValue) {
+                $q->whereExists(function ($sub) use ($prefix, $propName, $propValue, $likeOperator) {
                     $sub->select(DB::raw(1))
                         ->from('dam_asset_properties')
                         ->whereRaw("{$prefix}dam_asset_properties.dam_asset_id = {$prefix}dam_assets.id")
                         ->where('name', $propName)
-                        ->where('value', 'like', '%'.strtolower($propValue).'%');
+                        ->where('value', $likeOperator, '%'.strtolower($propValue).'%');
                 });
             }
 
