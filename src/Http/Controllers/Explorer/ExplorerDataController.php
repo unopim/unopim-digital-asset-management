@@ -88,7 +88,7 @@ class ExplorerDataController extends Controller
 
         if ($search) {
             $dirQuery->whereDescendantOf($dir)
-                ->where(DB::raw('LOWER(name)'), 'like', '%'.strtolower($search).'%')
+                ->where('name', 'like', '%'.strtolower($search).'%')
                 ->limit(200);
         } else {
             $dirQuery->where('parent_id', $dir->id);
@@ -121,7 +121,7 @@ class ExplorerDataController extends Controller
             ]);
 
         $buildAssetQuery = function () use (
-            $dir, $search,
+            $dir, $search, $directlyGrantedIds,
             $filterFileName, $filterExtension, $filterFileType, $filterTag,
             $filterCreatedFrom, $filterCreatedTo,
             $filterUpdatedFrom, $filterUpdatedTo,
@@ -129,50 +129,46 @@ class ExplorerDataController extends Controller
         ) {
             $prefix = DB::getTablePrefix();
 
-            $q = Asset::query()
-                ->join(
-                    'dam_asset_directory',
-                    'dam_asset_directory.asset_id',
-                    '=',
-                    'dam_assets.id'
-                );
+            $q = Asset::query();
+
+            $q->whereExists(function ($sub) use ($dir, $search, $directlyGrantedIds) {
+                $sub->select(DB::raw(1))
+                    ->from('dam_asset_directory')
+                    ->whereColumn('dam_asset_directory.asset_id', 'dam_assets.id');
+
+                if ($search) {
+                    $sub->join('dam_directories', 'dam_directories.id', '=', 'dam_asset_directory.directory_id')
+                        ->where('dam_directories._lft', '>=', $dir->_lft)
+                        ->where('dam_directories._rgt', '<=', $dir->_rgt);
+                } else {
+                    $sub->where('dam_asset_directory.directory_id', $dir->id);
+                }
+
+                if ($directlyGrantedIds !== null) {
+                    $sub->whereIn('dam_asset_directory.directory_id', $directlyGrantedIds);
+                }
+            });
 
             if ($search) {
-                $dirTable = (new Directory)->getTable();
-                $subtreeSubquery = DB::table($dirTable)
-                    ->select('id')
-                    ->where('_lft', '>=', $dir->_lft)
-                    ->where('_rgt', '<=', $dir->_rgt);
-
                 $lowerSearch = '%'.strtolower($search).'%';
-                $q->whereIn('dam_asset_directory.directory_id', $subtreeSubquery)
-                    ->where(function ($w) use ($prefix, $lowerSearch) {
-                        $w->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', [$lowerSearch])
-                            ->orWhereExists(
-                                DB::table('dam_tags')
-                                    ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
-                                    ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
-                                    ->whereRaw('LOWER('.$prefix.'dam_tags.name) LIKE ?', [$lowerSearch])
-                                    ->select(DB::raw(1))
-                            );
-                    });
-            } else {
-                $q->where('dam_asset_directory.directory_id', $dir->id);
-            }
-
-            if (! $this->permissionService->bypass()) {
-                $q->whereIn(
-                    'dam_asset_directory.directory_id',
-                    $this->permissionService->directlyGrantedIds()
-                );
+                $q->where(function ($w) use ($lowerSearch) {
+                    $w->where('dam_assets.file_name', 'like', $lowerSearch)
+                        ->orWhereExists(
+                            DB::table('dam_tags')
+                                ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
+                                ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
+                                ->where('dam_tags.name', 'like', $lowerSearch)
+                                ->select(DB::raw(1))
+                        );
+                });
             }
 
             if ($filterFileName) {
-                $q->whereRaw('LOWER('.$prefix.'dam_assets.file_name) LIKE ?', ['%'.strtolower($filterFileName).'%']);
+                $q->where('dam_assets.file_name', 'like', '%'.strtolower($filterFileName).'%');
             }
 
             if ($filterExtension) {
-                $q->whereRaw('LOWER('.$prefix.'dam_assets.extension) LIKE ?', ['%'.strtolower($filterExtension).'%']);
+                $q->where('dam_assets.extension', 'like', '%'.strtolower($filterExtension).'%');
             }
 
             if ($filterFileType) {
@@ -185,7 +181,7 @@ class ExplorerDataController extends Controller
                     DB::table('dam_tags')
                         ->join('dam_asset_tag', 'dam_tags.id', '=', 'dam_asset_tag.tag_id')
                         ->whereColumn('dam_asset_tag.asset_id', 'dam_assets.id')
-                        ->whereRaw('LOWER('.$prefix.'dam_tags.name) LIKE ?', [$lowerTag])
+                        ->where('dam_tags.name', 'like', $lowerTag)
                         ->select(DB::raw(1))
                 );
             }
@@ -212,7 +208,7 @@ class ExplorerDataController extends Controller
                         ->from('dam_asset_properties')
                         ->whereRaw("{$prefix}dam_asset_properties.dam_asset_id = {$prefix}dam_assets.id")
                         ->where('name', $propName)
-                        ->whereRaw('LOWER(value) LIKE ?', ['%'.strtolower($propValue).'%']);
+                        ->where('value', 'like', '%'.strtolower($propValue).'%');
                 });
             }
 
@@ -226,7 +222,7 @@ class ExplorerDataController extends Controller
         };
 
         $assetQuery = $buildAssetQuery();
-        $totalAssets = (clone $assetQuery)->distinct()->count('dam_assets.id');
+        $totalAssets = (clone $assetQuery)->count('dam_assets.id');
 
         $assets = $assetQuery
             ->select([
@@ -234,11 +230,6 @@ class ExplorerDataController extends Controller
                 'dam_assets.extension', 'dam_assets.file_size', 'dam_assets.path',
                 'dam_assets.mime_type', 'dam_assets.updated_at',
             ])
-            ->groupBy(
-                'dam_assets.id', 'dam_assets.file_name', 'dam_assets.file_type',
-                'dam_assets.extension', 'dam_assets.file_size', 'dam_assets.path',
-                'dam_assets.mime_type', 'dam_assets.updated_at'
-            )
             ->orderBy($sortColumn, $sortOrder)
             ->forPage($page, $perPage)
             ->get()

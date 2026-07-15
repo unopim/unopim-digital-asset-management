@@ -88,7 +88,7 @@ class SharedViewerController extends Controller
         $page = max(1, (int) request('page', 1));
         $perPage = 24;
 
-        $paginator = $this->subtreeAssetQuery($directory)->orderByDesc('updated_at')->paginate($perPage, ['*'], 'page', $page);
+        $paginator = $this->subtreeAssetQuery($directory)->orderByDesc('updated_at')->simplePaginate($perPage, ['*'], 'page', $page);
 
         $data = $paginator->getCollection()->map(fn (Asset $asset) => [
             'id'                  => $asset->id,
@@ -113,7 +113,6 @@ class SharedViewerController extends Controller
             'data' => $data,
             'meta' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
                 'has_more'     => $paginator->hasMorePages(),
             ],
         ]);

@@ -8,10 +8,16 @@ use Webkul\DAM\Models\DamConfiguration;
 
 class DAM
 {
+    private static bool $tableExists = false;
+
     /** Handle an incoming request;. */
     public function handle($request, Closure $next)
     {
-        if (Schema::hasTable('dam_configuration')) {
+        if (! self::$tableExists) {
+            self::$tableExists = Schema::hasTable('dam_configuration');
+        }
+
+        if (self::$tableExists) {
             DamConfiguration::all()->each(function ($row) {
                 $path = DamConfiguration::KEY_MAP[$row->key] ?? null;
                 if ($path) {
