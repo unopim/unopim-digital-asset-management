@@ -1154,7 +1154,6 @@
                 moveStatusLabel: '',
                 rootChildrenLoadingMore: false,
                 _folderAbortController: null,
-                _awaitingFolderFiles: false,
                 localAccessibleIds: [...(this.accessibleIds || [])],
             };
         },
@@ -2022,17 +2021,6 @@
                 this.closeContextMenu();
 
                 if (! window.showDirectoryPicker) {
-                    this._awaitingFolderFiles = true;
-                    window.addEventListener('focus', () => {
-                        setTimeout(() => {
-                            if (! this._awaitingFolderFiles) return;
-                            this._awaitingFolderFiles = false;
-                            this.$emitter.emit('add-flash', {
-                                type: 'warning',
-                                message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
-                            });
-                        }, 400);
-                    }, { once: true });
                     this.$refs.folderInput.click();
                     return;
                 }
@@ -2106,14 +2094,9 @@
             },
 
             async handleFolderChange(event) {
-                this._awaitingFolderFiles = false;
                 const files = event.target.files;
                 if (! files || files.length === 0) {
                     event.target.value = '';
-                    this.$emitter.emit('add-flash', {
-                        type: 'warning',
-                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
-                    });
                     return;
                 }
 

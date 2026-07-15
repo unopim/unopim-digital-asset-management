@@ -23,37 +23,39 @@
         <div class="grid">
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
-            <div class="flex flex-wrap gap-3" v-else>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" v-else>
                 <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
-                <div
-                    v-bind="{animation: 200}"
-                    v-for="(element, index) in assets"
-                >
-                    <v-asset-field-item
-                        :name="name"
-                        :index="index"
-                        :asset="element"
-                        :width="width"
-                        :height="height"
-                        @onRemove="remove($event)"
-                    >
-                    </v-asset-field-item>
-                </div>
-
                 <label
-                    class="grid justify-items-center items-center w-full h-[120px] max-w-[210px] max-h-[120px] border border-dashed dark:border-gray-300 rounded cursor-pointer transition-all hover:border-gray-400 border-gray-300"
-                    :style="{'max-width': this.width, 'max-height': this.height}"
-                    :for="$.uid + '_assetImageInput'"
+                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-violet-500 dark:hover:border-violet-400 hover:shadow-md"
                     @click="openPicker"
                 >
-                    <div class="flex flex-col items-center">
-                        <span class="icon-dam-folder text-2xl"></span>
-                        <p class="grid text-sm text-gray-600 dark:text-gray-300 font-semibold text-center">
-                            @lang('dam::app.admin.components.asset.field.add-asset')
-                        </p>
-                    </div>
+                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-violet-600 transition-colors"></span>
+                    <p class="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        @lang('dam::app.admin.components.asset.field.add-asset')
+                    </p>
                 </label>
+
+                <draggable
+                    class="contents"
+                    ghost-class="draggable-ghost"
+                    v-bind="{animation: 200}"
+                    :list="assets"
+                    item-key="id"
+                    handle=".icon-drag"
+                >
+                    <template #item="{ element, index }">
+                        <v-asset-field-item
+                            :name="name"
+                            :index="index"
+                            :asset="element"
+                            :width="width"
+                            :height="height"
+                            @onRemove="remove($event)"
+                        >
+                        </v-asset-field-item>
+                    </template>
+                </draggable>
 
                 <v-dam-asset-picker ref="assetPicker" @assign="onAssign"></v-dam-asset-picker>
             </div>
@@ -61,12 +63,11 @@
     </script>
 
     <script type="text/x-template" id="v-asset-field-item-template">
-        <div class="grid gap-2">
-            <div class="grid justify-items-center min-w-[120px] max-h-[120px] relative rounded overflow-hidden transition-all hover:border-gray-400 group" :style="{'width': this.width, 'height': this.height}">
-
+        <div class="group relative flex flex-col rounded-lg border border-gray-200 dark:border-cherry-800 bg-white dark:bg-cherry-900 overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-violet-300 dark:hover:border-violet-700">
+            <div class="relative w-full">
                 <img
                     :src="asset.url"
-                    class="w-full h-full object-cover object-top"
+                    class="w-full h-[140px] object-cover object-top bg-gray-100 dark:bg-cherry-800"
                     v-if="!imgLoadError"
                     v-on:error="imgLoadError = true"
                 />
@@ -74,36 +75,40 @@
                     v-if="imgLoadError"
                     :src="typePlaceholder"
                     :data-href="asset.url"
-                    class="absolute inset-0 w-full h-full object-cover object-top cursor-pointer"
+                    class="w-full h-[140px] object-cover object-top bg-gray-100 dark:bg-cherry-800 cursor-pointer"
                     @click="window.location.href = asset.url"
                 />
-                <div class="flex flex-col justify-between invisible w-full p-3 bg-white dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
 
-                    <div class="flex items-center justify-center h-full">
-                        <span
-                            class="icon-dam-download text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="download"
-                            title="@lang('dam::app.admin.components.asset.field.download')"
-                        ></span>
+                <div class="absolute inset-0 flex items-end justify-center gap-2 p-2 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+                    <span class="icon-drag text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-grab active:cursor-grabbing"></span>
 
-                        <span
-                            class="icon-dam-full text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="preview"
-                            title="@lang('dam::app.admin.components.asset.field.preview')"
-                        ></span>
+                    <span
+                        class="icon-view text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
+                        @click="preview"
+                        title="@lang('dam::app.admin.components.asset.field.preview')"
+                    ></span>
 
-                        <span
-                            class="icon-cancel text-3xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="remove"
-                            title="@lang('dam::app.admin.components.asset.field.remove')"
-                        ></span>
+                    <span
+                        class="icon-dam-download text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
+                        @click="download"
+                        title="@lang('dam::app.admin.components.asset.field.download')"
+                    ></span>
 
-                        <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
-                    </div>
+                    <span
+                        class="icon-delete text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-red-500/80 cursor-pointer"
+                        @click="remove"
+                        title="@lang('dam::app.admin.components.asset.field.remove')"
+                    ></span>
+
+                    <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
                 </div>
             </div>
 
-            <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold break-all" v-text="asset.file_name"></p>
+            <p
+                class="px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 text-center truncate"
+                :title="asset.file_name"
+                v-text="asset.file_name"
+            ></p>
         </div>
 
     </script>

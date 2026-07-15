@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Webkul\Admin\DataGrids\Catalog\ProductDataGrid;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
@@ -38,6 +39,7 @@ class DAMServiceProvider extends ServiceProvider
         \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
         Attribute::class                                                => \Webkul\DAM\Models\Attribute::class,
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
+        ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
     ];
 
     /** {@inheritDoc} */
