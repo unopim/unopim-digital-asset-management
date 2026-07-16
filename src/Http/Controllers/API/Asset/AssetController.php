@@ -544,6 +544,11 @@ class AssetController extends Controller
 
         $metaData = $asset->meta_data ?? [];
 
+        if (is_string($metaData)) {
+            $decoded = json_decode($metaData, true);
+            $metaData = is_array($decoded) ? $decoded : [];
+        }
+
         if (empty($metaData) && $asset->file_type === 'image') {
             $result = $this->getMetadata($asset->path, Directory::getAssetDisk());
 
