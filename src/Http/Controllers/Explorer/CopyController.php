@@ -31,6 +31,12 @@ class CopyController extends Controller
      */
     public function copyAsset(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'asset_id'            => 'required|integer|exists:dam_assets,id',
             'target_directory_id' => 'required|integer|exists:dam_directories,id',
@@ -82,6 +88,12 @@ class CopyController extends Controller
      */
     public function copyDirectory(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.directory.store'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'directory_id'        => 'required|integer|exists:dam_directories,id',
             'target_directory_id' => 'required|integer|exists:dam_directories,id',
@@ -115,6 +127,12 @@ class CopyController extends Controller
      */
     public function copyStructureTo(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.directory.store'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'source_id' => 'required|integer|exists:dam_directories,id',
             'target_id' => 'required|integer|exists:dam_directories,id',
@@ -152,6 +170,14 @@ class CopyController extends Controller
             'directory_ids.*'     => 'integer',
             'target_directory_id' => 'required|integer|exists:dam_directories,id',
         ]);
+
+        if (! empty($request->input('asset_ids')) && ! bouncer()->hasPermission('dam.asset.upload')) {
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
+        if (! empty($request->input('directory_ids')) && ! bouncer()->hasPermission('dam.directory.store')) {
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
 
         $targetId = $request->integer('target_directory_id');
 

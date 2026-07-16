@@ -234,7 +234,7 @@
 
         function buildCardHTML(asset) {
             const ext      = (asset.extension || '').toLowerCase();
-            const extUpper = ext.toUpperCase();
+            const extUpper = esc(ext.toUpperCase());
             const badgeCls = badgeColor(asset.file_type, ext);
             const badgeHtml = ext
                 ? `<span class="absolute top-1.5 right-1.5 z-20 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md ${badgeCls}">${extUpper}</span>`

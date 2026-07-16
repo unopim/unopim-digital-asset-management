@@ -39,8 +39,8 @@
                             ref="datagrid"
                         >
                             <template #body-header="{ records, meta, massActions, selectAllRecords }">
-                                <div class="flex gap-2 items-center justify-between pb-4" v-if="records.length">
-                                    <div class="flex gap-2">
+                                <div class="flex gap-2 items-center justify-between pb-4">
+                                    <div class="flex gap-2" v-if="records.length">
                                         <label for="mass_action_select_all_records">
                                             <input
                                                 type="checkbox"
@@ -64,7 +64,7 @@
                                         <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">@lang("Select All")</span>
                                     </div>
 
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 ml-auto">
                                         @if (bouncer()->hasPermission('dam.asset.upload'))
                                             <input
                                                 type="file"
@@ -101,7 +101,7 @@
                                             <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
                                                 <img
                                                     :src="record.path"
-                                                    :alt="record.file_name"
+                                                    alt=""
                                                     loading="lazy"
                                                     decoding="async"
                                                     class="w-full h-full object-cover object-top"
@@ -111,7 +111,7 @@
                                                     <button
                                                         type="button"
                                                         class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors pointer-events-auto"
-                                                        title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
+                                                        aria-label="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
                                                         @click.stop.prevent="openPreview(record[meta.primary_column])"
                                                     ></button>
                                                 </div>

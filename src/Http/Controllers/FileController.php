@@ -369,7 +369,9 @@ class FileController
 
         $absolutePath = Storage::disk($disk)->path($path);
 
-        return $this->applyAssetCache(response()->file($absolutePath));
+        return $this->applyAssetCache(
+            response()->file($absolutePath, AssetHelper::assetResponseHeaders())
+        );
     }
 
     /** Resize the given image to the specified width while maintaining aspect ratio. */

@@ -329,6 +329,12 @@ class DirectoryController
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.directory.destroy'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $ids = $massDestroyRequest->input('indices');
 
         $requestAction = $this->start(EventType::DELETE_DIRECTORY->value);
@@ -521,6 +527,12 @@ class DirectoryController
      */
     public function createStructure(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.directory.store'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'directory_id' => 'required|exists:dam_directories,id',
             'paths'        => 'required|array|min:1',

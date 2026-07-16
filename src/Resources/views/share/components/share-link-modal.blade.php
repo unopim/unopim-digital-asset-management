@@ -257,6 +257,26 @@
             }
         },
         methods: {
+            optionForExpiry(expiresAt) {
+                if (! expiresAt) {
+                    return this.expiryOptions[0];
+                }
+
+                const numeric = this.expiryOptions.filter(o => o.value !== '');
+
+                const target = Date.parse(expiresAt);
+
+                if (isNaN(target)) {
+                    return numeric.find(o => o.value === 7) ?? numeric[0];
+                }
+
+                const daysLeft = Math.max(1, Math.round((target - Date.now()) / 86_400_000));
+
+                return numeric.reduce(
+                    (best, current) => Math.abs(current.value - daysLeft) < Math.abs(best.value - daysLeft) ? current : best,
+                    numeric[0]
+                );
+            },
             loadShares() {
                 if (!this.targetType || !this.targetId) return;
                 this.isLoading = true;
@@ -270,9 +290,7 @@
                         this.currentShare = shares.length ? shares[0] : null;
                         if (this.currentShare) {
                             this.advancedName = this.currentShare.name || '';
-                            this.expiryOption = this.currentShare.expires_at
-                                ? (this.expiryOptions.find(o => o.value !== '') ?? this.expiryOptions[1])
-                                : this.expiryOptions[0];
+                            this.expiryOption = this.optionForExpiry(this.currentShare.expires_at);
                         }
                     })
                     .catch(error => {

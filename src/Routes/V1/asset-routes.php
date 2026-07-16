@@ -6,6 +6,7 @@ use Webkul\DAM\Http\Controllers\API\Asset\CommentController;
 use Webkul\DAM\Http\Controllers\API\Asset\DirectoryController;
 use Webkul\DAM\Http\Controllers\API\Asset\LinkedResourcesController;
 use Webkul\DAM\Http\Controllers\API\Asset\PropertyController;
+use Webkul\DAM\Http\Controllers\API\Asset\ShareController;
 use Webkul\DAM\Http\Controllers\API\Asset\TagController;
 
 Route::group([
@@ -18,6 +19,7 @@ Route::group([
         Route::put('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
         Route::get('/{id}', 'show')->name('admin.api.dam.assets.show');
         Route::post('/reupload', 'reUpload')->name('admin.api.dam.assets.reUpload');
+        Route::get('/{id}/metadata', 'metadata')->whereNumber('id')->name('admin.api.dam.assets.metadata');
         Route::put('/{id}', 'update')->name('admin.api.dam.assets.update');
         Route::post('', 'upload')->name('admin.api.dam.assets.upload');
         Route::delete('/{id}', 'destroy')->name('admin.api.dam.assets.destroy');
@@ -40,9 +42,12 @@ Route::group([
     });
 
     Route::controller(TagController::class)->prefix('tags')->group(function () {
-        Route::get('{id}', 'tags')->name('admin.api.dam.tags.get');
+        Route::get('', 'allTags')->name('admin.api.dam.tags.all');
+        Route::post('/bulk', 'bulkAssign')->name('admin.api.dam.tags.bulk_assign');
+        Route::get('{id}', 'tags')->whereNumber('id')->name('admin.api.dam.tags.get');
         Route::post('', 'addTag')->name('admin.api.dam.tag.add');
         Route::delete('', 'removeTag')->name('admin.api.dam.tag.delete');
+        Route::delete('/{id}', 'destroy')->whereNumber('id')->name('admin.api.dam.tags.destroy');
     });
 
     Route::controller(PropertyController::class)->prefix('properties')->group(function () {
@@ -54,5 +59,14 @@ Route::group([
 
     Route::controller(LinkedResourcesController::class)->prefix('linked-resource')->group(function () {
         Route::get('{id}', 'getLinkedResource')->name('admin.api.dam.linked_resource.get');
+    });
+
+    Route::controller(ShareController::class)->prefix('shares')->group(function () {
+        Route::get('', 'index')->name('admin.api.dam.shares.index');
+        Route::post('', 'store')->name('admin.api.dam.shares.store');
+        Route::put('/{id}', 'update')->whereNumber('id')->name('admin.api.dam.shares.update');
+        Route::post('/{id}/revoke', 'revoke')->whereNumber('id')->name('admin.api.dam.shares.revoke');
+        Route::post('/{id}/reauthorize', 'reauthorize')->whereNumber('id')->name('admin.api.dam.shares.reauthorize');
+        Route::delete('/{id}', 'destroy')->whereNumber('id')->name('admin.api.dam.shares.destroy');
     });
 });

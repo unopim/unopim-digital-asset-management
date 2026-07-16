@@ -56,6 +56,13 @@ class CommentController extends Controller
 
         $this->damAuthorizeAsset($comment->dam_asset_id);
 
+        if ($comment->admin_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.update-failed'),
+            ], 403);
+        }
+
         try {
             $comment = $this->assetCommentRepository->update(request()->only([
                 'comments',
@@ -88,6 +95,13 @@ class CommentController extends Controller
         }
 
         $this->damAuthorizeAsset($comment->dam_asset_id);
+
+        if ($comment->admin_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
+            ], 403);
+        }
 
         try {
             $comment = $this->assetCommentRepository->delete($id);

@@ -195,7 +195,7 @@ To interact with UnoPim DAM's API, you can use our official Postman collection:
 
 [UnoPim DAM APIs on Postman](https://www.postman.com/unopim/unopim-apis/collection/4385199-086948c4-9e81-4271-abb7-6d6995a67304?ctx=info)
 
-This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs.
+This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs. A bundled copy ships at `packages/Webkul/DAM/postman/Unopim-DAM-API.postman_collection.json`.
 
 ### API Support
 
@@ -208,9 +208,12 @@ This collection provides ready-to-use API requests for various UnoPim DAM API fe
 - **Assets Management Endpoints:**
   - **Upload Asset:** `POST /api/v1/rest/assets`
   - **Update Asset Metadata:** `PUT /api/v1/rest/assets/{asset_id}`
+  - **Get Embedded Metadata:** `GET /api/v1/rest/assets/{asset_id}/metadata`
   - **Delete Asset:** `DELETE /api/v1/rest/assets/{asset_id}`
   - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
   - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`
+
+Tag (single + bulk assign/remove, delete) and Share (create, list, revoke, reauthorize, delete) endpoints are included in the collection.
 
 ## Updating (manual install)
 

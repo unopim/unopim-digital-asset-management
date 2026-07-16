@@ -451,7 +451,10 @@ class SharedViewerController extends Controller
             }
         }
 
-        return response()->file(Storage::disk($disk)->path($path));
+        return response()->file(
+            Storage::disk($disk)->path($path),
+            AssetHelper::assetResponseHeaders()
+        );
     }
 
     protected function placeholderResponse(Asset $asset)

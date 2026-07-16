@@ -76,12 +76,18 @@ class AssetController extends Controller
 
         foreach ($newImageUrl as $url) {
             try {
+                if (! $this->isSafeRemoteUrl($url)) {
+                    $errors[] = "Blocked URL: $url";
+
+                    continue;
+                }
+
                 $path = parse_url($url, PHP_URL_PATH);
                 $fileName = basename($path);
 
                 $extension = pathinfo($fileName, PATHINFO_EXTENSION);
                 if (! $extension) {
-                    $headResponse = Http::head($url);
+                    $headResponse = Http::withOptions(['allow_redirects' => false])->head($url);
                     $contentType = $headResponse->header('Content-Type');
                     $extension = match ($contentType) {
                         'image/jpeg'      => 'jpg',
@@ -95,7 +101,7 @@ class AssetController extends Controller
 
                 $tempPath = sys_get_temp_dir().'/'.uniqid().'_'.$fileName;
 
-                $response = Http::sink($tempPath)->get($url);
+                $response = Http::sink($tempPath)->withOptions(['allow_redirects' => false])->get($url);
 
                 if ($response->failed() || ! file_exists($tempPath) || filesize($tempPath) === 0) {
                     $errors[] = "Failed to download: $url";
@@ -129,6 +135,60 @@ class AssetController extends Controller
         }
 
         return $files;
+    }
+
+    /**
+     * Guard a user-supplied remote URL against SSRF before the server fetches it.
+     *
+     * Only http/https is allowed, and every IP the host resolves to must be a
+     * public address — loopback, link-local (incl. cloud metadata 169.254.169.254),
+     * private (RFC1918) and reserved ranges are rejected.
+     */
+    private function isSafeRemoteUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+
+        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+            return false;
+        }
+
+        if (! in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+
+        $host = trim($parts['host'], '[]');
+
+        $ips = [];
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $ips[] = $host;
+        } else {
+            foreach (@dns_get_record($host, DNS_A + DNS_AAAA) ?: [] as $record) {
+                if (! empty($record['ip'])) {
+                    $ips[] = $record['ip'];
+                }
+
+                if (! empty($record['ipv6'])) {
+                    $ips[] = $record['ipv6'];
+                }
+            }
+
+            if (empty($ips)) {
+                $ips = gethostbynamel($host) ?: [];
+            }
+        }
+
+        if (empty($ips)) {
+            return false;
+        }
+
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -465,6 +525,46 @@ class AssetController extends Controller
                 'asset'    => $asset,
                 'tags'     => $tags,
                 'property' => $properties,
+            ],
+        ], 200);
+    }
+
+    public function metadata(int $id): JsonResponse
+    {
+        $asset = $this->assetRepository->find($id);
+
+        if (! $asset) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset($id);
+
+        $metaData = $asset->meta_data ?? [];
+
+        if (empty($metaData) && $asset->file_type === 'image') {
+            $result = $this->getMetadata($asset->path, Directory::getAssetDisk());
+
+            if (! empty($result['success'])) {
+                if (isset($result['data']['UndefinedTag:0xEA1C'])) {
+                    unset($result['data']['UndefinedTag:0xEA1C']);
+                }
+
+                $metaData = $result['data'] ?? [];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.show-success'),
+            'data'    => [
+                'asset_id'  => $asset->id,
+                'file_name' => $asset->file_name,
+                'file_type' => $asset->file_type,
+                'mime_type' => $asset->mime_type,
+                'meta_data' => $metaData,
             ],
         ], 200);
     }

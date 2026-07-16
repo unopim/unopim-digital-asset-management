@@ -1,20 +1,8 @@
-/**
- * Asset helpers — reusable wrappers over the DAM asset API, including the
- * multipart upload machinery. Specs use these to arrange assets and to drive
- * the upload/download/reupload assertions.
- */
-
 const fs = require('fs');
 const path = require('path');
 const { ENDPOINTS } = require('../constants/endpoints');
 const { STATUS } = require('../constants/statusCodes');
 
-/**
- * Build a Playwright multipart file part from a path on disk.
- *
- * @param {string} filePath
- * @param {string} [mimeType] Override; inferred from extension when omitted.
- */
 function filePart(filePath, mimeType) {
   const name = path.basename(filePath);
   return {
@@ -24,7 +12,6 @@ function filePart(filePath, mimeType) {
   };
 }
 
-/** Minimal extension → MIME map for the fixtures we ship. */
 function mimeFromExt(name) {
   const ext = path.extname(name).toLowerCase();
   return {
@@ -37,15 +24,6 @@ function mimeFromExt(name) {
 const assetHelper = {
   filePart,
 
-  /**
-   * Upload one asset into a directory.
-   *
-   * @param {import('../utils/apiHelper').ApiClient} api
-   * @param {Object} opts
-   * @param {string} [opts.filePath]   Path to a file on disk.
-   * @param {Object} [opts.file]       Pre-built multipart part ({name,mimeType,buffer}).
-   * @param {number} opts.directoryId  Target directory id (required by the API).
-   */
   async upload(api, { filePath, file, directoryId } = {}) {
     const part = file || filePart(filePath);
     const multipart = { 'files[]': part };
@@ -58,7 +36,6 @@ const assetHelper = {
     return res;
   },
 
-  /** Upload and throw unless it succeeded — for preconditions. */
   async uploadOrThrow(api, opts) {
     const res = await assetHelper.upload(api, opts);
     if (res.status !== STATUS.CREATED || !res.id) {
@@ -67,7 +44,6 @@ const assetHelper = {
     return res;
   },
 
-  /** Replace the binary of an existing asset (reupload). */
   reupload(api, { filePath, file, assetId } = {}) {
     const part = file || filePart(filePath);
     return api.postMultipart(ENDPOINTS.assets.reupload(), {
@@ -98,6 +74,10 @@ const assetHelper = {
 
   download(api, id) {
     return api.get(ENDPOINTS.assets.download(id));
+  },
+
+  metadata(api, id) {
+    return api.get(ENDPOINTS.assets.metadata(id));
   },
 };
 

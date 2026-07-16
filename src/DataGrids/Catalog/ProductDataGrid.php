@@ -10,6 +10,7 @@ class ProductDataGrid extends BaseProductDataGrid
     protected function applyFilterTypeOptions(array $column, $attribute)
     {
         if ($attribute->type === 'asset') {
+            $column['type'] = 'image';
             $column['closure'] = $this->getAssetClosure();
 
             return $column;
@@ -39,11 +40,9 @@ class ProductDataGrid extends BaseProductDataGrid
                 return '';
             }
 
-            $url = $asset->file_type === 'image'
+            return $asset->file_type === 'image'
                 ? route('admin.dam.file.thumbnail', ['path' => urlencode($asset->path)])
                 : $this->getAssetPlaceholder($asset->file_type);
-
-            return '<img src="'.$url.'" alt="'.e($asset->file_name).'" class="h-[60px] w-[60px] min-w-[60px] max-w-[60px] rounded-lg border border-gray-300 shadow-sm object-cover" />';
         };
     }
 

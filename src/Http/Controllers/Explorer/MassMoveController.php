@@ -36,6 +36,14 @@ class MassMoveController extends Controller
             'target_directory_id' => 'required|integer|exists:dam_directories,id',
         ]);
 
+        if (! empty($request->input('asset_ids')) && ! bouncer()->hasPermission('dam.asset.moved')) {
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
+        if (! empty($request->input('directory_ids')) && ! bouncer()->hasPermission('dam.directory.moved')) {
+            abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
         $targetId = $request->integer('target_directory_id');
 
         if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($targetId)) {

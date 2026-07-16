@@ -26,16 +26,6 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" v-else>
                 <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
-                <label
-                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-violet-500 dark:hover:border-violet-400 hover:shadow-md"
-                    @click="openPicker"
-                >
-                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-violet-600 transition-colors"></span>
-                    <p class="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        @lang('dam::app.admin.components.asset.field.add-asset')
-                    </p>
-                </label>
-
                 <draggable
                     class="contents"
                     ghost-class="draggable-ghost"
@@ -56,6 +46,16 @@
                         </v-asset-field-item>
                     </template>
                 </draggable>
+
+                <label
+                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-violet-500 dark:hover:border-violet-400 hover:shadow-md"
+                    @click="openPicker"
+                >
+                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-violet-600 transition-colors"></span>
+                    <p class="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        @lang('dam::app.admin.components.asset.field.add-asset')
+                    </p>
+                </label>
 
                 <v-dam-asset-picker ref="assetPicker" @assign="onAssign"></v-dam-asset-picker>
             </div>
@@ -85,19 +85,19 @@
                     <span
                         class="icon-view text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
                         @click="preview"
-                        title="@lang('dam::app.admin.components.asset.field.preview')"
+                        aria-label="@lang('dam::app.admin.components.asset.field.preview')"
                     ></span>
 
                     <span
                         class="icon-dam-download text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
                         @click="download"
-                        title="@lang('dam::app.admin.components.asset.field.download')"
+                        aria-label="@lang('dam::app.admin.components.asset.field.download')"
                     ></span>
 
                     <span
                         class="icon-delete text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-red-500/80 cursor-pointer"
                         @click="remove"
-                        title="@lang('dam::app.admin.components.asset.field.remove')"
+                        aria-label="@lang('dam::app.admin.components.asset.field.remove')"
                     ></span>
 
                     <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
@@ -106,7 +106,6 @@
 
             <p
                 class="px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 text-center truncate"
-                :title="asset.file_name"
                 v-text="asset.file_name"
             ></p>
         </div>
