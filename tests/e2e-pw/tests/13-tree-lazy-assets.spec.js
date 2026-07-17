@@ -24,6 +24,10 @@ const REQUIRES_SHOW_ASSETS_ON = 'requires DAM_TREE_SHOW_ASSETS=true';
  *      `admin.dam.assets.moved` and the asset relocates in the tree.
  */
 
+// Scope menu-item lookups to the tree's right-click context menu; several labels
+// (Add Directory, Upload Files) also live in the always-mounted "+ New" dropdown.
+const treeMenu = (page) => page.locator('.dam-tree-context-menu');
+
 async function expandDirectory(page, dirName) {
   const row = dirName === 'Root'
     ? page.locator('.tree-container > div.flex').first()
@@ -43,13 +47,12 @@ async function rightClickDirectory(page, dirName) {
     : wrapper.locator('> .flex').first();
   await row.scrollIntoViewIfNeeded();
   await row.click({ button: 'right', force: true });
-  await page.locator('#app').getByText('Add Directory').first()
-    .waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await treeMenu(page).first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 }
 
 async function createDirectory(page, name) {
   await rightClickDirectory(page, 'Root');
-  await page.getByText('Add Directory').click({ force: true });
+  await treeMenu(page).getByText('Add Directory').click({ force: true });
   const nameInput = page.getByPlaceholder('Name').first();
   await nameInput.waitFor({ state: 'visible', timeout: 10000 });
   await nameInput.fill(name);
@@ -63,7 +66,7 @@ async function createDirectory(page, name) {
 async function deleteDirectory(page, name) {
   try {
     await rightClickDirectory(page, name);
-    await page.getByText('Delete', { exact: true }).click({ force: true });
+    await treeMenu(page).getByText('Delete', { exact: true }).click({ force: true });
     await page.waitForTimeout(500);
     const btn = page.getByRole('button', { name: /Delete|Agree/ });
     await btn.waitFor({ state: 'visible', timeout: 5000 });

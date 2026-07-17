@@ -746,9 +746,9 @@
             </div>
 
             <!-- Context Menu -->
-            <div v-if="showContextMenuFlag" 
-                :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }" 
-                class="absolute bg-white border border-gray-300 px-4 py-2 rounded shadow-lg z-50 dark:border-cherry-800 dark:bg-cherry-800 dark:text-white"
+            <div v-if="showContextMenuFlag"
+                :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
+                class="dam-tree-context-menu absolute bg-white border border-gray-300 px-4 py-2 rounded shadow-lg z-50 dark:border-cherry-800 dark:bg-cherry-800 dark:text-white"
             >
                 <div>
                     @if (bouncer()->hasPermission('dam.asset.upload'))

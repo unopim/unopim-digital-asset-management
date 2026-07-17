@@ -48,7 +48,7 @@
                 title="@lang('dam::app.admin.dam.index.directory.actions.download-zip')"
                 @click="downloadCurrentDir"
             >
-                <i class="icon-dam-download text-xl"></i>
+                <i class="icon-dam-zip text-xl"></i>
             </button>
             @endif
             @if (bouncer()->hasPermission('dam.directory.share'))
