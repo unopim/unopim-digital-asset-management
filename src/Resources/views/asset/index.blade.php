@@ -217,6 +217,7 @@
         >
             <div>
                 <v-dam-drop-upload
+                    ref="dropUpload"
                     :current-directory="currentDirectory"
                     :can-upload="canUploadHere"
                     @refresh-datagrid="$refs.datagrid?.get()"
@@ -225,6 +226,7 @@
                         <v-dam-breadcrumb></v-dam-breadcrumb>
                         @if (bouncer()->hasPermission('dam.asset.upload') && bouncer()->hasPermission('dam.directory.index'))
                             <div class="flex items-center gap-2" v-if="canUploadHere">
+                                {{-- Hidden inputs driven by the "+ New" menu --}}
                                 <input type="file"
                                     multiple="multiple"
                                     name="files[]"
@@ -233,38 +235,67 @@
                                     :disabled="isUploading || treeBusy"
                                     @change="onFileChange"
                                 />
-                                <label
-                                    for="file-upload"
-                                    class="secondary-button cursor-pointer"
-                                    :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isUploading || isFolderUploading || treeBusy }"
-                                    :aria-disabled="isUploading || isFolderUploading || treeBusy"
-                                >
-                                    <svg
-                                        v-if="isUploading || isFolderUploading"
-                                        class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        aria-hidden="true"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            class="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            stroke-width="4"
-                                        ></circle>
-                                        <path
-                                            class="opacity-75"
-                                            fill="#8A2BE2"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                    <span v-else class="icon-dam-upload" style="color: inherit;"></span>
-                                    <span v-if="isUploading || isFolderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
-                                    <span v-else>@lang('dam::app.admin.dam.index.upload')</span>
-                                </label>
+                                <input type="file"
+                                    webkitdirectory
+                                    multiple="multiple"
+                                    name="folder_files[]"
+                                    id="folder-upload"
+                                    class="hidden"
+                                    :disabled="isUploading || isFolderUploading || treeBusy"
+                                    @change="onFolderChange"
+                                />
+
+                                <x-admin::dropdown position="bottom-right">
+                                    <x-slot:toggle>
+                                        <button
+                                            type="button"
+                                            class="primary-button flex items-center gap-x-1.5 whitespace-nowrap"
+                                            :class="{ 'opacity-60 pointer-events-none cursor-not-allowed': isUploading || isFolderUploading || treeBusy }"
+                                            :aria-disabled="isUploading || isFolderUploading || treeBusy"
+                                        >
+                                            <svg
+                                                v-if="isUploading || isFolderUploading"
+                                                class="align-center inline-block animate-spin h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                aria-hidden="true"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="#ffffff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span v-else class="text-2xl leading-none -mt-0.5">+</span>
+                                            <span v-if="isUploading || isFolderUploading">@lang('dam::app.admin.dam.index.uploading')</span>
+                                            <span v-else>@lang('dam::app.admin.dam.index.new')</span>
+                                        </button>
+                                    </x-slot:toggle>
+
+                                    <x-slot:menu class="shadow-md !p-0 z-10">
+                                        <li
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                            @click="triggerFileUpload"
+                                        >
+                                            <i class="icon-dam-upload text-base"></i>
+                                            @lang('dam::app.admin.dam.index.directory.actions.upload-files')
+                                        </li>
+                                        <li
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                            @click="triggerFolderUpload"
+                                        >
+                                            <i class="icon-dam-add-folder text-base"></i>
+                                            @lang('dam::app.admin.explorer.context.folder-upload')
+                                        </li>
+                                        @if (bouncer()->hasPermission('dam.directory.store'))
+                                        <li
+                                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300 border-t border-gray-100 dark:border-cherry-700"
+                                            @click="createDirectory"
+                                        >
+                                            <i class="icon-dam-add-folder text-base"></i>
+                                            @lang('dam::app.admin.dam.index.directory.actions.add-directory')
+                                        </li>
+                                        @endif
+                                    </x-slot:menu>
+                                </x-admin::dropdown>
 
                                 <button
                                     v-if="isUploading || isFolderUploading"
@@ -468,6 +499,48 @@
                     }
 
                     e.target.value = null;
+                },
+
+                triggerFileUpload() {
+                    if (this.isUploading || this.isFolderUploading) return;
+                    document.getElementById('file-upload')?.click();
+                },
+
+                triggerFolderUpload() {
+                    if (this.isUploading || this.isFolderUploading) return;
+                    document.getElementById('folder-upload')?.click();
+                },
+
+                onFolderChange(e) {
+                    const files = Array.from(e.target.files ?? []);
+                    if (! files.length) { e.target.value = ''; return; }
+
+                    const targetDirId = this.currentDirectory?.id;
+                    if (! targetDirId) { e.target.value = ''; return; }
+
+                    // Each path level becomes a folder to create; files become upload jobs.
+                    const folderPaths = new Set();
+                    files.forEach(f => {
+                        const rel  = f.webkitRelativePath || f.name;
+                        const segs = rel.split('/');
+                        for (let i = 1; i < segs.length; i++) folderPaths.add(segs.slice(0, i).join('/'));
+                    });
+
+                    this.$refs.dropUpload?.enqueueUpload({
+                        items: files.filter(f => f.size > 0)
+                                    .map(f => ({ file: f, relativePath: f.webkitRelativePath || f.name, preserveRoot: true })),
+                        folderPaths: [...folderPaths],
+                        targetDirId,
+                    });
+
+                    e.target.value = '';
+                },
+
+                createDirectory() {
+                    const id = this.currentDirectory?.id;
+                    if (! id) return;
+                    // The directory tree component owns the create/rename modal.
+                    this.$emitter.emit('dam:open-create-dir', { item: { id } });
                 },
 
                 cancelUpload() {

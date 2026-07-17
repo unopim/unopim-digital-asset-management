@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Tool can help you organise, store, and manage all your media assets in one place',
                 'root'                           => 'Root',
                 'upload'                         => 'Upload',
+                'new'                            => 'New',
                 'uploading'                      => 'Uploading...',
                 'cancel'                         => 'Cancel',
                 'upload-cancelled'               => 'Upload cancelled.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configuration saved successfully.',
             'general'  => [
                 'title'            => 'General Settings',
-                'description'      => 'Configure directory tree visibility, explorer view, and bookmarks panel for the DAM media library.',
-                'tree-show-assets' => [
-                    'label' => 'Show Assets in Directory Tree',
-                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
-                ],
+                'description'      => 'These settings control the overall DAM browsing experience.',
                 'explorer-enabled' => [
-                    'label' => 'Enable Explorer View',
-                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                    'label' => 'Enable Explore View',
+                    'hint'  => 'Use the Explorer-style interface for browsing and managing assets.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Enable Bookmarks Panel',
-                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                    'label' => 'Show Bookmark Panel',
+                    'hint'  => 'Display a dedicated sidebar containing your bookmarked folders and assets.',
                 ],
-                'show-tree' => [
-                    'label' => 'Show Directory Tree',
-                    'hint'  => 'When enabled, the directory tree sidebar is shown alongside the explorer.',
+            ],
+            'directory' => [
+                'title'            => 'Directory Settings',
+                'description'      => 'These settings control how folders and assets are displayed in the directory panel.',
+                'show-tree'        => [
+                    'label'       => 'Show Directory Tree',
+                    'hint'        => 'Display the folder hierarchy in the left sidebar for easier navigation.',
+                    'locked-hint' => 'Always on while Explore View is disabled.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'Display assets alongside folders within the directory tree instead of showing folders only.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Directory not found.',
-            'access-denied'    => 'You do not have access to this directory.',
-            'empty'            => 'No directories found.',
-            'action-completed' => 'Action completed successfully.',
+            'not-found'         => 'Directory not found.',
+            'access-denied'     => 'You do not have access to this directory.',
+            'empty'             => 'No directories found.',
+            'action-completed'  => 'Action completed successfully.',
+            'foreign-selection' => [
+                'notice' => ':count item(s) selected in another tab.',
+                'action' => 'Select them here too',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bookmarks',
                 'drag-hint' => 'Drag a folder here to bookmark it',

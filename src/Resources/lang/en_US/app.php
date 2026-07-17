@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Drop files or folders here',
                         'upload-or'                 => 'or browse:',
                         'copy-directory-structured' => 'Copy Directory Structure',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Get By Id',
                         'comment'                   => 'Comment',
                         'share'                     => 'Share Directory',
@@ -134,6 +135,7 @@ return [
                 'description'                    => 'Tool can help you organise, store, and manage all your media asset in one place',
                 'root'                           => 'Root',
                 'upload'                         => 'Upload',
+                'new'                            => 'New',
                 'uploading'                      => 'Uploading...',
                 'cancel'                         => 'Cancel',
                 'upload-cancelled'               => 'Upload cancelled.',
@@ -684,32 +686,41 @@ return [
             'title'    => 'DAM Configuration',
             'saved'    => 'Configuration saved successfully.',
             'general'  => [
-                'title'            => 'General Settings',
-                'description'      => 'Configure directory tree visibility, explorer view, and bookmarks panel for the DAM media library.',
-                'tree-show-assets' => [
-                    'label' => 'Show Assets in Directory Tree',
-                    'hint'  => 'When enabled, asset files appear as leaf nodes inside the directory tree.',
-                ],
+                'title'            => 'Interface Settings',
+                'description'      => 'Configure the DAM interface and browsing experience.',
                 'explorer-enabled' => [
-                    'label' => 'Enable Explorer View',
-                    'hint'  => 'Replaces the default asset grid with the multi-tab folder explorer.',
+                    'label' => 'Enable Explore View',
+                    'hint'  => 'Switch to the Explorer view for a more intuitive asset browsing and management experience.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Enable Bookmarks Panel',
-                    'hint'  => 'Shows a bookmarks panel below the directory tree for quick navigation.',
+                    'label' => 'Show Bookmark Panel',
+                    'hint'  => 'Show a sidebar with your bookmarked folders and assets for quick access.',
                 ],
-                'show-tree' => [
-                    'label' => 'Show Directory Tree',
-                    'hint'  => 'When enabled, the directory tree sidebar is shown alongside the explorer.',
+            ],
+            'directory' => [
+                'title'            => 'Directory Settings',
+                'description'      => 'Configure how folders and assets are displayed in the directory panel.',
+                'show-tree'        => [
+                    'label'       => 'Show Directory Tree',
+                    'hint'        => 'Show the folder hierarchy in the left sidebar for easier navigation.',
+                    'locked-hint' => 'Always on while Explore View is disabled.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Show Assets in Directory Tree',
+                    'hint'  => 'Display assets together with folders in the directory tree instead of displaying folders only.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Directory not found.',
-            'access-denied'    => 'You do not have access to this directory.',
-            'empty'            => 'No directories found.',
-            'action-completed' => 'Action completed successfully.',
-            'bookmarks'        => [
+            'not-found'         => 'Directory not found.',
+            'access-denied'     => 'You do not have access to this directory.',
+            'empty'             => 'No directories found.',
+            'action-completed'  => 'Action completed successfully.',
+            'foreign-selection' => [
+                'notice' => ':count item(s) selected in another tab.',
+                'action' => 'Select them here too',
+            ],
+            'bookmarks'         => [
                 'title'     => 'Bookmarks',
                 'drag-hint' => 'Drag a folder here to bookmark it',
                 'max'       => 'Maximum 20 bookmarks reached.',

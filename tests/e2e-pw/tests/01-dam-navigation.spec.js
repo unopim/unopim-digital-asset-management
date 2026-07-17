@@ -22,9 +22,10 @@ test.describe('DAM Page Navigation & Rendering', () => {
     await expect(adminPage.getByText('Root').first()).toBeVisible();
   });
 
-  test('DAM page shows Upload button', async ({ adminPage }) => {
+  test('DAM page shows "+ New" button', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    await expect(adminPage.getByText('Upload', { exact: true }).first()).toBeVisible();
+    // The old "Upload" button is now a "+ New" actions dropdown.
+    await expect(adminPage.getByRole('button', { name: /New/ }).first()).toBeVisible();
   });
 
   test('DAM page shows asset grid with results', async ({ adminPage }) => {

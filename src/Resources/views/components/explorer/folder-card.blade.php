@@ -17,6 +17,20 @@
         @click="$emit('navigate', dir)"
         @contextmenu.prevent.stop="$emit('ctx', { event: $event, dir })"
     >
+        <button
+            type="button"
+            class="dam-ctx-trigger absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-cherry-900/80 hover:bg-white dark:hover:bg-cherry-900 hover:text-violet-700 dark:hover:text-violet-400 shadow-sm transition-opacity"
+            :class="(hovered || anySelected) ? 'opacity-100' : 'opacity-0'"
+            :title="'@lang('dam::app.admin.explorer.list.header.actions')'"
+            @click.stop="$emit('ctx', { event: $event, dir })"
+        >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="2"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <circle cx="12" cy="19" r="2"></circle>
+            </svg>
+        </button>
+
         {{-- Checkbox overlay for mass selection --}}
         <div
             v-show="anySelected || hovered"

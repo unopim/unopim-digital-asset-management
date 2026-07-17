@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Dieses Tool hilft Ihnen, alle Ihre Medienassets an einem Ort zu organisieren, zu speichern und zu verwalten.',
                 'root'                           => 'Wurzel',
                 'upload'                         => 'Hochladen',
+                'new'                            => 'Neu',
                 'uploading'                      => 'Hochladen...',
                 'cancel'                         => 'Abbrechen',
                 'upload-cancelled'               => 'Upload abgebrochen.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Konfiguration erfolgreich gespeichert.',
             'general'  => [
                 'title'            => 'Allgemeine Einstellungen',
-                'description'      => 'Konfigurieren Sie die Verzeichnisbaum-Sichtbarkeit, die Explorer-Ansicht und das Lesezeichen-Panel für die DAM-Medienbibliothek.',
-                'tree-show-assets' => [
-                    'label' => 'Assets im Verzeichnisbaum anzeigen',
-                    'hint'  => 'Wenn aktiviert, werden Asset-Dateien als Blattknoten im Verzeichnisbaum angezeigt.',
-                ],
+                'description'      => 'Diese Einstellungen steuern das gesamte DAM-Browsing-Erlebnis.',
                 'explorer-enabled' => [
                     'label' => 'Explorer-Ansicht aktivieren',
-                    'hint'  => 'Ersetzt das Standard-Asset-Raster durch den mehrseitigen Ordner-Explorer.',
+                    'hint'  => 'Verwenden Sie die Explorer-ähnliche Oberfläche zum Durchsuchen und Verwalten von Assets.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Lesezeichen-Panel aktivieren',
-                    'hint'  => 'Zeigt ein Lesezeichen-Panel unterhalb des Verzeichnisbaums für die schnelle Navigation an.',
+                    'label' => 'Lesezeichen-Panel anzeigen',
+                    'hint'  => 'Zeigt eine eigene Seitenleiste mit Ihren als Lesezeichen gespeicherten Ordnern und Assets an.',
                 ],
-                'show-tree' => [
-                    'label' => 'Verzeichnisbaum anzeigen',
-                    'hint'  => 'Wenn aktiviert, wird die Verzeichnisbaum-Seitenleiste neben dem Explorer angezeigt.',
+            ],
+            'directory' => [
+                'title'            => 'Verzeichniseinstellungen',
+                'description'      => 'Diese Einstellungen steuern, wie Ordner und Assets im Verzeichnis-Panel angezeigt werden.',
+                'show-tree'        => [
+                    'label'       => 'Verzeichnisbaum anzeigen',
+                    'hint'        => 'Zeigt die Ordnerhierarchie in der linken Seitenleiste für eine einfachere Navigation an.',
+                    'locked-hint' => 'Immer aktiv, solange die Explorer-Ansicht deaktiviert ist.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Assets im Verzeichnisbaum anzeigen',
+                    'hint'  => 'Zeigt Assets zusammen mit Ordnern im Verzeichnisbaum an, anstatt nur Ordner anzuzeigen.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Verzeichnis nicht gefunden.',
-            'access-denied'    => 'Sie haben keinen Zugriff auf dieses Verzeichnis.',
-            'empty'            => 'Keine Verzeichnisse gefunden.',
-            'action-completed' => 'Aktion erfolgreich abgeschlossen.',
+            'not-found'         => 'Verzeichnis nicht gefunden.',
+            'access-denied'     => 'Sie haben keinen Zugriff auf dieses Verzeichnis.',
+            'empty'             => 'Keine Verzeichnisse gefunden.',
+            'action-completed'  => 'Aktion erfolgreich abgeschlossen.',
+            'foreign-selection' => [
+                'notice' => ':count Element(e) in einem anderen Tab ausgewählt.',
+                'action' => 'Auch hier auswählen',
+            ],
             'bookmarks'        => [
                 'title'     => 'Lesezeichen',
                 'drag-hint' => 'Ordner hierher ziehen, um ihn als Lesezeichen zu speichern',

@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Alat koji vam pomaže organizirati, pohraniti i upravljati svim vašim medijskim resursima na jednom mjestu',
                 'root'                           => 'Korijen',
                 'upload'                         => 'Prenesi',
+                'new'                            => 'Novo',
                 'uploading'                      => 'Učitavanje...',
                 'cancel'                         => 'Otkaži',
                 'upload-cancelled'               => 'Prijenos otkazan.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Konfiguracija uspješno spremljena.',
             'general'  => [
                 'title'            => 'Opće postavke',
-                'description'      => 'Konfigurirajte vidljivost stabla direktorija, prikaz preglednika i ploču oznaka za DAM medijsku biblioteku.',
-                'tree-show-assets' => [
-                    'label' => 'Prikaži resurse u stablu direktorija',
-                    'hint'  => 'Kada je omogućeno, datoteke resursa prikazuju se kao lisni čvorovi unutar stabla direktorija.',
-                ],
+                'description'      => 'Ove postavke upravljaju cjelokupnim iskustvom pregledavanja DAM-a.',
                 'explorer-enabled' => [
-                    'label' => 'Omogući prikaz Explorera',
-                    'hint'  => 'Zamjenjuje zadanu mrežu resursa s višekarticnim preglednikom mapa.',
+                    'label' => 'Omogući prikaz Istraživanja',
+                    'hint'  => 'Koristite sučelje u stilu Preglednika za pregledavanje i upravljanje resursima.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Omogući ploču oznaka',
-                    'hint'  => 'Prikazuje ploču oznaka ispod stabla direktorija za brzu navigaciju.',
+                    'label' => 'Prikaži ploču oznaka',
+                    'hint'  => 'Prikazuje namjensku bočnu traku s vašim označenim mapama i resursima.',
                 ],
-                'show-tree' => [
-                    'label' => 'Prikaži stablo direktorija',
-                    'hint'  => 'Kada je omogućeno, bočna traka stabla direktorija prikazuje se uz explorer.',
+            ],
+            'directory' => [
+                'title'            => 'Postavke direktorija',
+                'description'      => 'Ove postavke upravljaju načinom prikaza mapa i resursa u ploči direktorija.',
+                'show-tree'        => [
+                    'label'       => 'Prikaži stablo direktorija',
+                    'hint'        => 'Prikazuje hijerarhiju mapa u lijevoj bočnoj traci za lakšu navigaciju.',
+                    'locked-hint' => 'Uvijek uključeno dok je prikaz Istraživanja onemogućen.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Prikaži resurse u stablu direktorija',
+                    'hint'  => 'Prikazuje resurse uz mape unutar stabla direktorija umjesto prikaza samo mapa.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Direktorij nije pronađen.',
-            'access-denied'    => 'Nemate pristup ovom direktoriju.',
-            'empty'            => 'Nisu pronađeni direktoriji.',
-            'action-completed' => 'Radnja je uspješno dovršena.',
+            'not-found'         => 'Direktorij nije pronađen.',
+            'access-denied'     => 'Nemate pristup ovom direktoriju.',
+            'empty'             => 'Nisu pronađeni direktoriji.',
+            'action-completed'  => 'Radnja je uspješno dovršena.',
+            'foreign-selection' => [
+                'notice' => ':count stavka/e odabrana/o u drugoj kartici.',
+                'action' => 'Odaberi ih i ovdje',
+            ],
             'bookmarks'        => [
                 'title'     => 'Oznake',
                 'drag-hint' => 'Povucite mapu ovdje za dodavanje oznake',

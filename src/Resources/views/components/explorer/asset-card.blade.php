@@ -79,7 +79,21 @@
                     <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl"></span>
                 </label>
             </span>
-            <p class="text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
+            <p class="flex-1 min-w-0 text-xs text-gray-600 dark:text-gray-300 truncate">@{{ asset.file_name }}</p>
+
+            <button
+                type="button"
+                class="dam-ctx-trigger shrink-0 ltr:mr-1 rtl:ml-1 w-6 h-6 flex items-center justify-center rounded-md text-gray-400 dark:text-gray-300 opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-cherry-800 hover:text-violet-700 dark:hover:text-violet-400 transition-opacity"
+                :class="{ '!opacity-100': isSelected }"
+                :title="'@lang('dam::app.admin.explorer.list.header.actions')'"
+                @click.stop="$emit('ctx', { event: $event, asset })"
+            >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="12" cy="5" r="2"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <circle cx="12" cy="19" r="2"></circle>
+                </svg>
+            </button>
         </div>
     </div>
 </script>

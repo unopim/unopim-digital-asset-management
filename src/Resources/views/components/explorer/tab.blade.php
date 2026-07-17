@@ -95,6 +95,58 @@
 
             {{-- Grid / List view toggle --}}
             <v-dam-explorer-view-toggle :model-value="viewMode" @update:model-value="setView($event)"></v-dam-explorer-view-toggle>
+
+            @if (bouncer()->hasPermission('dam.asset.upload') || bouncer()->hasPermission('dam.directory.store'))
+            <div v-if="canUploadHere" class="shrink-0">
+                <x-admin::dropdown position="bottom-right">
+                    <x-slot:toggle>
+                        <button
+                            type="button"
+                            class="primary-button h-8 !py-0 flex items-center gap-x-1.5 whitespace-nowrap"
+                        >
+                            <span class="text-xl leading-none">+</span>
+                            @lang('dam::app.admin.dam.index.new')
+                        </button>
+                    </x-slot:toggle>
+
+                    <x-slot:menu class="shadow-md !p-0 z-10">
+                        @if (bouncer()->hasPermission('dam.asset.upload'))
+                        <li
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                            @click="triggerNewUpload"
+                        >
+                            <i class="icon-dam-upload text-base"></i>
+                            @lang('dam::app.admin.dam.index.directory.actions.upload-files')
+                        </li>
+                        <li
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                            @click="triggerNewFolderUpload"
+                        >
+                            <i class="icon-dam-add-folder text-base"></i>
+                            @lang('dam::app.admin.explorer.context.folder-upload')
+                        </li>
+                        @endif
+                        @if (bouncer()->hasPermission('dam.directory.store'))
+                        <li
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                            @click="createDirHere"
+                        >
+                            <i class="icon-dam-add-folder text-base"></i>
+                            @lang('dam::app.admin.dam.index.directory.actions.add-directory')
+                        </li>
+                        @endif
+                        <li
+                            v-if="clipboard"
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300 border-t border-gray-100 dark:border-cherry-700"
+                            @click="pasteHere"
+                        >
+                            <i class="icon-copy text-base"></i>
+                            @lang('dam::app.admin.explorer.context.paste')
+                        </li>
+                    </x-slot:menu>
+                </x-admin::dropdown>
+            </div>
+            @endif
         </div>
 
         @include('dam::components.explorer.toolbar')
@@ -122,6 +174,19 @@
                 class="text-violet-400 hover:text-violet-700 dark:hover:text-violet-200 shrink-0"
                 @click="clipboard = null"
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
+        </div>
+
+        {{-- Another tab has a selection in this folder — offer to select the same items here --}}
+        <div
+            v-if="showForeignSelectionOffer"
+            class="flex items-center gap-2 px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 rounded-lg text-violet-700 dark:text-violet-300"
+        >
+            <span class="flex-1">@{{ "@lang('dam::app.admin.explorer.foreign-selection.notice')".replace(':count', foreignSelectionCount) }}</span>
+            <button
+                type="button"
+                class="shrink-0 font-semibold underline hover:no-underline"
+                @click="adoptForeignSelection"
+            >@lang('dam::app.admin.explorer.foreign-selection.action')</button>
         </div>
 
         {{-- Content area — v-dam-drop-upload handles OS file/folder drops and is
@@ -266,6 +331,7 @@ app.component('v-dam-tab', {
             pasting:            false,
             operationOverlay:   { show: false, label: '', progress: null, fileCount: null },
             selection:          { ids: [], mode: 'none' },
+            foreignSelections:  {},
             folderPicker:       { open: false, mode: null },
             ctxTarget:          null,
             sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
@@ -299,6 +365,15 @@ app.component('v-dam-tab', {
         canAccessCurrentDir() {
             return this.aclBypass || !!(this.meta?.can_access_current);
         },
+        // Another tab has a selection in the directory shown here — offer to select the
+        // same items in this tab (shown only while this tab has no selection of its own).
+        foreignSelectionCount() {
+            const f = this.currentDirId != null ? this.foreignSelections[this.currentDirId] : null;
+            return f ? f.ids.length : 0;
+        },
+        showForeignSelectionOffer() {
+            return this.foreignSelectionCount > 0 && this.selection.ids.length === 0;
+        },
         canGoBack()    { return this.navIdx > 0; },
         canGoForward() { return this.navIdx < this.navHistory.length - 1; },
         dialogTitle()       { return "@lang('dam::app.admin.explorer.dialog.rename-asset.title')"; },
@@ -316,6 +391,13 @@ app.component('v-dam-tab', {
             return this.currentDirBookmarked
                 ? "@lang('dam::app.admin.explorer.bookmarks.remove')"
                 : "@lang('dam::app.admin.explorer.context.bookmark')";
+        },
+    },
+
+    watch: {
+        // Ask other tabs whether they have a selection in the directory this tab just opened.
+        currentDirId(id) {
+            if (id != null) this.$emitter.emit('dam:selection-query', { directoryId: id, requesterId: this.tabId });
         },
     },
 
@@ -344,6 +426,25 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:bookmarks-changed', this._onBookmarksChanged);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
+
+        // Track other tabs' selections in the same directory so this tab can offer to
+        // select the same items too.
+        this._onForeignSelectionActive = ({ tabId, directoryId, ids }) => {
+            if (tabId === this.tabId) return;
+            this.foreignSelections[directoryId] = { tabId, ids: ids ?? [] };
+        };
+        this._onForeignSelectionCleared = ({ tabId, directoryId }) => {
+            if (this.foreignSelections[directoryId]?.tabId === tabId) delete this.foreignSelections[directoryId];
+        };
+        this._onSelectionQuery = ({ directoryId, requesterId }) => {
+            if (requesterId === this.tabId) return;
+            if (this._heldSelectionDir === directoryId && this.selection.ids.length) {
+                this.$emitter.emit('dam:selection-active', { tabId: this.tabId, directoryId, ids: this.selection.ids });
+            }
+        };
+        this.$emitter.on('dam:selection-active', this._onForeignSelectionActive);
+        this.$emitter.on('dam:selection-cleared', this._onForeignSelectionCleared);
+        this.$emitter.on('dam:selection-query', this._onSelectionQuery);
 
         // Shared tag modal finished assigning tags to assets selected in THIS tab —
         // clear the selection and refresh so the change is reflected.
@@ -455,6 +556,8 @@ app.component('v-dam-tab', {
             this.navHistory.push({ dirId: this.currentDirId, breadcrumb: [] });
             this.navIdx = 0;
             this.fetch();
+            // The watch only fires on change, so discover existing selections for the initial dir.
+            this.$emitter.emit('dam:selection-query', { directoryId: this.currentDirId, requesterId: this.tabId });
         } else {
             this.loadRoot();
         }
@@ -463,6 +566,14 @@ app.component('v-dam-tab', {
     beforeUnmount() {
         if (this._onSidebarVisibility) this.$emitter.off('dam:sidebar-visibility-changed', this._onSidebarVisibility);
         if (this._onBookmarksChanged) this.$emitter.off('dam:bookmarks-changed', this._onBookmarksChanged);
+
+        // Tell other tabs this tab's selection is gone before it unmounts.
+        if (this._heldSelectionDir != null) {
+            this.$emitter.emit('dam:selection-cleared', { tabId: this.tabId, directoryId: this._heldSelectionDir });
+        }
+        this.$emitter.off('dam:selection-active', this._onForeignSelectionActive);
+        this.$emitter.off('dam:selection-cleared', this._onForeignSelectionCleared);
+        this.$emitter.off('dam:selection-query', this._onSelectionQuery);
     },
 
     methods: {
@@ -473,6 +584,14 @@ app.component('v-dam-tab', {
             } else {
                 this.selection.ids.splice(idx, 1);
             }
+            this.computeSelectionMode();
+        },
+
+        // Select the same items another tab has selected in this directory.
+        adoptForeignSelection() {
+            const f = this.currentDirId != null ? this.foreignSelections[this.currentDirId] : null;
+            if (! f) return;
+            this.selection.ids = f.ids.map(i => ({ ...i }));
             this.computeSelectionMode();
         },
 
@@ -491,6 +610,19 @@ app.component('v-dam-tab', {
         clearSelection() {
             this.selection.ids  = [];
             this.selection.mode = 'none';
+            this.broadcastSelection();
+        },
+
+        // Broadcast this tab's selection (with its items) so other tabs viewing the same
+        // directory can offer to select the same items — or drop the offer when cleared.
+        broadcastSelection() {
+            if (this.selection.ids.length && this.currentDirId != null) {
+                this._heldSelectionDir = this.currentDirId;
+                this.$emitter.emit('dam:selection-active', { tabId: this.tabId, directoryId: this.currentDirId, ids: this.selection.ids });
+            } else if (this._heldSelectionDir != null) {
+                this.$emitter.emit('dam:selection-cleared', { tabId: this.tabId, directoryId: this._heldSelectionDir });
+                this._heldSelectionDir = null;
+            }
         },
 
         openAssignTagsModal() {
@@ -764,6 +896,7 @@ app.component('v-dam-tab', {
             const total = this.dirs.length + this.assets.length;
             const count = this.selection.ids.length;
             this.selection.mode = count === 0 ? 'none' : count === total ? 'all' : 'partial';
+            this.broadcastSelection();
         },
 
         toggleSidebar() {
@@ -1178,6 +1311,22 @@ app.component('v-dam-tab', {
                 targetDirId,
             });
             e.target.value = '';
+        },
+
+        triggerNewUpload() {
+            this.uploadTargetDirId = this.currentDirId;
+            this.$nextTick(() => document.getElementById(`explorer-upload-${this.tabId}`)?.click());
+        },
+        triggerNewFolderUpload() {
+            this.uploadTargetDirId = this.currentDirId;
+            this.$nextTick(() => document.getElementById(`explorer-folder-upload-${this.tabId}`)?.click());
+        },
+        createDirHere() {
+            if (! this.currentDirId) return;
+            this.$emitter.emit('dam:open-create-dir', { item: { id: this.currentDirId } });
+        },
+        pasteHere() {
+            this.executePaste(this.currentDirId);
         },
 
         executePaste(targetDirId) {

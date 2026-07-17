@@ -1,8 +1,8 @@
 @once('v-dam-explorer-grid')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
-    {{-- Outer div catches right-click and drops on empty space (item events use .stop) --}}
-    <div class="pr-4 min-h-72" @contextmenu.prevent="showSpaceCtx($event)" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
+    {{-- Outer div catches drops on empty space (directory actions live in the "+ New" toolbar button) --}}
+    <div class="pr-4 min-h-72" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
         {{-- Shimmer --}}
         <div v-if="isLoading" class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>

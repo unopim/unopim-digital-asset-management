@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Verktyget hjälper dig att organisera, lagra och hantera alla dina mediatillgångar på ett och samma ställe',
                 'root'                           => 'Rot',
                 'upload'                         => 'Ladda upp',
+                'new'                            => 'Ny',
                 'uploading'                      => 'Laddar upp...',
                 'cancel'                         => 'Avbryt',
                 'upload-cancelled'               => 'Uppladdning avbruten.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Konfigurationen sparades.',
             'general'  => [
                 'title'            => 'Allmänna inställningar',
-                'description'      => 'Konfigurera synlighet för katalogträd, utforskarvy och bokmärkespanel för DAM-mediebiblioteket.',
-                'tree-show-assets' => [
-                    'label' => 'Visa resurser i katalogträdet',
-                    'hint'  => 'När aktiverat visas resursfiler som lövnoder i katalogträdet.',
-                ],
+                'description'      => 'Dessa inställningar styr den övergripande DAM-bläddringsupplevelsen.',
                 'explorer-enabled' => [
                     'label' => 'Aktivera utforskarvyn',
-                    'hint'  => 'Ersätter standardresursrutnätet med mappläsaren med flera flikar.',
+                    'hint'  => 'Använd det utforskarliknande gränssnittet för att bläddra bland och hantera tillgångar.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Aktivera bokmärkespanel',
-                    'hint'  => 'Visar en bokmärkespanel under katalogträdet för snabb navigering.',
+                    'label' => 'Visa bokmärkespanel',
+                    'hint'  => 'Visa en dedikerad sidopanel med dina bokmärkta mappar och tillgångar.',
                 ],
-                'show-tree' => [
-                    'label' => 'Visa katalogträd',
-                    'hint'  => 'När aktiverat visas katalogträdets sidopanel bredvid utforskaren.',
+            ],
+            'directory' => [
+                'title'            => 'Kataloginställningar',
+                'description'      => 'Dessa inställningar styr hur mappar och tillgångar visas i katalogpanelen.',
+                'show-tree'        => [
+                    'label'       => 'Visa katalogträd',
+                    'hint'        => 'Visa mapphierarkin i den vänstra sidopanelen för enklare navigering.',
+                    'locked-hint' => 'Alltid på när utforskarvyn är inaktiverad.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Visa tillgångar i katalogträdet',
+                    'hint'  => 'Visa tillgångar tillsammans med mappar i katalogträdet i stället för att bara visa mappar.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Katalogen hittades inte.',
-            'access-denied'    => 'Du har inte åtkomst till den här katalogen.',
-            'empty'            => 'Inga mappar hittades.',
-            'action-completed' => 'Åtgärden slutfördes.',
+            'not-found'         => 'Katalogen hittades inte.',
+            'access-denied'     => 'Du har inte åtkomst till den här katalogen.',
+            'empty'             => 'Inga mappar hittades.',
+            'action-completed'  => 'Åtgärden slutfördes.',
+            'foreign-selection' => [
+                'notice' => ':count objekt markerade i en annan flik.',
+                'action' => 'Markera dem här också',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bokmärken',
                 'drag-hint' => 'Dra en mapp hit för att bokmärka den',

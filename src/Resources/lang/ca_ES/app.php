@@ -134,6 +134,7 @@ return [
                 'description'                    => 'L\'eina us pot ajudar a organitzar, emmagatzemar i gestionar tots els vostres actius multimèdia en un sol lloc',
                 'root'                           => 'Arrel',
                 'upload'                         => 'Pujar',
+                'new'                            => 'Nou',
                 'uploading'                      => 'Pujant...',
                 'cancel'                         => 'Cancel·lar',
                 'upload-cancelled'               => 'Càrrega cancel·lada.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configuració desada correctament.',
             'general'  => [
                 'title'            => 'Configuració general',
-                'description'      => 'Configureu la visibilitat de l\'arbre de directoris, la vista d\'explorador i el panell de marcadors per a la biblioteca multimèdia DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Mostra els recursos a l\'arbre de directoris',
-                    'hint'  => 'Quan està activat, els fitxers de recursos apareixen com a nodes fulla dins l\'arbre de directoris.',
-                ],
+                'description'      => 'Aquesta configuració controla l\'experiència general de navegació del DAM.',
                 'explorer-enabled' => [
-                    'label' => 'Activa la vista d\'explorador',
-                    'hint'  => 'Substitueix la graella de recursos predeterminada per l\'explorador de carpetes de múltiples pestanyes.',
+                    'label' => 'Activa la vista d\'exploració',
+                    'hint'  => 'Utilitzeu la interfície d\'estil Explorador per navegar i gestionar els recursos.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Activa el tauler de marcadors',
-                    'hint'  => 'Mostra un tauler de marcadors sota l\'arbre de directoris per a una navegació ràpida.',
+                    'label' => 'Mostra el tauler de marcadors',
+                    'hint'  => 'Mostra una barra lateral dedicada amb les carpetes i els recursos que heu afegit als marcadors.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mostra l\'arbre de directoris',
-                    'hint'  => 'Quan s\'activa, la barra lateral de l\'arbre de directoris es mostra al costat de l\'explorador.',
+            ],
+            'directory' => [
+                'title'            => 'Configuració del directori',
+                'description'      => 'Aquesta configuració controla com es mostren les carpetes i els recursos al tauler del directori.',
+                'show-tree'        => [
+                    'label'       => 'Mostra l\'arbre de directoris',
+                    'hint'        => 'Mostra la jerarquia de carpetes a la barra lateral esquerra per facilitar la navegació.',
+                    'locked-hint' => 'Sempre actiu mentre la vista d\'exploració està desactivada.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Mostra els recursos a l\'arbre de directoris',
+                    'hint'  => 'Mostra els recursos juntament amb les carpetes dins de l\'arbre de directoris en lloc de mostrar només les carpetes.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'No s\'ha trobat el directori.',
-            'access-denied'    => 'No teniu accés a aquest directori.',
-            'empty'            => 'No s\'han trobat directoris.',
-            'action-completed' => 'Acció completada correctament.',
+            'not-found'         => 'No s\'ha trobat el directori.',
+            'access-denied'     => 'No teniu accés a aquest directori.',
+            'empty'             => 'No s\'han trobat directoris.',
+            'action-completed'  => 'Acció completada correctament.',
+            'foreign-selection' => [
+                'notice' => ':count element(s) seleccionat(s) en una altra pestanya.',
+                'action' => 'Selecciona\'ls aquí també',
+            ],
             'bookmarks'        => [
                 'title'     => 'Marcadors',
                 'drag-hint' => 'Arrossegueu una carpeta aquí per afegir-la als marcadors',

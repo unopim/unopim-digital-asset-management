@@ -134,6 +134,7 @@ return [
                 'description'                    => 'A ferramenta pode ajudá-lo a organizar, armazenar e gerir todos os seus ativos de multimédia num só local',
                 'root'                           => 'Raiz',
                 'upload'                         => 'Carregar',
+                'new'                            => 'Novo',
                 'uploading'                      => 'A enviar...',
                 'cancel'                         => 'Cancelar',
                 'upload-cancelled'               => 'Envio cancelado.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'Configuração DAM',
             'saved'    => 'Configuração guardada com sucesso.',
             'general'  => [
-                'title'            => 'Definições Gerais',
-                'description'      => 'Configure a visibilidade da árvore de diretórios, a vista do explorador e o painel de favoritos para a biblioteca de multimédia DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Mostrar Recursos na Árvore de Diretórios',
-                    'hint'  => 'Quando ativado, os ficheiros de recursos aparecem como nós folha dentro da árvore de diretórios.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Definições Gerais',
+                'description'       => 'Estas definições controlam a experiência geral de navegação no DAM.',
+                'explorer-enabled'  => [
                     'label' => 'Ativar Vista do Explorador',
-                    'hint'  => 'Substitui a grelha de recursos predefinida pelo explorador de pastas com múltiplos separadores.',
+                    'hint'  => 'Utilize a interface no estilo Explorador para navegar e gerir os recursos.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Ativar Painel de Marcadores',
-                    'hint'  => 'Mostra um painel de marcadores abaixo da árvore de diretórios para navegação rápida.',
+                    'label' => 'Mostrar Painel de Marcadores',
+                    'hint'  => 'Apresente uma barra lateral dedicada com as suas pastas e recursos marcados.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mostrar árvore de diretórios',
-                    'hint'  => 'Quando ativado, a barra lateral da árvore de diretórios é apresentada ao lado do explorador.',
+            ],
+            'directory' => [
+                'title'            => 'Definições de Diretório',
+                'description'      => 'Estas definições controlam a forma como as pastas e os recursos são apresentados no painel de diretórios.',
+                'show-tree'        => [
+                    'label'       => 'Mostrar árvore de diretórios',
+                    'hint'        => 'Apresente a hierarquia de pastas na barra lateral esquerda para uma navegação mais fácil.',
+                    'locked-hint' => 'Sempre ativado enquanto a Vista do Explorador estiver desativada.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Mostrar Recursos na Árvore de Diretórios',
+                    'hint'  => 'Apresente os recursos juntamente com as pastas na árvore de diretórios em vez de mostrar apenas pastas.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Diretório não encontrado.',
-            'access-denied'    => 'Não tem acesso a este diretório.',
-            'empty'            => 'Nenhum diretório encontrado.',
-            'action-completed' => 'Ação concluída com sucesso.',
+            'not-found'         => 'Diretório não encontrado.',
+            'access-denied'     => 'Não tem acesso a este diretório.',
+            'empty'             => 'Nenhum diretório encontrado.',
+            'action-completed'  => 'Ação concluída com sucesso.',
+            'foreign-selection' => [
+                'notice' => ':count item(ns) selecionado(s) noutro separador.',
+                'action' => 'Selecione-os também aqui',
+            ],
             'bookmarks'        => [
                 'title'     => 'Marcadores',
                 'drag-hint' => 'Arraste uma pasta para aqui para a adicionar aos marcadores',

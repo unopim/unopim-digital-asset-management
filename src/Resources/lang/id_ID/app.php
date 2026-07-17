@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Alat ini dapat membantu Anda mengorganisir, menyimpan, dan mengelola semua aset media Anda di satu tempat',
                 'root'                           => 'Akar',
                 'upload'                         => 'Unggah',
+                'new'                            => 'Baru',
                 'uploading'                      => 'Mengunggah...',
                 'cancel'                         => 'Batal',
                 'upload-cancelled'               => 'Unggahan dibatalkan.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Konfigurasi berhasil disimpan.',
             'general'  => [
                 'title'            => 'Pengaturan Umum',
-                'description'      => 'Konfigurasikan visibilitas pohon direktori, tampilan penjelajah, dan panel bookmark untuk perpustakaan media DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Tampilkan Aset di Pohon Direktori',
-                    'hint'  => 'Jika diaktifkan, file aset akan muncul sebagai node daun di dalam pohon direktori.',
-                ],
+                'description'      => 'Pengaturan ini mengontrol keseluruhan pengalaman penjelajahan DAM.',
                 'explorer-enabled' => [
-                    'label' => 'Aktifkan Tampilan Explorer',
-                    'hint'  => 'Menggantikan grid aset default dengan explorer folder multi-tab.',
+                    'label' => 'Aktifkan Tampilan Jelajah',
+                    'hint'  => 'Gunakan antarmuka bergaya Explorer untuk menjelajahi dan mengelola aset.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Aktifkan Panel Bookmark',
-                    'hint'  => 'Menampilkan panel bookmark di bawah pohon direktori untuk navigasi cepat.',
+                    'label' => 'Tampilkan Panel Bookmark',
+                    'hint'  => 'Menampilkan bilah sisi khusus yang berisi folder dan aset yang Anda tandai.',
                 ],
-                'show-tree' => [
-                    'label' => 'Tampilkan pohon direktori',
-                    'hint'  => 'Jika diaktifkan, bilah sisi pohon direktori ditampilkan bersama penjelajah.',
+            ],
+            'directory' => [
+                'title'            => 'Pengaturan Direktori',
+                'description'      => 'Pengaturan ini mengontrol bagaimana folder dan aset ditampilkan di panel direktori.',
+                'show-tree'        => [
+                    'label'       => 'Tampilkan Pohon Direktori',
+                    'hint'        => 'Menampilkan hierarki folder di bilah sisi kiri untuk navigasi yang lebih mudah.',
+                    'locked-hint' => 'Selalu aktif saat Tampilan Jelajah dinonaktifkan.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Tampilkan Aset di Pohon Direktori',
+                    'hint'  => 'Menampilkan aset bersama folder di dalam pohon direktori alih-alih hanya menampilkan folder.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Direktori tidak ditemukan.',
-            'access-denied'    => 'Anda tidak memiliki akses ke direktori ini.',
-            'empty'            => 'Tidak ada direktori yang ditemukan.',
-            'action-completed' => 'Tindakan berhasil diselesaikan.',
+            'not-found'         => 'Direktori tidak ditemukan.',
+            'access-denied'     => 'Anda tidak memiliki akses ke direktori ini.',
+            'empty'             => 'Tidak ada direktori yang ditemukan.',
+            'action-completed'  => 'Tindakan berhasil diselesaikan.',
+            'foreign-selection' => [
+                'notice' => ':count item dipilih di tab lain.',
+                'action' => 'Pilih juga di sini',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bookmark',
                 'drag-hint' => 'Seret folder ke sini untuk menambahkan bookmark',

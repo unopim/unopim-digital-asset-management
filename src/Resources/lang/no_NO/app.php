@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Verktøyet hjelper deg med å organisere, lagre og administrere alle medieressursene dine på ett sted',
                 'root'                           => 'Rot',
                 'upload'                         => 'Last opp',
+                'new'                            => 'Ny',
                 'uploading'                      => 'Laster opp...',
                 'cancel'                         => 'Avbryt',
                 'upload-cancelled'               => 'Opplasting avbrutt.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'DAM-konfigurasjon',
             'saved'    => 'Konfigurasjon lagret.',
             'general'  => [
-                'title'            => 'Generelle innstillinger',
-                'description'      => 'Konfigurer mappetre-synlighet, utforskervisning og bokmerke-panel for DAM-mediebiblioteket.',
-                'tree-show-assets' => [
-                    'label' => 'Vis ressurser i mappetre',
-                    'hint'  => 'Når aktivert, vises ressursfiler som bladnoder i mappetreet.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Generelle innstillinger',
+                'description'       => 'Disse innstillingene styrer den generelle DAM-bla-opplevelsen.',
+                'explorer-enabled'  => [
                     'label' => 'Aktiver Utforskningsvisning',
-                    'hint'  => 'Erstatter standard ressursnett med flermappe-utforskeren.',
+                    'hint'  => 'Bruk det Utforsker-lignende grensesnittet for å bla gjennom og administrere ressurser.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Aktiver Bokmerker-panel',
-                    'hint'  => 'Viser et bokmerkepanel under mappetreet for rask navigasjon.',
+                    'label' => 'Vis bokmerkepanel',
+                    'hint'  => 'Vis et eget sidepanel med dine bokmerkede mapper og ressurser.',
                 ],
-                'show-tree' => [
-                    'label' => 'Vis mappetre',
-                    'hint'  => 'Når aktivert vises mappetreet i sidepanelet ved siden av utforskeren.',
+            ],
+            'directory' => [
+                'title'            => 'Mappeinnstillinger',
+                'description'      => 'Disse innstillingene styrer hvordan mapper og ressurser vises i mappepanelet.',
+                'show-tree'        => [
+                    'label'       => 'Vis mappetre',
+                    'hint'        => 'Vis mappehierarkiet i venstre sidepanel for enklere navigasjon.',
+                    'locked-hint' => 'Alltid på mens Utforskningsvisning er deaktivert.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Vis ressurser i mappetre',
+                    'hint'  => 'Vis ressurser sammen med mapper i mappetreet i stedet for å bare vise mapper.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Mappen ble ikke funnet.',
-            'access-denied'    => 'Du har ikke tilgang til denne mappen.',
-            'empty'            => 'Ingen mapper funnet.',
-            'action-completed' => 'Handlingen ble fullført.',
+            'not-found'         => 'Mappen ble ikke funnet.',
+            'access-denied'     => 'Du har ikke tilgang til denne mappen.',
+            'empty'             => 'Ingen mapper funnet.',
+            'action-completed'  => 'Handlingen ble fullført.',
+            'foreign-selection' => [
+                'notice' => ':count element(er) valgt i en annen fane.',
+                'action' => 'Velg dem her også',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bokmerker',
                 'drag-hint' => 'Dra en mappe hit for å bokmerke den',

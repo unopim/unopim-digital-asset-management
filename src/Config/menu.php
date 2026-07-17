@@ -10,8 +10,9 @@ return [
     ],
     [
         'key'   => 'dam.assets',
+        // Distinct URL so this item is not a prefix-match of the sibling DAM routes.
         'name'  => 'dam::app.admin.components.layouts.sidebar.assets',
-        'route' => 'admin.dam.index',
+        'route' => 'admin.dam.assets.index',
         'sort'  => 1,
         'icon'  => '',
     ],

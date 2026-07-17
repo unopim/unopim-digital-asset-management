@@ -149,7 +149,7 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await expect(card).toHaveAttribute('draggable', 'true');
   });
 
-  test('right-click on asset card in explorer opens context menu', async ({ adminPage }) => {
+  test('three-dot button on asset card in explorer opens actions menu', async ({ adminPage }) => {
     const explorerActive = await navigateToExplorer(adminPage);
     if (!explorerActive) {
       test.skip(true, 'Explorer mode not enabled (DAM_EXPLORER_ENABLED=false)');
@@ -159,19 +159,20 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
     await closeApShell(adminPage);
 
-    // Right-click the first asset card
-    await adminPage.locator('.image-card').first().click({ button: 'right' });
+    // Click the three-dot (⋮) actions button on the first asset card.
+    const assetCard = adminPage.locator('.image-card').first().locator('..');
+    await assetCard.hover();
+    await assetCard.locator('.dam-ctx-trigger').first().click();
 
-    // Context menu should appear with min-w-[185px] fixed div
+    // Actions menu should appear with min-w-[185px] fixed div
     const ctxMenu = adminPage.locator('div.fixed.min-w-\\[185px\\]').first();
     await expect(ctxMenu).toBeVisible({ timeout: 5000 });
 
     // Dismiss
-    await adminPage.keyboard.press('Escape');
     await adminPage.mouse.click(10, 10);
   });
 
-  test('right-click on directory in explorer grid opens context menu', async ({ adminPage }) => {
+  test('three-dot button on directory in explorer grid opens actions menu', async ({ adminPage }) => {
     const explorerActive = await navigateToExplorer(adminPage);
     if (!explorerActive) {
       test.skip(true, 'Explorer mode not enabled (DAM_EXPLORER_ENABLED=false)');
@@ -182,12 +183,14 @@ test.describe('DAM Asset Card — Explorer view', () => {
     const folderIcon = adminPage.locator('.icon-dam-folder').first();
     const hasFolders = await folderIcon.isVisible({ timeout: 5000 }).catch(() => false);
     if (!hasFolders) {
-      test.skip(true, 'No sub-directories visible in explorer to right-click');
+      test.skip(true, 'No sub-directories visible in explorer');
       return;
     }
 
-    const folderCard = folderIcon.locator('..').locator('..').first();
-    await folderCard.click({ button: 'right' });
+    // The folder icon's parent is the folder-card root, which holds the ⋮ button.
+    const folderCard = folderIcon.locator('..').first();
+    await folderCard.hover();
+    await folderCard.locator('.dam-ctx-trigger').first().click();
 
     const ctxMenu = adminPage.locator('div.fixed.min-w-\\[185px\\]').first();
     await expect(ctxMenu).toBeVisible({ timeout: 5000 });
@@ -195,7 +198,7 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await adminPage.mouse.click(10, 10);
   });
 
-  test('context menu repositions when rendered near bottom of viewport', async ({ adminPage }) => {
+  test('actions menu stays within the viewport bottom', async ({ adminPage }) => {
     const explorerActive = await navigateToExplorer(adminPage);
     if (!explorerActive) {
       test.skip(true, 'Explorer mode not enabled (DAM_EXPLORER_ENABLED=false)');
@@ -205,12 +208,13 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
     await closeApShell(adminPage);
 
-    // Trigger context menu near the bottom of the viewport
+    // Open the actions menu from the LAST asset card (closest to the bottom),
+    // exercising the menu's viewport-repositioning safety net.
     const { height } = adminPage.viewportSize();
-    await adminPage.locator('.image-card').first().click({
-      button: 'right',
-      position: { x: 10, y: 10 },
-    });
+    const assetCard = adminPage.locator('.image-card').last().locator('..');
+    await assetCard.scrollIntoViewIfNeeded();
+    await assetCard.hover();
+    await assetCard.locator('.dam-ctx-trigger').first().click();
 
     const ctxMenu = adminPage.locator('div.fixed.min-w-\\[185px\\]').first();
     await expect(ctxMenu).toBeVisible({ timeout: 5000 });

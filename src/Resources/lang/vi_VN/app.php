@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Công cụ giúp bạn tổ chức, lưu trữ và quản lý tất cả tài sản phương tiện ở một nơi',
                 'root'                           => 'Gốc',
                 'upload'                         => 'Tải lên',
+                'new'                            => 'Mới',
                 'uploading'                      => 'Đang tải lên...',
                 'cancel'                         => 'Hủy',
                 'upload-cancelled'               => 'Tải lên đã hủy.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'Cấu hình DAM',
             'saved'    => 'Đã lưu cấu hình thành công.',
             'general'  => [
-                'title'            => 'Cài đặt chung',
-                'description'      => 'Cấu hình khả năng hiển thị cây thư mục, chế độ xem khám phá và bảng đánh dấu cho thư viện media DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Hiển thị tài nguyên trong cây thư mục',
-                    'hint'  => 'Khi bật, các tệp tài nguyên sẽ xuất hiện dưới dạng nút lá bên trong cây thư mục.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Cài đặt chung',
+                'description'       => 'Các cài đặt này kiểm soát toàn bộ trải nghiệm duyệt trong DAM.',
+                'explorer-enabled'  => [
                     'label' => 'Bật chế độ xem Explorer',
-                    'hint'  => 'Thay thế lưới tài nguyên mặc định bằng trình khám phá thư mục đa tab.',
+                    'hint'  => 'Sử dụng giao diện kiểu Explorer để duyệt và quản lý tài sản.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Bật bảng Dấu trang',
-                    'hint'  => 'Hiển thị bảng dấu trang bên dưới cây thư mục để điều hướng nhanh.',
+                    'label' => 'Hiển thị bảng Dấu trang',
+                    'hint'  => 'Hiển thị một thanh bên riêng chứa các thư mục và tài sản đã đánh dấu của bạn.',
                 ],
-                'show-tree' => [
-                    'label' => 'Hiển thị cây thư mục',
-                    'hint'  => 'Khi bật, thanh bên cây thư mục được hiển thị cùng với trình khám phá.',
+            ],
+            'directory' => [
+                'title'            => 'Cài đặt thư mục',
+                'description'      => 'Các cài đặt này kiểm soát cách hiển thị thư mục và tài sản trong bảng thư mục.',
+                'show-tree'        => [
+                    'label'       => 'Hiển thị cây thư mục',
+                    'hint'        => 'Hiển thị cấu trúc phân cấp thư mục ở thanh bên trái để điều hướng dễ dàng hơn.',
+                    'locked-hint' => 'Luôn bật khi chế độ xem Explorer bị tắt.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Hiển thị tài sản trong cây thư mục',
+                    'hint'  => 'Hiển thị tài sản cùng với thư mục trong cây thư mục thay vì chỉ hiển thị thư mục.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Không tìm thấy thư mục.',
-            'access-denied'    => 'Bạn không có quyền truy cập vào thư mục này.',
-            'empty'            => 'Không tìm thấy thư mục nào.',
-            'action-completed' => 'Đã hoàn tất hành động.',
+            'not-found'         => 'Không tìm thấy thư mục.',
+            'access-denied'     => 'Bạn không có quyền truy cập vào thư mục này.',
+            'empty'             => 'Không tìm thấy thư mục nào.',
+            'action-completed'  => 'Đã hoàn tất hành động.',
+            'foreign-selection' => [
+                'notice' => 'Đã chọn :count mục ở tab khác.',
+                'action' => 'Cũng chọn chúng ở đây',
+            ],
             'bookmarks'        => [
                 'title'     => 'Dấu trang',
                 'drag-hint' => 'Kéo thư mục vào đây để đánh dấu',

@@ -134,6 +134,7 @@ return [
                 'description'                    => 'L\'outil peut vous aider à organiser, stocker et gérer tous vos actifs multimédias au même endroit',
                 'root'                           => 'Racine',
                 'upload'                         => 'Télécharger',
+                'new'                            => 'Nouveau',
                 'uploading'                      => 'Téléchargement...',
                 'cancel'                         => 'Annuler',
                 'upload-cancelled'               => 'Téléchargement annulé.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configuration enregistrée avec succès.',
             'general'  => [
                 'title'            => 'Paramètres généraux',
-                'description'      => 'Configurez la visibilité de l\'arborescence, la vue explorateur et le panneau de favoris pour la bibliothèque multimédia DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Afficher les ressources dans l\'arborescence',
-                    'hint'  => 'Lorsque cette option est activée, les fichiers de ressources apparaissent comme nœuds feuilles dans l\'arborescence.',
-                ],
+                'description'      => 'Ces paramètres contrôlent l\'expérience globale de navigation du DAM.',
                 'explorer-enabled' => [
-                    'label' => 'Activer la vue Explorateur',
-                    'hint'  => 'Remplace la grille de ressources par défaut par l\'explorateur de dossiers multi-onglets.',
+                    'label' => 'Activer la vue Exploration',
+                    'hint'  => 'Utilisez l\'interface de type Explorateur pour parcourir et gérer les ressources.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Activer le panneau Signets',
-                    'hint'  => 'Affiche un panneau de signets sous l\'arborescence pour une navigation rapide.',
+                    'label' => 'Afficher le panneau de favoris',
+                    'hint'  => 'Affiche une barre latérale dédiée contenant vos dossiers et ressources favoris.',
                 ],
-                'show-tree' => [
-                    'label' => 'Afficher l\'arborescence',
-                    'hint'  => 'Lorsqu\'activée, la barre latérale de l\'arborescence est affichée à côté de l\'explorateur.',
+            ],
+            'directory' => [
+                'title'            => 'Paramètres du répertoire',
+                'description'      => 'Ces paramètres contrôlent la façon dont les dossiers et les ressources sont affichés dans le panneau du répertoire.',
+                'show-tree'        => [
+                    'label'       => 'Afficher l\'arborescence des répertoires',
+                    'hint'        => 'Affiche la hiérarchie des dossiers dans la barre latérale gauche pour faciliter la navigation.',
+                    'locked-hint' => 'Toujours activé lorsque la vue Exploration est désactivée.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Afficher les ressources dans l\'arborescence',
+                    'hint'  => 'Affiche les ressources aux côtés des dossiers dans l\'arborescence au lieu de n\'afficher que les dossiers.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Répertoire introuvable.',
-            'access-denied'    => 'Vous n\'avez pas accès à ce répertoire.',
-            'empty'            => 'Aucun répertoire trouvé.',
-            'action-completed' => 'Action effectuée avec succès.',
+            'not-found'         => 'Répertoire introuvable.',
+            'access-denied'     => 'Vous n\'avez pas accès à ce répertoire.',
+            'empty'             => 'Aucun répertoire trouvé.',
+            'action-completed'  => 'Action effectuée avec succès.',
+            'foreign-selection' => [
+                'notice' => ':count élément(s) sélectionné(s) dans un autre onglet.',
+                'action' => 'Les sélectionner ici aussi',
+            ],
             'bookmarks'        => [
                 'title'     => 'Signets',
                 'drag-hint' => 'Faites glisser un dossier ici pour l\'ajouter aux signets',

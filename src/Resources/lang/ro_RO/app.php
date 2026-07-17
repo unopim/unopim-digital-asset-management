@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Instrumentul vă poate ajuta să organizați, să stocați și să gestionați toate activele media într-un singur loc',
                 'root'                           => 'Rădăcină',
                 'upload'                         => 'Încarcă',
+                'new'                            => 'Nou',
                 'uploading'                      => 'Se încarcă...',
                 'cancel'                         => 'Anulare',
                 'upload-cancelled'               => 'Încărcare anulată.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configurarea a fost salvată cu succes.',
             'general'  => [
                 'title'            => 'Setări generale',
-                'description'      => 'Configurați vizibilitatea arborelui de directoare, vizualizarea explorator și panoul de marcaje pentru biblioteca media DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Afișează resursele în arborele de directoare',
-                    'hint'  => 'Când este activat, fișierele de resurse apar ca noduri frunză în arborele de directoare.',
-                ],
+                'description'      => 'Aceste setări controlează experiența generală de navigare DAM.',
                 'explorer-enabled' => [
                     'label' => 'Activează vizualizarea Explorer',
-                    'hint'  => 'Înlocuiește grila implicită de resurse cu exploratorul de dosare cu file multiple.',
+                    'hint'  => 'Folosiți interfața de tip Explorer pentru a naviga și gestiona resursele.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Activează panoul de marcaje',
-                    'hint'  => 'Afișează un panou de marcaje sub arborele de directoare pentru navigare rapidă.',
+                    'label' => 'Afișează panoul de marcaje',
+                    'hint'  => 'Afișează o bară laterală dedicată care conține dosarele și resursele marcate.',
                 ],
-                'show-tree' => [
-                    'label' => 'Afișați arborele de directoare',
-                    'hint'  => 'Când este activat, bara laterală cu arborele de directoare este afișată lângă explorator.',
+            ],
+            'directory' => [
+                'title'            => 'Setări director',
+                'description'      => 'Aceste setări controlează modul în care dosarele și resursele sunt afișate în panoul de directoare.',
+                'show-tree'        => [
+                    'label'       => 'Afișează arborele de directoare',
+                    'hint'        => 'Afișează ierarhia dosarelor în bara laterală din stânga pentru o navigare mai ușoară.',
+                    'locked-hint' => 'Întotdeauna activ cât timp vizualizarea Explorer este dezactivată.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Afișează resursele în arborele de directoare',
+                    'hint'  => 'Afișează resursele alături de dosare în arborele de directoare, în loc să afișeze doar dosarele.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Directorul nu a fost găsit.',
-            'access-denied'    => 'Nu aveți acces la acest director.',
-            'empty'            => 'Nu s-au găsit directoare.',
-            'action-completed' => 'Acțiune finalizată cu succes.',
+            'not-found'         => 'Directorul nu a fost găsit.',
+            'access-denied'     => 'Nu aveți acces la acest director.',
+            'empty'             => 'Nu s-au găsit directoare.',
+            'action-completed'  => 'Acțiune finalizată cu succes.',
+            'foreign-selection' => [
+                'notice' => ':count element(e) selectat(e) în altă filă.',
+                'action' => 'Selectează-le și aici',
+            ],
             'bookmarks'        => [
                 'title'     => 'Marcaje',
                 'drag-hint' => 'Trageți un dosar aici pentru a-l marca',

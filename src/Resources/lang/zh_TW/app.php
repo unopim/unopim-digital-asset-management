@@ -134,6 +134,7 @@ return [
                 'description'                    => '此工具可協助您在一個地方組織、儲存及管理所有媒體資產',
                 'root'                           => '根目錄',
                 'upload'                         => '上傳',
+                'new'                            => '新增',
                 'uploading'                      => '上傳中...',
                 'cancel'                         => '取消',
                 'upload-cancelled'               => '上傳已取消。',
@@ -684,31 +685,40 @@ return [
             'title'    => 'DAM 設定',
             'saved'    => '設定已成功儲存。',
             'general'  => [
-                'title'            => '一般設定',
-                'description'      => '為 DAM 媒體庫配置目錄樹可見性、資源管理器視圖和書籤面板。',
-                'tree-show-assets' => [
-                    'label' => '在目錄樹中顯示資產',
-                    'hint'  => '啟用後，資產檔案將作為葉節點顯示在目錄樹中。',
-                ],
-                'explorer-enabled' => [
+                'title'             => '一般設定',
+                'description'       => '這些設定控制 DAM 的整體瀏覽體驗。',
+                'explorer-enabled'  => [
                     'label' => '啟用瀏覽器檢視',
-                    'hint'  => '以多分頁資料夾瀏覽器取代預設的資產格狀檢視。',
+                    'hint'  => '使用瀏覽器樣式的介面來瀏覽及管理資產。',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => '啟用書籤面板',
-                    'hint'  => '在目錄樹下方顯示書籤面板，方便快速導覽。',
+                    'label' => '顯示書籤面板',
+                    'hint'  => '顯示一個專用側邊欄，包含您已加入書籤的資料夾和資產。',
                 ],
-                'show-tree' => [
-                    'label' => '顯示目錄樹',
-                    'hint'  => '啟用後，目錄樹側欄將與檔案總管一起顯示。',
+            ],
+            'directory' => [
+                'title'            => '目錄設定',
+                'description'      => '這些設定控制資料夾和資產在目錄面板中的顯示方式。',
+                'show-tree'        => [
+                    'label'       => '顯示目錄樹',
+                    'hint'        => '在左側邊欄中顯示資料夾階層，以便更輕鬆地導覽。',
+                    'locked-hint' => '在停用瀏覽器檢視時永遠開啟。',
+                ],
+                'tree-show-assets' => [
+                    'label' => '在目錄樹中顯示資產',
+                    'hint'  => '在目錄樹中將資產與資料夾一同顯示，而不僅僅顯示資料夾。',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => '找不到目錄。',
-            'access-denied'    => '您沒有存取此目錄的權限。',
-            'empty'            => '找不到任何目錄。',
-            'action-completed' => '操作已成功完成。',
+            'not-found'         => '找不到目錄。',
+            'access-denied'     => '您沒有存取此目錄的權限。',
+            'empty'             => '找不到任何目錄。',
+            'action-completed'  => '操作已成功完成。',
+            'foreign-selection' => [
+                'notice' => '已在另一個分頁中選取 :count 個項目。',
+                'action' => '在此處也選取它們',
+            ],
             'bookmarks'        => [
                 'title'     => '書籤',
                 'drag-hint' => '將資料夾拖曳至此以加入書籤',

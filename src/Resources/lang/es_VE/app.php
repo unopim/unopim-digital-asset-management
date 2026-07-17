@@ -134,6 +134,7 @@ return [
                 'description'                    => 'La herramienta te ayuda a organizar, almacenar y gestionar todos tus activos multimedia en un solo lugar',
                 'root'                           => 'Raíz',
                 'upload'                         => 'Subir',
+                'new'                            => 'Nuevo',
                 'uploading'                      => 'Subiendo...',
                 'cancel'                         => 'Cancelar',
                 'upload-cancelled'               => 'Subida cancelada.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configuración guardada exitosamente.',
             'general'  => [
                 'title'            => 'Configuración General',
-                'description'      => 'Configure la visibilidad del árbol de directorios, la vista del explorador y el panel de marcadores para la biblioteca multimedia DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Mostrar Activos en el Árbol de Directorios',
-                    'hint'  => 'Cuando está habilitado, los archivos de activos aparecen como nodos hoja dentro del árbol de directorios.',
-                ],
+                'description'      => 'Estos ajustes controlan la experiencia general de navegación del DAM.',
                 'explorer-enabled' => [
-                    'label' => 'Habilitar Vista de Explorador',
-                    'hint'  => 'Reemplaza la cuadrícula de activos predeterminada con el explorador de carpetas de múltiples pestañas.',
+                    'label' => 'Habilitar Vista de Exploración',
+                    'hint'  => 'Use la interfaz de tipo Explorador para navegar y gestionar los activos.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Habilitar Panel de Marcadores',
-                    'hint'  => 'Muestra un panel de marcadores debajo del árbol de directorios para una navegación rápida.',
+                    'label' => 'Mostrar Panel de Marcadores',
+                    'hint'  => 'Muestra una barra lateral dedicada con tus carpetas y activos marcados.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mostrar árbol de directorios',
-                    'hint'  => 'Cuando está habilitado, la barra lateral del árbol de directorios se muestra junto al explorador.',
+            ],
+            'directory' => [
+                'title'            => 'Configuración de Directorio',
+                'description'      => 'Estos ajustes controlan cómo se muestran las carpetas y los activos en el panel de directorio.',
+                'show-tree'        => [
+                    'label'       => 'Mostrar Árbol de Directorios',
+                    'hint'        => 'Muestra la jerarquía de carpetas en la barra lateral izquierda para facilitar la navegación.',
+                    'locked-hint' => 'Siempre activo mientras la Vista de Exploración está desactivada.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Mostrar Activos en el Árbol de Directorios',
+                    'hint'  => 'Muestra los activos junto a las carpetas dentro del árbol de directorios en lugar de mostrar solo las carpetas.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Directorio no encontrado.',
-            'access-denied'    => 'No tiene acceso a este directorio.',
-            'empty'            => 'No se encontraron directorios.',
-            'action-completed' => 'Acción completada correctamente.',
+            'not-found'         => 'Directorio no encontrado.',
+            'access-denied'     => 'No tiene acceso a este directorio.',
+            'empty'             => 'No se encontraron directorios.',
+            'action-completed'  => 'Acción completada correctamente.',
+            'foreign-selection' => [
+                'notice' => ':count elemento(s) seleccionado(s) en otra pestaña.',
+                'action' => 'Seleccionarlos aquí también',
+            ],
             'bookmarks'        => [
                 'title'     => 'Marcadores',
                 'drag-hint' => 'Arrastre una carpeta aquí para marcarla',

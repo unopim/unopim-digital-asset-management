@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Lo strumento può aiutarti a organizzare, archiviare e gestire tutti i tuoi asset multimediali in un unico luogo',
                 'root'                           => 'Radice',
                 'upload'                         => 'Carica',
+                'new'                            => 'Nuovo',
                 'uploading'                      => 'Caricamento...',
                 'cancel'                         => 'Annulla',
                 'upload-cancelled'               => 'Caricamento annullato.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Configurazione salvata con successo.',
             'general'  => [
                 'title'            => 'Impostazioni generali',
-                'description'      => 'Configura la visibilità dell\'albero directory, la vista explorer e il pannello segnalibri per la libreria multimediale DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Mostra asset nell\'albero delle directory',
-                    'hint'  => 'Se abilitato, i file asset vengono visualizzati come nodi foglia all\'interno dell\'albero delle directory.',
-                ],
+                'description'      => 'Queste impostazioni controllano l\'esperienza di navigazione complessiva del DAM.',
                 'explorer-enabled' => [
-                    'label' => 'Abilita vista Explorer',
-                    'hint'  => 'Sostituisce la griglia asset predefinita con l\'explorer a schede multiple.',
+                    'label' => 'Abilita vista Esplora',
+                    'hint'  => 'Usa l\'interfaccia in stile Explorer per navigare e gestire le risorse.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Abilita pannello Segnalibri',
-                    'hint'  => 'Mostra un pannello segnalibri sotto l\'albero delle directory per una navigazione rapida.',
+                    'label' => 'Mostra pannello Segnalibri',
+                    'hint'  => 'Mostra una barra laterale dedicata contenente le cartelle e le risorse aggiunte ai segnalibri.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mostra albero directory',
-                    'hint'  => 'Se abilitato, la barra laterale dell\'albero directory viene mostrata accanto all\'explorer.',
+            ],
+            'directory' => [
+                'title'            => 'Impostazioni directory',
+                'description'      => 'Queste impostazioni controllano come cartelle e risorse vengono visualizzate nel pannello directory.',
+                'show-tree'        => [
+                    'label'       => 'Mostra albero directory',
+                    'hint'        => 'Mostra la gerarchia delle cartelle nella barra laterale sinistra per una navigazione più semplice.',
+                    'locked-hint' => 'Sempre attivo quando la vista Esplora è disabilitata.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Mostra risorse nell\'albero directory',
+                    'hint'  => 'Mostra le risorse insieme alle cartelle all\'interno dell\'albero directory invece di mostrare solo le cartelle.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Directory non trovata.',
-            'access-denied'    => 'Non hai accesso a questa directory.',
-            'empty'            => 'Nessuna directory trovata.',
-            'action-completed' => 'Azione completata correttamente.',
+            'not-found'         => 'Directory non trovata.',
+            'access-denied'     => 'Non hai accesso a questa directory.',
+            'empty'             => 'Nessuna directory trovata.',
+            'action-completed'  => 'Azione completata correttamente.',
+            'foreign-selection' => [
+                'notice' => ':count elemento/i selezionato/i in un\'altra scheda.',
+                'action' => 'Selezionali anche qui',
+            ],
             'bookmarks'        => [
                 'title'     => 'Segnalibri',
                 'drag-hint' => 'Trascina una cartella qui per aggiungerla ai segnalibri',

@@ -24,6 +24,24 @@ class ShareController extends Controller
         return app(ShareDataSource::class)->toJson();
     }
 
+    public function show(int $id): JsonResponse
+    {
+        $share = $this->shareRepository->find($id);
+
+        if (! $share) {
+            return $this->notFound(trans('dam::app.admin.dam.share.not-found'));
+        }
+
+        if (! $this->hasTargetAccess($share)) {
+            return $this->unauthorized();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $this->presentShare($share),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $request->validate([

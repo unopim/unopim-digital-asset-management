@@ -4,7 +4,6 @@
 <script type="text/x-template" id="v-dam-explorer-list-template">
     <div
         class="border border-gray-200 dark:border-cherry-700 rounded-lg overflow-hidden bg-white dark:bg-cherry-900 min-h-72"
-        @contextmenu.prevent="showSpaceCtx($event)"
         @dragover.prevent
         @drop.prevent="onSpaceDrop($event)"
     >
@@ -21,14 +20,14 @@
                 <span class="cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('name')">
                     @lang('dam::app.admin.explorer.list.header.name') <span v-if="sortBy==='name'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span class="hidden sm:block">@lang('dam::app.admin.explorer.list.header.type')</span>
-                <span class="hidden md:block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('size')">
+                <span class="hidden sm:!block">@lang('dam::app.admin.explorer.list.header.type')</span>
+                <span class="hidden md:!block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('size')">
                     @lang('dam::app.admin.explorer.list.header.size') <span v-if="sortBy==='size'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span class="hidden lg:block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('updated_at')">
+                <span class="hidden lg:!block cursor-pointer hover:text-gray-600 dark:hover:text-white" @click="sort('updated_at')">
                     @lang('dam::app.admin.explorer.list.header.modified') <span v-if="sortBy==='updated_at'">@{{ sortOrder==='asc'?'↑':'↓' }}</span>
                 </span>
-                <span>@lang('dam::app.admin.explorer.list.header.actions')</span>
+                <span class="[grid-column-end:-1] text-right ltr:pr-1 rtl:pl-1">@lang('dam::app.admin.explorer.list.header.actions')</span>
             </div>
 
             {{-- Folder rows --}}
@@ -61,14 +60,14 @@
                 <i class="icon-dam-folder text-lg text-violet-400"></i>
                 <div class="min-w-0">
                     <span class="font-medium text-violet-700 dark:text-violet-300 truncate block">@{{ dir.name }}</span>
-                    <span class="sm:hidden text-xs text-gray-400 truncate block">
+                    <span class="sm:!hidden text-xs text-gray-400 truncate block">
                         @lang('dam::app.admin.explorer.sections.folder') · @{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}
                     </span>
                 </div>
-                <span class="hidden sm:block text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
-                <span class="hidden md:block text-gray-400 text-xs">@{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}</span>
-                <span class="hidden lg:block text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
-                <div class="flex gap-2 items-center">
+                <span class="hidden sm:!block text-gray-400 text-xs">@lang('dam::app.admin.explorer.sections.folder')</span>
+                <span class="hidden md:!block text-gray-400 text-xs">@{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}</span>
+                <span class="hidden lg:!block text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
+                <div class="flex gap-2 items-center justify-end [grid-column-end:-1]">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
                     <button v-if="dir.can_access !== false" type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
                     @endif
@@ -84,6 +83,14 @@
                         title="@lang('dam::app.admin.explorer.context.bookmark')"
                     ></button>
                     @endif
+                    <button
+                        type="button"
+                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-violet-600"
+                        @click.stop="showCtx($event, dir, 'directory')"
+                        title="@lang('dam::app.admin.explorer.list.header.actions')"
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+                    </button>
                 </div>
             </div>
 
@@ -116,12 +123,12 @@
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
                 <div class="min-w-0">
                     <span class="text-gray-700 dark:text-gray-200 truncate block">@{{ asset.file_name }}</span>
-                    <span class="sm:hidden text-xs text-gray-400 truncate block">@{{ asset.file_type }} · @{{ fmtSize(asset.file_size) }}</span>
+                    <span class="sm:!hidden text-xs text-gray-400 truncate block">@{{ asset.file_type }} · @{{ fmtSize(asset.file_size) }}</span>
                 </div>
-                <div class="hidden sm:flex items-center overflow-hidden"><span class="text-xs font-bold rounded px-1 py-px uppercase whitespace-nowrap overflow-hidden" style="max-width:100%;text-overflow:ellipsis;" :class="badge(asset.file_type, asset.extension)">@{{ asset.file_type }}</span></div>
-                <span class="hidden md:block text-gray-400 text-xs">@{{ fmtSize(asset.file_size) }}</span>
-                <span class="hidden lg:block text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
-                <div class="flex gap-2">
+                <div class="hidden sm:!flex items-center overflow-hidden"><span class="text-xs font-bold rounded px-1 py-px uppercase whitespace-nowrap overflow-hidden" style="max-width:100%;text-overflow:ellipsis;" :class="badge(asset.file_type, asset.extension)">@{{ asset.file_type }}</span></div>
+                <span class="hidden md:!block text-gray-400 text-xs">@{{ fmtSize(asset.file_size) }}</span>
+                <span class="hidden lg:!block text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
+                <div class="flex gap-2 items-center justify-end [grid-column-end:-1]">
                     @if (bouncer()->hasPermission('dam.asset.view'))
                     <button type="button" class="icon-dam-preview text-gray-400 hover:text-violet-600 text-base" @click="preview(asset.id)" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"></button>
                     @endif
@@ -131,6 +138,14 @@
                     @if (bouncer()->hasPermission('dam.asset.destroy'))
                     <button type="button" class="icon-delete text-gray-400 hover:text-red-500 text-base" @click="del(asset)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
+                    <button
+                        type="button"
+                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-violet-600"
+                        @click.stop="showCtx($event, asset, 'asset')"
+                        title="@lang('dam::app.admin.explorer.list.header.actions')"
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+                    </button>
                 </div>
             </div>
 

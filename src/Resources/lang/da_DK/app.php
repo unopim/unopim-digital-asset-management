@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Værktøjet hjælper dig med at organisere, opbevare og administrere alle dine medieaktiver ét sted',
                 'root'                           => 'Rod',
                 'upload'                         => 'Upload',
+                'new'                            => 'Ny',
                 'uploading'                      => 'Uploader...',
                 'cancel'                         => 'Annuller',
                 'upload-cancelled'               => 'Upload annulleret.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Konfiguration gemt.',
             'general'  => [
                 'title'            => 'Generelle indstillinger',
-                'description'      => 'Konfigurer synlighed af mappetræ, udforskningsvisning og bogmærkepanel for DAM-mediebiblioteket.',
-                'tree-show-assets' => [
-                    'label' => 'Vis aktiver i mappetræet',
-                    'hint'  => 'Når aktiveret, vises aktivfiler som bladnoder i mappetræet.',
-                ],
+                'description'      => 'Disse indstillinger styrer den overordnede DAM-browsingoplevelse.',
                 'explorer-enabled' => [
-                    'label' => 'Aktivér Explorer-visning',
-                    'hint'  => 'Erstatter standardaktivgitteret med den flerflapsbaserede mappeudforsker.',
+                    'label' => 'Aktivér udforskningsvisning',
+                    'hint'  => 'Brug den Explorer-lignende grænseflade til at gennemse og administrere aktiver.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Aktivér bogmærkepanel',
-                    'hint'  => 'Viser et bogmærkepanel under mappetræet til hurtig navigation.',
+                    'label' => 'Vis bogmærkepanel',
+                    'hint'  => 'Vis en dedikeret sidebjælke med dine bogmærkede mapper og aktiver.',
                 ],
-                'show-tree' => [
-                    'label' => 'Vis mappetræ',
-                    'hint'  => 'Når aktiveret vises mappetræet i sidebjælken ved siden af udforskeren.',
+            ],
+            'directory' => [
+                'title'            => 'Mappeindstillinger',
+                'description'      => 'Disse indstillinger styrer, hvordan mapper og aktiver vises i mappepanelet.',
+                'show-tree'        => [
+                    'label'       => 'Vis mappetræ',
+                    'hint'        => 'Vis mappehierarkiet i venstre sidebjælke for lettere navigation.',
+                    'locked-hint' => 'Altid slået til, mens udforskningsvisning er deaktiveret.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Vis aktiver i mappetræet',
+                    'hint'  => 'Vis aktiver sammen med mapper i mappetræet i stedet for kun at vise mapper.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Mappen blev ikke fundet.',
-            'access-denied'    => 'Du har ikke adgang til denne mappe.',
-            'empty'            => 'Ingen mapper fundet.',
-            'action-completed' => 'Handlingen blev fuldført.',
+            'not-found'         => 'Mappen blev ikke fundet.',
+            'access-denied'     => 'Du har ikke adgang til denne mappe.',
+            'empty'             => 'Ingen mapper fundet.',
+            'action-completed'  => 'Handlingen blev fuldført.',
+            'foreign-selection' => [
+                'notice' => ':count element(er) valgt i en anden fane.',
+                'action' => 'Vælg dem her også',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bogmærker',
                 'drag-hint' => 'Træk en mappe hertil for at bogmærke den',

@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Tüm medya varlıklarınızı tek bir yerde düzenlemenize, saklamanıza ve yönetmenize yardımcı olan araç',
                 'root'                           => 'Kök',
                 'upload'                         => 'Yükle',
+                'new'                            => 'Yeni',
                 'uploading'                      => 'Yükleniyor...',
                 'cancel'                         => 'İptal',
                 'upload-cancelled'               => 'Yükleme iptal edildi.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Yapılandırma başarıyla kaydedildi.',
             'general'  => [
                 'title'            => 'Genel Ayarlar',
-                'description'      => 'DAM medya kütüphanesi için dizin ağacı görünürlüğünü, gezgin görünümünü ve yer işaretleri panelini yapılandırın.',
-                'tree-show-assets' => [
-                    'label' => 'Dizin Ağacında Varlıkları Göster',
-                    'hint'  => 'Etkinleştirildiğinde, varlık dosyaları dizin ağacında yaprak düğümler olarak görünür.',
-                ],
+                'description'      => 'Bu ayarlar genel DAM gezinme deneyimini kontrol eder.',
                 'explorer-enabled' => [
-                    'label' => 'Explorer Görünümünü Etkinleştir',
-                    'hint'  => 'Varsayılan varlık ızgarasını çok sekmeli klasör gezginiyle değiştirir.',
+                    'label' => 'Keşfet Görünümünü Etkinleştir',
+                    'hint'  => 'Varlıklara göz atmak ve onları yönetmek için Explorer tarzı arayüzü kullanın.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Yer İşaretleri Panelini Etkinleştir',
-                    'hint'  => 'Hızlı gezinme için dizin ağacının altında bir yer işaretleri paneli gösterir.',
+                    'label' => 'Yer İşaretleri Panelini Göster',
+                    'hint'  => 'Yer işaretlerine eklediğiniz klasörleri ve varlıkları içeren özel bir kenar çubuğu görüntüler.',
                 ],
-                'show-tree' => [
-                    'label' => 'Dizin ağacını göster',
-                    'hint'  => 'Etkinleştirildiğinde, dizin ağacı kenar çubuğu gezgininin yanında görüntülenir.',
+            ],
+            'directory' => [
+                'title'            => 'Dizin Ayarları',
+                'description'      => 'Bu ayarlar, klasörlerin ve varlıkların dizin panelinde nasıl görüntüleneceğini kontrol eder.',
+                'show-tree'        => [
+                    'label'       => 'Dizin Ağacını Göster',
+                    'hint'        => 'Daha kolay gezinme için klasör hiyerarşisini sol kenar çubuğunda görüntüler.',
+                    'locked-hint' => 'Keşfet Görünümü devre dışıyken her zaman açıktır.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Dizin Ağacında Varlıkları Göster',
+                    'hint'  => 'Yalnızca klasörleri göstermek yerine varlıkları dizin ağacında klasörlerle birlikte görüntüler.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Dizin bulunamadı.',
-            'access-denied'    => 'Bu dizine erişim izniniz yok.',
-            'empty'            => 'Dizin bulunamadı.',
-            'action-completed' => 'İşlem başarıyla tamamlandı.',
+            'not-found'         => 'Dizin bulunamadı.',
+            'access-denied'     => 'Bu dizine erişim izniniz yok.',
+            'empty'             => 'Dizin bulunamadı.',
+            'action-completed'  => 'İşlem başarıyla tamamlandı.',
+            'foreign-selection' => [
+                'notice' => 'Başka bir sekmede :count öğe seçildi.',
+                'action' => 'Bunları burada da seç',
+            ],
             'bookmarks'        => [
                 'title'     => 'Yer İşaretleri',
                 'drag-hint' => 'Yer işaretine eklemek için bir klasörü buraya sürükleyin',

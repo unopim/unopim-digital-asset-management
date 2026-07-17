@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Narzędzie pomoże Ci uporządkować, przechowywać i zarządzać wszystkimi zasobami medialnymi w jednym miejscu',
                 'root'                           => 'Katalog główny',
                 'upload'                         => 'Prześlij',
+                'new'                            => 'Nowy',
                 'uploading'                      => 'Przesyłanie...',
                 'cancel'                         => 'Anuluj',
                 'upload-cancelled'               => 'Przesyłanie anulowane.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'Konfiguracja DAM',
             'saved'    => 'Konfiguracja została pomyślnie zapisana.',
             'general'  => [
-                'title'            => 'Ustawienia ogólne',
-                'description'      => 'Skonfiguruj widoczność drzewa katalogów, widok eksploratora i panel zakładek dla biblioteki multimediów DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Pokaż zasoby w drzewie katalogów',
-                    'hint'  => 'Po włączeniu pliki zasobów są wyświetlane jako węzły liściowe w drzewie katalogów.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Ustawienia ogólne',
+                'description'       => 'Te ustawienia kontrolują ogólne środowisko przeglądania DAM.',
+                'explorer-enabled'  => [
                     'label' => 'Włącz widok eksploratora',
-                    'hint'  => 'Zastępuje domyślną siatkę zasobów eksploratorem folderów z wieloma kartami.',
+                    'hint'  => 'Użyj interfejsu w stylu eksploratora do przeglądania zasobów i zarządzania nimi.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Włącz panel zakładek',
-                    'hint'  => 'Wyświetla panel zakładek poniżej drzewa katalogów umożliwiający szybką nawigację.',
+                    'label' => 'Pokaż panel zakładek',
+                    'hint'  => 'Wyświetl dedykowany pasek boczny zawierający foldery i zasoby dodane do zakładek.',
                 ],
-                'show-tree' => [
-                    'label' => 'Pokaż drzewo katalogów',
-                    'hint'  => 'Gdy włączone, pasek boczny drzewa katalogów jest widoczny obok eksploratora.',
+            ],
+            'directory' => [
+                'title'            => 'Ustawienia katalogu',
+                'description'      => 'Te ustawienia kontrolują sposób wyświetlania folderów i zasobów w panelu katalogu.',
+                'show-tree'        => [
+                    'label'       => 'Pokaż drzewo katalogów',
+                    'hint'        => 'Wyświetl hierarchię folderów na lewym pasku bocznym dla łatwiejszej nawigacji.',
+                    'locked-hint' => 'Zawsze włączone, gdy widok eksploratora jest wyłączony.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Pokaż zasoby w drzewie katalogów',
+                    'hint'  => 'Wyświetl zasoby obok folderów w drzewie katalogów zamiast pokazywać tylko foldery.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Katalog nie został znaleziony.',
-            'access-denied'    => 'Nie masz dostępu do tego katalogu.',
-            'empty'            => 'Nie znaleziono katalogów.',
-            'action-completed' => 'Akcja zakończona pomyślnie.',
+            'not-found'         => 'Katalog nie został znaleziony.',
+            'access-denied'     => 'Nie masz dostępu do tego katalogu.',
+            'empty'             => 'Nie znaleziono katalogów.',
+            'action-completed'  => 'Akcja zakończona pomyślnie.',
+            'foreign-selection' => [
+                'notice' => 'Wybrano :count element(ów) w innej karcie.',
+                'action' => 'Wybierz je również tutaj',
+            ],
             'bookmarks'        => [
                 'title'     => 'Zakładki',
                 'drag-hint' => 'Przeciągnij folder tutaj, aby dodać go do zakładek',

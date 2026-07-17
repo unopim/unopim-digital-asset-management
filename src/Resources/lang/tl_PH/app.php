@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Ang tool na ito ay tumutulong sa iyo na ayusin, mag-imbak, at pamahalaan ang lahat ng iyong media asset sa isang lugar',
                 'root'                           => 'Ugat',
                 'upload'                         => 'Mag-upload',
+                'new'                            => 'Bago',
                 'uploading'                      => 'Ina-upload...',
                 'cancel'                         => 'Kanselahin',
                 'upload-cancelled'               => 'Kinansela ang pag-upload.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Matagumpay na nai-save ang pagsasaayos.',
             'general'  => [
                 'title'            => 'Pangkalahatang Mga Setting',
-                'description'      => 'I-configure ang visibility ng direktoryo tree, explorer view, at bookmarks panel para sa DAM media library.',
-                'tree-show-assets' => [
-                    'label' => 'Ipakita ang mga Asset sa Directory Tree',
-                    'hint'  => 'Kapag pinagana, ang mga file ng asset ay lilitaw bilang mga leaf node sa loob ng directory tree.',
-                ],
+                'description'      => 'Kinokontrol ng mga setting na ito ang pangkalahatang karanasan sa pag-browse ng DAM.',
                 'explorer-enabled' => [
-                    'label' => 'I-enable ang Explorer View',
-                    'hint'  => 'Pinapalitan ang default na asset grid ng multi-tab folder explorer.',
+                    'label' => 'I-enable ang Explore View',
+                    'hint'  => 'Gamitin ang interface na tulad ng Explorer para sa pag-browse at pamamahala ng mga asset.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'I-enable ang Bookmarks Panel',
-                    'hint'  => 'Nagpapakita ng bookmarks panel sa ibaba ng directory tree para sa mabilis na nabigasyon.',
+                    'label' => 'Ipakita ang Bookmark Panel',
+                    'hint'  => 'Magpakita ng nakalaang sidebar na naglalaman ng iyong mga naka-bookmark na folder at asset.',
                 ],
-                'show-tree' => [
-                    'label' => 'Ipakita ang direktoryo tree',
-                    'hint'  => 'Kapag pinagana, ang sidebar ng direktoryo tree ay ipinapakita kasabay ng explorer.',
+            ],
+            'directory' => [
+                'title'            => 'Mga Setting ng Direktoryo',
+                'description'      => 'Kinokontrol ng mga setting na ito kung paano ipinapakita ang mga folder at asset sa panel ng direktoryo.',
+                'show-tree'        => [
+                    'label'       => 'Ipakita ang Directory Tree',
+                    'hint'        => 'Ipakita ang hierarchy ng folder sa kaliwang sidebar para sa mas madaling nabigasyon.',
+                    'locked-hint' => 'Palaging naka-on habang naka-disable ang Explore View.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Ipakita ang mga Asset sa Directory Tree',
+                    'hint'  => 'Ipakita ang mga asset kasama ng mga folder sa loob ng directory tree sa halip na mga folder lamang.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Hindi nahanap ang direktoryo.',
-            'access-denied'    => 'Wala kang access sa direktoryong ito.',
-            'empty'            => 'Walang nahanap na mga direktoryo.',
-            'action-completed' => 'Matagumpay na natapos ang aksyon.',
+            'not-found'         => 'Hindi nahanap ang direktoryo.',
+            'access-denied'     => 'Wala kang access sa direktoryong ito.',
+            'empty'             => 'Walang nahanap na mga direktoryo.',
+            'action-completed'  => 'Matagumpay na natapos ang aksyon.',
+            'foreign-selection' => [
+                'notice' => ':count item ang napili sa ibang tab.',
+                'action' => 'Piliin din sila dito',
+            ],
             'bookmarks'        => [
                 'title'     => 'Mga Bookmark',
                 'drag-hint' => 'I-drag ang isang folder dito para i-bookmark ito',

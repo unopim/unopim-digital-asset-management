@@ -48,7 +48,7 @@ return [
         'sort'  => 6,
     ], [
         'key'   => 'api.dam.assets.metadata',
-        'name'  => 'dam::app.admin.dam.asset.datagrid.embedded_meta_info',
+        'name'  => 'dam::app.admin.acl.meta_data',
         'route' => 'admin.api.dam.assets.metadata',
         'sort'  => 7,
     ], [
@@ -167,29 +167,39 @@ return [
         'route' => 'admin.api.dam.shares.index',
         'sort'  => 6,
     ], [
+        'key'   => 'api.dam.shares.get',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get',
+        'route' => 'admin.api.dam.shares.index',
+        'sort'  => 1,
+    ], [
+        'key'   => 'api.dam.shares.getById',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get-by-id',
+        'route' => 'admin.api.dam.shares.show',
+        'sort'  => 2,
+    ], [
         'key'   => 'api.dam.shares.create',
         'name'  => 'dam::app.admin.acl.create',
         'route' => 'admin.api.dam.shares.store',
-        'sort'  => 1,
+        'sort'  => 3,
     ], [
         'key'   => 'api.dam.shares.update',
         'name'  => 'dam::app.admin.acl.edit',
         'route' => 'admin.api.dam.shares.update',
-        'sort'  => 2,
+        'sort'  => 4,
     ], [
         'key'   => 'api.dam.shares.revoke',
         'name'  => 'dam::app.admin.acl.revoke',
         'route' => 'admin.api.dam.shares.revoke',
-        'sort'  => 2,
+        'sort'  => 5,
     ], [
         'key'   => 'api.dam.shares.reauthorize',
         'name'  => 'dam::app.admin.dam.share.modal.reauthorize',
         'route' => 'admin.api.dam.shares.reauthorize',
-        'sort'  => 3,
+        'sort'  => 6,
     ], [
         'key'   => 'api.dam.shares.delete',
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.api.dam.shares.destroy',
-        'sort'  => 4,
+        'sort'  => 7,
     ],
 ];

@@ -134,6 +134,7 @@ return [
                 'description'                    => 'A ferramenta pode ajudá-lo a organizar, armazenar e gerenciar todos os seus ativos de mídia em um único lugar',
                 'root'                           => 'Raiz',
                 'upload'                         => 'Enviar',
+                'new'                            => 'Novo',
                 'uploading'                      => 'Enviando...',
                 'cancel'                         => 'Cancelar',
                 'upload-cancelled'               => 'Envio cancelado.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'Configuração do DAM',
             'saved'    => 'Configuração salva com sucesso.',
             'general'  => [
-                'title'            => 'Configurações Gerais',
-                'description'      => 'Configure a visibilidade da árvore de diretórios, a visualização do explorador e o painel de favoritos para a biblioteca de mídia DAM.',
-                'tree-show-assets' => [
-                    'label' => 'Exibir Ativos na Árvore de Diretórios',
-                    'hint'  => 'Quando habilitado, os arquivos de ativos aparecem como nós folha dentro da árvore de diretórios.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Configurações Gerais',
+                'description'       => 'Estas configurações controlam a experiência geral de navegação no DAM.',
+                'explorer-enabled'  => [
                     'label' => 'Habilitar Visualização do Explorer',
-                    'hint'  => 'Substitui a grade de ativos padrão pelo explorador de pastas com múltiplas abas.',
+                    'hint'  => 'Use a interface no estilo Explorer para navegar e gerenciar ativos.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Habilitar Painel de Favoritos',
-                    'hint'  => 'Exibe um painel de favoritos abaixo da árvore de diretórios para navegação rápida.',
+                    'label' => 'Exibir Painel de Favoritos',
+                    'hint'  => 'Exiba uma barra lateral dedicada contendo suas pastas e ativos favoritos.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mostrar árvore de diretórios',
-                    'hint'  => 'Quando habilitado, a barra lateral da árvore de diretórios é exibida ao lado do explorador.',
+            ],
+            'directory' => [
+                'title'            => 'Configurações de Diretório',
+                'description'      => 'Estas configurações controlam como pastas e ativos são exibidos no painel de diretórios.',
+                'show-tree'        => [
+                    'label'       => 'Mostrar árvore de diretórios',
+                    'hint'        => 'Exiba a hierarquia de pastas na barra lateral esquerda para facilitar a navegação.',
+                    'locked-hint' => 'Sempre ativado enquanto a Visualização do Explorer estiver desativada.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Exibir Ativos na Árvore de Diretórios',
+                    'hint'  => 'Exiba ativos junto com as pastas na árvore de diretórios em vez de mostrar apenas pastas.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Diretório não encontrado.',
-            'access-denied'    => 'Você não tem acesso a este diretório.',
-            'empty'            => 'Nenhum diretório encontrado.',
-            'action-completed' => 'Ação concluída com sucesso.',
+            'not-found'         => 'Diretório não encontrado.',
+            'access-denied'     => 'Você não tem acesso a este diretório.',
+            'empty'             => 'Nenhum diretório encontrado.',
+            'action-completed'  => 'Ação concluída com sucesso.',
+            'foreign-selection' => [
+                'notice' => ':count item(ns) selecionado(s) em outra aba.',
+                'action' => 'Selecione-os aqui também',
+            ],
             'bookmarks'        => [
                 'title'     => 'Favoritos',
                 'drag-hint' => 'Arraste uma pasta aqui para adicioná-la aos favoritos',

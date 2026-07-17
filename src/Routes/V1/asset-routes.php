@@ -63,6 +63,7 @@ Route::group([
 
     Route::controller(ShareController::class)->prefix('shares')->group(function () {
         Route::get('', 'index')->name('admin.api.dam.shares.index');
+        Route::get('/{id}', 'show')->whereNumber('id')->name('admin.api.dam.shares.show');
         Route::post('', 'store')->name('admin.api.dam.shares.store');
         Route::put('/{id}', 'update')->whereNumber('id')->name('admin.api.dam.shares.update');
         Route::post('/{id}/revoke', 'revoke')->whereNumber('id')->name('admin.api.dam.shares.revoke');

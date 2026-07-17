@@ -134,6 +134,7 @@ return [
                 'description'                    => '该工具可以帮助您在一个地方组织、存储和管理所有的媒体资产。',
                 'root'                           => '根目录',
                 'upload'                         => '上传',
+                'new'                            => '新建',
                 'uploading'                      => '上传中...',
                 'cancel'                         => '取消',
                 'upload-cancelled'               => '上传已取消。',
@@ -684,31 +685,40 @@ return [
             'title'    => 'DAM 配置',
             'saved'    => '配置已成功保存。',
             'general'  => [
-                'title'            => '常规设置',
-                'description'      => '为 DAM 媒体库配置目录树可见性、资源管理器视图和书签面板。',
-                'tree-show-assets' => [
-                    'label' => '在目录树中显示资产',
-                    'hint'  => '启用后，资产文件将作为叶节点显示在目录树中。',
-                ],
-                'explorer-enabled' => [
+                'title'             => '常规设置',
+                'description'       => '这些设置控制 DAM 的整体浏览体验。',
+                'explorer-enabled'  => [
                     'label' => '启用资源管理器视图',
-                    'hint'  => '将默认资产网格替换为多标签文件夹资源管理器。',
+                    'hint'  => '使用资源管理器风格的界面来浏览和管理资产。',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => '启用书签面板',
-                    'hint'  => '在目录树下方显示书签面板，便于快速导航。',
+                    'label' => '显示书签面板',
+                    'hint'  => '显示一个专用侧边栏，包含您收藏的文件夹和资产。',
                 ],
-                'show-tree' => [
-                    'label' => '显示目录树',
-                    'hint'  => '启用后，目录树侧栏将与资源管理器一起显示。',
+            ],
+            'directory' => [
+                'title'            => '目录设置',
+                'description'      => '这些设置控制文件夹和资产在目录面板中的显示方式。',
+                'show-tree'        => [
+                    'label'       => '显示目录树',
+                    'hint'        => '在左侧边栏中显示文件夹层级结构，以便更轻松地导航。',
+                    'locked-hint' => '在禁用资源管理器视图时始终开启。',
+                ],
+                'tree-show-assets' => [
+                    'label' => '在目录树中显示资产',
+                    'hint'  => '在目录树中将资产与文件夹一同显示，而不仅仅显示文件夹。',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => '目录未找到。',
-            'access-denied'    => '您无权访问此目录。',
-            'empty'            => '未找到目录。',
-            'action-completed' => '操作已成功完成。',
+            'not-found'         => '目录未找到。',
+            'access-denied'     => '您无权访问此目录。',
+            'empty'             => '未找到目录。',
+            'action-completed'  => '操作已成功完成。',
+            'foreign-selection' => [
+                'notice' => '已在另一个标签页中选择 :count 个项目。',
+                'action' => '在此处也选择它们',
+            ],
             'bookmarks'        => [
                 'title'     => '书签',
                 'drag-hint' => '将文件夹拖拽至此处以添加书签',

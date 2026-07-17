@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Deze tool helpt je om al je mediabestanden op één plaats te organiseren, op te slaan en te beheren.',
                 'root'                           => 'Root',
                 'upload'                         => 'Uploaden',
+                'new'                            => 'Nieuw',
                 'uploading'                      => 'Uploaden...',
                 'cancel'                         => 'Annuleren',
                 'upload-cancelled'               => 'Upload geannuleerd.',
@@ -684,31 +685,40 @@ return [
             'title'    => 'DAM-configuratie',
             'saved'    => 'Configuratie succesvol opgeslagen.',
             'general'  => [
-                'title'            => 'Algemene instellingen',
-                'description'      => 'Configureer de zichtbaarheid van de mappenstructuur, verkennerweergave en bladwijzerpaneel voor de DAM-mediabibliotheek.',
-                'tree-show-assets' => [
-                    'label' => 'Assets weergeven in mappenstructuur',
-                    'hint'  => 'Wanneer ingeschakeld, worden assetbestanden als bladknooppunten in de mappenstructuur weergegeven.',
-                ],
-                'explorer-enabled' => [
+                'title'             => 'Algemene instellingen',
+                'description'       => 'Deze instellingen bepalen de algehele DAM-browse-ervaring.',
+                'explorer-enabled'  => [
                     'label' => 'Verkennerweergave inschakelen',
-                    'hint'  => 'Vervangt het standaard assetraster door de mappenverkenner met meerdere tabbladen.',
+                    'hint'  => 'Gebruik de Verkenner-achtige interface om assets te bekijken en te beheren.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Bladwijzerspaneel inschakelen',
-                    'hint'  => 'Toont een bladwijzerspaneel onder de mappenstructuur voor snelle navigatie.',
+                    'label' => 'Bladwijzerpaneel weergeven',
+                    'hint'  => 'Toon een aparte zijbalk met je gemarkeerde mappen en assets.',
                 ],
-                'show-tree' => [
-                    'label' => 'Mappenstructuur weergeven',
-                    'hint'  => 'Als ingeschakeld wordt de mappenstructuur naast de verkenner getoond.',
+            ],
+            'directory' => [
+                'title'            => 'Mapinstellingen',
+                'description'      => 'Deze instellingen bepalen hoe mappen en assets in het mappaneel worden weergegeven.',
+                'show-tree'        => [
+                    'label'       => 'Mappenstructuur weergeven',
+                    'hint'        => 'Toon de maphiërarchie in de linkerzijbalk voor eenvoudigere navigatie.',
+                    'locked-hint' => 'Altijd aan wanneer Verkennerweergave is uitgeschakeld.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Assets weergeven in mappenstructuur',
+                    'hint'  => 'Toon assets naast mappen binnen de mappenstructuur in plaats van alleen mappen.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Map niet gevonden.',
-            'access-denied'    => 'U heeft geen toegang tot deze map.',
-            'empty'            => 'Geen mappen gevonden.',
-            'action-completed' => 'Actie voltooid.',
+            'not-found'         => 'Map niet gevonden.',
+            'access-denied'     => 'U heeft geen toegang tot deze map.',
+            'empty'             => 'Geen mappen gevonden.',
+            'action-completed'  => 'Actie voltooid.',
+            'foreign-selection' => [
+                'notice' => ':count item(s) geselecteerd in een ander tabblad.',
+                'action' => 'Selecteer ze hier ook',
+            ],
             'bookmarks'        => [
                 'title'     => 'Bladwijzers',
                 'drag-hint' => 'Sleep een map hierheen om deze als bladwijzer op te slaan',

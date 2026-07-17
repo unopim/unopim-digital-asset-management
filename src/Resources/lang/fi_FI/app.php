@@ -134,6 +134,7 @@ return [
                 'description'                    => 'Työkalu auttaa sinua järjestämään, tallentamaan ja hallitsemaan kaikkia mediaresurssejasi yhdessä paikassa',
                 'root'                           => 'Juuri',
                 'upload'                         => 'Lähetä',
+                'new'                            => 'Uusi',
                 'uploading'                      => 'Ladataan...',
                 'cancel'                         => 'Peruuta',
                 'upload-cancelled'               => 'Lataus peruutettu.',
@@ -685,30 +686,39 @@ return [
             'saved'    => 'Asetukset tallennettu onnistuneesti.',
             'general'  => [
                 'title'            => 'Yleiset asetukset',
-                'description'      => 'Määritä hakemistopuun näkyvyys, selailunäkymä ja kirjanmerkkipaneeli DAM-mediakirjastolle.',
-                'tree-show-assets' => [
-                    'label' => 'Näytä resurssit hakemistopuussa',
-                    'hint'  => 'Kun käytössä, resurssitiedostot näkyvät lehtisolmuina hakemistopuussa.',
-                ],
+                'description'      => 'Nämä asetukset ohjaavat DAM:n yleistä selailukokemusta.',
                 'explorer-enabled' => [
-                    'label' => 'Ota Resurssienhallintanäkymä käyttöön',
-                    'hint'  => 'Korvaa oletusresurssiruudukon monivälilehtisellä kansionhallinnalla.',
+                    'label' => 'Ota selausnäkymä käyttöön',
+                    'hint'  => 'Käytä Resurssienhallinnan tyylistä käyttöliittymää resurssien selaamiseen ja hallintaan.',
                 ],
                 'bookmarks-enabled' => [
-                    'label' => 'Ota kirjanmerkkilohko käyttöön',
-                    'hint'  => 'Näyttää kirjanmerkkilohkon hakemistopuun alla nopeaa navigointia varten.',
+                    'label' => 'Näytä kirjanmerkkipaneeli',
+                    'hint'  => 'Näyttää oman sivupalkin, joka sisältää kirjanmerkityt kansiosi ja resurssisi.',
                 ],
-                'show-tree' => [
-                    'label' => 'Näytä hakemistopuu',
-                    'hint'  => 'Kun käytössä, hakemistopuun sivupalkki näytetään selailijan rinnalla.',
+            ],
+            'directory' => [
+                'title'            => 'Hakemistoasetukset',
+                'description'      => 'Nämä asetukset ohjaavat, miten kansiot ja resurssit näytetään hakemistopaneelissa.',
+                'show-tree'        => [
+                    'label'       => 'Näytä hakemistopuu',
+                    'hint'        => 'Näyttää kansiohierarkian vasemmassa sivupalkissa helpompaa navigointia varten.',
+                    'locked-hint' => 'Aina käytössä, kun selausnäkymä on poistettu käytöstä.',
+                ],
+                'tree-show-assets' => [
+                    'label' => 'Näytä resurssit hakemistopuussa',
+                    'hint'  => 'Näyttää resurssit kansioiden ohella hakemistopuussa pelkkien kansioiden näyttämisen sijaan.',
                 ],
             ],
         ],
         'explorer' => [
-            'not-found'        => 'Hakemistoa ei löydy.',
-            'access-denied'    => 'Sinulla ei ole pääsyä tähän hakemistoon.',
-            'empty'            => 'Hakemistoja ei löytynyt.',
-            'action-completed' => 'Toiminto suoritettu onnistuneesti.',
+            'not-found'         => 'Hakemistoa ei löydy.',
+            'access-denied'     => 'Sinulla ei ole pääsyä tähän hakemistoon.',
+            'empty'             => 'Hakemistoja ei löytynyt.',
+            'action-completed'  => 'Toiminto suoritettu onnistuneesti.',
+            'foreign-selection' => [
+                'notice' => ':count kohde(tta) valittu toisella välilehdellä.',
+                'action' => 'Valitse ne myös tässä',
+            ],
             'bookmarks'        => [
                 'title'     => 'Kirjanmerkit',
                 'drag-hint' => 'Vedä kansio tähän lisätäksesi kirjanmerkiksi',

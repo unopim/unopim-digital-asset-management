@@ -27,6 +27,21 @@ class ShareDataGrid extends DataGrid
         parent::addAction($action);
     }
 
+    /**
+     * Let a column search/sort on a real column via `database_column_name` when its
+     * `index` is a SELECT alias, which a WHERE clause cannot reference.
+     */
+    public function addColumn(array $column): void
+    {
+        $databaseColumnName = $column['database_column_name'] ?? null;
+
+        parent::addColumn($column);
+
+        if ($databaseColumnName !== null) {
+            $this->columns[array_key_last($this->columns)]->setDatabaseColumnName($databaseColumnName);
+        }
+    }
+
     public function formatData(): array
     {
         $data = parent::formatData();
@@ -103,30 +118,33 @@ class ShareDataGrid extends DataGrid
         ]);
 
         $this->addColumn([
-            'index'      => 'target_name',
-            'label'      => trans('dam::app.admin.dam.share.datagrid.target'),
-            'type'       => 'string',
-            'searchable' => true,
-            'filterable' => false,
-            'sortable'   => false,
+            'index'                => 'target_name',
+            'label'                => trans('dam::app.admin.dam.share.datagrid.target'),
+            'type'                 => 'string',
+            'searchable'           => true,
+            'filterable'           => false,
+            'sortable'             => false,
+            'database_column_name' => DB::raw('COALESCE('.DB::getTablePrefix().'dam_assets.file_name, '.DB::getTablePrefix().'dam_directories.name)'),
         ]);
 
         $this->addColumn([
-            'index'      => 'share_name',
-            'label'      => trans('dam::app.admin.dam.share.datagrid.custom-name'),
-            'type'       => 'string',
-            'searchable' => true,
-            'filterable' => false,
-            'sortable'   => true,
+            'index'                => 'share_name',
+            'label'                => trans('dam::app.admin.dam.share.datagrid.custom-name'),
+            'type'                 => 'string',
+            'searchable'           => true,
+            'filterable'           => false,
+            'sortable'             => true,
+            'database_column_name' => 'dam_shares.name',
         ]);
 
         $this->addColumn([
-            'index'      => 'created_by_name',
-            'label'      => trans('dam::app.admin.dam.share.datagrid.created-by'),
-            'type'       => 'string',
-            'searchable' => true,
-            'filterable' => false,
-            'sortable'   => false,
+            'index'                => 'created_by_name',
+            'label'                => trans('dam::app.admin.dam.share.datagrid.created-by'),
+            'type'                 => 'string',
+            'searchable'           => true,
+            'filterable'           => false,
+            'sortable'             => false,
+            'database_column_name' => 'admins.name',
         ]);
 
         $this->addColumn([
