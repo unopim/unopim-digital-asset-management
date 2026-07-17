@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Kéo tệp hoặc thư mục vào đây',
                         'upload-or'                 => 'hoặc duyệt:',
                         'copy-directory-structured' => 'Sao chép cấu trúc thư mục',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Lấy theo ID',
                         'comment'                   => 'Bình luận',
                         'share'                     => 'Chia sẻ thư mục',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'Không tìm thấy tài sản hoặc thư mục cần chia sẻ.',
                 'not-found'        => 'Không tìm thấy liên kết chia sẻ.',
                 'revoked'          => 'Liên kết chia sẻ đã bị thu hồi.',
-                'already-revoked'  => 'Liên kết chia sẻ này đã bị thu hồi.',
                 'deleted'          => 'Đã xóa liên kết chia sẻ.',
+                'already-revoked'  => 'Liên kết chia sẻ này đã bị thu hồi.',
                 'reauthorized'     => 'Liên kết chia sẻ đã được tái cấp phép — URL gốc đã hoạt động trở lại.',
                 'not-revoked'      => 'Liên kết chia sẻ này chưa bị thu hồi.',
                 'updated'          => 'Đã cập nhật liên kết chia sẻ.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Sao chép',
                     'copied'             => 'Đã sao chép liên kết vào clipboard',
                     'revoke'             => 'Thu hồi',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Liên kết chia sẻ đã bị thu hồi',
                     'revoke-failed'      => 'Không thể thu hồi liên kết chia sẻ.',
                     'expires-on'         => 'Hết hạn vào',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Liên kết chia sẻ đã được tạo.',
                     'create-failed'      => 'Không thể tạo liên kết chia sẻ.',
                     'load-failed'        => 'Không thể tải các liên kết chia sẻ hiện có.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Nâng cao',
                     'revoked-status'     => 'Liên kết bị thu hồi',
                     'reauthorize'        => 'Tái cấp phép',
@@ -527,6 +528,7 @@ return [
                     'asset'          => 'Tài sản',
                     'directory'      => 'Thư mục',
                     'target'         => 'Mục tiêu',
+                    'custom-name'    => 'Tên tùy chỉnh',
                     'created-by'     => 'Được tạo bởi',
                     'expires-at'     => 'Hết hạn lúc',
                     'never'          => 'Không bao giờ',
@@ -540,7 +542,6 @@ return [
                     'edit'           => 'Chỉnh sửa',
                     'copy-link'      => 'Sao chép liên kết',
                     'revoke'         => 'Thu hồi',
-                    'custom-name'    => 'Tên tùy chỉnh',
                     'delete'         => 'Xóa',
                 ],
             ],
@@ -685,9 +686,9 @@ return [
             'title'    => 'Cấu hình DAM',
             'saved'    => 'Đã lưu cấu hình thành công.',
             'general'  => [
-                'title'             => 'Cài đặt chung',
-                'description'       => 'Các cài đặt này kiểm soát toàn bộ trải nghiệm duyệt trong DAM.',
-                'explorer-enabled'  => [
+                'title'            => 'Cài đặt chung',
+                'description'      => 'Các cài đặt này kiểm soát toàn bộ trải nghiệm duyệt trong DAM.',
+                'explorer-enabled' => [
                     'label' => 'Bật chế độ xem Explorer',
                     'hint'  => 'Sử dụng giao diện kiểu Explorer để duyệt và quản lý tài sản.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Cài đặt thư mục',
-                'description'      => 'Các cài đặt này kiểm soát cách hiển thị thư mục và tài sản trong bảng thư mục.',
-                'show-tree'        => [
+                'title'       => 'Cài đặt thư mục',
+                'description' => 'Các cài đặt này kiểm soát cách hiển thị thư mục và tài sản trong bảng thư mục.',
+                'show-tree'   => [
                     'label'       => 'Hiển thị cây thư mục',
                     'hint'        => 'Hiển thị cấu trúc phân cấp thư mục ở thanh bên trái để điều hướng dễ dàng hơn.',
                     'locked-hint' => 'Luôn bật khi chế độ xem Explorer bị tắt.',
@@ -719,7 +720,7 @@ return [
                 'notice' => 'Đã chọn :count mục ở tab khác.',
                 'action' => 'Cũng chọn chúng ở đây',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Dấu trang',
                 'drag-hint' => 'Kéo thư mục vào đây để đánh dấu',
                 'max'       => 'Đã đạt tối đa 20 dấu trang.',

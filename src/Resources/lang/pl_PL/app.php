@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Przeciągnij pliki lub foldery tutaj',
                         'upload-or'                 => 'lub przeglądaj:',
                         'copy-directory-structured' => 'Kopiuj strukturę katalogu',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Pobierz według ID',
                         'comment'                   => 'Komentarz',
                         'share'                     => 'Udostępnij katalog',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'Nie znaleziono zasobu ani katalogu do udostępnienia.',
                 'not-found'        => 'Link udostępniania nie został znaleziony.',
                 'revoked'          => 'Link udostępniania został unieważniony.',
-                'already-revoked'  => 'Ten link udostępniania jest już unieważniony.',
                 'deleted'          => 'Link udostępniania został usunięty.',
+                'already-revoked'  => 'Ten link udostępniania jest już unieważniony.',
                 'reauthorized'     => 'Link udostępniania ponownie autoryzowany — oryginalny URL jest znowu aktywny.',
                 'not-revoked'      => 'Ten link udostępniania nie jest odwołany.',
                 'updated'          => 'Link udostępniania zaktualizowany.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Kopiuj',
                     'copied'             => 'Link skopiowany do schowka',
                     'revoke'             => 'Unieważnij',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Link udostępniania unieważniony',
                     'revoke-failed'      => 'Nie udało się unieważnić linku udostępniania.',
                     'expires-on'         => 'Wygasa',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Link udostępniania utworzony.',
                     'create-failed'      => 'Nie udało się utworzyć linku udostępniania.',
                     'load-failed'        => 'Nie udało się załadować istniejących linków udostępniania.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Zaawansowane',
                     'revoked-status'     => 'Link odwołany',
                     'reauthorize'        => 'Ponownie autoryzuj',
@@ -527,10 +528,10 @@ return [
                     'asset'          => 'Zasób',
                     'directory'      => 'Katalog',
                     'target'         => 'Cel',
+                    'custom-name'    => 'Nazwa niestandardowa',
                     'created-by'     => 'Utworzony przez',
                     'expires-at'     => 'Wygasa',
                     'never'          => 'Nigdy',
-                    'custom-name'    => 'Nazwa niestandardowa',
                     'status'         => 'Status',
                     'status-active'  => 'Aktywny',
                     'status-expired' => 'Wygasły',
@@ -685,9 +686,9 @@ return [
             'title'    => 'Konfiguracja DAM',
             'saved'    => 'Konfiguracja została pomyślnie zapisana.',
             'general'  => [
-                'title'             => 'Ustawienia ogólne',
-                'description'       => 'Te ustawienia kontrolują ogólne środowisko przeglądania DAM.',
-                'explorer-enabled'  => [
+                'title'            => 'Ustawienia ogólne',
+                'description'      => 'Te ustawienia kontrolują ogólne środowisko przeglądania DAM.',
+                'explorer-enabled' => [
                     'label' => 'Włącz widok eksploratora',
                     'hint'  => 'Użyj interfejsu w stylu eksploratora do przeglądania zasobów i zarządzania nimi.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Ustawienia katalogu',
-                'description'      => 'Te ustawienia kontrolują sposób wyświetlania folderów i zasobów w panelu katalogu.',
-                'show-tree'        => [
+                'title'       => 'Ustawienia katalogu',
+                'description' => 'Te ustawienia kontrolują sposób wyświetlania folderów i zasobów w panelu katalogu.',
+                'show-tree'   => [
                     'label'       => 'Pokaż drzewo katalogów',
                     'hint'        => 'Wyświetl hierarchię folderów na lewym pasku bocznym dla łatwiejszej nawigacji.',
                     'locked-hint' => 'Zawsze włączone, gdy widok eksploratora jest wyłączony.',
@@ -719,7 +720,7 @@ return [
                 'notice' => 'Wybrano :count element(ów) w innej karcie.',
                 'action' => 'Wybierz je również tutaj',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Zakładki',
                 'drag-hint' => 'Przeciągnij folder tutaj, aby dodać go do zakładek',
                 'max'       => 'Osiągnięto maksymalną liczbę 20 zakładek.',

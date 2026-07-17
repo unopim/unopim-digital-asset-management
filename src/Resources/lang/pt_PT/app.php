@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Arraste ficheiros ou pastas para aqui',
                         'upload-or'                 => 'ou navegar:',
                         'copy-directory-structured' => 'Copiar Estrutura do Diretório',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Obter por Id',
                         'comment'                   => 'Comentário',
                         'share'                     => 'Partilhar diretório',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'O ativo ou diretório que está a ser partilhado não foi encontrado.',
                 'not-found'        => 'Ligação de partilha não encontrada.',
                 'revoked'          => 'Ligação de partilha revogada.',
-                'already-revoked'  => 'Esta ligação de partilha já está revogada.',
                 'deleted'          => 'Ligação de partilha eliminada.',
+                'already-revoked'  => 'Esta ligação de partilha já está revogada.',
                 'reauthorized'     => 'Ligação de partilha reautorizada — o URL original está ativo novamente.',
                 'not-revoked'      => 'Esta ligação de partilha não está revogada.',
                 'updated'          => 'Ligação de partilha atualizada.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Copiar',
                     'copied'             => 'Ligação copiada para a área de transferência',
                     'revoke'             => 'Revogar',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Ligação de partilha revogada',
                     'revoke-failed'      => 'Falha ao revogar a ligação de partilha.',
                     'expires-on'         => 'Expira em',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Ligação de partilha criada.',
                     'create-failed'      => 'Falha ao criar a ligação de partilha.',
                     'load-failed'        => 'Falha ao carregar as ligações de partilha existentes.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Avançado',
                     'revoked-status'     => 'Ligação revogada',
                     'reauthorize'        => 'Reautorizar',
@@ -527,6 +528,7 @@ return [
                     'asset'          => 'Ativo',
                     'directory'      => 'Diretório',
                     'target'         => 'Destino',
+                    'custom-name'    => 'Nome Personalizado',
                     'created-by'     => 'Criado por',
                     'expires-at'     => 'Expira em',
                     'never'          => 'Nunca',
@@ -540,7 +542,6 @@ return [
                     'edit'           => 'Editar',
                     'copy-link'      => 'Copiar ligação',
                     'revoke'         => 'Revogar',
-                    'custom-name'    => 'Nome Personalizado',
                     'delete'         => 'Eliminar',
                 ],
             ],
@@ -685,9 +686,9 @@ return [
             'title'    => 'Configuração DAM',
             'saved'    => 'Configuração guardada com sucesso.',
             'general'  => [
-                'title'             => 'Definições Gerais',
-                'description'       => 'Estas definições controlam a experiência geral de navegação no DAM.',
-                'explorer-enabled'  => [
+                'title'            => 'Definições Gerais',
+                'description'      => 'Estas definições controlam a experiência geral de navegação no DAM.',
+                'explorer-enabled' => [
                     'label' => 'Ativar Vista do Explorador',
                     'hint'  => 'Utilize a interface no estilo Explorador para navegar e gerir os recursos.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Definições de Diretório',
-                'description'      => 'Estas definições controlam a forma como as pastas e os recursos são apresentados no painel de diretórios.',
-                'show-tree'        => [
+                'title'       => 'Definições de Diretório',
+                'description' => 'Estas definições controlam a forma como as pastas e os recursos são apresentados no painel de diretórios.',
+                'show-tree'   => [
                     'label'       => 'Mostrar árvore de diretórios',
                     'hint'        => 'Apresente a hierarquia de pastas na barra lateral esquerda para uma navegação mais fácil.',
                     'locked-hint' => 'Sempre ativado enquanto a Vista do Explorador estiver desativada.',
@@ -719,7 +720,7 @@ return [
                 'notice' => ':count item(ns) selecionado(s) noutro separador.',
                 'action' => 'Selecione-os também aqui',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Marcadores',
                 'drag-hint' => 'Arraste uma pasta para aqui para a adicionar aos marcadores',
                 'max'       => 'Limite máximo de 20 marcadores atingido.',

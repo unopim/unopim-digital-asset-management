@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Dra filer eller mapper hit',
                         'upload-or'                 => 'eller bla:',
                         'copy-directory-structured' => 'Kopier mappestruktur',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Hent etter ID',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Del mappe',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'Ressursen eller mappen som deles ble ikke funnet.',
                 'not-found'        => 'Delingslenke ikke funnet.',
                 'revoked'          => 'Delingslenke tilbakekalt.',
-                'already-revoked'  => 'Denne delingslenken er allerede tilbakekalt.',
                 'deleted'          => 'Delingslenke slettet.',
+                'already-revoked'  => 'Denne delingslenken er allerede tilbakekalt.',
                 'reauthorized'     => 'Delingskoblingen er autorisert på nytt — den opprinnelige URL-en er aktiv igjen.',
                 'not-revoked'      => 'Denne delingslenken er ikke tilbakekalt.',
                 'updated'          => 'Delingslenke oppdatert.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Kopier',
                     'copied'             => 'Lenke kopiert til utklippstavlen',
                     'revoke'             => 'Tilbakekall',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Delingslenke tilbakekalt',
                     'revoke-failed'      => 'Kunne ikke tilbakekalle delingslenken.',
                     'expires-on'         => 'Utløper den',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Delingslenke opprettet.',
                     'create-failed'      => 'Kunne ikke opprette delingslenke.',
                     'load-failed'        => 'Kunne ikke laste eksisterende delingslenker.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Avansert',
                     'revoked-status'     => 'Kobling tilbakekalt',
                     'reauthorize'        => 'Autoriser på nytt',
@@ -527,10 +528,10 @@ return [
                     'asset'          => 'Ressurs',
                     'directory'      => 'Mappe',
                     'target'         => 'Mål',
+                    'custom-name'    => 'Egendefinert navn',
                     'created-by'     => 'Opprettet av',
                     'expires-at'     => 'Utløper den',
                     'never'          => 'Aldri',
-                    'custom-name'    => 'Egendefinert navn',
                     'status'         => 'Status',
                     'status-active'  => 'Aktiv',
                     'status-expired' => 'Utløpt',
@@ -685,9 +686,9 @@ return [
             'title'    => 'DAM-konfigurasjon',
             'saved'    => 'Konfigurasjon lagret.',
             'general'  => [
-                'title'             => 'Generelle innstillinger',
-                'description'       => 'Disse innstillingene styrer den generelle DAM-bla-opplevelsen.',
-                'explorer-enabled'  => [
+                'title'            => 'Generelle innstillinger',
+                'description'      => 'Disse innstillingene styrer den generelle DAM-bla-opplevelsen.',
+                'explorer-enabled' => [
                     'label' => 'Aktiver Utforskningsvisning',
                     'hint'  => 'Bruk det Utforsker-lignende grensesnittet for å bla gjennom og administrere ressurser.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Mappeinnstillinger',
-                'description'      => 'Disse innstillingene styrer hvordan mapper og ressurser vises i mappepanelet.',
-                'show-tree'        => [
+                'title'       => 'Mappeinnstillinger',
+                'description' => 'Disse innstillingene styrer hvordan mapper og ressurser vises i mappepanelet.',
+                'show-tree'   => [
                     'label'       => 'Vis mappetre',
                     'hint'        => 'Vis mappehierarkiet i venstre sidepanel for enklere navigasjon.',
                     'locked-hint' => 'Alltid på mens Utforskningsvisning er deaktivert.',
@@ -719,7 +720,7 @@ return [
                 'notice' => ':count element(er) valgt i en annen fane.',
                 'action' => 'Velg dem her også',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Bokmerker',
                 'drag-hint' => 'Dra en mappe hit for å bokmerke den',
                 'max'       => 'Maksimalt 20 bokmerker nådd.',

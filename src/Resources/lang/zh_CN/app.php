@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => '将文件或文件夹拖放到此处',
                         'upload-or'                 => '或浏览：',
                         'copy-directory-structured' => '复制目录结构',
+                        'get'                       => 'Get',
                         'get-by-id'                 => '通过 ID 获取',
                         'comment'                   => '评论',
                         'share'                     => '共享目录',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => '找不到要共享的资产或目录。',
                 'not-found'        => '共享链接不存在。',
                 'revoked'          => '共享链接已撤销。',
-                'already-revoked'  => '此共享链接已被撤销。',
                 'deleted'          => '分享链接已删除。',
+                'already-revoked'  => '此共享链接已被撤销。',
                 'reauthorized'     => '分享链接已重新授权 — 原始链接重新激活。',
                 'not-revoked'      => '此分享链接未被撤销。',
                 'updated'          => '分享链接已更新。',
@@ -501,6 +502,7 @@ return [
                     'copy'               => '复制',
                     'copied'             => '链接已复制到剪贴板',
                     'revoke'             => '撤销',
+                    'delete'             => 'Delete',
                     'revoked'            => '共享链接已撤销',
                     'revoke-failed'      => '撤销共享链接失败。',
                     'expires-on'         => '到期日期',
@@ -510,7 +512,6 @@ return [
                     'created'            => '共享链接已创建。',
                     'create-failed'      => '创建共享链接失败。',
                     'load-failed'        => '加载现有共享链接失败。',
-                    'delete'             => 'Delete',
                     'advanced'           => '高级',
                     'revoked-status'     => '链接已撤销',
                     'reauthorize'        => '重新授权',
@@ -527,6 +528,7 @@ return [
                     'asset'          => '资产',
                     'directory'      => '目录',
                     'target'         => '目标',
+                    'custom-name'    => '自定义名称',
                     'created-by'     => '创建者',
                     'expires-at'     => '过期时间',
                     'never'          => '永不',
@@ -540,7 +542,6 @@ return [
                     'edit'           => '编辑',
                     'copy-link'      => '复制链接',
                     'revoke'         => '撤销',
-                    'custom-name'    => '自定义名称',
                     'delete'         => '删除',
                 ],
             ],
@@ -685,9 +686,9 @@ return [
             'title'    => 'DAM 配置',
             'saved'    => '配置已成功保存。',
             'general'  => [
-                'title'             => '常规设置',
-                'description'       => '这些设置控制 DAM 的整体浏览体验。',
-                'explorer-enabled'  => [
+                'title'            => '常规设置',
+                'description'      => '这些设置控制 DAM 的整体浏览体验。',
+                'explorer-enabled' => [
                     'label' => '启用资源管理器视图',
                     'hint'  => '使用资源管理器风格的界面来浏览和管理资产。',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => '目录设置',
-                'description'      => '这些设置控制文件夹和资产在目录面板中的显示方式。',
-                'show-tree'        => [
+                'title'       => '目录设置',
+                'description' => '这些设置控制文件夹和资产在目录面板中的显示方式。',
+                'show-tree'   => [
                     'label'       => '显示目录树',
                     'hint'        => '在左侧边栏中显示文件夹层级结构，以便更轻松地导航。',
                     'locked-hint' => '在禁用资源管理器视图时始终开启。',
@@ -719,7 +720,7 @@ return [
                 'notice' => '已在另一个标签页中选择 :count 个项目。',
                 'action' => '在此处也选择它们',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => '书签',
                 'drag-hint' => '将文件夹拖拽至此处以添加书签',
                 'max'       => '书签数量已达上限 20 个。',

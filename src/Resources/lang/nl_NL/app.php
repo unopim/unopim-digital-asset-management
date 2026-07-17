@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Sleep bestanden of mappen hierheen',
                         'upload-or'                 => 'of bladeren:',
                         'copy-directory-structured' => 'Mapstructuur Kopiëren',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Kom langs, ID',
                         'comment'                   => 'Opmerking',
                         'share'                     => 'Map delen',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'Het gedeelde asset of de map kon niet worden gevonden.',
                 'not-found'        => 'Deellink niet gevonden.',
                 'revoked'          => 'Deellink ingetrokken.',
-                'already-revoked'  => 'Deze deellink is al ingetrokken.',
                 'deleted'          => 'Deellink verwijderd.',
+                'already-revoked'  => 'Deze deellink is al ingetrokken.',
                 'reauthorized'     => 'Deellink opnieuw geautoriseerd — de originele URL is weer actief.',
                 'not-revoked'      => 'Deze deellink is niet ingetrokken.',
                 'updated'          => 'Deellink bijgewerkt.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Kopiëren',
                     'copied'             => 'Link gekopieerd naar klembord',
                     'revoke'             => 'Intrekken',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Deellink ingetrokken',
                     'revoke-failed'      => 'Kan deellink niet intrekken.',
                     'expires-on'         => 'Verloopt op',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Deellink aangemaakt.',
                     'create-failed'      => 'Kan deellink niet aanmaken.',
                     'load-failed'        => 'Kan bestaande deellinks niet laden.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Geavanceerd',
                     'revoked-status'     => 'Link ingetrokken',
                     'reauthorize'        => 'Opnieuw autoriseren',
@@ -527,10 +528,10 @@ return [
                     'asset'          => 'Asset',
                     'directory'      => 'Map',
                     'target'         => 'Doel',
+                    'custom-name'    => 'Aangepaste naam',
                     'created-by'     => 'Aangemaakt door',
                     'expires-at'     => 'Verloopt op',
                     'never'          => 'Nooit',
-                    'custom-name'    => 'Aangepaste naam',
                     'status'         => 'Status',
                     'status-active'  => 'Actief',
                     'status-expired' => 'Verlopen',
@@ -685,9 +686,9 @@ return [
             'title'    => 'DAM-configuratie',
             'saved'    => 'Configuratie succesvol opgeslagen.',
             'general'  => [
-                'title'             => 'Algemene instellingen',
-                'description'       => 'Deze instellingen bepalen de algehele DAM-browse-ervaring.',
-                'explorer-enabled'  => [
+                'title'            => 'Algemene instellingen',
+                'description'      => 'Deze instellingen bepalen de algehele DAM-browse-ervaring.',
+                'explorer-enabled' => [
                     'label' => 'Verkennerweergave inschakelen',
                     'hint'  => 'Gebruik de Verkenner-achtige interface om assets te bekijken en te beheren.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Mapinstellingen',
-                'description'      => 'Deze instellingen bepalen hoe mappen en assets in het mappaneel worden weergegeven.',
-                'show-tree'        => [
+                'title'       => 'Mapinstellingen',
+                'description' => 'Deze instellingen bepalen hoe mappen en assets in het mappaneel worden weergegeven.',
+                'show-tree'   => [
                     'label'       => 'Mappenstructuur weergeven',
                     'hint'        => 'Toon de maphiërarchie in de linkerzijbalk voor eenvoudigere navigatie.',
                     'locked-hint' => 'Altijd aan wanneer Verkennerweergave is uitgeschakeld.',
@@ -719,7 +720,7 @@ return [
                 'notice' => ':count item(s) geselecteerd in een ander tabblad.',
                 'action' => 'Selecteer ze hier ook',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Bladwijzers',
                 'drag-hint' => 'Sleep een map hierheen om deze als bladwijzer op te slaan',
                 'max'       => 'Maximum van 20 bladwijzers bereikt.',

@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => 'Arraste arquivos ou pastas aqui',
                         'upload-or'                 => 'ou navegar:',
                         'copy-directory-structured' => 'Copiar Estrutura do Diretório',
+                        'get'                       => 'Get',
                         'get-by-id'                 => 'Obter por Id',
                         'comment'                   => 'Comentário',
                         'share'                     => 'Compartilhar diretório',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => 'O ativo ou diretório sendo compartilhado não foi encontrado.',
                 'not-found'        => 'Link de compartilhamento não encontrado.',
                 'revoked'          => 'Link de compartilhamento revogado.',
-                'already-revoked'  => 'Este link de compartilhamento já está revogado.',
                 'deleted'          => 'Link de compartilhamento excluído.',
+                'already-revoked'  => 'Este link de compartilhamento já está revogado.',
                 'reauthorized'     => 'Link de compartilhamento reautorizado — o URL original está ativo novamente.',
                 'not-revoked'      => 'Este link de compartilhamento não está revogado.',
                 'updated'          => 'Link de compartilhamento atualizado.',
@@ -501,6 +502,7 @@ return [
                     'copy'               => 'Copiar',
                     'copied'             => 'Link copiado para a área de transferência',
                     'revoke'             => 'Revogar',
+                    'delete'             => 'Delete',
                     'revoked'            => 'Link de compartilhamento revogado',
                     'revoke-failed'      => 'Falha ao revogar o link de compartilhamento.',
                     'expires-on'         => 'Expira em',
@@ -510,7 +512,6 @@ return [
                     'created'            => 'Link de compartilhamento criado.',
                     'create-failed'      => 'Falha ao criar o link de compartilhamento.',
                     'load-failed'        => 'Falha ao carregar os links de compartilhamento existentes.',
-                    'delete'             => 'Delete',
                     'advanced'           => 'Avançado',
                     'revoked-status'     => 'Link revogado',
                     'reauthorize'        => 'Reautorizar',
@@ -527,10 +528,10 @@ return [
                     'asset'          => 'Ativo',
                     'directory'      => 'Diretório',
                     'target'         => 'Destino',
+                    'custom-name'    => 'Nome Personalizado',
                     'created-by'     => 'Criado por',
                     'expires-at'     => 'Expira em',
                     'never'          => 'Nunca',
-                    'custom-name'    => 'Nome Personalizado',
                     'status'         => 'Status',
                     'status-active'  => 'Ativo',
                     'status-expired' => 'Expirado',
@@ -685,9 +686,9 @@ return [
             'title'    => 'Configuração do DAM',
             'saved'    => 'Configuração salva com sucesso.',
             'general'  => [
-                'title'             => 'Configurações Gerais',
-                'description'       => 'Estas configurações controlam a experiência geral de navegação no DAM.',
-                'explorer-enabled'  => [
+                'title'            => 'Configurações Gerais',
+                'description'      => 'Estas configurações controlam a experiência geral de navegação no DAM.',
+                'explorer-enabled' => [
                     'label' => 'Habilitar Visualização do Explorer',
                     'hint'  => 'Use a interface no estilo Explorer para navegar e gerenciar ativos.',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => 'Configurações de Diretório',
-                'description'      => 'Estas configurações controlam como pastas e ativos são exibidos no painel de diretórios.',
-                'show-tree'        => [
+                'title'       => 'Configurações de Diretório',
+                'description' => 'Estas configurações controlam como pastas e ativos são exibidos no painel de diretórios.',
+                'show-tree'   => [
                     'label'       => 'Mostrar árvore de diretórios',
                     'hint'        => 'Exiba a hierarquia de pastas na barra lateral esquerda para facilitar a navegação.',
                     'locked-hint' => 'Sempre ativado enquanto a Visualização do Explorer estiver desativada.',
@@ -719,7 +720,7 @@ return [
                 'notice' => ':count item(ns) selecionado(s) em outra aba.',
                 'action' => 'Selecione-os aqui também',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => 'Favoritos',
                 'drag-hint' => 'Arraste uma pasta aqui para adicioná-la aos favoritos',
                 'max'       => 'Limite máximo de 20 favoritos atingido.',

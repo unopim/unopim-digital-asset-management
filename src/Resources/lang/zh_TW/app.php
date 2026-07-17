@@ -97,6 +97,7 @@ return [
                         'upload-drop-hint'          => '將檔案或資料夾拖放至此',
                         'upload-or'                 => '或瀏覽：',
                         'copy-directory-structured' => '複製目錄結構',
+                        'get'                       => 'Get',
                         'get-by-id'                 => '依 ID 取得',
                         'comment'                   => '留言',
                         'share'                     => '共享目錄',
@@ -468,8 +469,8 @@ return [
                 'target-not-found' => '找不到要共享的資產或目錄。',
                 'not-found'        => '找不到共享連結。',
                 'revoked'          => '共享連結已撤銷。',
-                'already-revoked'  => '此共享連結已被撤銷。',
                 'deleted'          => '分享連結已刪除。',
+                'already-revoked'  => '此共享連結已被撤銷。',
                 'reauthorized'     => '分享連結已重新授權 — 原始連結重新啟用。',
                 'not-revoked'      => '此分享連結尚未被撤銷。',
                 'updated'          => '分享連結已更新。',
@@ -501,6 +502,7 @@ return [
                     'copy'               => '複製',
                     'copied'             => '連結已複製到剪貼簿',
                     'revoke'             => '撤銷',
+                    'delete'             => 'Delete',
                     'revoked'            => '共享連結已撤銷',
                     'revoke-failed'      => '撤銷共享連結失敗。',
                     'expires-on'         => '到期日期',
@@ -510,7 +512,6 @@ return [
                     'created'            => '共享連結已建立。',
                     'create-failed'      => '建立共享連結失敗。',
                     'load-failed'        => '載入現有共享連結失敗。',
-                    'delete'             => 'Delete',
                     'advanced'           => '進階',
                     'revoked-status'     => '連結已撤銷',
                     'reauthorize'        => '重新授權',
@@ -527,6 +528,7 @@ return [
                     'asset'          => '資產',
                     'directory'      => '目錄',
                     'target'         => '目標',
+                    'custom-name'    => '自訂名稱',
                     'created-by'     => '建立者',
                     'expires-at'     => '到期時間',
                     'never'          => '永不',
@@ -540,7 +542,6 @@ return [
                     'edit'           => '編輯',
                     'copy-link'      => '複製連結',
                     'revoke'         => '撤銷',
-                    'custom-name'    => '自訂名稱',
                     'delete'         => '刪除',
                 ],
             ],
@@ -685,9 +686,9 @@ return [
             'title'    => 'DAM 設定',
             'saved'    => '設定已成功儲存。',
             'general'  => [
-                'title'             => '一般設定',
-                'description'       => '這些設定控制 DAM 的整體瀏覽體驗。',
-                'explorer-enabled'  => [
+                'title'            => '一般設定',
+                'description'      => '這些設定控制 DAM 的整體瀏覽體驗。',
+                'explorer-enabled' => [
                     'label' => '啟用瀏覽器檢視',
                     'hint'  => '使用瀏覽器樣式的介面來瀏覽及管理資產。',
                 ],
@@ -697,9 +698,9 @@ return [
                 ],
             ],
             'directory' => [
-                'title'            => '目錄設定',
-                'description'      => '這些設定控制資料夾和資產在目錄面板中的顯示方式。',
-                'show-tree'        => [
+                'title'       => '目錄設定',
+                'description' => '這些設定控制資料夾和資產在目錄面板中的顯示方式。',
+                'show-tree'   => [
                     'label'       => '顯示目錄樹',
                     'hint'        => '在左側邊欄中顯示資料夾階層，以便更輕鬆地導覽。',
                     'locked-hint' => '在停用瀏覽器檢視時永遠開啟。',
@@ -719,7 +720,7 @@ return [
                 'notice' => '已在另一個分頁中選取 :count 個項目。',
                 'action' => '在此處也選取它們',
             ],
-            'bookmarks'        => [
+            'bookmarks' => [
                 'title'     => '書籤',
                 'drag-hint' => '將資料夾拖曳至此以加入書籤',
                 'max'       => '已達書籤上限 20 個。',
