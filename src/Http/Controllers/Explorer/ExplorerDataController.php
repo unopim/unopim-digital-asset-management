@@ -89,8 +89,9 @@ class ExplorerDataController extends Controller
         $dirQuery = Directory::query();
 
         if ($search) {
-            $dirQuery->whereDescendantOf($dir)
-                ->where('name', $likeOperator, '%'.strtolower($search).'%')
+            // Search matches by name across the whole tree, not just the
+            // current directory's subtree (still ACL-filtered below).
+            $dirQuery->where('name', $likeOperator, '%'.strtolower($search).'%')
                 ->limit(200);
         } else {
             $dirQuery->where('parent_id', $dir->id);
@@ -122,8 +123,16 @@ class ExplorerDataController extends Controller
                 'can_access'     => $directlyGrantedIds === null || in_array($d->id, $directlyGrantedIds),
             ]);
 
+        // A search term or any active filter finds assets anywhere in the tree;
+        // only plain browsing stays scoped to the current directory.
+        $globalAssetScope = (bool) (
+            $search || $filterFileName || $filterExtension || $filterFileType || $filterTag
+            || $filterCreatedFrom || $filterCreatedTo || $filterUpdatedFrom || $filterUpdatedTo
+            || $filterProps->isNotEmpty()
+        );
+
         $buildAssetQuery = function () use (
-            $dir, $search, $directlyGrantedIds, $likeOperator,
+            $dir, $search, $globalAssetScope, $directlyGrantedIds, $likeOperator,
             $filterFileName, $filterExtension, $filterFileType, $filterTag,
             $filterCreatedFrom, $filterCreatedTo,
             $filterUpdatedFrom, $filterUpdatedTo,
@@ -133,16 +142,14 @@ class ExplorerDataController extends Controller
 
             $q = Asset::query();
 
-            $q->whereExists(function ($sub) use ($dir, $search, $directlyGrantedIds) {
+            $q->whereExists(function ($sub) use ($dir, $globalAssetScope, $directlyGrantedIds) {
                 $sub->select(DB::raw(1))
                     ->from('dam_asset_directory')
                     ->whereColumn('dam_asset_directory.asset_id', 'dam_assets.id');
 
-                if ($search) {
-                    $sub->join('dam_directories', 'dam_directories.id', '=', 'dam_asset_directory.directory_id')
-                        ->where('dam_directories._lft', '>=', $dir->_lft)
-                        ->where('dam_directories._rgt', '<=', $dir->_rgt);
-                } else {
+                // Search / filters match assets anywhere; plain browsing lists
+                // only the assets that live in the current directory.
+                if (! $globalAssetScope) {
                     $sub->where('dam_asset_directory.directory_id', $dir->id);
                 }
 

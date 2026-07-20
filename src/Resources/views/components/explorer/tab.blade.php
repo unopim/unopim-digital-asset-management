@@ -228,6 +228,7 @@
                 :clipboard="clipboard"
                 :can-access-current-dir="canAccessCurrentDir"
                 :selection="selection"
+                :bookmarked-dir-ids="bookmarkedDirIds"
                 @toggle-select="toggleSelect"
                 @navigate="goTo"
                 @open-new-tab="openNewTab"

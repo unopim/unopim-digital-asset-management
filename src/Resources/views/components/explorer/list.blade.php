@@ -75,10 +75,13 @@
                     <button v-if="dir.can_access !== false" type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     @if (config('dam.explorer.bookmarks_enabled'))
+                    {{-- Star glows violet when this folder is bookmarked. --}}
                     <button
                         type="button"
-                        class="icon-star text-gray-400 hover:text-violet-600 text-base"
+                        class="icon-star text-base transition-colors"
+                        :class="isBookmarked(dir) ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400 hover:text-violet-600'"
                         :data-bookmark-dir="dir.id"
+                        :data-bookmarked="isBookmarked(dir)"
                         @click.stop="$emit('bookmark', dir)"
                         title="@lang('dam::app.admin.explorer.context.bookmark')"
                     ></button>
@@ -191,6 +194,7 @@ app.component('v-dam-explorer-list', {
         clipboard:            { type: Object, default: null },
         canAccessCurrentDir:  { type: Boolean, default: true },
         selection:            { type: Object, default: () => ({ ids: [], mode: 'none' }) },
+        bookmarkedDirIds:     { type: Array, default: () => [] },
     },
 
     data() { return { ctx: { on: false, x: 0, y: 0, item: null, type: null }, ctxKey: 0, _ctxClose: null, _ctxScroll: null, dropTargetId: null }; },
@@ -198,6 +202,9 @@ app.component('v-dam-explorer-list', {
     methods: {
         isSelectedById(id, type) {
             return this.selection.ids.some(i => i.id === id && i.type === type);
+        },
+        isBookmarked(dir) {
+            return this.bookmarkedDirIds.map(Number).includes(Number(dir.id));
         },
         sort(col) {
             const ord = this.sortBy === col && this.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -256,7 +263,7 @@ app.component('v-dam-explorer-list', {
         },
         _makeFolderDragGhost(name) {
             const ghost = document.createElement('div');
-            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            ghost.style.cssText = 'position:fixed;top:0;left:0;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
             const icon = document.createElement('i');
             icon.className = 'icon-dam-folder';
             icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
@@ -271,7 +278,7 @@ app.component('v-dam-explorer-list', {
         },
         _makeAssetDragGhost(fileName, iconClass) {
             const ghost = document.createElement('div');
-            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            ghost.style.cssText = 'position:fixed;top:0;left:0;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
             const icon = document.createElement('i');
             icon.className = iconClass;
             icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
@@ -284,13 +291,21 @@ app.component('v-dam-explorer-list', {
             setTimeout(() => ghost.remove(), 0);
             return ghost;
         },
+        // Keep the drag image inside the viewport, anchored under the cursor.
+        // Rendering it off-screen makes Chrome capture a clipped snapshot.
+        _anchorDragGhost(ghost, e, anchorX, anchorY) {
+            ghost.style.left = `${Math.min(Math.max(0, e.clientX - anchorX), window.innerWidth - ghost.offsetWidth)}px`;
+            ghost.style.top = `${Math.min(Math.max(0, e.clientY - anchorY), window.innerHeight - ghost.offsetHeight)}px`;
+        },
         onDirDragStart(e, dir) {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'dam-folder', id: dir.id, name: dir.name,
                 assetsCount: dir.assets_count ?? 0, tabId: this.tabId,
             }));
-            e.dataTransfer.setDragImage(this._makeFolderDragGhost(dir.name), 48, 50);
+            const ghost = this._makeFolderDragGhost(dir.name);
+            this._anchorDragGhost(ghost, e, 48, 50);
+            e.dataTransfer.setDragImage(ghost, 48, 50);
             this._draggingPayload = { type: 'dam-folder', id: dir.id };
             e.currentTarget.style.opacity = '0.4';
         },
@@ -300,7 +315,9 @@ app.component('v-dam-explorer-list', {
                 type: 'dam-asset', id: asset.id, name: asset.file_name, tabId: this.tabId,
             }));
             const iconMap = { image: 'icon-dam-image', video: 'icon-dam-video', audio: 'icon-dam-audio', document: 'icon-dam-doc' };
-            e.dataTransfer.setDragImage(this._makeAssetDragGhost(asset.file_name, iconMap[asset.file_type] ?? 'icon-dam-image'), 48, 50);
+            const ghost = this._makeAssetDragGhost(asset.file_name, iconMap[asset.file_type] ?? 'icon-dam-image');
+            this._anchorDragGhost(ghost, e, 48, 50);
+            e.dataTransfer.setDragImage(ghost, 48, 50);
             this._draggingPayload = { type: 'dam-asset', id: asset.id };
             e.currentTarget.style.opacity = '0.4';
         },

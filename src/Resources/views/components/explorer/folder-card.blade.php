@@ -4,7 +4,7 @@
     <div
         class="relative flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center cursor-pointer transition-colors select-none min-w-0"
         :class="isDropTarget
-            ? 'bg-violet-200 dark:bg-violet-900/60 ring-2 ring-violet-400'
+            ? 'bg-violet-200 dark:bg-violet-900/60 ring-2 ring-inset ring-violet-400'
             : 'hover:bg-violet-100 dark:hover:bg-violet-800/50'"
         draggable="true"
         @mouseenter="hovered = true"
@@ -74,7 +74,7 @@ app.component('v-dam-explorer-folder-card', {
     methods: {
         onDragStart(e) {
             const ghost = document.createElement('div');
-            ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
+            ghost.style.cssText = 'position:fixed;top:0;left:0;width:96px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:rgba(237,233,254,0.95);box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;';
             const icon = document.createElement('i');
             icon.className = 'icon-dam-folder';
             icon.style.cssText = 'font-size:60px;color:#a78bfa;line-height:1;';
@@ -84,6 +84,10 @@ app.component('v-dam-explorer-folder-card', {
             ghost.appendChild(icon);
             ghost.appendChild(label);
             document.body.appendChild(ghost);
+            // Keep the drag image inside the viewport, anchored under the cursor.
+            // Rendering it off-screen makes Chrome capture a clipped snapshot.
+            ghost.style.left = `${Math.min(Math.max(0, e.clientX - 48), window.innerWidth - ghost.offsetWidth)}px`;
+            ghost.style.top = `${Math.min(Math.max(0, e.clientY - 50), window.innerHeight - ghost.offsetHeight)}px`;
             e.dataTransfer.setDragImage(ghost, 48, 50);
             setTimeout(() => ghost.remove(), 0);
             e.currentTarget.style.opacity = '0.4';

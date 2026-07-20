@@ -746,9 +746,12 @@
             </div>
 
             <!-- Context Menu -->
+            <!-- Teleported to body so it renders above the grid, not under it. -->
+            <teleport to="body">
             <div v-if="showContextMenuFlag"
+                ref="contextMenu"
                 :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
-                class="dam-tree-context-menu absolute bg-white border border-gray-300 px-4 py-2 rounded shadow-lg z-50 dark:border-cherry-800 dark:bg-cherry-800 dark:text-white"
+                class="dam-tree-context-menu fixed bg-white border border-gray-300 px-4 py-2 rounded shadow-lg z-[9999] dark:border-cherry-800 dark:bg-cherry-800 dark:text-white"
             >
                 <div>
                     @if (bouncer()->hasPermission('dam.asset.upload'))
@@ -911,8 +914,9 @@
                     </div>
                 </div>
             </div>
+            </teleport>
         </div>
-        
+
 
         <!-- Create And Rename Directory Modal Form -->
         <teleport to="body">
@@ -1364,37 +1368,34 @@
                 });
             },
             showContextMenu(event, item, type = 'directory') {
-                const menuWidth = 150;
-                const menuHeight = 100;
-
-                // Get the tree container's bounding rectangle
-                const treeContainer = this.$refs.treeContainer.getBoundingClientRect();
-
-                // Calculate the position relative to the container
-                let x = event.clientX - treeContainer.left + 10; // Offset to the right
-                let y = event.clientY - treeContainer.top;
-
-                // Adjust for boundaries within the container
-                if (x + menuWidth > treeContainer.width) {
-                    x = treeContainer.width - menuWidth - 10; // Prevent overflow on the right
-                }
-
-                if (y + menuHeight > treeContainer.height) {
-                    y = treeContainer.height - menuHeight - 10; // Prevent overflow on the bottom
-                }
-
-                this.contextMenuPosition = {
-                    x,
-                    y
-                };
-
                 this.selectedItem = item;
                 this.selectedEvent = event;
                 this.requestType = type;
-                if (!this.isLoading) {
+
+                // The menu is fixed-positioned, so it sits at viewport
+                // coordinates. Clamp against its real size once rendered.
+                this.contextMenuPosition = { x: event.clientX + 10, y: event.clientY };
+
+                if (! this.isLoading) {
                     this.showContextMenuFlag = true;
+                    this.$nextTick(() => this.clampContextMenuToViewport());
                 }
-                document.addEventListener('click', this.closeContextMenu); // Close on click outside
+
+                document.addEventListener('click', this.closeContextMenu);
+            },
+
+            clampContextMenuToViewport() {
+                const menu = this.$refs.contextMenu;
+                if (! menu) return;
+
+                const margin = 10;
+                const { width, height } = menu.getBoundingClientRect();
+                const { x, y } = this.contextMenuPosition;
+
+                this.contextMenuPosition = {
+                    x: Math.max(margin, Math.min(x, window.innerWidth - width - margin)),
+                    y: Math.max(margin, Math.min(y, window.innerHeight - height - margin)),
+                };
             },
 
             closeContextMenu() {

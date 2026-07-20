@@ -137,16 +137,20 @@ app.component('v-dam-asset-card', {
                 name:  this.asset.file_name,
                 tabId: this.tabId,
             }));
-            const el = this.$el;
-            const clone = el.cloneNode(true);
-            const ghostW = 96;
-            const scale = ghostW / el.offsetWidth;
-            const ghostH = Math.round(el.offsetHeight * scale);
-            clone.style.cssText = `position:fixed;top:-200px;left:-200px;pointer-events:none;width:${ghostW}px;height:${ghostH}px;transform-origin:top left;overflow:hidden;border-radius:8px;opacity:1;`;
+            // Preview just the thumbnail, not the whole card, so the drag image
+            // is a clean square with no empty card footer. Anchored under the
+            // cursor and kept on-screen — an off-screen ghost is captured
+            // clipped by Chrome.
+            const size = 96;
+            const thumb = this.$el.querySelector('.image-card') ?? this.$el;
+            const clone = thumb.cloneNode(true);
+            const left = Math.min(Math.max(0, e.clientX - size / 2), window.innerWidth - size);
+            const top = Math.min(Math.max(0, e.clientY - size / 2), window.innerHeight - size);
+            clone.style.cssText = `position:fixed;top:${top}px;left:${left}px;pointer-events:none;width:${size}px;height:${size}px;overflow:hidden;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.12);`;
             document.body.appendChild(clone);
-            e.dataTransfer.setDragImage(clone, ghostW / 2, ghostH / 2);
+            e.dataTransfer.setDragImage(clone, size / 2, size / 2);
             setTimeout(() => clone.remove(), 0);
-            requestAnimationFrame(() => { el.style.opacity = '0.4'; });
+            requestAnimationFrame(() => { this.$el.style.opacity = '0.4'; });
         },
         onDragEnd(e) {
             e.currentTarget.style.opacity = '';
