@@ -66,25 +66,20 @@
         {!! view_render_event('unopim.admin.layout.body.before') !!}
 
         <div id="app" class="h-screen flex flex-col">
-            <!-- Flash Message Blade Component -->
             <x-admin::flash-group />
 
-            <!-- Confirm Modal Blade Component -->
             <x-admin::modal.history />
 
-            <!-- Confirm Modal Blade Component -->
             <x-admin::modal.confirm />
 
             {!! view_render_event('unopim.admin.layout.content.before') !!}
 
-            <!-- Page Header Blade Component -->
             <x-admin::layouts.header />
 
             <div
                 class="flex gap-4 flex-1 min-h-0 overflow-hidden group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
                 ref="appLayout"
             >
-                <!-- Page Sidebar Blade Component -->
                 <x-admin::layouts.sidebar />
                 
                                 
@@ -95,23 +90,18 @@
                     <div class="flex flex-wrap justify-between gap-2 items-center">
                         <div class="flex min-w-0">
 
-                            {{-- Single title row: back · breadcrumb · icon · filename · counter --}}
                             <div class="flex items-center gap-2 flex-wrap">
                                 <a href="{{ route('admin.dam.index') }}" class="transparent-button">
                                     <i class="icon-left text-xl -mt-px" aria-hidden="true"></i>
                                     @lang('dam::app.admin.dam.asset.edit.back')
                                 </a>
 
-                                {{-- Inline breadcrumb (optional) --}}
                                 @isset($breadcrumb){{ $breadcrumb }}@endisset
 
-                                {{-- File type icon (optional) --}}
                                 @isset($fileIcon){{ $fileIcon }}@endisset
 
-                                {{-- Reactive filename --}}
                                 <v-dam-asset-label initial-label="{{ $label ?? '' }}"></v-dam-asset-label>
 
-                                {{-- Asset counter --}}
                                 @isset($counter)
                                 {{ $counter }}
                                 @endisset

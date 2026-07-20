@@ -11,7 +11,6 @@
         @click="$emit('preview', asset.id)"
         @contextmenu.prevent.stop="$emit('ctx', { event: $event, asset })"
     >
-        {{-- Thumbnail --}}
         <div class="image-card relative overflow-hidden">
             <img
                 :src="asset.path"
@@ -21,7 +20,6 @@
                 @@error="onImgErr"
             />
 
-            {{-- Extension badge --}}
             <span
                 v-if="asset.extension"
                 class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase text-white shadow"
@@ -33,7 +31,6 @@
                 }"
             >@{{ (asset.extension||'').toUpperCase() }}</span>
 
-            {{-- Play / audio overlay --}}
             <div
                 v-if="asset.file_type==='video'||asset.file_type==='audio'"
                 class="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -45,7 +42,6 @@
                 ></span>
             </div>
 
-            {{-- Hover action overlay --}}
             <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div class="flex gap-1">
                     @if (bouncer()->hasPermission('dam.asset.view'))
@@ -62,7 +58,6 @@
         </div>
 
         <div class="flex gap-1.5 items-center py-1.5 pl-1">
-            {{-- Checkbox overlay for mass selection --}}
             <span
                 class="z-10 opacity-0 group-hover:!opacity-100 transition-opacity"
                 :class="{ '!opacity-100': anySelected || isSelected }"

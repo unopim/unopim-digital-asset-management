@@ -1,13 +1,10 @@
 <x-dam::tree.asset-count-badge />
 
-<!-- Panel -->
 <div class="p-4 bg-white dark:bg-cherry-900 rounded box-shadow w-[360px]">
-    <!-- Panel Header -->
     <p class="flex justify-between text-base text-gray-800 dark:text-white font-semibold mb-4">
         @lang('dam::app.admin.dam.index.directory.title')
     </p>
 
-    <!-- Panel Content -->
     <div class="mb-5 text-sm text-gray-600 dark:text-gray-300 flex flex-col gap-2">
         <x-dam::tree.search />
 
@@ -79,13 +76,11 @@
             </div>
 
 
-            <!-- Show loader -->
              <div 
                 v-if="isLoading" 
                 :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
                 class="absolute z-50"
             >
-                <!-- Spinner -->
                 <svg class="align-center inline-block animate-spin h-5 w-5 ml-2 text-white-700" xmlns="http://www.w3.org/2000/svg" fill="none"  aria-hidden="true" viewBox="0 0 24 24">
                     <circle
                         class="opacity-25"
@@ -308,7 +303,6 @@
                 v-if="isFolder || isAssets"
                 class="flex flex flex-col pl-4"
             >
-                <!-- Directories -->
                 <div class="flex sub-tree-container gap-2 py-1 ltr:pl-3 ltr:pr-10" v-for="(asset, index) in item.children">
                     <v-directory-tree-item
                         class="sub-tree-item"
@@ -320,7 +314,6 @@
                     ></v-directory-tree-item>
                 </div>
 
-                <!-- Asset -->
                 <div
                     v-if="showAssets"
                     class="flex py-1 ltr:pl-3 ltr:pr-10"

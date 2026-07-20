@@ -24,7 +24,6 @@
                 @lang('dam::app.admin.permissions.tab-subtitle')
             </p>
 
-            {{-- All Directories toggle --}}
             <label class="flex items-center gap-2 cursor-pointer mb-4 select-none">
                 <input
                     type="checkbox"
@@ -40,7 +39,6 @@
                 </span>
             </label>
 
-            {{-- Inherit Sub-directories toggle --}}
             <label class="flex items-center gap-2 cursor-pointer mb-4 select-none" id="dam-inherit-children-label">
                 <input
                     type="checkbox"
@@ -97,7 +95,6 @@
             (function () {
                 var I18N = window.DAM_PERM_I18N || {};
 
-                // -- per-tab component state ------------------------------------
                 // The role create/edit page recreates the tab DOM via v-if every
                 // time the permission type flips. We key state to the wrapper
                 // element so a fresh tab gets a fresh component.
@@ -150,9 +147,6 @@
                         .replace(/'/g, '&#39;');
                 }
 
-                //
-                // Component factory. One instance per tab wrapper.
-                //
                 function createComponent(root) {
                     var mount = root.querySelector('#dam-perm-tree-root');
                     if (! mount) return null;
@@ -262,7 +256,6 @@
                         });
                     }
 
-                    // -- rendering ----------------------------------------------
 
                     function renderNode(id) {
                         var node = nodes[id];
@@ -379,7 +372,6 @@
                         return root.querySelector('#dam-perm-inherit-note');
                     }
 
-                    // -- data loading -------------------------------------------
 
                     function ingest(payload) {
                         var data = (payload && payload.data) ? payload.data : [];
@@ -549,7 +541,6 @@
                         renderTree();
                     }
 
-                    // -- selection / cascade ------------------------------------
 
                     function isInherit() {
                         var t = document.getElementById('dam-inherit-children-toggle');
@@ -617,7 +608,6 @@
                         if (note) note.style.display = 'none';
                     }
 
-                    // -- event wiring -------------------------------------------
 
                     // Chevron + checkbox events (delegated, survive re-render).
                     mount.addEventListener('click', function (e) {
@@ -691,7 +681,6 @@
                         });
                     });
 
-                    // Inherit toggle.
                     var inheritToggle = document.getElementById('dam-inherit-children-toggle');
                     if (inheritToggle && ! inheritToggle.dataset.damPermInheritBound) {
                         inheritToggle.dataset.damPermInheritBound = '1';

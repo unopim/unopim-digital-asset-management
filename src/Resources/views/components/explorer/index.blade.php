@@ -16,7 +16,6 @@
 <script type="text/x-template" id="v-dam-explorer-template">
     <div class="flex flex-col flex-1 overflow-hidden">
 
-        {{-- Tab bar --}}
         <div
             class="flex items-end gap-0 bg-gray-100 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 px-2 pt-1.5 overflow-x-auto overflow-y-hidden flex-shrink-0"
             style="scrollbar-width: thin;"

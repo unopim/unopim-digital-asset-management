@@ -19,7 +19,6 @@
             v-on:error="onImgErr($event)"
         />
 
-        {{-- Extension badge (top-right) --}}
         <span
             v-if="asset.extension"
             class="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md"
@@ -27,7 +26,6 @@
             v-text="(asset.extension || '').toUpperCase()"
         ></span>
 
-        {{-- Play / audio centred overlay --}}
         <div
             v-if="asset.file_type === 'video' || asset.file_type === 'audio'"
             class="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -39,7 +37,6 @@
             ></span>
         </div>
 
-        {{-- Hover action overlay --}}
         <div class="absolute inset-0 flex items-center justify-center bg-black/80 dark:bg-cherry-800/90 transition-opacity max-sm:opacity-100 opacity-0 group-hover:opacity-100">
             <div class="flex gap-1">
                 @if (bouncer()->hasPermission('dam.asset.view'))

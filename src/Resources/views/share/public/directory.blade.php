@@ -64,7 +64,6 @@
             </div>
         </header>
 
-        {{-- Scrollable content --}}
         <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
             @if ($assets->isEmpty())
                 <div class="bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 p-12 text-center">
@@ -306,8 +305,8 @@
         }, { rootMargin: '300px' });
 
         observer.observe(sentinel);
-        }, 0); /* end setTimeout */
-        }); /* end window load */
+        }, 0);
+        });
     })();
     </script>
     @endpush

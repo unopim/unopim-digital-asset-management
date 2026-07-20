@@ -151,17 +151,13 @@
                 enctype="multipart/form-data"
                 method="PUT"
             >
-                <!-- body content -->
                 <div class="flex gap-2.5 mt-3.5 flex-wrap">
                     <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
 
-                        <!-- Left sub Component -->
                         <div class="flex flex-col flex-1 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-0">
 
-                            {{-- Full-width preview; prev/next arrows overlay the image's left/right edges, revealed on hover --}}
                             <div class="relative flex flex-1 min-h-0">
                                 <div class="group relative flex flex-col flex-1 gap-2 overflow-y-auto overflow-x-hidden items-center justify-start py-2 min-w-0">
-                                    {{-- Prev arrow overlay (left) --}}
                                     <button
                                         v-if="prevAssetId"
                                         type="button"
@@ -174,7 +170,6 @@
                                         <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
                                     </button>
 
-                                    {{-- Next arrow overlay (right) --}}
                                     <button
                                         v-if="nextAssetId"
                                         type="button"
@@ -196,7 +191,6 @@
                             </div>
                         </div>
 
-                        <!-- Right sub-component -->
                         <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow p-4">
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
 
@@ -429,10 +423,8 @@
             });
         </script>
 
-        <!-- **** Asset Preview Modal **** -->
         @include('dam::asset.preview-modal')
 
-        <!-- **** Tab Badge **** -->
         <script type="module">
             app.component('v-dam-tab-badge', {
                 props: {
@@ -464,7 +456,6 @@
             });
         </script>
 
-        <!-- **** Badge Live Updates **** -->
         <script type="module">
             (() => {
                 const assetId = {{ $asset->id }};
@@ -505,7 +496,6 @@
             })();
         </script>
 
-        <!-- **** File Type Icon **** -->
         <script type="module">
             app.component('v-dam-file-type-icon', {
                 props: {
@@ -544,7 +534,6 @@
             });
         </script>
 
-        <!-- **** Asset Counter **** -->
         <script type="module">
             app.component('v-dam-asset-counter', {
                 props: {
@@ -573,7 +562,6 @@
             });
         </script>
 
-        <!-- **** Custom Download **** -->
         <script
             type="text/x-template"
             id="v-custom-download-template"
@@ -619,7 +607,6 @@
                     ref="assetCustomDownloadForm"
                 >
                     <x-admin::modal ref="assetCustomDownloadModal">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -628,7 +615,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.before') !!}
 
@@ -638,7 +624,6 @@
                                 v-model="selectedItem"
                             />
 
-                            <!-- format -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.custom-download.format')
@@ -662,7 +647,6 @@
                             </x-admin::form.control-group>
 
                             <div class="flex gap-4 items-top">
-                                <!-- width -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.width')
@@ -681,7 +665,6 @@
                                     <x-admin::form.control-group.error control-name="width" />
                                 </x-admin::form.control-group>
     
-                                <!-- height -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.height')
@@ -704,7 +687,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -729,7 +711,6 @@
                     ref="svgCustomDownloadForm"
                 >
                     <x-admin::modal ref="svgCustomDownloadModal">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -738,7 +719,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.before') !!}
 
@@ -748,7 +728,6 @@
                                 v-model="selectedItem"
                             />
 
-                            <!-- format -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.custom-download.format')
@@ -774,7 +753,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -901,7 +879,6 @@
             });
         </script>
 
-        <!-- **** Rename **** -->
         <script
             type="text/x-template"
             id="v-rename-asset-template"
@@ -916,7 +893,6 @@
                 </button>
             @endif
             <div style="position: absolute; width: 0; height: 0; overflow: visible;">
-            <!-- Asset Rename -->
             <x-admin::form
                 v-slot="{ meta, errors, handleSubmit }"
                 as="div"
@@ -927,7 +903,6 @@
                     ref="assetRenameForm"
                 >
                     <x-admin::modal ref="assetRenameModal" @toggle="focusNameInput">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -936,7 +911,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.rename.before') !!}
 
@@ -946,7 +920,6 @@
                                 v-model="selectedItem.id"
                             />
 
-                            <!-- name -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.file-name')
@@ -969,7 +942,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.rename.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -1082,7 +1054,6 @@
             });
         </script>
 
-        <!-- **** Reupload **** -->
         <script
             type="text/x-template"
             id="v-reupload-asset-template"
@@ -1229,7 +1200,6 @@
             });
         </script>
 
-        <!-- **** Delete **** -->
         <script
             type="text/x-template"
             id="v-delete-asset-template"

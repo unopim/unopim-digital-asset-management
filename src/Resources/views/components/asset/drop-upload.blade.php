@@ -7,7 +7,6 @@
             @dragleave="onDragLeave"
             @drop.prevent="onDrop"
         >
-            <!-- Drop overlay -->
             <div
                 v-if="isDragOver"
                 class="absolute inset-0 z-50 backdrop-blur-sm border-2 border-dashed rounded-lg pointer-events-none"
@@ -16,7 +15,6 @@
                     : 'bg-red-50/80 dark:bg-red-950/30 border-red-400 dark:border-red-500'"
             ></div>
 
-            <!-- Drop hint card: fixed at visible viewport centre of the drag target -->
             <div
                 v-if="isDragOver"
                 :style="hintCardStyle"
@@ -41,7 +39,6 @@
                 </template>
             </div>
 
-            <!-- Default slot: breadcrumb + upload button + datagrid -->
             <slot></slot>
 
             <teleport to="body" v-if="isPrimary">
@@ -51,7 +48,6 @@
                     class="fixed bottom-4 ltr:right-4 rtl:left-4 z-[10005]"
                     style="display:flex; flex-direction:row-reverse; flex-wrap:wrap-reverse; align-items:flex-end; gap:0.75rem; max-width:calc(100vw - 2rem); pointer-events:none;"
                 >
-                    <!-- Completed sessions history (collapsed by default) -->
                     <div
                         v-for="session in sessions"
                         :key="session.id"
@@ -102,21 +98,18 @@
                         </div>
                     </div>
 
-                    <!-- Active sessions — one card per enqueue, laid out side by side -->
                     <div
                         v-for="session in activeSessions"
                         :key="session.id"
                         class="rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-800"
                         style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
-                        <!-- Header -->
                         <div
                             class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-violet-600 dark:bg-violet-700"
                             @click="session.minimized = !session.minimized"
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionTitle(session) }}</span>
                             <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-                                <!-- Background session controls: pause/resume/retry/cancel -->
                                 <button
                                     v-if="sessionRemaining(session) > 0 && !session.paused"
                                     type="button"
@@ -160,12 +153,10 @@
                             </div>
                         </div>
 
-                        <!-- Compact progress strip — only when minimized and still uploading -->
                         <div v-if="sessionRemaining(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
                             <div class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
                         </div>
 
-                        <!-- Row list (virtualized) -->
                         <div
                             v-if="!session.minimized"
                             class="max-h-52 overflow-y-auto"
@@ -209,7 +200,6 @@
                             <div :style="{ height: jobWindow(session).padBottom + 'px' }"></div>
                         </div>
 
-                        <!-- Footer: file-only counts + overall bar -->
                         <div v-if="!session.minimized" class="px-4 py-2.5 border-t border-gray-100 dark:border-cherry-700 bg-gray-50 dark:bg-cherry-900/40">
                             <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                                 <span>@{{ session.doneCount }} of @{{ sessionFileJobCount(session) }} uploaded</span>
@@ -254,7 +244,6 @@
 
         const damFileBag = new Map();
 
-        // ── IndexedDB byte store (resume support) ─────────────────────────────
         const DAM_IDB_NAME  = 'dam_uploads';
         const DAM_IDB_STORE = 'files';
         const damUploadStore = {
@@ -405,7 +394,6 @@
                     (ids || []).forEach((id) => this.$emitter.emit('dam:directory-granted', id));
                 },
 
-                // ── Session lifecycle ─────────────────────────────────────────
                 async startSession({ items = [], folderPaths = [], targetDirId }) {
                     if (! targetDirId || (! items.length && ! folderPaths.length)) return;
 
@@ -492,7 +480,6 @@
                     await this.finishSession(session);
                 },
 
-                // ── Background session (tracker) wiring ───────────────────────
                 newUuid() {
                     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
                     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -755,7 +742,6 @@
                     });
                 },
 
-                // ── Virtualization ────────────────────────────────────────────
                 onJobScroll(session, e) { session.scrollTop = e.target.scrollTop; },
 
                 jobWindow(session) {
@@ -770,7 +756,6 @@
                     };
                 },
 
-                // ── Refresh wiring ────────────────────────────────────────────
                 emitRefresh(session, final) {
                     this.$emit('refresh-datagrid');
                     this.$emitter.emit('dam:uploads-refresh', {
@@ -781,7 +766,6 @@
                     if (final) this.$emitter.emit('dam:tree-reload');
                 },
 
-                // ── Session helpers ───────────────────────────────────────────
                 sessionActiveCount(session) {
                     return session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating').length;
                 },
@@ -845,7 +829,6 @@
                     this.persistState();
                 },
 
-                // ── Quota gate ────────────────────────────────────────────────
                 async canStashBatch(totalBytes) {
                     if (! DAM_RESUME_ENABLED || ! damUploadStore.available()) return false;
                     if (totalBytes > DAM_RESUME_MAX_BYTES) return false;
@@ -858,7 +841,6 @@
                     return true;
                 },
 
-                // ── Persistence ───────────────────────────────────────────────
                 serializeSession(s) {
                     return {
                         id: s.id, uuid: s.uuid, targetDirId: s.targetDirId, minimized: s.minimized,
@@ -959,7 +941,6 @@
                     }
                 },
 
-                // ── Drag events ───────────────────────────────────────────────
                 onDragEnter(e) {
                     if (! e.dataTransfer?.types?.includes('Files')) return;
                     this.dragCounter++;
@@ -1044,7 +1025,6 @@
                     return { files, emptyDirs };
                 },
 
-                // ── Presentation helpers ──────────────────────────────────────
                 jobStatusIcon(job) {
                     if (job.status === 'uploading' || job.status === 'creating') {
                         return `<svg class="animate-spin h-3.5 w-3.5 text-violet-500 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;

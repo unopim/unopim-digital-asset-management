@@ -13,7 +13,6 @@
         id="v-gallery-table-template"
     >
         <div class="w-full">
-            <!-- Select All bar — only when mass actions are available -->
             <slot name="body-header">
                 <div
                     class="flex flex-row gap-2 items-center pb-4"
@@ -47,7 +46,6 @@
                 </div>
             </slot>
 
-            <!-- Records grid -->
             <div
                 class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4"
                 v-if="$parent.available.records.length"
@@ -70,7 +68,6 @@
                                 @delete="deleteImage(record.id)"
                             ></v-dam-asset-card>
 
-                            <!-- Filename + optional mass-action checkbox -->
                             <div class="flex gap-1.5 items-center mt-2">
                                 <label
                                     v-if="$parent.available.massActions.length"
@@ -100,7 +97,6 @@
                 </slot>
             </div>
 
-            <!-- Empty state -->
             <template v-else>
                 @include('dam::components.shared.empty-state')
             </template>

@@ -80,13 +80,10 @@
 
                 displayDirectoryBreadcrumb: @json($directoryAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values()->toArray()),
 
-                // Image
                 ...window._damImageViewer.data,
 
-                // Video
                 ...window._damVideoPlayer.data,
 
-                // Audio
                 ...window._damAudioPlayer.data,
             };
         },
@@ -98,7 +95,6 @@
         },
 
         methods: {
-            // ── Open / close ──────────────────────────────────────────
             openPreview() {
                 this.imgResetState();
                 this.videoResetState();
@@ -239,7 +235,6 @@
                 if (isVideoKey) this.videoShowControls();
             },
 
-            // ── SPA navigation ────────────────────────────────────────
             onDamAssetChanged(data) {
                 this.closePreview();
                 this.isInfoOpen = false;
@@ -284,13 +279,10 @@
                 });
             },
 
-            // ── Image ─────────────────────────────────────────────────
             ...window._damImageViewer.methods,
 
-            // ── Video ─────────────────────────────────────────────────
             ...window._damVideoPlayer.methods,
 
-            // ── Audio ─────────────────────────────────────────────────
             ...window._damAudioPlayer.methods,
 
             _formatTime(s) {

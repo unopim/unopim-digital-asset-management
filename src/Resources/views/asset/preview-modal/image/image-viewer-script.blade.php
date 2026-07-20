@@ -2,11 +2,9 @@
 window._damImageViewer = {
 
     data: {
-        // Crop / Resize
         cropWidth:  null,
         cropHeight: null,
 
-        // Crop overlay (drag interaction)
         cropBox:        { x: 0, y: 0, w: 0, h: 0 },
         cropHandle:     null,
         cropStart:      null,
@@ -17,17 +15,14 @@ window._damImageViewer = {
         cropImgOffsetX: 0,
         cropImgOffsetY: 0,
 
-        // Brightness, Contrast, Sharpen, Blur
         brightness: 0,
         contrast:   0,
         sharpen:    0,
         blur:       0,
 
-        // Filters
         filterGreyscale: false,
         filterInvert:    false,
 
-        // Edit Background
         bgSubTab:             'color',
         bgColorMode:          'ai',
         bgColor:              null,
@@ -68,17 +63,14 @@ window._damImageViewer = {
             ['hex' => '#f43f5e', 'name' => trans('dam::app.admin.dam.asset.edit.image-editor.color-rose')],
         ]) !!},
 
-        // Rotate & Flip
         rotation: 0,
         flipH:    false,
         flipV:    false,
 
-        // Image editor
         editTool:     null,
         editApplying: false,
         editError:    null,
 
-        // Image viewer
         imgZoom:       1,
         imgRotation:   0,
         imgPanX:       0,
@@ -137,7 +129,6 @@ window._damImageViewer = {
     },
 
     methods: {
-        // ── Lifecycle helpers ─────────────────────────────────────────
         imgResetState() {
             this.imgZoom = 1; this.imgRotation = 0;
             this.imgPanX = 0; this.imgPanY = 0; this.imgIsDragging = false;
@@ -163,7 +154,6 @@ window._damImageViewer = {
             window.removeEventListener('mouseup',   this.cropMouseUp);
         },
 
-        // ── Image viewer ──────────────────────────────────────────────
         imgZoomIn()      { this.imgZoom = Math.min(10,  parseFloat((this.imgZoom + 0.25).toFixed(2))); },
         imgZoomOut()     { this.imgZoom = Math.max(0.1, parseFloat((this.imgZoom - 0.25).toFixed(2))); },
         imgRotateRight() { this.imgRotation = (this.imgRotation + 90) % 360; },
@@ -201,7 +191,6 @@ window._damImageViewer = {
 
         imgOnMouseUp() { this.imgIsDragging = false; },
 
-        // ── Crop overlay ──────────────────────────────────────────────
         initCropBox() {
             this.$nextTick(() => {
                 const img = this.$refs.editImg;
@@ -301,7 +290,6 @@ window._damImageViewer = {
             this.cropStart  = null;
         },
 
-        // ── Image Editor ──────────────────────────────────────────────
         onEditToolSelect(tool) {
             if (this.editTool === tool) {
                 this.editTool = null;

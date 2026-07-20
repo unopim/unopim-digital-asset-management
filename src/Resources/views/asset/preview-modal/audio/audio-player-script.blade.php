@@ -36,7 +36,6 @@ window._damAudioPlayer = {
     },
 
     methods: {
-        // ── Lifecycle helpers ─────────────────────────────────────────
         audioResetState() {
             this.audioIsPlaying = false; this.audioCurrentTime = 0;
             this.audioDuration = 0; this.audioVolume = 1; this.audioEnded = false;
@@ -62,7 +61,6 @@ window._damAudioPlayer = {
             this.audioIsPlaying = false;
         },
 
-        // ── Playback ──────────────────────────────────────────────────
         audioTogglePlay() {
             const el = this.$refs.audioEl;
             if (!el) return;
@@ -110,7 +108,6 @@ window._damAudioPlayer = {
             el.muted = this.audioIsMuted;
         },
 
-        // ── Volume ────────────────────────────────────────────────────
         audioOnVolume(e) {
             const v = parseFloat(e.target.value);
             this.audioVolume = v;
@@ -119,7 +116,6 @@ window._damAudioPlayer = {
             try { localStorage.setItem('dam_audio_volume', v); } catch(_) {}
         },
 
-        // ── Seek ──────────────────────────────────────────────────────
         audioOnSeekDown(e) {
             e.preventDefault();
             this.audioIsSeeking = true;
@@ -161,7 +157,6 @@ window._damAudioPlayer = {
 
         audioOnSeekLeave() { this.audioSeekTooltipVisible = false; },
 
-        // ── Native audio events ───────────────────────────────────────
         audioOnTimeUpdate() {
             if (!this.$refs.audioEl || this.audioIsSeeking) return;
             this.audioCurrentTime = this.$refs.audioEl.currentTime;
@@ -177,7 +172,6 @@ window._damAudioPlayer = {
             this.$nextTick(() => this._audioDrawRing());
         },
 
-        // ── Ring canvas ───────────────────────────────────────────────
         _audioDrawRing() {
             const canvas = this.$refs.visualizerCanvas;
             if (!canvas) return;

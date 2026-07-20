@@ -5,16 +5,13 @@
     @once guard prevents double-render when index.blade.php also includes this file.
 --}}
 @once('v-dam-explorer-toolbar')
-        {{-- Row 2: search + filters + pagination --}}
         <template v-if="loading && ! meta">
             <x-admin::shimmer.datagrid.toolbar />
         </template>
 
         <div v-else class="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
 
-            {{-- Left: search + results count --}}
             <div class="flex flex-1 min-w-[120px] items-center gap-x-1">
-                {{-- Select-all checkbox (always visible) --}}
                 <label class="flex items-center cursor-pointer shrink-0 mr-2" data-select-all>
                     <input
                         type="checkbox"
@@ -31,7 +28,6 @@
                     ></span>
                 </label>
 
-                {{-- Action bar (selection mode) --}}
                 <template v-if="selection.ids.length > 0">
                     @if (bouncer()->hasPermission('dam.asset.mass_delete') || bouncer()->hasPermission('dam.asset.update'))
                     <x-admin::dropdown>
@@ -88,7 +84,6 @@
                     </span>
                 </template>
 
-                {{-- Search bar (idle mode) --}}
                 <template v-else>
                     <div class="flex w-full max-w-[445px] min-w-0 items-center max-sm:max-w-full">
                         <div class="relative w-full min-w-0">
@@ -109,7 +104,6 @@
                         </div>
                     </div>
 
-                    {{-- Asset count --}}
                     <div class="ltr:pl-2.5 rtl:pr-2.5" v-if="meta">
                         <p class="text-sm font-light text-gray-800 dark:text-white">
                             @{{ "@lang('admin::app.components.datagrid.toolbar.results')".replace(':total', meta.total_assets) }}
@@ -118,9 +112,7 @@
                 </template>
             </div>
 
-            {{-- Right: filter drawer + pagination --}}
             <div class="flex items-center gap-x-4">
-                {{-- Filters drawer --}}
                 <x-admin::drawer width="350px" ref="explorerFilterDrawer">
                     <x-slot:toggle>
                         <div>
@@ -162,7 +154,6 @@
                     </x-slot:content>
                 </x-admin::drawer>
 
-                {{-- Pagination --}}
                 <v-dam-explorer-pager
                     v-if="meta"
                     :current-page="meta.current_page ?? 1"

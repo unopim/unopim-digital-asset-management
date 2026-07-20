@@ -9,7 +9,6 @@
         @dragleave="onDragLeave"
         @drop.prevent="onDrop($event)"
     >
-        {{-- Bookmarks: fixed-height box with its own internal scroll --}}
         <div class="flex flex-col gap-1 h-56 overflow-y-auto pr-1" data-bookmarks-scroll>
             <div
                 v-for="bm in bookmarks"
@@ -29,13 +28,11 @@
                 >×</span>
             </div>
 
-            {{-- Empty state --}}
             <p v-if="! bookmarks.length" class="m-auto text-xs text-gray-400 dark:text-gray-500 text-center px-2">
                 @lang('dam::app.admin.explorer.bookmarks.empty')
             </p>
         </div>
 
-        {{-- Drop overlay --}}
         <div
             v-if="dragOver"
             class="absolute inset-0 rounded-lg border-2 border-dashed border-violet-400 bg-violet-50/80 dark:bg-violet-900/40 flex flex-col items-center justify-center gap-2 pointer-events-none z-10"

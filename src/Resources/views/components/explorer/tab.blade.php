@@ -4,9 +4,7 @@
 <script type="text/x-template" id="v-dam-tab-template">
     <div class="relative flex flex-col flex-1 min-h-0 overflow-hidden p-4 gap-3">
 
-        {{-- Row 1: sidebar toggle + back/forward + breadcrumb + actions --}}
         <div class="flex items-center gap-2 flex-wrap">
-            {{-- Sidebar collapse toggle — only when at least one sidebar component is enabled --}}
             @if (config('dam.explorer.show_tree') || config('dam.explorer.bookmarks_enabled'))
             <button
                 type="button"
@@ -39,7 +37,6 @@
                 @drop="onInternalDrop"
             ></v-dam-explorer-breadcrumb>
 
-            {{-- Current directory actions: Download Zip + Share --}}
             @if (bouncer()->hasPermission('dam.directory.download_zip'))
             <button
                 v-if="currentDirId"
@@ -63,7 +60,6 @@
             </button>
             @endif
             @if (config('dam.explorer.bookmarks_enabled'))
-            {{-- Star glows violet when the current directory is bookmarked; acts as an add/remove toggle. --}}
             <button
                 v-if="currentDirId"
                 type="button"
@@ -93,7 +89,6 @@
             />
             @endif
 
-            {{-- Grid / List view toggle --}}
             <v-dam-explorer-view-toggle :model-value="viewMode" @update:model-value="setView($event)"></v-dam-explorer-view-toggle>
 
             @if (bouncer()->hasPermission('dam.asset.upload') || bouncer()->hasPermission('dam.directory.store'))
@@ -151,7 +146,6 @@
 
         @include('dam::components.explorer.toolbar')
 
-        {{-- Rename / create dialog --}}
         <v-dam-input-dialog
             :is-open="dialog.on"
             :title="dialogTitle"
@@ -162,7 +156,6 @@
             @close="closeDialog"
         ></v-dam-input-dialog>
 
-        {{-- Clipboard banner --}}
         <div
             v-if="clipboard"
             class="flex items-center gap-2 px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 rounded-lg text-violet-700 dark:text-violet-300"
@@ -247,14 +240,12 @@
             @close="closeFolderPicker"
         ></v-dam-folder-picker>
 
-        {{-- Operation progress bar (matches drag-and-drop panel style) --}}
         <div
             v-if="operationOverlay.show"
             class="fixed bottom-4 ltr:right-8 rtl:left-8 z-[10005] w-[460px] rounded-xl shadow-2xl overflow-hidden border border-gray-300 dark:border-cherry-600"
             role="status"
             aria-live="polite"
         >
-            <!-- Violet header — same as drag-drop panel -->
             <div class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                     <svg class="animate-spin h-3.5 w-3.5 text-white/80 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -270,7 +261,6 @@
                 ></span>
             </div>
 
-            <!-- Progress footer — same style as drag-drop footer -->
             <div v-if="operationOverlay.progress != null" class="px-4 py-2.5 bg-white dark:bg-cherry-800 border-t border-gray-100 dark:border-cherry-700">
                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                     <span>@lang('dam::app.admin.explorer.mass-actions.progress')</span>
@@ -1055,6 +1045,11 @@ app.component('v-dam-tab', {
         },
 
         bookmark(dir) {
+            // Toggle: remove if this directory is already bookmarked, else add.
+            if (this.bookmarkedDirIds.map(Number).includes(Number(dir.id))) {
+                this.$emitter.emit('dam:remove-bookmark', { directoryId: dir.id });
+                return;
+            }
             this.$emitter.emit('dam:add-bookmark', { id: dir.id, name: dir.name });
         },
 

@@ -17,7 +17,6 @@
             <div class="{{ config('dam.explorer.enabled') ? 'flex flex-col min-w-0' : '' }}">
                 {!! view_render_event('dam.admin.main.form.before') !!}
                     <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-lg:flex-wrap min-w-0' }}">
-                        <!-- left side: stacked cards (visible when tree or bookmarks should appear) -->
                         @php
                             $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
                             // Bookmarks are an Explorer-only feature (navigation runs through the
@@ -28,7 +27,6 @@
                         @endphp
                         @if ($showSidebar)
                         @if (config('dam.explorer.enabled'))
-                        {{-- Mobile/tablet drawer backdrop (below lg) --}}
                         <div
                             v-show="drawerOpen"
                             @click="drawerOpen = false"
@@ -47,7 +45,6 @@
                             @endif
                         >
 
-                            <!-- directories card -->
                             @if ($showTree)
                             <div class="flex flex-col gap-5 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 {!! view_render_event('dam.admin.main.form.directory.before') !!}
@@ -75,7 +72,6 @@
                             </div>
                             @endif
 
-                            <!-- bookmarks card (separate component below directories) -->
                             @if ($showBookmarks)
                             <div class="flex flex-col gap-3 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                                 <p class="text-base text-zinc-800 dark:text-slate-50 font-bold !leading-normal">
@@ -97,7 +93,6 @@
                         </div>
                         @endif
 
-                        <!-- right sub-component -->
                         <div class="flex flex-col gap-2 flex-1 max-xl:flex-auto min-w-0 p-4 bg-white dark:bg-cherry-900 rounded-lg box-shadow">
                             {!! view_render_event('dam.admin.main.form.grid.before') !!}
                             @if (config('dam.explorer.enabled'))
@@ -605,7 +600,6 @@
     </script>
     @endPushOnce
 
-    {{-- Directory breadcrumb shown at the top of the asset grid --}}
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-breadcrumb-template">
             <nav class="flex items-center gap-1 flex-wrap text-sm" aria-label="Directory breadcrumb">
@@ -659,7 +653,6 @@
         </script>
     @endPushOnce
 
-    {{-- Standalone preview modal launched from the grid's eye icon --}}
     @include('dam::asset.grid-preview-modal')
 
     {{-- Share-link modal singleton; opened via the `open-share-modal` emitter event --}}

@@ -1,4 +1,3 @@
-<!-- Breadcrumb (left) + action icons (right) -->
 <div class="flex justify-between items-center gap-2 w-full px-2 py-1 border-b border-gray-100 dark:border-gray-700">
 
     <nav class="flex items-center gap-1 flex-wrap text-sm min-w-0" aria-label="@lang('dam::app.admin.dam.asset.edit.directory-path')">
@@ -15,7 +14,6 @@
 
     <div class="flex items-center gap-1 shrink-0">
 
-    <!-- Info — hover tooltip + click modal -->
     <div class="relative" @mouseenter="infoHover = true" @mouseleave="infoHover = false">
         <button
             type="button"
@@ -24,7 +22,6 @@
         >
             <span class="text-lg icon-information"></span>
         </button>
-        <!-- Hover tooltip -->
         <div
             v-show="infoHover"
             class="absolute right-0 top-10 w-56 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-lg py-2 px-3 flex flex-col gap-1.5 text-xs pointer-events-none z-20"
@@ -39,7 +36,6 @@
         </div>
     </div>
 
-    <!-- Image editor (images only) -->
     <button
         v-if="previewData.file_type === 'image'"
         type="button"
@@ -50,7 +46,6 @@
         <span class="text-lg icon-edit"></span>
     </button>
 
-    <!-- Fullscreen preview -->
     <button
         type="button"
         class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"

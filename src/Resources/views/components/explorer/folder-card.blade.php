@@ -31,7 +31,6 @@
             </svg>
         </button>
 
-        {{-- Checkbox overlay for mass selection --}}
         <div
             v-show="anySelected || hovered"
             class="absolute top-1 left-1"

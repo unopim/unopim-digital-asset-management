@@ -7,7 +7,6 @@
         </p>
 
         <div class="flex gap-x-2.5 items-center">
-            <!-- Create property Button -->
             @if (bouncer()->hasPermission('dam.asset.property.create'))
                 <button
                     type="button"
@@ -19,7 +18,6 @@
         </div>
     </div>
 
-    <!-- DataGrid Shimmer -->
     <x-admin::shimmer.datagrid />
 </v-properties>
 

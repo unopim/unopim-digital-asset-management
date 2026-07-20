@@ -94,7 +94,6 @@
                                 'w-full max-w-6xl max-h-[96%] overflow-y-auto z-[999] absolute ltr:left-1/2 rtl:right-1/2 top-1/2 rounded-lg bg-white dark:bg-gray-900 box-shadow max-md:w-[90%] ltr:-translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2': noClass == false 
                             }"
                         >
-                            <!-- Header Slot -->
                             <slot
                                 name="header"
                                 :toggle="toggle"
@@ -102,14 +101,12 @@
                             >
                             </slot>
 
-                            <!-- Content Slot -->
                             <slot
                                 name="content"
                                 :toggle="toggle"
                                 :isOpen="isOpen"
                             ></slot>
                             
-                            <!-- Footer Slot -->
                             <slot name="footer"></slot>
                         </div>
                     </div>

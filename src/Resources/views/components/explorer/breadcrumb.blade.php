@@ -4,12 +4,10 @@
     <div class="flex items-center gap-2 flex-1 min-w-0">
 
         <template v-if="loading">
-            {{-- Shimmer: back + forward buttons --}}
             <div class="flex items-center gap-0.5 shrink-0">
                 <div class="shimmer w-7 h-7 rounded-md"></div>
                 <div class="shimmer w-7 h-7 rounded-md"></div>
             </div>
-            {{-- Shimmer: crumb trail --}}
             <div class="flex items-center gap-1 flex-1">
                 <div class="shimmer h-5 w-16 rounded"></div>
                 <div class="shimmer h-5 w-24 rounded"></div>
@@ -18,7 +16,6 @@
         </template>
 
         <template v-else>
-        {{-- Back / Forward --}}
         <div class="flex items-center gap-0.5 shrink-0">
             <button
                 type="button"
@@ -44,7 +41,6 @@
             </button>
         </div>
 
-        {{-- Crumb trail --}}
         <nav class="flex items-center gap-1 text-sm flex-1 flex-nowrap min-w-0 overflow-x-auto whitespace-nowrap">
             <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id ?? i">
                 <span v-if="i > 0" class="text-gray-300 dark:text-gray-600">/</span>
@@ -65,7 +61,6 @@
             </template>
         </nav>
 
-        {{-- Crumb right-click context menu --}}
         <teleport to="body">
             <div
                 v-if="crumbCtx.on"

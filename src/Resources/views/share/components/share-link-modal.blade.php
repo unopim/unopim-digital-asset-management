@@ -24,13 +24,11 @@
                 <template v-slot:content>
                     <div class="px-4 py-2.5 border-b dark:border-gray-800">
                         <div class="flex flex-col gap-4">
-                            <!-- Loading -->
                             <div v-if="isLoading" class="text-sm text-gray-500 dark:text-slate-400 py-4 text-center">
                                 @lang('dam::app.admin.dam.share.modal.loading')
                             </div>
 
                             <template v-else>
-                                <!-- ── Active: show URL row ── -->
                                 <div v-if="currentShare && currentShare.status === 'active'" class="flex items-center gap-2">
                                     <input
                                         type="text"
@@ -47,7 +45,6 @@
                                     </button>
                                 </div>
 
-                                <!-- ── Revoked: notice + reauthorize / create new ── -->
                                 <div v-else-if="currentShare && currentShare.status === 'revoked'" class="flex flex-col gap-3">
                                     <div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-3 py-2">
                                         <span class="icon-warning text-lg text-amber-500 shrink-0 mt-px"></span>
@@ -75,7 +72,6 @@
                                     </div>
                                 </div>
 
-                                <!-- ── No share: create button ── -->
                                 <div v-else>
                                     <button
                                         v-if="!showAdvanced"
@@ -89,7 +85,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Advanced checkbox -->
                                 <label class="flex items-center gap-2 cursor-pointer select-none mt-1">
                                     <input
                                         type="checkbox"
@@ -102,12 +97,10 @@
                                     </span>
                                 </label>
 
-                                <!-- Advanced section -->
                                 <div
                                     v-if="showAdvanced"
                                     class="border border-gray-200 dark:border-cherry-700 rounded-md p-4 flex flex-col gap-4"
                                 >
-                                    <!-- Custom name -->
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
                                             @lang('dam::app.admin.dam.share.modal.name-label')
@@ -120,7 +113,6 @@
                                         />
                                     </div>
 
-                                    <!-- Expiry -->
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 dark:text-slate-300 mb-1">
                                             @lang('dam::app.admin.dam.share.modal.expiry')
@@ -139,9 +131,7 @@
                                         ></v-multiselect>
                                     </div>
 
-                                    <!-- Actions -->
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <!-- Save (active share) -->
                                         <button
                                             v-if="currentShare && currentShare.status === 'active'"
                                             type="button"
@@ -152,7 +142,6 @@
                                             @lang('dam::app.admin.dam.share.modal.save')
                                         </button>
 
-                                        <!-- Create (no share yet) -->
                                         <button
                                             v-if="!currentShare"
                                             type="button"
@@ -164,7 +153,6 @@
                                             <span v-else>@lang('dam::app.admin.dam.share.modal.creating')</span>
                                         </button>
 
-                                        <!-- Reauthorize (revoked share) -->
                                         <button
                                             v-if="currentShare && currentShare.status === 'revoked'"
                                             type="button"
@@ -176,7 +164,6 @@
                                             <span v-else>@lang('dam::app.admin.dam.share.modal.reauthorizing')</span>
                                         </button>
 
-                                        <!-- Revoke (active share) -->
                                         <button
                                             v-if="currentShare && currentShare.status === 'active'"
                                             type="button"

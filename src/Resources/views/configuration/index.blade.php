@@ -13,7 +13,6 @@
     <form method="POST" action="{{ route('admin.dam.configuration.update') }}">
         @csrf
 
-        {{-- Sticky header --}}
         <div class="bg-white dark:bg-cherry-800 -mx-4 px-4 pb-2.5">
             <div class="flex gap-4 justify-between items-center max-sm:flex-wrap">
                 <p class="text-xl font-bold dark:text-white text-gray-800">
@@ -30,7 +29,6 @@
         {{-- Section label (left) + settings card (right), like the Magic AI settings page. --}}
         <div class="grid grid-cols-[1fr_2fr] gap-10 mt-6 max-xl:grid-cols-1 {{ $canUpdate ? '' : 'opacity-60 pointer-events-none select-none' }}">
 
-            {{-- General Settings --}}
             <div class="grid gap-2.5 content-start">
                 <p class="text-base text-gray-800 dark:text-white font-semibold">
                     @lang('dam::app.admin.configuration.general.title')
@@ -90,7 +88,6 @@
                 </div>
             </div>
 
-            {{-- Directory Settings --}}
             <div class="grid gap-2.5 content-start">
                 <p class="text-base text-gray-800 dark:text-white font-semibold">
                     @lang('dam::app.admin.configuration.directory.title')

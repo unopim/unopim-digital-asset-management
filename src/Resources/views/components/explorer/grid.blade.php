@@ -3,13 +3,11 @@
 <script type="text/x-template" id="v-dam-explorer-grid-template">
     {{-- Outer div catches drops on empty space (directory actions live in the "+ New" toolbar button) --}}
     <div class="pr-4 min-h-72" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
-        {{-- Shimmer --}}
         <div v-if="isLoading" class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
         </div>
 
         <template v-else>
-            {{-- Folders --}}
             <template v-if="directories.length">
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.folders')
@@ -35,7 +33,6 @@
                 </div>
             </template>
 
-            {{-- Assets --}}
             <template v-if="assets.length">
                 <p class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
                     @lang('dam::app.admin.explorer.sections.files')
@@ -57,14 +54,12 @@
                 </div>
             </template>
 
-            {{-- Empty --}}
             <div v-if="!directories.length && !assets.length" class="flex flex-col items-center justify-center py-16 gap-4">
                 <img src="{{ unopim_asset('images/no-records-found.svg', 'dam') }}" class="w-32 h-32 opacity-60" alt="" />
                 <p class="text-lg font-bold text-gray-700 dark:text-slate-50">@lang('admin::app.components.datagrid.table.no-records-available')</p>
             </div>
         </template>
 
-        {{-- Context menu --}}
         <v-dam-explorer-ctx
             v-if="ctx.on"
             :key="ctxKey"

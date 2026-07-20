@@ -14,7 +14,6 @@
       $disabledExpr     — Vue expression that disables the form while busy  (e.g. 'isCreating')
 --}}
 <div class="flex flex-col gap-4">
-    {{-- Custom name --}}
     <x-admin::form.control-group>
         <x-admin::form.control-group.label>
             @lang('dam::app.admin.dam.share.modal.name-label')
@@ -32,7 +31,6 @@
         <x-admin::form.control-group.error control-name="share_name" />
     </x-admin::form.control-group>
 
-    {{-- Link expires after --}}
     <x-admin::form.control-group>
         <x-admin::form.control-group.label>
             @lang('dam::app.admin.dam.share.modal.expiry')
@@ -53,7 +51,6 @@
         ></v-multiselect>
     </x-admin::form.control-group>
 
-    {{-- No expiry toggle (UnoPim switch component) --}}
     <x-admin::form.control-group>
         <div class="flex items-center gap-3">
             <x-admin::form.control-group.control

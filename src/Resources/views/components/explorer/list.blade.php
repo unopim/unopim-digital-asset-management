@@ -13,7 +13,6 @@
         </div>
 
         <template v-else>
-            {{-- Header --}}
             <div class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 <span></span>
                 <span></span>
@@ -30,7 +29,6 @@
                 <span class="[grid-column-end:-1] text-right ltr:pr-1 rtl:pl-1">@lang('dam::app.admin.explorer.list.header.actions')</span>
             </div>
 
-            {{-- Folder rows --}}
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
                 class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
@@ -75,7 +73,6 @@
                     <button v-if="dir.can_access !== false" type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     @if (config('dam.explorer.bookmarks_enabled'))
-                    {{-- Star glows violet when this folder is bookmarked. --}}
                     <button
                         type="button"
                         class="icon-star text-base transition-colors"
@@ -97,12 +94,10 @@
                 </div>
             </div>
 
-            {{-- Files divider --}}
             <div v-if="directories.length && assets.length" class="px-4 py-2 bg-gray-50 dark:bg-cherry-800 border-b border-gray-200 dark:border-cherry-700 text-xs font-bold uppercase tracking-widest text-gray-400">
                 @lang('dam::app.admin.explorer.sections.files')
             </div>
 
-            {{-- Asset rows --}}
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
                 class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
@@ -152,14 +147,12 @@
                 </div>
             </div>
 
-            {{-- Empty --}}
             <div v-if="!directories.length && !assets.length" class="flex flex-col items-center justify-center py-16 gap-3">
                 <img src="{{ unopim_asset('images/no-records-found.svg', 'dam') }}" class="w-24 h-24 opacity-60" alt="" />
                 <p class="font-bold text-gray-700 dark:text-slate-50">@lang('admin::app.components.datagrid.table.no-records-available')</p>
             </div>
         </template>
 
-        {{-- Context menu --}}
         <v-dam-explorer-ctx
             v-if="ctx.on"
             :key="ctxKey"

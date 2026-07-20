@@ -4,11 +4,8 @@
 
 <template v-else>
     <div class="mt-7 flex items-center justify-between gap-4 max-md:flex-wrap">
-        <!-- Left Toolbar -->
         <div class="flex gap-x-1">
-            <!-- Search Panel -->
             <div class="flex w-full items-center gap-x-1">
-                <!-- Search Panel -->
                 <div class="flex max-w-[445px] items-center max-sm:w-full max-sm:max-w-full">
                     <div class="relative w-full">
                         <input
@@ -26,7 +23,6 @@
                     </div>
                 </div>
 
-                <!-- Information Panel -->
                 <div class="ltr:pl-2.5 rtl:pr-2.5">
                     <p class="text-sm font-light text-gray-800 dark:text-white">
                         <!-- Need to manage this translation. -->
@@ -48,9 +44,7 @@
             </div>
         </div>
 
-        <!-- Right Toolbar -->
         <div class="flex gap-x-4">
-            <!-- Filters Activation Button -->
             <x-admin::drawer width="350px" ref="filterDrawer">
                 <x-slot:toggle>
                     <div>
@@ -75,7 +69,6 @@
                     </div>
                 </x-slot>
 
-                <!-- Drawer Header -->
                 <x-slot:header>
                     <div class="flex justify-between items-center p-3">
                         <p class="text-base text-gray-800 dark:text-white font-semibold">
@@ -84,7 +77,6 @@
                     </div>
                 </x-slot>
 
-                <!-- Drawer Content -->
                 <x-slot:content class="!p-5">
                     <x-dam::datagrid.filters />
                         <div
@@ -98,7 +90,6 @@
 
             <div class="flex items-center gap-x-2">
                 <x-admin::dropdown>
-                    <!-- Dropdown Toggler -->
                     <x-slot:toggle>
                         <button
                             type="button"
@@ -110,7 +101,6 @@
                         </button>
                     </x-slot>
 
-                    <!-- Dropdown Content -->
                     <x-slot:menu>
                         <x-admin::dropdown.menu.item
                             v-for="perPageOption in available.meta.per_page_options"
@@ -138,7 +128,6 @@
                     <span v-text="available.meta.last_page"></span>
                 </div>
 
-                <!-- Pagination -->
                 <div class="flex items-center gap-1">
                     <button
                         type="button"

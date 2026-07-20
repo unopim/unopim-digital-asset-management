@@ -5,7 +5,6 @@
         class="fixed bg-white dark:bg-cherry-800 border border-gray-200 dark:border-cherry-600 rounded-lg shadow-2xl py-1 min-w-[185px] z-[10002]"
         :style="{ top: finalTop + 'px', left: finalLeft + 'px', visibility: ready ? 'visible' : 'hidden' }"
     >
-        {{-- Directory actions --}}
         <template v-if="itemType === 'directory'">
             {{-- Open / Open in new tab always available even for transit-only dirs --}}
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doNavigate">
@@ -127,7 +126,6 @@
             </template>
         </template>
 
-        {{-- Asset actions --}}
         <template v-else-if="itemType === 'asset'">
             @if (bouncer()->hasPermission('dam.asset.view'))
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="preview">

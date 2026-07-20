@@ -12,7 +12,6 @@
         id="v-asset-picker-template"
     >
         <div>
-            {{-- Directory path breadcrumb (mirrors the DAM module); click a crumb to navigate. --}}
             <div class="flex items-center flex-wrap gap-1.5 text-sm mb-3" v-if="breadcrumbs.length">
                 <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
                     <span
@@ -569,10 +568,6 @@
                     }
                 },
 
-                //================================================================
-                // Filters logic, will move it from here once completed.
-                //================================================================
-
                 findAppliedColumn(columnIndex) {
                     return this.applied.filters.columns.find(column => column.index === columnIndex);
                 },
@@ -609,10 +604,6 @@
 
                     this.get();
                 },
-
-                //================================================================
-                // Mass actions logic, will move it from here once completed.
-                //================================================================
 
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
@@ -777,10 +768,6 @@
                     });
                 },
 
-                //=======================================================================================
-                // Support for previous applied values in datagrids. All code is based on local storage.
-                //=======================================================================================
-
                 updateDatagrids() {
                     let datagrids = this.getDatagrids();
 
@@ -838,11 +825,6 @@
                     );
                 },
 
-                //================================================================
-                // Remaining logic, will check.
-                //================================================================
-
-                // refactor when not in that much use case...
                 performAction(action) {
                     const method = action.method.toLowerCase();
 

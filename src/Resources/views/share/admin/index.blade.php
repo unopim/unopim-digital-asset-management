@@ -150,7 +150,6 @@
                             </div>
 
                             <template v-else>
-                                <!-- Active: URL row -->
                                 <div v-if="currentShare && currentShare.status === 'active'" class="flex items-center gap-2">
                                     <input
                                         type="text"
@@ -167,7 +166,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Revoked: notice + reauthorize -->
                                 <div v-else-if="currentShare && currentShare.status === 'revoked'" class="flex flex-col gap-3">
                                     <div class="flex items-start gap-2 rounded-md border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-3 py-2">
                                         <span class="icon-warning text-lg text-amber-500 shrink-0 mt-px"></span>
@@ -194,7 +192,6 @@
                                     </div>
                                 </div>
 
-                                <!-- No share: create button -->
                                 <div v-else>
                                     <button
                                         type="button"
@@ -207,7 +204,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Advanced checkbox -->
                                 <label class="flex items-center gap-2 cursor-pointer select-none mt-1">
                                     <input
                                         type="checkbox"
@@ -220,7 +216,6 @@
                                     </span>
                                 </label>
 
-                                <!-- Advanced section -->
                                 <div
                                     v-if="showAdvanced"
                                     class="border border-gray-200 dark:border-cherry-700 rounded-md p-4 flex flex-col gap-4"

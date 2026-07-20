@@ -26,7 +26,6 @@
                 aria-hidden="true"
             ></div>
 
-            <!-- Action-in-flight overlay (mass delete / mass action) -->
             <div
                 v-if="actionInFlight"
                 class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
@@ -613,10 +612,6 @@
                     }
                 },
 
-                //================================================================
-                // Filters logic, will move it from here once completed.
-                //================================================================
-
                 findAppliedColumn(columnIndex) {
                     return this.applied.filters.columns.find(column => column.index === columnIndex);
                 },
@@ -653,10 +648,6 @@
 
                     this.get();
                 },
-
-                //================================================================
-                // Mass actions logic, will move it from here once completed.
-                //================================================================
 
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
@@ -864,10 +855,6 @@
                     });
                 },
 
-                //=======================================================================================
-                // Support for previous applied values in datagrids. All code is based on local storage.
-                //=======================================================================================
-
                 updateDatagrids() {
                     let datagrids = this.getDatagrids();
 
@@ -927,11 +914,6 @@
                     );
                 },
 
-                //================================================================
-                // Remaining logic, will check.
-                //================================================================
-
-                // refactor when not in that much use case...
                 performAction(action) {
                     const method = action.method.toLowerCase();
 

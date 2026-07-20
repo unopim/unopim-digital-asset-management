@@ -49,7 +49,6 @@
                                 class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900 font-semibold items-center"
                                 :style="`grid-template-columns: 60px repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(120px, 1fr)`"
                             >
-                                {{-- Select-all checkbox --}}
                                 <p v-if="available.massActions.length" class="flex items-center">
                                     <label class="cursor-pointer">
                                         <input
@@ -104,7 +103,6 @@
                             class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
                             :style="`grid-template-columns: 60px repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(120px, 1fr)`"
                         >
-                            {{-- Row select checkbox --}}
                             <p v-if="available.massActions.length" @click.stop>
                                 <label class="cursor-pointer">
                                     <input

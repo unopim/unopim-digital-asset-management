@@ -14,7 +14,6 @@
 </div>
 
 @pushOnce('scripts')
-<!-- asset name template -->
 <script type="text/x-template" id="v-asset-item-template">
     <div
         class="tree-container-assets-details"
@@ -101,12 +100,11 @@
                     y: event.pageY
                 };
                 this.showContextMenuFlag = true;
-                this.$emit("right-click-item", event, item, 'asset'); // Emit event for parent handling
+                this.$emit("right-click-item", event, item, 'asset');
             },
         }
     });
 </script>
-<!-- item template -->
 <script type="text/x-template" id="v-item-template">
     <div class="tree-container-details">
         <div
@@ -161,7 +159,6 @@
             v-if="hasDropZone"
             class="flex flex-col pl-6"
         >
-            <!-- Directories -->
             <draggable
                 id="child-tree-groups"
                 class="directoryItems"
@@ -195,7 +192,6 @@
                 </template>
             </draggable>
 
-            <!-- Load more children (wide levels paginate) -->
             <button
                 v-if="childrenHasMore"
                 type="button"
@@ -207,7 +203,6 @@
                 <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
             </button>
 
-            <!-- Asset -->
             <draggable
                 id="assets-items"
                 ghost-class="draggable-ghost"
@@ -236,7 +231,6 @@
             </draggable>
         </div>
     </div>
-    <!-- Directories -->
     <draggable 
         v-if="!isDirectory"
         id="child-tree-groups"
@@ -255,7 +249,6 @@
             
         </template>
     </draggable>
-    <!-- Asset -->
     <draggable
         v-if="!isAssets"
         id="assets-items"
@@ -614,7 +607,7 @@
                     y: event.pageY
                 };
                 this.showContextMenuFlag = true;
-                this.$emit("right-click-item", event, item, type); // Emit event for parent handling
+                this.$emit("right-click-item", event, item, type);
             },
 
         }
@@ -631,7 +624,6 @@
             ref="treeContainer"
             v-else-if="formattedItems"
         >
-            <!-- Move-in-flight overlay (directory or asset drag-move) -->
             <div
                 v-if="moveStatusLabel"
                 class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
@@ -745,7 +737,6 @@
                 </draggable>
             </div>
 
-            <!-- Context Menu -->
             <!-- Teleported to body so it renders above the grid, not under it. -->
             <teleport to="body">
             <div v-if="showContextMenuFlag"
@@ -918,7 +909,6 @@
         </div>
 
 
-        <!-- Create And Rename Directory Modal Form -->
         <teleport to="body">
         <x-admin::form
             v-slot="{ meta, errors, handleSubmit }"
@@ -931,7 +921,6 @@
                 ref="directoryCreateOrRenameForm"
             >
                 <x-admin::modal ref="directoryCreateOrRenameModal" @toggle="focusNameInput">
-                    <!-- Modal Header -->
                     <x-slot:header>
                         <p
                             class="text-lg text-gray-800 dark:text-white font-bold"
@@ -948,7 +937,6 @@
                         </p>
                     </x-slot>
 
-                    <!-- Modal Content -->
                     <x-slot:content>
                         {!! view_render_event('unopim.admin.dam.directory.create.before') !!}
 
@@ -965,7 +953,6 @@
                             v-if="!directoryCreate"
                         />
 
-                        <!-- name -->
                         <x-admin::form.control-group v-if="directoryCreate">
                             <x-admin::form.control-group.label class="required">
                                 @lang('dam::app.admin.dam.index.directory.create.name')
@@ -1006,7 +993,6 @@
                         {!! view_render_event('unopim.admin.dam.directory.create.after') !!}
                     </x-slot>
 
-                    <!-- Modal Footer -->
                     <x-slot:footer>
                         <div class="flex gap-x-2.5 items-center">
                             <button
@@ -1034,7 +1020,6 @@
                 ref="assetRenameForm"
             >
                 <x-admin::modal ref="assetRenameModal" @toggle="focusNameInput">
-                    <!-- Modal Header -->
                     <x-slot:header>
                         <p
                             class="text-lg text-gray-800 dark:text-white font-bold"
@@ -1043,7 +1028,6 @@
                         </p>
                     </x-slot>
 
-                    <!-- Modal Content -->
                     <x-slot:content>
                         {!! view_render_event('unopim.admin.dam.asset.rename.before') !!}
 
@@ -1053,7 +1037,6 @@
                             v-model="selectedItem.id"
                         />
 
-                        <!-- name -->
                         <x-admin::form.control-group>
                             <x-admin::form.control-group.label class="required">
                                 @lang('dam::app.admin.dam.index.directory.create.name')
@@ -1076,7 +1059,6 @@
                         {!! view_render_event('unopim.admin.dam.asset.rename.after') !!}
                     </x-slot>
 
-                    <!-- Modal Footer -->
                     <x-slot:footer>
                         <div class="flex gap-x-2.5 items-center">
                             <button
