@@ -3,7 +3,7 @@
 UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system built on Laravel. It enables businesses to store, organize, and manage digital assets such as images, videos, documents, and more. The system is designed for seamless cross-team asset management. Key features include:
 
 ## Requirements
-- **UnoPim**: v2.0.0
+- **UnoPim**: >= v2.0.0
 
 ### Optional system binaries (for media previews)
 The asset grid generates first-frame thumbnails for videos and first-page thumbnails for PDFs. These need two CLI tools on the host. If they're missing the grid still works — it just falls back to the generic file-type icon and logs a warning to `storage/logs/laravel.log`.
@@ -113,10 +113,7 @@ To manually install UnoPim DAM:
    - Execute these commands to complete the installation:
      ```bash
      composer dump-autoload
-     php artisan optimize:clear
-     php artisan migrate
-     php artisan vendor:publish --provider=Webkul\\DAM\\Providers\\DAMServiceProvider
-     php artisan db:seed --class=Webkul\\DAM\\Database\\Seeders\\DirectoryTableSeeder
+     php artisan dam-package:install;
      ```
 
 5. **Enable Queue Operations**  
@@ -195,8 +192,6 @@ To interact with UnoPim DAM's API, you can use our official Postman collection:
 
 [UnoPim DAM APIs on Postman](https://www.postman.com/unopim/unopim-apis/collection/4385199-086948c4-9e81-4271-abb7-6d6995a67304?ctx=info)
 
-This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs. A bundled copy ships at `packages/Webkul/DAM/postman/Unopim-DAM-API.postman_collection.json`.
-
 ### API Support
 
 - **Directories Management Endpoints:**
@@ -229,6 +224,6 @@ lost. Back up first if you can.
 
 Restore a backup with:
 
-    php artisan dam:update:restore <timestamp>
+  php artisan dam:update:restore <timestamp>
 
 Composer installs update with `composer update unopim/dam && php artisan dam:update`.
