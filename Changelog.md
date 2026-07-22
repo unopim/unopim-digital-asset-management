@@ -9,8 +9,8 @@
 
 * **Lazy Directory Loading** — Improved directory tree performance by loading directories in batches of **100 items** with a **Load More** option.
 
-* **Asset Bulk Edit** — Updated the Asset Bulk Edit feature using the core datagrid for a more consistent editing experience.
-
+* **Asset Bulk Edit** — Updated and implemented the **Asset Bulk Edit** feature using the core product datagrid. The functionality is now fully integrated and working as expected.
+  
 ### Fixed
 
 * **AWS S3 Video Support** — Fixed video handling for assets stored in AWS S3.
