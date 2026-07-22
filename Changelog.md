@@ -1,5 +1,6 @@
 # CHANGELOG for unopim-digital-asset-management
-## **Version 2.2.1**
+
+## **Version 2.2**
 
 ### Features & Enhancements
 
