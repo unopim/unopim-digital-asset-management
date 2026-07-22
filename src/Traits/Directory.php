@@ -9,7 +9,7 @@ use Webkul\DAM\Models\Directory as ModelDirectory;
 trait Directory
 {
     /**
-     * Sets a unique directory name for copying. If the original name already exists
+     * Sets a unique directory name for copying. If the original name already exists.
      */
     protected function setDirectoryNameForCopy(string $originalName, int $parentId): string
     {
@@ -99,9 +99,6 @@ trait Directory
                 throw new \Exception(trans('dam::app.admin.dam.asset.edit.image-source-not-readable'));
             }
 
-            // getimagesize / exif_read_data require a real local filesystem
-            // path. On non-local drivers (e.g. S3) Storage::path() returns only
-            // the object key, so we materialize the object into a temp file.
             $tempFile = tempnam(sys_get_temp_dir(), 'dam_meta_');
             file_put_contents($tempFile, $storage->get($path));
 

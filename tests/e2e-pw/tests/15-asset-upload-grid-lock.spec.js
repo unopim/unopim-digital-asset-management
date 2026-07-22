@@ -79,8 +79,9 @@ test.describe('DAM Asset Upload — Grid lock during upload', () => {
     await expect(cancelBtn).toBeVisible();
     await expect(cancelBtn).toBeEnabled();
 
-    const uploadLabel = adminPage.locator('label[for="file-upload"]').first();
-    await expect(uploadLabel).toBeVisible();
+    // The upload control is now the "+ New" dropdown toggle (shows "Uploading" mid-upload).
+    const newButton = adminPage.getByRole('button', { name: /New|Uploading/ }).first();
+    await expect(newButton).toBeVisible();
 
     await cancelBtn.click({ force: true });
     await adminPage.waitForTimeout(500);

@@ -17,20 +17,13 @@ class PropertyController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetPropertyRepository $assetPropertyRepository,
         protected FileStorer $fileStorer
     ) {}
 
-    /**
-     * For the asset properties route
-     *
-     * @return void
-     */
+    /** Asset properties route. */
     public function properties(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -42,18 +35,15 @@ class PropertyController extends Controller
         return view('dam::asset.properties.index', compact('id'));
     }
 
-    /**
-     * Property create $id
-     *
-     * @return void
-     */
+    /** Create a property. */
     public function propertiesCreate(int $id)
     {
         $this->damAuthorizeAsset($id);
 
         $messages = [
-            'name.required' => trans('dam::app.admin.validation.property.name.required'),
-            'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
+            'name.required'          => trans('dam::app.admin.validation.property.name.required'),
+            'name.unique'            => trans('dam::app.admin.validation.property.name.unique'),
+            'sort_order.required_if' => trans('dam::app.admin.validation.property.sort-order.required'),
         ];
 
         $this->validate(request(), [
@@ -61,7 +51,7 @@ class PropertyController extends Controller
             'language'      => 'required',
             'value'         => 'required|max:1000',
             'is_filterable' => 'sometimes|boolean',
-            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+            'sort_order'    => 'required_if:is_filterable,1|integer|min:0|max:9999',
             'name'          => [
                 'required',
                 'min:3',
@@ -92,11 +82,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    /**
-     * Property edit section
-     *
-     * @return void
-     */
+    /** Edit a property. */
     public function propertiesEdit(int $id)
     {
         $property = $this->assetPropertyRepository->findOrFail($id);
@@ -106,12 +92,7 @@ class PropertyController extends Controller
         return new JsonResponse($property);
     }
 
-    /**
-     * properties update
-     *
-     * @param  int  $id
-     * @return void
-     */
+    /** Update a property. */
     public function propertiesUpdate()
     {
         $id = request('id');
@@ -119,7 +100,8 @@ class PropertyController extends Controller
         $this->damAuthorizeAsset((int) $property->dam_asset_id);
 
         $messages = [
-            'name.unique' => trans('dam::app.admin.validation.property.name.unique'),
+            'name.unique'            => trans('dam::app.admin.validation.property.name.unique'),
+            'sort_order.required_if' => trans('dam::app.admin.validation.property.sort-order.required'),
         ];
 
         $this->validate(request(), [
@@ -136,7 +118,7 @@ class PropertyController extends Controller
             ],
             'value'         => 'required',
             'is_filterable' => 'sometimes|boolean',
-            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+            'sort_order'    => 'required_if:is_filterable,1|integer|min:0|max:9999',
         ], $messages);
 
         $payload = array_merge(
@@ -155,9 +137,8 @@ class PropertyController extends Controller
     }
 
     /**
-     * properties destroy
+     * properties destroy.
      *
-     * @param  int  $id
      * @return void
      */
     public function propertiesDestroy()
@@ -183,23 +164,31 @@ class PropertyController extends Controller
     }
 
     /**
-     * Mass delete assets
+     * Mass delete assets.
      */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.property.delete'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $assetPropertyIds = $massDestroyRequest->input('indices');
 
         try {
             foreach ($assetPropertyIds as $assetPropertyId) {
-                $asset = $this->assetPropertyRepository->find($assetPropertyId);
+                $property = $this->assetPropertyRepository->find($assetPropertyId);
 
-                if (isset($asset)) {
-                    Event::dispatch('dam.asset.property.delete.before', $assetPropertyId);
-
-                    $this->assetPropertyRepository->delete($assetPropertyId);
-
-                    Event::dispatch('dam.asset.property.delete.after', $assetPropertyId);
+                if (! $property || ! $this->damCanAccessAsset((int) $property->dam_asset_id)) {
+                    continue;
                 }
+
+                Event::dispatch('dam.asset.property.delete.before', $assetPropertyId);
+
+                $this->assetPropertyRepository->delete($assetPropertyId);
+
+                Event::dispatch('dam.asset.property.delete.after', $assetPropertyId);
             }
 
             return new JsonResponse([

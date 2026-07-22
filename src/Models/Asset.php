@@ -23,18 +23,11 @@ class Asset extends Model implements AssetContract, HistoryAuditable
 
     protected $fillable = ['file_name', 'file_type', 'file_size', 'path', 'mime_type', 'extension', 'meta_data'];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'meta_data' => 'array',
     ];
 
-    /**
-     * These columns history will not be generated
-     */
+    /** Columns excluded from history generation. */
     protected $auditExclude = [
         'id',
     ];
@@ -72,9 +65,7 @@ class Asset extends Model implements AssetContract, HistoryAuditable
             ->where('share_type', Share::TYPE_ASSET);
     }
 
-    /**
-     * Get the path without file system root
-     */
+    /** Get the path without the file system root. */
     public function getPathWithOutFileSystemRoot()
     {
         return str_replace(Directory::ASSETS_DIRECTORY.'/', '', $this->path);

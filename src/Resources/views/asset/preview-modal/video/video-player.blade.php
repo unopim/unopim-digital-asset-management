@@ -1,6 +1,5 @@
 <div ref="videoContainer" class="relative w-full h-full" @mousemove="videoShowControls" @mouseleave="videoShowControls">
 
-    <!-- Video area — fills full space; control bar overlays it from bottom -->
     <div
         class="relative w-full h-full flex items-center justify-center bg-black select-none"
         :class="!videoControlsVisible ? 'cursor-none' : 'cursor-pointer'"
@@ -25,12 +24,10 @@
             @lang('dam::app.admin.dam.asset.edit.preview-modal.not-available')
         </video>
 
-        <!-- Buffering spinner -->
         <div v-if="videoIsBuffering" class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="w-12 h-12 rounded-full border-4 border-white/20 border-t-violet-400 animate-spin"></div>
         </div>
 
-        <!-- Center play/pause overlay -->
         <div
             class="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300"
             :class="(!videoIsPlaying && !videoIsBuffering) || videoClickFlash ? 'opacity-100' : 'opacity-0'"
@@ -49,7 +46,6 @@
         </div>
     </div>
 
-    <!-- Control bar — transparent gradient overlay from bottom, auto-hides -->
     <div
         class="absolute bottom-0 left-0 right-0 flex flex-col pt-14 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-300"
         :class="videoControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
@@ -57,7 +53,6 @@
         @mouseleave="videoShowControls"
     >
 
-        <!-- Seek bar -->
         <div class="px-4 pb-1">
             <div
                 ref="videoSeekContainer"
@@ -67,14 +62,12 @@
                 @mousemove="videoOnSeekHover"
                 @mouseleave="videoOnSeekLeave"
             >
-                <!-- Tooltip -->
                 <div
                     v-show="videoSeekTooltipVisible && videoDuration"
                     class="absolute px-1.5 py-0.5 rounded bg-black/80 text-white text-xs font-mono pointer-events-none whitespace-nowrap z-10"
                     :style="{ left: videoSeekTooltipX + 'px', bottom: 'calc(100% + 8px)', transform: 'translateX(-50%)' }"
                 >@{{ videoSeekTooltip }}</div>
 
-                <!-- Track: full bg / buffered / played -->
                 <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/30 overflow-hidden">
                     <div
                         class="absolute inset-y-0 left-0 bg-white/60 transition-[width] duration-300"
@@ -86,7 +79,6 @@
                     ></div>
                 </div>
 
-                <!-- Playhead thumb -->
                 <div
                     class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white shadow pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                     :style="{ left: (videoDuration ? (videoCurrentTime / videoDuration) * 100 : 0) + '%' }"
@@ -97,7 +89,6 @@
         <!-- Controls row — always white (over dark gradient) -->
         <div class="flex items-center gap-2 px-4 pb-3 text-white">
 
-            <!-- Play / Pause -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow transition-colors shrink-0"
@@ -111,7 +102,6 @@
                 </svg>
             </button>
 
-            <!-- Skip back -->
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
@@ -124,7 +114,6 @@
                 @lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.10s')
             </button>
 
-            <!-- Skip forward -->
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-white/10 border border-white/30 hover:border-white/60 transition-colors shrink-0"
@@ -137,14 +126,12 @@
                 </svg>
             </button>
 
-            <!-- Time display -->
             <span class="text-xs font-mono tabular-nums shrink-0 opacity-80">
                 @{{ videoCurrentTimeDisplay }} / @{{ videoDurationDisplay }}
             </span>
 
             <div class="flex-1"></div>
 
-            <!-- Speed selector dropdown -->
             <div class="dam-ctrl-desktop relative items-center shrink-0">
                 <button
                     ref="videoSpeedBtn"
@@ -187,7 +174,6 @@
                 </template>
             </div>
 
-            <!-- Loop toggle -->
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center justify-center w-7 h-7 rounded transition-colors shrink-0"
@@ -201,7 +187,6 @@
                 </svg>
             </button>
 
-            <!-- Volume -->
             <div class="dam-ctrl-desktop items-center gap-1.5 shrink-0">
                 <button
                     type="button"
@@ -230,7 +215,6 @@
                 />
             </div>
 
-            <!-- Fullscreen -->
             <button
                 type="button"
                 class="flex items-center justify-center w-7 h-7 rounded hover:bg-white/10 opacity-70 hover:opacity-100 transition-opacity shrink-0"
@@ -242,7 +226,6 @@
                 </svg>
             </button>
 
-            <!-- Three-dot action menu -->
             <div class="relative shrink-0">
                 <button
                     type="button"

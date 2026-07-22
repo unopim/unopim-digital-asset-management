@@ -1,5 +1,8 @@
 @php
-    $mediaUrl = route('admin.dam.file.preview', ['path' => urlencode($asset->path)]);
+    // Use getPreviewUrl so S3-stored media (video/audio) resolves to a direct
+    // S3 URL that supports native range/streaming — the local preview route
+    // only works for local disks and breaks video playback on S3.
+    $mediaUrl = \Webkul\DAM\Helpers\AssetHelper::getPreviewUrl($asset->path);
 
     $placeholderSvg = match($asset->file_type) {
         'video'    => asset('storage/dam/preview/video.svg'),
@@ -77,13 +80,10 @@
 
                 displayDirectoryBreadcrumb: @json($directoryAncestors->map(fn ($d) => ['id' => $d->id, 'name' => $d->name])->values()->toArray()),
 
-                // Image
                 ...window._damImageViewer.data,
 
-                // Video
                 ...window._damVideoPlayer.data,
 
-                // Audio
                 ...window._damAudioPlayer.data,
             };
         },
@@ -95,7 +95,6 @@
         },
 
         methods: {
-            // ── Open / close ──────────────────────────────────────────
             openPreview() {
                 this.imgResetState();
                 this.videoResetState();
@@ -236,7 +235,6 @@
                 if (isVideoKey) this.videoShowControls();
             },
 
-            // ── SPA navigation ────────────────────────────────────────
             onDamAssetChanged(data) {
                 this.closePreview();
                 this.isInfoOpen = false;
@@ -281,13 +279,10 @@
                 });
             },
 
-            // ── Image ─────────────────────────────────────────────────
             ...window._damImageViewer.methods,
 
-            // ── Video ─────────────────────────────────────────────────
             ...window._damVideoPlayer.methods,
 
-            // ── Audio ─────────────────────────────────────────────────
             ...window._damAudioPlayer.methods,
 
             _formatTime(s) {

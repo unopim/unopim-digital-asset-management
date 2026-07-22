@@ -1,6 +1,5 @@
 <div v-for="column in available.columns">
     <div v-if="column.filterable">
-        <!-- Boolean -->
         <div v-if="column.type === 'boolean'">
             <div class="flex items-center justify-between">
                 <p
@@ -24,7 +23,6 @@
 
             <div class="mb-2 mt-1.5">
                 <x-admin::dropdown>
-                    <!-- Dropdown Toggler -->
                     <x-slot:toggle>
                         <button
                             type="button"
@@ -40,7 +38,6 @@
                         </button>
                     </x-slot>
 
-                    <!-- Dropdown Content -->
                     <x-slot:menu>
                         <x-admin::dropdown.menu.item
                             v-for="option in column.options"
@@ -69,9 +66,7 @@
             </div>
         </div>
 
-        <!-- Dropdown -->
         <div v-else-if="column.type === 'dropdown'">
-            <!-- Basic -->
             <div v-if="column.options.type === 'basic'">
                 <div class="flex items-center justify-between">
                     <p
@@ -95,7 +90,6 @@
 
                 <div class="mb-2 mt-1.5">
                     <x-admin::dropdown>
-                        <!-- Dropdown Toggler -->
                         <x-slot:toggle>
                             <button
                                 type="button"
@@ -111,7 +105,6 @@
                             </button>
                         </x-slot>
 
-                        <!-- Dropdown Content -->
                         <x-slot:menu>
                             <x-admin::dropdown.menu.item
                                 v-for="option in column.options.params.options"
@@ -140,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- Searchable -->
             <div v-else-if="column.options.type === 'searchable'">
                 <div class="flex items-center justify-between">
                     <p
@@ -188,7 +180,6 @@
             </div>
         </div>
 
-        <!-- Date Range -->
         <div v-else-if="column.type === 'date_range'">
             <div class="flex items-center justify-between">
                 <p
@@ -272,7 +263,6 @@
             </div>
         </div>
 
-        <!-- Date Time Range -->
         <div v-else-if="column.type === 'datetime_range'">
             <div class="flex items-center justify-between">
                 <p
@@ -356,7 +346,6 @@
             </div>
         </div>
 
-        <!-- Rest -->
         <div v-else>
             <div class="flex items-center justify-between">
                 <p
@@ -410,7 +399,6 @@
 @pushOnce('scripts')
     <script type="text/x-template" id="v-datagrid-searchable-dropdown-template">
         <x-admin::dropdown ::close-on-click="false">
-            <!-- Dropdown Toggler -->
             <x-slot:toggle>
                 <button
                     type="button"
@@ -426,7 +414,6 @@
                 </button>
             </x-slot>
 
-            <!-- Dropdown Content -->
             <x-slot:menu>
                 <div class="relative">
                     <div class="relative rounded">

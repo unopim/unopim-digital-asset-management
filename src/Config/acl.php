@@ -73,24 +73,6 @@ return [
         'sort'  => 11,
     ],
 
-    // @TODO: Tag ACL implements the future
-    // [
-    //     'key'   => 'dam.asset.tag',
-    //     'name'  => 'dam::app.admin.acl.tag',
-    //     'route' => 'admin.dam.assets.tag',
-    //     'sort'  => 12,
-    // ], [
-    //     'key'   => 'dam.asset.tag.create',
-    //     'name'  => 'dam::app.admin.acl.create',
-    //     'route' => 'admin.dam.assets.tag',
-    //     'sort'  => 1,
-    // ], [
-    //     'key'   => 'dam.asset.tag.delete',
-    //     'name'  => 'dam::app.admin.acl.delete',
-    //     'route' => 'admin.dam.assets.remove-tag',
-    //     'sort'  => 2,
-    // ],
-
     [
         'key'   => 'dam.asset.property',
         'name'  => 'dam::app.admin.acl.property',
@@ -209,7 +191,7 @@ return [
     ], [
         'key'   => 'dam.assets',
         'name'  => 'dam::app.admin.acl.assets',
-        'route' => 'admin.dam.index',
+        'route' => 'admin.dam.assets.index',
         'sort'  => 4,
     ], [
         'key'   => 'dam.shares',
@@ -231,5 +213,40 @@ return [
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.dam.shares.destroy',
         'sort'  => 3,
+    ], [
+        'key'   => 'dam.tags',
+        'name'  => 'dam::app.admin.acl.tags',
+        'route' => 'admin.dam.tags.index',
+        'sort'  => 6,
+    ], [
+        'key'   => 'dam.tags.create',
+        'name'  => 'dam::app.admin.acl.create',
+        'route' => 'admin.dam.tags.store',
+        'sort'  => 1,
+    ], [
+        'key'   => 'dam.tags.update',
+        'name'  => 'dam::app.admin.acl.update',
+        'route' => 'admin.dam.tags.update',
+        'sort'  => 2,
+    ], [
+        'key'   => 'dam.tags.delete',
+        'name'  => 'dam::app.admin.acl.delete',
+        'route' => 'admin.dam.tags.destroy',
+        'sort'  => 3,
+    ], [
+        'key'   => 'dam.configuration',
+        'name'  => 'dam::app.admin.acl.configuration',
+        'route' => 'admin.dam.configuration.index',
+        'sort'  => 6,
+    ], [
+        'key'   => 'dam.configuration.index',
+        'name'  => 'dam::app.admin.acl.view',
+        'route' => 'admin.dam.configuration.index',
+        'sort'  => 1,
+    ], [
+        'key'   => 'dam.configuration.update',
+        'name'  => 'dam::app.admin.acl.edit',
+        'route' => 'admin.dam.configuration.update',
+        'sort'  => 2,
     ],
 ];

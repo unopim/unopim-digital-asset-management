@@ -46,8 +46,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-        // no-op — pivot rows are removed by table drop in the prior migration's down()
-    }
+    public function down(): void {}
 };

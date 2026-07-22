@@ -1,13 +1,10 @@
 <x-dam::tree.asset-count-badge />
 
-<!-- Panel -->
 <div class="p-4 bg-white dark:bg-cherry-900 rounded box-shadow w-[360px]">
-    <!-- Panel Header -->
     <p class="flex justify-between text-base text-gray-800 dark:text-white font-semibold mb-4">
         @lang('dam::app.admin.dam.index.directory.title')
     </p>
 
-    <!-- Panel Content -->
     <div class="mb-5 text-sm text-gray-600 dark:text-gray-300 flex flex-col gap-2">
         <x-dam::tree.search />
 
@@ -79,13 +76,11 @@
             </div>
 
 
-            <!-- Show loader -->
              <div 
                 v-if="isLoading" 
                 :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
                 class="absolute z-50"
             >
-                <!-- Spinner -->
                 <svg class="align-center inline-block animate-spin h-5 w-5 ml-2 text-white-700" xmlns="http://www.w3.org/2000/svg" fill="none"  aria-hidden="true" viewBox="0 0 24 24">
                     <circle
                         class="opacity-25"
@@ -135,6 +130,11 @@
             mounted() {
                 this.get();
                 this.$emitter.on('dam:reveal-directory', ({ id }) => this.revealDirectory(id));
+
+                this.$emitter.on('picker:navigate-directory', ({ id }) => {
+                    const path = this.findPathToDirectory(id);
+                    if (path && path.length) this.setFilters(path[path.length - 1]);
+                });
             },
 
             methods: {
@@ -146,10 +146,37 @@
 
                             this.formattedItems = response.data.data;
                             this.setDefaultSeletedItem();
+                            this.fetchAssetCounts();
                         })
                        .catch((error) => {
                             console.error('Error fetching directories:', error);
                         });
+                },
+
+                fetchAssetCounts() {
+                    const ids = [];
+                    const collect = (node) => {
+                        if (! node) return;
+                        if (node.id != null) ids.push(node.id);
+                        (node.children || []).forEach(collect);
+                    };
+                    (this.formattedItems || []).forEach(collect);
+
+                    if (! ids.length) return;
+
+                    this.$axios.post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                        .then((response) => {
+                            const counts = response.data.data || {};
+                            const stamp = (node) => {
+                                if (! node) return;
+                                if (node.id != null && counts[node.id] !== undefined) {
+                                    node.assets_total_count = counts[node.id];
+                                }
+                                (node.children || []).forEach(stamp);
+                            };
+                            (this.formattedItems || []).forEach(stamp);
+                        })
+                        .catch(() => {});
                 },
 
                 setDefaultSeletedItem() {
@@ -158,8 +185,8 @@
                         this.parentItem = this.formattedItems[0];
                     }
 
-                    // Skip setFilters — datagrid does its own ACL-scoped initial fetch.
                     this.$emitter.emit('current-directory', this.selectedItem);
+                    this.emitBreadcrumb(this.selectedItem);
                 },
 
                 setFilters(item, type = "directory") {
@@ -171,8 +198,16 @@
                     let value = [this.selectedItem.id];
 
                     this.$emitter.emit('current-directory', this.selectedItem);
+                    if (type === 'directory') {
+                        this.emitBreadcrumb(item);
+                    }
                     this.$emitter.emit('data-grid:reset-all-filters');
                     this.$emitter.emit('data-grid:filter', { column: {column: column, index: column}, value});
+                },
+
+                emitBreadcrumb(item) {
+                    const path = this.findPathToDirectory(item.id);
+                    this.$emitter.emit('picker:breadcrumb', path ? path.map(n => ({ id: n.id, name: n.name })) : []);
                 },
 
                 findPathToDirectory(id) {
@@ -202,8 +237,6 @@
                         return;
                     }
 
-                    // Ask each ancestor item to open. v-directory-tree-item listens
-                    // for 'picker:expand-directory' on $emitter and toggles isOpen.
                     for (let i = 1; i < path.length; i++) {
                         this.$emitter.emit('picker:expand-directory', { id: path[i].id });
                     }
@@ -270,7 +303,6 @@
                 v-if="isFolder || isAssets"
                 class="flex flex flex-col pl-4"
             >
-                <!-- Directories -->
                 <div class="flex sub-tree-container gap-2 py-1 ltr:pl-3 ltr:pr-10" v-for="(asset, index) in item.children">
                     <v-directory-tree-item
                         class="sub-tree-item"
@@ -282,7 +314,6 @@
                     ></v-directory-tree-item>
                 </div>
 
-                <!-- Asset -->
                 <div
                     v-if="showAssets"
                     class="flex py-1 ltr:pl-3 ltr:pr-10"
@@ -313,7 +344,8 @@
 
             computed: {
                 isFolder: function() {
-                    return this.item.children && Object.keys(this.item.children).length;
+                    return !! this.item.has_children
+                        || (this.item.children && this.item.children.length > 0);
                 },
 
                 isAssets: function() {
@@ -325,7 +357,8 @@
             data() {
                 return {
                     assetItem: this.item,
-                    isOpen: false
+                    isOpen: false,
+                    childrenLoaded: false,
                 };
             },
 
@@ -333,6 +366,7 @@
                 this.$emitter.on('picker:expand-directory', ({ id }) => {
                     if (Number(id) === Number(this.item.id) && (this.isFolder || this.isAssets)) {
                         this.isOpen = true;
+                        this.ensureChildrenLoaded();
                     }
                 });
             },
@@ -345,9 +379,53 @@
                 toggle: function(item) {
                     if (this.isFolder || this.isAssets) {
                         this.isOpen = !this.isOpen;
+
+                        if (this.isOpen) {
+                            this.ensureChildrenLoaded();
+                        }
                     }
 
                     this.setFilters(item);
+                },
+
+                ensureChildrenLoaded: function() {
+                    if (this.childrenLoaded || (this.item.children && this.item.children.length)) {
+                        return;
+                    }
+
+                    if (! this.item.has_children) {
+                        return;
+                    }
+
+                    this.childrenLoaded = true;
+
+                    const url = `{{ route('admin.dam.directory.children', ':id') }}`.replace(':id', this.item.id);
+
+                    this.$axios.get(url, { params: { offset: 0 } })
+                        .then((response) => {
+                            this.item.children = response.data.data || [];
+                            this.fetchChildCounts(this.item.children.map(c => c.id));
+                        })
+                        .catch((error) => {
+                            this.childrenLoaded = false;
+                            console.error('Error loading subdirectories:', error);
+                        });
+                },
+
+                fetchChildCounts: function(ids) {
+                    ids = (ids || []).filter(id => id != null);
+                    if (! ids.length) return;
+
+                    this.$axios.post("{{ route('admin.dam.directory.asset_counts') }}", { ids })
+                        .then((response) => {
+                            const counts = response.data.data || {};
+                            (this.item.children || []).forEach((child) => {
+                                if (counts[child.id] !== undefined) {
+                                    child.assets_total_count = counts[child.id];
+                                }
+                            });
+                        })
+                        .catch(() => {});
                 },
             },
         });

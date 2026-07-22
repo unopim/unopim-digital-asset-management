@@ -9,19 +9,12 @@ class AssetPropertyRepository extends Repository
 {
     protected $assets = [];
 
-    /**
-     * Specify model class name.
-     */
     public function model(): string
     {
         return AssetProperty::class;
     }
 
-    /**
-     * Create asset property.
-     *
-     * @return \Webkul\DAM\Contracts\AssetProperty
-     */
+    /** Create asset property. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -29,13 +22,7 @@ class AssetPropertyRepository extends Repository
         return $asset;
     }
 
-    /**
-     * Update asset property.
-     *
-     * @param  int  $id
-     * @param  string  $asset
-     * @return \Webkul\DAM\Contracts\AssetProperty
-     */
+    /** Update asset property. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);

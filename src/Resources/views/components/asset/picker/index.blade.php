@@ -12,6 +12,20 @@
         id="v-asset-picker-template"
     >
         <div>
+            <div class="flex items-center flex-wrap gap-1.5 text-sm mb-3" v-if="breadcrumbs.length">
+                <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
+                    <span
+                        class="cursor-pointer transition-colors"
+                        :class="i === breadcrumbs.length - 1
+                            ? 'text-violet-700 dark:text-violet-400 font-semibold'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400'"
+                        @click="navigateBreadcrumb(crumb)"
+                        v-text="crumb.name"
+                    ></span>
+                    <span v-if="i < breadcrumbs.length - 1" class="text-gray-400">/</span>
+                </template>
+            </div>
+
             <x-dam::asset.picker.toolbar />
 
             <div class="flex mt-4">
@@ -76,6 +90,9 @@
                     isLoading: false,
                     searchDebounceTimer: null,
 
+                    // Directory path shown as a breadcrumb, built by the directory tree.
+                    breadcrumbs: [],
+
                     available: {
                         id: null,
 
@@ -136,6 +153,9 @@
                     this.applied.pagination.page = 1;
                 });
 
+                // Directory tree publishes the current path for the breadcrumb.
+                this.$emitter.on('picker:breadcrumb', (crumbs) => { this.breadcrumbs = crumbs || []; });
+
                 this.$emitter.on('data-grid:refresh', () => this.get())
 
                 this.$emitter.on('data-grid:filter', (data) => {
@@ -150,6 +170,11 @@
             },
 
             methods: {
+                /** Navigate to a directory when a breadcrumb crumb is clicked. */
+                navigateBreadcrumb(crumb) {
+                    this.$emitter.emit('picker:navigate-directory', { id: crumb.id });
+                },
+
                 /**
                  * Initialization: This function checks for any previously saved filters in local storage and applies them as needed.
                  *
@@ -543,10 +568,6 @@
                     }
                 },
 
-                //================================================================
-                // Filters logic, will move it from here once completed.
-                //================================================================
-
                 findAppliedColumn(columnIndex) {
                     return this.applied.filters.columns.find(column => column.index === columnIndex);
                 },
@@ -583,10 +604,6 @@
 
                     this.get();
                 },
-
-                //================================================================
-                // Mass actions logic, will move it from here once completed.
-                //================================================================
 
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
@@ -751,10 +768,6 @@
                     });
                 },
 
-                //=======================================================================================
-                // Support for previous applied values in datagrids. All code is based on local storage.
-                //=======================================================================================
-
                 updateDatagrids() {
                     let datagrids = this.getDatagrids();
 
@@ -812,11 +825,6 @@
                     );
                 },
 
-                //================================================================
-                // Remaining logic, will check.
-                //================================================================
-
-                // refactor when not in that much use case...
                 performAction(action) {
                     const method = action.method.toLowerCase();
 

@@ -43,6 +43,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
   
 ![Metadata and Tagging](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/metadata-tagging.png)
 
+- **Tag Management**  
+  Manage tags from a dedicated **DAM → Tags** page: a datagrid listing each tag with its asset count and creation date, with search, filters, sorting, inline edit/delete, and bulk delete. Tags can be created here and assigned to assets — individually or in bulk — from the gallery.
+
 - **History Tracking**
  Maintain a complete history of changes made to assets, ensuring transparency and easy tracking of modifications over time
 ![History Tracking](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/history.png)
@@ -56,6 +59,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
   Export asset details as part of the product CSV export job, enabling smooth data transfer and management by including asset information directly in product CSV files.
 
 ![Asset Assignment via Export / Import](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-assignment.png)
+
+- **Secure Asset Handling**  
+  Uploads reject executable and HTML/script file types, and stored files are served with safe content types so they never execute inline in the browser. Bulk delete, property mass-delete, and folder uploads enforce the same per-directory permissions as their single-item counterparts.
 
 ## Installation with Composer
 
@@ -189,7 +195,7 @@ To interact with UnoPim DAM's API, you can use our official Postman collection:
 
 [UnoPim DAM APIs on Postman](https://www.postman.com/unopim/unopim-apis/collection/4385199-086948c4-9e81-4271-abb7-6d6995a67304?ctx=info)
 
-This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs.
+This collection provides ready-to-use API requests for various UnoPim DAM API features. You can import it directly into your Postman workspace and start testing the APIs. A bundled copy ships at `packages/Webkul/DAM/postman/Unopim-DAM-API.postman_collection.json`.
 
 ### API Support
 
@@ -202,6 +208,27 @@ This collection provides ready-to-use API requests for various UnoPim DAM API fe
 - **Assets Management Endpoints:**
   - **Upload Asset:** `POST /api/v1/rest/assets`
   - **Update Asset Metadata:** `PUT /api/v1/rest/assets/{asset_id}`
+  - **Get Embedded Metadata:** `GET /api/v1/rest/assets/{asset_id}/metadata`
   - **Delete Asset:** `DELETE /api/v1/rest/assets/{asset_id}`
   - **Download Asset:** `GET /api/v1/rest/assets/download/{asset_id}`
   - **List Assets:** `GET /api/v1/rest/assets?limit=100&page=1`
+
+Tag (single + bulk assign/remove, delete) and Share (create, list, revoke, reauthorize, delete) endpoints are included in the collection.
+
+## Updating (manual install)
+
+From the Unopim project root:
+
+    bash packages/Webkul/DAM/upgrade-dam.sh
+
+This fetches the latest release of `unopim/unopim-digital-asset-management`,
+swaps `packages/Webkul/DAM` (code only — your DB and asset files are
+untouched), then runs `php artisan dam:update`, which backs up DAM tables +
+asset files, runs migrations, republishes assets, and verifies no data was
+lost. Back up first if you can.
+
+Restore a backup with:
+
+    php artisan dam:update:restore <timestamp>
+
+Composer installs update with `composer update unopim/dam && php artisan dam:update`.

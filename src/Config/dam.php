@@ -1,30 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Directory Tree Settings
-    |--------------------------------------------------------------------------
-    |
-    | Knobs that control how the DAM directory tree renders on the admin side.
-    |
-    */
     'tree' => [
-
-        /*
-         * Render asset leaf nodes inside the directory tree itself.
-         *
-         * When false (default), expanding a folder in the tree shows only
-         * child directories; assets stay in the right-hand grid where the
-         * datagrid handles pagination. This keeps the tree payload small
-         * for installs with thousands of assets per folder.
-         *
-         * Flip to true via env to restore the legacy behavior where assets
-         * also appear as leaf rows inline with their folder.
-         */
         'show_assets' => env('DAM_TREE_SHOW_ASSETS', false),
+    ],
 
+    'explorer' => [
+        'enabled'           => env('DAM_EXPLORER_ENABLED', false),
+        'bookmarks_enabled' => env('DAM_EXPLORER_BOOKMARKS_ENABLED', false),
+        'show_tree'         => env('DAM_EXPLORER_SHOW_TREE', true),
+
+        'upload' => [
+            'concurrency'        => (int) env('DAM_UPLOAD_CONCURRENCY', 4),
+            'resume_enabled'     => env('DAM_UPLOAD_RESUME_ENABLED', true),
+            'resume_max_bytes'   => (int) env('DAM_UPLOAD_RESUME_MAX_BYTES', 524288000),
+            'resume_stale_hours' => (int) env('DAM_UPLOAD_RESUME_STALE_HOURS', 24),
+        ],
     ],
 
 ];

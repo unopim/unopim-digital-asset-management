@@ -19,7 +19,6 @@
         class="flex flex-col w-full h-full overflow-hidden select-none bg-gray-50 dark:bg-cherry-800 rounded"
         :class="containerClass"
     >
-        <!-- Image area -->
         <div
             class="relative flex-1 min-h-0 overflow-hidden flex items-center justify-center"
             @wheel.prevent="onWheel"
@@ -37,7 +36,6 @@
 
         <!-- Toolbar row (sits below the image, not overlaying it) -->
         <div class="flex items-center justify-center gap-1 px-3 py-2 border-t border-gray-200 dark:border-cherry-700 bg-white dark:bg-cherry-900 text-gray-700 dark:text-gray-200 text-xs">
-            <!-- Rotate left -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"
@@ -47,7 +45,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
 
-            <!-- Rotate right -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"
@@ -59,7 +56,6 @@
 
             <span class="w-px h-4 bg-gray-300 dark:bg-cherry-700 mx-1"></span>
 
-            <!-- Zoom out -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"
@@ -69,10 +65,8 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
 
-            <!-- Zoom percent -->
             <span class="min-w-[44px] text-center font-mono tabular-nums">@{{ zoomPercent }}%</span>
 
-            <!-- Zoom in -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"
@@ -84,7 +78,6 @@
 
             <span class="w-px h-4 bg-gray-300 dark:bg-cherry-700 mx-1"></span>
 
-            <!-- Fit -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"
@@ -94,7 +87,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
 
-            <!-- 1:1 -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors text-[11px] font-bold"
@@ -102,7 +94,6 @@
                 @click.stop="actualSize"
             >1:1</button>
 
-            <!-- Reset -->
             <button
                 type="button"
                 class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-cherry-800 transition-colors"

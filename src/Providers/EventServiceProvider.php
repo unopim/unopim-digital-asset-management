@@ -16,11 +16,6 @@ class EventServiceProvider extends ServiceProvider
 
     const ASSET_CATEGORY_FIELD_TYPE = 'asset';
 
-    /**
-     * The event handler mappings for the application.
-     *
-     * @var array
-     */
     protected $listen = [
         'catalog.product.create.after' => [
             'Webkul\DAM\Listeners\Product@afterCreateOrupdate',
@@ -39,9 +34,7 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    /**
-     * Load events
-     */
+    /** Load events. */
     public function boot()
     {
         Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
@@ -52,6 +45,14 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
         });
 
+        Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            if (! request()->routeIs('admin.catalog.products.bulkedit')) {
+                return;
+            }
+
+            $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
+        });
+
         Event::listen('unopim.admin.layout.head.before', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::style');
         });
@@ -60,9 +61,6 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
 
-        // Create page uses an underscored event name (`access_control` vs
-        // edit's `access-control`). Listen to both so the tab renders in
-        // both create + edit flows.
         Event::listen('unopim.admin.settings.roles.create.card.access_control.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
@@ -72,10 +70,6 @@ class EventServiceProvider extends ServiceProvider
                 return;
             }
 
-            // Marker is rendered inside the DAM tab's v-if wrapper. Absent
-            // marker = tab not shown (e.g. permission_type=all) so we leave
-            // existing grants alone. Present marker = the submitted
-            // `directories[]` set is authoritative, including empty.
             if (! request()->boolean('dam_directory_grants_managed')) {
                 return;
             }
@@ -85,9 +79,6 @@ class EventServiceProvider extends ServiceProvider
                 fn ($id) => $id > 0
             ));
 
-            // Defensive filter against stale form data — a user can have
-            // an old edit tab open while another admin deletes a directory,
-            // so the submission may reference an id that no longer exists.
             if (! empty($directoryIds)) {
                 $directoryIds = Directory::whereIn('id', $directoryIds)
                     ->pluck('id')
@@ -95,8 +86,6 @@ class EventServiceProvider extends ServiceProvider
                     ->all();
             }
 
-            // No selection — fall back to the root grant so the role keeps
-            // a baseline entry point (mirrors the backfill migration).
             if (empty($directoryIds)) {
                 $rootId = Directory::whereNull('parent_id')
                     ->orderBy('id')
@@ -110,13 +99,6 @@ class EventServiceProvider extends ServiceProvider
             $allDirectories = request()->boolean('dam_all_directories');
             $inheritChildren = request()->boolean('dam_inherit_children');
 
-            // When inherit_children is on, the blade pre-checks all descendants
-            // so submitted directories[] contains both explicit grants and
-            // inherit-expanded descendants. Strip only the expanded ones:
-            // keep items that were already an explicit grant in the DB (e.g.
-            // auto-granted by another admin's directory creation), and keep
-            // new root-level selections. This prevents accumulation of
-            // descendants in the DB while preserving intentional child grants.
             if ($inheritChildren && count($directoryIds) > 1) {
                 $existingGrants = app(DirectoryRolePermissionRepository::class)
                     ->getDirectoryIdsForRole((int) $role->id);

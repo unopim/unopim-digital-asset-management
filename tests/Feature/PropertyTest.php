@@ -29,6 +29,102 @@ it('should create a new property', function () {
     $response->assertSeeText(trans('dam::app.admin.dam.asset.properties.index.create-success'));
 });
 
+it('should reject a filterable property with no sort order', function () {
+    $asset = Asset::factory()->create();
+
+    $data = [
+        'name'          => 'Text',
+        'type'          => 'Text',
+        'value'         => 'Testing',
+        'language'      => 'English',
+        'is_filterable' => 1,
+        'sort_order'    => '',
+    ];
+
+    $this->postJson(route('admin.dam.asset.property.store', $asset->id), $data)
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('sort_order')
+        ->assertJsonFragment([
+            'sort_order' => [trans('dam::app.admin.validation.property.sort-order.required')],
+        ]);
+
+    $this->assertDatabaseMissing('dam_asset_properties', ['dam_asset_id' => $asset->id]);
+});
+
+it('should accept zero as a valid sort order on a filterable property', function () {
+    $asset = Asset::factory()->create();
+
+    $data = [
+        'name'          => 'Text',
+        'type'          => 'Text',
+        'value'         => 'Testing',
+        'language'      => 'English',
+        'is_filterable' => 1,
+        'sort_order'    => 0,
+    ];
+
+    $this->postJson(route('admin.dam.asset.property.store', $asset->id), $data)
+        ->assertOk();
+
+    $this->assertDatabaseHas('dam_asset_properties', [
+        'dam_asset_id'  => $asset->id,
+        'is_filterable' => 1,
+        'sort_order'    => 0,
+    ]);
+});
+
+it('should reject a sort order above the allowed maximum', function () {
+    $asset = Asset::factory()->create();
+
+    $data = [
+        'name'          => 'Text',
+        'type'          => 'Text',
+        'value'         => 'Testing',
+        'language'      => 'English',
+        'is_filterable' => 1,
+        'sort_order'    => 10000,
+    ];
+
+    $this->postJson(route('admin.dam.asset.property.store', $asset->id), $data)
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('sort_order');
+});
+
+it('should create a non filterable property without a sort order', function () {
+    $asset = Asset::factory()->create();
+
+    $data = [
+        'name'     => 'Text',
+        'type'     => 'Text',
+        'value'    => 'Testing',
+        'language' => 'English',
+    ];
+
+    $this->postJson(route('admin.dam.asset.property.store', $asset->id), $data)
+        ->assertOk();
+
+    $this->assertDatabaseHas('dam_asset_properties', [
+        'dam_asset_id'  => $asset->id,
+        'is_filterable' => 0,
+        'sort_order'    => 0,
+    ]);
+});
+
+it('should reject an update that makes a property filterable with no sort order', function () {
+    $property = AssetProperty::factory()->create();
+
+    $data = [
+        'name'          => 'Text',
+        'value'         => 'Testing',
+        'is_filterable' => 1,
+        'sort_order'    => '',
+    ];
+
+    $this->putJson(route('admin.dam.asset.properties.update', $property->id), $data)
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('sort_order');
+});
+
 it('should return the edit page with data by Id', function () {
     $property = AssetProperty::factory()->create();
 
@@ -86,5 +182,5 @@ it('should delete all the properties at once', function () {
         $this->assertDatabaseMissing('dam_asset_properties', ['id' => $id]);
     }
 
-    $this->assertDatabaseCount('dam_asset_properties', 0);
+    $this->assertDatabaseMissing('dam_asset_properties', ['dam_asset_id' => $assetId]);
 });

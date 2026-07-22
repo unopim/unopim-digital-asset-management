@@ -235,10 +235,20 @@ jobs:
           # email matches the request's `username` (client.user_id -> admins).
           # So the client has to be created with the admin's id as user_id, or
           # token minting fails with invalid_client.
+          #
+          # The ADMIN_USERNAME/ADMIN_PASSWORD secrets are blank on runs where
+          # they aren't configured (and on fork PRs GitHub never exposes them),
+          # which made getenv("ADMIN_USERNAME") return "" and the admin lookup
+          # fail with 'No admin user found for '. Fall back to the demo-data
+          # admin that `unopim:install --with-demo-data` always seeds — the same
+          # default the e2e/api-pw suites already use — so this step is
+          # deterministic and secret-independent.
+          export ADMIN_USERNAME="${ADMIN_USERNAME:-admin@example.com}"
+          export ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123}"
           php artisan passport:keys --force --no-interaction
           php artisan tinker --execute='
           $provider = config("auth.guards.api.provider") ?: "admins";
-          $email = getenv("ADMIN_USERNAME");
+          $email = getenv("ADMIN_USERNAME") ?: "admin@example.com";
           $admin = app(Webkul\User\Repositories\AdminRepository::class)->findByField("email", $email)->first();
           if (! $admin) { fwrite(STDERR, "No admin user found for " . $email . PHP_EOL); exit(1); }
           $client = app(Laravel\Passport\ClientRepository::class)

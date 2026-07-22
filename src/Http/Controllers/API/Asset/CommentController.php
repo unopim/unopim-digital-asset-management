@@ -14,16 +14,13 @@ class CommentController extends Controller
 {
     use AssetAccessControl;
 
-    /**
-     *  Create instance
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetCommentsRepository $assetCommentRepository,
     ) {}
 
     /**
-     * To fetch the comments
+     * Fetch a comment by id.
      */
     public function comments(int $id): JsonResponse
     {
@@ -45,11 +42,7 @@ class CommentController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified comment.
-     *
-     * @return JsonResponse
-     */
+    /** Update the specified comment. */
     public function update(int $id)
     {
         $comment = $this->assetCommentRepository->find($id);
@@ -62,6 +55,13 @@ class CommentController extends Controller
         }
 
         $this->damAuthorizeAsset($comment->dam_asset_id);
+
+        if ($comment->admin_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.update-failed'),
+            ], 403);
+        }
 
         try {
             $comment = $this->assetCommentRepository->update(request()->only([
@@ -82,11 +82,7 @@ class CommentController extends Controller
         }
     }
 
-    /**
-     * Delete the specified comment.
-     *
-     * @return JsonResponse
-     */
+    /** Delete the specified comment. */
     public function delete(int $id)
     {
         $comment = $this->assetCommentRepository->find($id);
@@ -99,6 +95,13 @@ class CommentController extends Controller
         }
 
         $this->damAuthorizeAsset($comment->dam_asset_id);
+
+        if ($comment->admin_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.comments.delete-failed'),
+            ], 403);
+        }
 
         try {
             $comment = $this->assetCommentRepository->delete($id);
@@ -116,11 +119,7 @@ class CommentController extends Controller
         }
     }
 
-    /**
-     * Create the new comment.
-     *
-     * @return JsonResponse
-     */
+    /** Create a new comment. */
     public function createComment(Request $request)
     {
         $messages = [

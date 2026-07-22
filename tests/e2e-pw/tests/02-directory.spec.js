@@ -2,6 +2,13 @@ const { test, expect } = require('../utils/fixtures');
 const { navigateTo, generateUid } = require('../utils/helpers');
 
 /**
+ * Scope menu-item lookups to the tree's right-click context menu. Several labels
+ * (Add Directory, Upload Files) also live in the "+ New" toolbar dropdown, which
+ * stays mounted in the DOM — matching by text alone is ambiguous.
+ */
+const treeMenu = (page) => page.locator('.dam-tree-context-menu');
+
+/**
  * Helper: Right-click a directory in the tree to show context menu.
  * The contextmenu listener lives on the inner `.flex.cursor-pointer` row inside
  * `.tree-container-details`, NOT on the wrapper itself. Targeting the wrapper
@@ -17,10 +24,17 @@ async function rightClickDirectory(page, dirName) {
     : wrapper.locator('> .flex.cursor-pointer').first();
 
   await row.scrollIntoViewIfNeeded();
+
+  await page.waitForFunction(
+    () => {
+      const el = document.querySelector('.tree-container > div.flex');
+      return el != null && !el.classList.contains('pointer-events-none');
+    },
+    { timeout: 15000 }
+  ).catch(() => {});
   await row.click({ button: 'right', force: true });
   // Wait for the menu to actually render before the caller clicks an item.
-  await page.locator('#app').getByText('Add Directory').first()
-    .waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await treeMenu(page).first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 }
 
 /**
@@ -31,7 +45,7 @@ async function rightClickDirectory(page, dirName) {
  */
 async function createDirectory(page, name) {
   await rightClickDirectory(page, 'Root');
-  await page.getByText('Add Directory').click({ force: true });
+  await treeMenu(page).getByText('Add Directory').click({ force: true });
   const nameInput = page.getByPlaceholder('Name').first();
   await nameInput.waitFor({ state: 'visible', timeout: 10000 });
   await nameInput.fill(name);
@@ -64,7 +78,7 @@ async function createDirectory(page, name) {
 async function deleteDirectory(page, name) {
   try {
     await rightClickDirectory(page, name);
-    await page.getByText('Delete', { exact: true }).click({ force: true });
+    await treeMenu(page).getByText('Delete', { exact: true }).click({ force: true });
     await page.waitForTimeout(500);
     const confirmBtn = page.getByRole('button', { name: /Delete|Agree/ });
     await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
@@ -85,27 +99,29 @@ test.describe('DAM Directory Management', () => {
   test('Right-click Root shows context menu', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
-    await expect(adminPage.getByText('Add Directory')).toBeVisible();
-    await expect(adminPage.getByText('Upload Files', { exact: true })).toBeVisible();
+    const menu = treeMenu(adminPage);
+    await expect(menu.getByText('Add Directory')).toBeVisible();
+    await expect(menu.getByText('Upload Files', { exact: true })).toBeVisible();
   });
 
   test('Context menu has all expected actions', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
-    await expect(adminPage.getByText('Add Directory')).toBeVisible();
-    await expect(adminPage.getByText('Upload Files', { exact: true })).toBeVisible();
-    await expect(adminPage.getByText('Rename', { exact: true })).toBeVisible();
-    await expect(adminPage.getByText('Delete', { exact: true })).toBeVisible();
-    await expect(adminPage.getByText('Copy Directory Structured')).toBeVisible();
-    await expect(adminPage.getByText('Download Zip')).toBeVisible();
+    const menu = treeMenu(adminPage);
+    await expect(menu.getByText('Add Directory')).toBeVisible();
+    await expect(menu.getByText('Upload Files', { exact: true })).toBeVisible();
+    await expect(menu.getByText('Rename', { exact: true })).toBeVisible();
+    await expect(menu.getByText('Delete', { exact: true })).toBeVisible();
+    await expect(menu.getByText('Copy Directory Structure')).toBeVisible();
+    await expect(menu.getByText('Download Zip')).toBeVisible();
   });
 
   test('Create Directory modal shows on Add Directory click', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
-    await adminPage.getByText('Add Directory').click({ force: true });
+    await treeMenu(adminPage).getByText('Add Directory').click({ force: true });
     await adminPage.waitForTimeout(500);
-    await expect(adminPage.locator('#app').getByText('Create Directory').first()).toBeVisible();
+    await expect(adminPage.getByText('Create Directory').first()).toBeVisible();
     await expect(adminPage.getByPlaceholder('Name')).toBeVisible();
     await expect(adminPage.getByRole('button', { name: 'Save Directory' })).toBeVisible();
   });
@@ -113,7 +129,7 @@ test.describe('DAM Directory Management', () => {
   test('Create Directory with empty name shows validation error', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
-    await adminPage.getByText('Add Directory').click({ force: true });
+    await treeMenu(adminPage).getByText('Add Directory').click({ force: true });
     await adminPage.waitForTimeout(500);
     await adminPage.getByRole('button', { name: 'Save Directory' }).click();
     await expect(adminPage.getByText(/The Name field is required/i)).toBeVisible();
@@ -143,7 +159,7 @@ test.describe('DAM Directory Management', () => {
 
     // Right-click the created directory and rename
     await rightClickDirectory(adminPage, dirName);
-    await adminPage.getByText('Rename', { exact: true }).click({ force: true });
+    await treeMenu(adminPage).getByText('Rename', { exact: true }).click({ force: true });
 
     // Fill in new name in the rename modal — wait for modal to mount first.
     const nameInput = adminPage.getByPlaceholder('Name').first();
@@ -170,7 +186,7 @@ test.describe('DAM Directory Management', () => {
 
     // Delete it
     await rightClickDirectory(adminPage, dirName);
-    await adminPage.getByText('Delete', { exact: true }).click({ force: true });
+    await treeMenu(adminPage).getByText('Delete', { exact: true }).click({ force: true });
     await adminPage.waitForTimeout(500);
     const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
     await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
@@ -183,7 +199,7 @@ test.describe('DAM Directory Management', () => {
   test('Delete Root Directory shows error', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
     await rightClickDirectory(adminPage, 'Root');
-    await adminPage.getByText('Delete', { exact: true }).click({ force: true });
+    await treeMenu(adminPage).getByText('Delete', { exact: true }).click({ force: true });
     const confirmBtn = adminPage.getByRole('button', { name: /Delete|Agree/ }).first();
     const modalAppeared = await confirmBtn.waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
     if (modalAppeared) {
@@ -210,7 +226,7 @@ test.describe('DAM Directory Management', () => {
     }
 
     // Click Download Zip
-    const downloadZip = adminPage.getByText('Download Zip');
+    const downloadZip = treeMenu(adminPage).getByText('Download Zip');
     await expect(downloadZip).toBeVisible({ timeout: 5000 });
 
     // Use evaluate to native-click: avoids Playwright's post-click navigation wait,

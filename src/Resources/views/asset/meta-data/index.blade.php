@@ -33,7 +33,6 @@
                                 @lang('dam::app.admin.dam.asset.edit.no-metadata-available')
                             </div>
 
-                            <!-- Metadata Table -->
                             <x-admin::table v-else class="w-full text-base text-gray-800 dark:text-gray-200">
                                 <x-admin::table.thead class="border-b text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900">
                                     <x-admin::table.thead.tr>

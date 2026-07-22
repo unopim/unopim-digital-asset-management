@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Http\Controllers\Asset;
 
+use Illuminate\Http\JsonResponse;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Asset\LinkedResourcesDataGrid;
 use Webkul\DAM\Traits\AssetAccessControl;
@@ -11,7 +12,9 @@ class LinkedResourcesController extends Controller
     use AssetAccessControl;
 
     /**
-     * Datagrid route
+     * Display the linked resources datagrid for an asset.
+     *
+     * @return JsonResponse
      */
     public function index()
     {

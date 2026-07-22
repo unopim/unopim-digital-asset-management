@@ -1,4 +1,3 @@
-<!-- Image Editor Modal -->
 <div
     v-if="isEditOpen"
     class="fixed inset-0 z-[10010] flex items-center justify-center"
@@ -7,7 +6,6 @@
 
     <div class="relative z-10 flex flex-col w-[90vw] h-[90vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
 
-        <!-- Header -->
         <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <span class="text-lg icon-edit text-violet-600 dark:text-violet-400"></span>
             <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
@@ -25,10 +23,8 @@
             </button>
         </div>
 
-        <!-- Body -->
         <div class="flex flex-1 min-h-0 overflow-hidden">
 
-            <!-- Image preview panel -->
             <div
                 ref="editImgContainer"
                 class="relative flex items-center justify-center flex-1 min-w-0 bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-hidden p-6"
@@ -47,7 +43,6 @@
                     draggable="false"
                 />
 
-                <!-- bg preview spinner -->
                 <div
                     v-if="editTool === 'edit-bg' && bgSubTab === 'color' && bgPreviewLoading"
                     class="absolute inset-0 flex items-center justify-center bg-gray-50/70 dark:bg-gray-950/70 pointer-events-none"
@@ -58,7 +53,6 @@
                     </svg>
                 </div>
 
-                <!-- Crop overlay -->
                 <div
                     v-if="editTool === 'crop' && cropImgW > 0"
                     class="absolute pointer-events-none"
@@ -82,25 +76,21 @@
                         }"
                         @mousedown.stop.prevent="cropMouseDown($event, 'move')"
                     >
-                        <!-- Rule-of-thirds grid -->
                         <div class="absolute top-1/3 inset-x-0 h-px bg-white/30 pointer-events-none"></div>
                         <div class="absolute top-2/3 inset-x-0 h-px bg-white/30 pointer-events-none"></div>
                         <div class="absolute left-1/3 inset-y-0 w-px bg-white/30 pointer-events-none"></div>
                         <div class="absolute left-2/3 inset-y-0 w-px bg-white/30 pointer-events-none"></div>
 
-                        <!-- Corner handles -->
                         <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white shadow rounded-sm cursor-nwse-resize" @mousedown.stop.prevent="cropMouseDown($event, 'tl')"></div>
                         <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white shadow rounded-sm cursor-nesw-resize" @mousedown.stop.prevent="cropMouseDown($event, 'tr')"></div>
                         <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white shadow rounded-sm cursor-nesw-resize" @mousedown.stop.prevent="cropMouseDown($event, 'bl')"></div>
                         <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white shadow rounded-sm cursor-nwse-resize" @mousedown.stop.prevent="cropMouseDown($event, 'br')"></div>
 
-                        <!-- Edge handles -->
                         <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-5 bg-white shadow rounded-sm cursor-ns-resize" @mousedown.stop.prevent="cropMouseDown($event, 't')"></div>
                         <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-3 w-5 bg-white shadow rounded-sm cursor-ns-resize" @mousedown.stop.prevent="cropMouseDown($event, 'b')"></div>
                         <div class="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-5 bg-white shadow rounded-sm cursor-ew-resize" @mousedown.stop.prevent="cropMouseDown($event, 'l')"></div>
                         <div class="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-5 bg-white shadow rounded-sm cursor-ew-resize" @mousedown.stop.prevent="cropMouseDown($event, 'r')"></div>
 
-                        <!-- Dimension badge -->
                         <div class="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-white bg-black/65 px-2 py-0.5 rounded-full pointer-events-none font-mono">
                             @{{ cropPixelW }} × @{{ cropPixelH }}
                         </div>
@@ -108,18 +98,14 @@
                 </div>
             </div>
 
-            <!-- Tools panel -->
             <div class="flex flex-col w-80 shrink-0 overflow-y-auto bg-white dark:bg-gray-900">
 
-                <!-- Tool list label -->
                 <div class="px-4 pt-4 pb-2">
                     <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.tools') }}</p>
                 </div>
 
-                <!-- Accordion tool list -->
                 <div class="flex flex-col gap-0.5 px-3 pb-3">
 
-                    <!-- ── Edit Background ── -->
                     <button
                         type="button"
                         class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-left transition-colors"
@@ -135,10 +121,8 @@
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" :class="editTool === 'edit-bg' ? 'rotate-180 text-rose-500' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <!-- Edit Background accordion panel -->
                     <div v-if="editTool === 'edit-bg'" class="mx-1 mb-1 px-3 flex flex-col gap-4 py-3">
 
-                        <!-- Flash error (no platforms / no models) -->
                         <div
                             v-if="bgPlatformError && !(bgSubTab === 'color' && bgColorMode === 'normal')"
                             class="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700"
@@ -150,7 +134,6 @@
                         <!-- Platform + model: hidden when color sub-tab is in Normal mode -->
                         <template v-if="bgSubTab !== 'color' || bgColorMode === 'ai'">
 
-                        <!-- Platform select -->
                         <div>
                             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ trans('dam::app.admin.dam.asset.edit.image-editor.platform') }}</label>
                             <select
@@ -164,7 +147,6 @@
                             </select>
                         </div>
 
-                        <!-- Model select -->
                         <div>
                             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ trans('dam::app.admin.dam.asset.edit.image-editor.model') }}</label>
                             <select
@@ -176,12 +158,10 @@
                             </select>
                         </div>
 
-                        <!-- Divider -->
                         <div class="border-t border-gray-100 dark:border-gray-700"></div>
 
                         </template>
 
-                        <!-- Sub-tab switcher -->
                         <div class="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800">
                             <button
                                 type="button"
@@ -209,11 +189,9 @@
                             >{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-tab-ai') }}</button>
                         </div>
 
-                        <!-- Color tab -->
                         <div v-if="bgSubTab === 'color'" class="flex flex-col gap-3">
 
                             <template v-if="previewData.extension === 'png'">
-                            <!-- Normal / AI mode toggle (PNG only) -->
                             <div class="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800">
                                 <button
                                     type="button"
@@ -270,7 +248,6 @@
                             </div>
                         </div>
 
-                        <!-- Upload tab -->
                         <div v-if="bgSubTab === 'upload'" class="flex flex-col gap-3">
                             <label
                                 class="flex flex-col items-center justify-center gap-2 w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors"
@@ -291,7 +268,6 @@
                             </label>
                         </div>
 
-                        <!-- AI tab -->
                         <div v-if="bgSubTab === 'ai'" class="flex flex-col gap-3">
                             <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ trans('dam::app.admin.dam.asset.edit.image-editor.prompt') }}</label>
                             <textarea
@@ -302,11 +278,9 @@
                             ></textarea>
                         </div>
 
-                        <!-- Error -->
                         <div v-if="editError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-600 dark:text-red-400">
                             @{{ editError }}
                         </div>
-                        <!-- Apply -->
                         <button
                             type="button"
                             class="w-full primary-button justify-center"
@@ -328,7 +302,6 @@
                         </button>
                     </div>
 
-                    <!-- ── Crop & Resize ── -->
                     <button
                         type="button"
                         class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-left transition-colors"
@@ -344,7 +317,6 @@
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" :class="editTool === 'crop' ? 'rotate-180 text-blue-500' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <!-- Crop accordion panel -->
                     <div v-if="editTool === 'crop'" class="mx-1 mb-1 px-3 flex flex-col gap-3 py-3">
                         <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.selection') }}</p>
                         <div class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2">
@@ -380,11 +352,9 @@
                         </div>
                         <p class="text-xs text-gray-400 dark:text-gray-500">{{ trans('dam::app.admin.dam.asset.edit.image-editor.blank-keep-dims') }}</p>
 
-                        <!-- Error -->
                         <div v-if="editError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-600 dark:text-red-400">
                             @{{ editError }}
                         </div>
-                        <!-- Apply -->
                         <button
                             type="button"
                             class="w-full primary-button justify-center"
@@ -405,7 +375,6 @@
                         </button>
                     </div>
 
-                    <!-- ── Adjust ── -->
                     <button
                         type="button"
                         class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-left transition-colors"
@@ -421,7 +390,6 @@
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" :class="editTool === 'adjust' ? 'rotate-180 text-amber-500' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <!-- Adjust accordion panel -->
                     <div v-if="editTool === 'adjust'" class="mx-1 mb-1 px-3 flex flex-col gap-4 py-3">
                         <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.adjustments') }}</p>
                         <div>
@@ -457,11 +425,9 @@
                             <div class="flex justify-between mt-0.5 text-[10px] text-gray-400 dark:text-gray-600"><span>0</span><span>50</span><span>100</span></div>
                         </div>
 
-                        <!-- Error -->
                         <div v-if="editError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-600 dark:text-red-400">
                             @{{ editError }}
                         </div>
-                        <!-- Apply -->
                         <button
                             type="button"
                             class="w-full primary-button justify-center"
@@ -482,7 +448,6 @@
                         </button>
                     </div>
 
-                    <!-- ── Rotate & Flip ── -->
                     <button
                         type="button"
                         class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-left transition-colors"
@@ -498,7 +463,6 @@
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" :class="editTool === 'rotate' ? 'rotate-180 text-emerald-500' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <!-- Rotate accordion panel -->
                     <div v-if="editTool === 'rotate'" class="mx-1 mb-1 px-3 flex flex-col gap-4 py-3">
                         <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.rotation') }}</p>
                         <div class="grid grid-cols-4 gap-1.5">
@@ -535,11 +499,9 @@
                             </button>
                         </div>
 
-                        <!-- Error -->
                         <div v-if="editError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-600 dark:text-red-400">
                             @{{ editError }}
                         </div>
-                        <!-- Apply -->
                         <button
                             type="button"
                             class="w-full primary-button justify-center"
@@ -560,7 +522,6 @@
                         </button>
                     </div>
 
-                    <!-- ── Filters ── -->
                     <button
                         type="button"
                         class="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-left transition-colors"
@@ -576,7 +537,6 @@
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 transition-transform duration-200" :class="editTool === 'filters' ? 'rotate-180 text-pink-500' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <!-- Filters accordion panel -->
                     <div v-if="editTool === 'filters'" class="mx-1 mb-1 px-3 flex flex-col gap-4 py-3">
                         <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ trans('dam::app.admin.dam.asset.edit.image-editor.filters') }}</p>
                         <div class="flex gap-2">
@@ -600,11 +560,9 @@
                             </button>
                         </div>
 
-                        <!-- Error -->
                         <div v-if="editError" class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-600 dark:text-red-400">
                             @{{ editError }}
                         </div>
-                        <!-- Apply -->
                         <button
                             type="button"
                             class="w-full primary-button justify-center"

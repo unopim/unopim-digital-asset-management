@@ -19,9 +19,7 @@ class ShareController extends Controller
         protected DirectoryPermissionService $permissionService,
     ) {}
 
-    /**
-     * Listing of all shares for the management page.
-     */
+    /** Listing of all shares for the management page. */
     public function index()
     {
         if (request()->ajax()) {
@@ -88,8 +86,7 @@ class ShareController extends Controller
     }
 
     /**
-     * Update an existing share — currently allows editing the custom name and
-     * the expiry (or removing it entirely via no_expiry=true).
+     * Update an existing share's name and expiry.
      */
     public function update(int $id): JsonResponse
     {
@@ -102,9 +99,6 @@ class ShareController extends Controller
             ], 404);
         }
 
-        // Rename / re-expiry is bundled with the existing dam.shares.revoke
-        // permission — anyone who can already manage a share's revoke state
-        // can also change its label. Plus the standard per-target access check.
         if (! $this->canRevoke($share)) {
             return $this->unauthorized();
         }
@@ -221,8 +215,7 @@ class ShareController extends Controller
     }
 
     /**
-     * Return all active shares for a given target. Used by the share modal
-     * to render the "Active links" list inline on asset / directory edit pages.
+     * Return the most recent share for a given target, used by the share modal.
      */
     public function activeForTarget(string $type, int $targetId): JsonResponse
     {

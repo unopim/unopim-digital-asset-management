@@ -1,13 +1,10 @@
-<!-- Fullscreen Preview Modal -->
 <div
     v-if="isOpen"
     class="fixed inset-0 z-[10010]"
 >
     <template v-if="previewData.file_type === 'video' || previewData.extension === 'pdf' || previewData.file_type === 'image'">
-        <!-- Fullscreen modal — video / pdf / image -->
         <div class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
 
-            <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold" :class="previewData.typeColor">
                     @{{ previewData.extension_upper }}
@@ -29,7 +26,6 @@
                 </button>
             </div>
 
-            <!-- Content -->
             <div class="flex-1 min-h-0 overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-900">
 
                 <template v-if="previewData.file_type === 'video'">
@@ -46,10 +42,8 @@
         </div>
     </template>
     <template v-else>
-        <!-- Fullscreen modal — audio / fallback -->
         <div class="absolute inset-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
 
-            <!-- Header -->
             <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 <span class="shrink-0 px-2 py-0.5 rounded text-xs font-semibold" :class="previewData.typeColor">
                     @{{ previewData.extension_upper }}

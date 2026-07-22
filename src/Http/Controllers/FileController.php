@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
@@ -20,22 +20,13 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/**
- * Class FileController
- *
- * This controller manages file operations on a private storage disk, including creating,
- * updating, fetching, and deleting files. It also handles image-specific functionalities
- * such as generating thumbnails and previews. The operations are performed with necessary
- * checks for file existence and user authentication, ensuring secure and efficient management
- * of digital assets. Non-image files and unsupported operations return appropriate error responses.
- */
+/** Manages file operations and image thumbnails/previews on the asset disk. */
 class FileController
 {
+    private const ASSET_CACHE_SECONDS = 86400;
+
     /**
      * Resolve the underlying asset path from a thumbnail/preview path, if any.
-     * thumbnails/{path}                   ⇒ {path}
-     * preview/{size}/{path}               ⇒ {path}
-     * other                               ⇒ original
      */
     protected function resolveOriginalAssetPath(string $path): string
     {
@@ -45,7 +36,7 @@ class FileController
 
         if (Str::startsWith($path, 'preview/')) {
             $rest = Str::after($path, 'preview/');
-            // strip "{size}/"
+
             $slash = strpos($rest, '/');
 
             return $slash === false ? $rest : substr($rest, $slash + 1);
@@ -54,12 +45,7 @@ class FileController
         return $path;
     }
 
-    /**
-     * If the given path corresponds to a known DAM asset, deny access when the
-     * current admin cannot view that asset's directory. Returns null when allowed,
-     * a JsonResponse otherwise. Paths that don't match a known asset (covers,
-     * unrelated private files) fall through unchanged.
-     */
+    /** Deny access when the current admin cannot view the asset's directory. */
     protected function assertPathAllowed(string $path)
     {
         $service = app(DirectoryPermissionService::class);
@@ -83,32 +69,58 @@ class FileController
         return null;
     }
 
-    /**
-     * Create a new file in the private storage.
-     *
-     * This method generates a random directory name, saves the uploaded file into
-     * the 'private' disk storage, and returns the file path in a JSON response.
-     */
+    /** Create a new file in the private storage. */
     public function createFile(Request $request)
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
+        $request->validate(['file' => 'required|file']);
+
+        $file = $request->file('file');
+
+        if (AssetHelper::isForbiddenFile(
+            strtolower($file->getClientOriginalExtension()),
+            $file->getMimeType(),
+            $file->getClientOriginalName(),
+            $file->getRealPath()
+        )) {
+            return response()->json(
+                ['error' => trans('dam::app.admin.dam.index.directory.not-allowed')],
+                422
+            );
+        }
+
         $disk = Directory::getAssetDisk();
         $directory = Str::random(10).'/files';
-        $path = Storage::disk($disk)->put($directory, $request->file);
+        $path = Storage::disk($disk)->put($directory, $file);
 
         return response()->json(['path' => $path]);
     }
 
-    /**
-     * Remove the specified file from storage.
-     *
-     * This method attempts to delete a file from the private disk storage. If the file exists,
-     * it is deleted, and a success response is returned. If the file is not found, an error response is returned.
-     */
+    /** Remove the specified file from storage. */
     public function deleteFile(Request $request)
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.destroy'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
+        $path = (string) $request->path;
+
+        if (! $path || str_contains($path, '..')) {
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
+        }
+
+        $this->assertPathAllowed($path);
+
         $disk = Directory::getAssetDisk();
-        if (Storage::disk($disk)->exists($request->path)) {
-            Storage::disk($disk)->delete($request->path);
+        if (Storage::disk($disk)->exists($path)) {
+            Storage::disk($disk)->delete($path);
 
             return response()->json(['status' => trans('dam::app.admin.dam.file.deleted')]);
         } else {
@@ -116,24 +128,47 @@ class FileController
         }
     }
 
-    /**
-     * Update the specified file.
-     *
-     * This method checks if the requested file exists in the private disk storage
-     * and updates it with a new one provided in the request. If the file exists,
-     * it deletes the old file and stores the new one in a randomly generated directory.
-     * If the file doesn't exist, it returns an error response.
-     */
+    /** Update the specified file. */
     public function updateFile(Request $request)
     {
-        $disk = Directory::getAssetDisk();
-        if (Storage::disk($disk)->exists($request->path)) {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.re_upload'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
 
-            Storage::disk($disk)->delete($request->path);
+        $request->validate(['file' => 'required|file']);
+
+        $path = (string) $request->path;
+
+        if (! $path || str_contains($path, '..')) {
+            return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
+        }
+
+        $this->assertPathAllowed($path);
+
+        $file = $request->file('file');
+
+        if (AssetHelper::isForbiddenFile(
+            strtolower($file->getClientOriginalExtension()),
+            $file->getMimeType(),
+            $file->getClientOriginalName(),
+            $file->getRealPath()
+        )) {
+            return response()->json(
+                ['error' => trans('dam::app.admin.dam.index.directory.not-allowed')],
+                422
+            );
+        }
+
+        $disk = Directory::getAssetDisk();
+        if (Storage::disk($disk)->exists($path)) {
+
+            Storage::disk($disk)->delete($path);
 
             $directory = Str::random(10).'/files';
 
-            $newPath = Storage::disk($disk)->put($directory, $request->file);
+            $newPath = Storage::disk($disk)->put($directory, $file);
 
             return response()->json(['new_path' => $newPath]);
         } else {
@@ -141,35 +176,37 @@ class FileController
         }
     }
 
-    /**
-     * Fetch a file from the private storage.
-     *
-     * This method retrieves the specified file if it exists in the private disk storage
-     * and returns its content with the correct MIME type. If the file does not exist,
-     * an error response is returned.
-     */
+    /** Fetch a file from the private storage. */
     public function fetchFile(string $path)
     {
+        if (! Auth::check()) {
+            return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+        }
+
         $this->assertPathAllowed($path);
 
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
-            $mimeType = Storage::disk($disk)->mimeType($path);
+            $mimeType = Storage::disk($disk)->mimeType($path) ?: 'application/octet-stream';
 
-            return response(Storage::disk($disk)->get($path), 200)->header('Content-Type', $mimeType);
+            $response = response(Storage::disk($disk)->get($path), 200)
+                ->header('Content-Type', $mimeType)
+                ->withHeaders(AssetHelper::assetResponseHeaders());
+
+            if (! AssetHelper::isInlineSafeMime($mimeType)) {
+                $response->header(
+                    'Content-Disposition',
+                    'attachment; filename="'.addslashes(basename($path)).'"'
+                );
+            }
+
+            return $this->applyAssetCache($response);
         } else {
             return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
         }
     }
 
-    /**
-     * Generate and return a 300px thumbnail of an image file.
-     *
-     * This method first checks if the user is authenticated. If authentication passes,
-     * it verifies the existence of a thumbnail for the specified path. If a thumbnail
-     * does not exist and the original file is an image, it creates a new thumbnail
-     * with a width of 300 pixels, maintaining the aspect ratio. Non-image files will cause a 404 error.
-     */
+    /** Generate and return a 300px thumbnail of an image file. */
     public function thumbnail()
     {
         $disk = Directory::getAssetDisk();
@@ -201,11 +238,6 @@ class FileController
             }
         }
 
-        // Cloudinary-style thumbnails for PDF / video — real first-page or
-        // first-frame previews rather than the generic placeholder icon.
-        // Eager generation happens via queued job on upload; this branch also
-        // generates synchronously on first request as a fallback so assets
-        // uploaded before the feature still get a real thumbnail.
         if ($asset && ($asset->file_type === 'video' || strtolower((string) $asset->extension) === 'pdf')) {
             $cached = $asset->meta_data['thumbnail_path'] ?? ('thumbnails/'.$path.'.jpg');
 
@@ -240,21 +272,24 @@ class FileController
             try {
                 $image = $this->resizeImage(Storage::disk($disk)->get($path), 300);
 
-                $imageData = $this->encodeImageByExtension($image, $path); // v3 method
+                $imageData = $this->encodeImageByExtension($image, $path);
 
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
 
-                return response($imageData, 200)->header('Content-Type', $mimeType);
-            } catch (NotReadableException $e) {
-                //
+                return $this->applyAssetCache(response($imageData, 200)->header('Content-Type', $mimeType));
+            } catch (\Throwable $e) {
+                Log::warning('DAM thumbnail generation failed: '.$e->getMessage(), ['path' => $path]);
             }
         } elseif ($this->isSvgFile($path)) {
             if (! Storage::disk($disk)->exists($thumbnailPath)) {
                 Storage::disk($disk)->copy($path, $thumbnailPath);
             }
 
-            return response(Storage::disk($disk)->get($thumbnailPath), 200)
-                ->header('Content-Type', 'image/svg+xml');
+            return $this->applyAssetCache(
+                response(Storage::disk($disk)->get($thumbnailPath), 200)
+                    ->header('Content-Type', 'image/svg+xml')
+                    ->withHeaders(AssetHelper::assetResponseHeaders())
+            );
         }
 
         if ($this->isBrowserNavigation() && Storage::disk($disk)->exists($path)) {
@@ -269,8 +304,7 @@ class FileController
     }
 
     /**
-     * Whether the current request looks like a top-level browser navigation
-     * (new tab / address bar) rather than an <img>/<video> resource fetch.
+     * Whether the request looks like a top-level browser navigation rather than a resource fetch.
      */
     private function isBrowserNavigation(): bool
     {
@@ -281,10 +315,6 @@ class FileController
 
     /**
      * Resolve a URL the browser can navigate to for the underlying asset.
-     *
-     * S3 disks return their (public or presigned) object URL directly.
-     * Private/local disks fall back to the auth-checked fetch route so the
-     * file can still be streamed without exposing it publicly.
      */
     private function resolveAssetOpenUrl(string $disk, string $path): ?string
     {
@@ -305,13 +335,7 @@ class FileController
         return route('admin.dam.file.fetch', ['path' => $path]);
     }
 
-    /**
-     * Checks if the given file path points to an image file.
-     *
-     * This method determines if the file at the specified path is an image by
-     * examining its MIME type. SVG images are specifically excluded from being
-     * considered as image files within this context.
-     */
+    /** Checks if the given file path points to an image file (SVG excluded unless included). */
     private function isImageFile($path, $includeSvg = false)
     {
         $disk = Directory::getAssetDisk();
@@ -329,13 +353,7 @@ class FileController
         return false;
     }
 
-    /**
-     * Checks if the given file path points to an SVG image file.
-     *
-     * This method determines if the file at the specified path is an SVG image by
-     * examining its MIME type. It specifically checks for the 'image/svg+xml' MIME type
-     * to identify SVG files, which are vector images handled differently from raster images.
-     */
+    /** Checks if the given file path points to an SVG image file. */
     private function isSvgFile($path)
     {
         $disk = Directory::getAssetDisk();
@@ -347,12 +365,22 @@ class FileController
         return false;
     }
 
-    /**
-     * Returns a response containing the requested file.
-     *
-     * This method retrieves a file from the storage and prepares a HTTP response with
-     * the file content as well as its MIME type.
-     */
+    /** Returns an HTTP response containing the requested file. */
+    private function applyAssetCache($response)
+    {
+        if ($response instanceof BinaryFileResponse) {
+            $response->setAutoEtag();
+            $response->setAutoLastModified();
+        }
+
+        $response->setPrivate();
+        $response->setMaxAge(self::ASSET_CACHE_SECONDS);
+
+        $response->isNotModified(request());
+
+        return $response;
+    }
+
     private function getFileResponse($path)
     {
         $disk = Directory::getAssetDisk();
@@ -373,16 +401,12 @@ class FileController
 
         $absolutePath = Storage::disk($disk)->path($path);
 
-        return response()->file($absolutePath);
+        return $this->applyAssetCache(
+            response()->file($absolutePath, AssetHelper::assetResponseHeaders())
+        );
     }
 
-    /**
-     * Resize the given image file to the specified width while maintaining the aspect ratio.
-     *
-     * This method takes a raw image file content and resizes it to the specified width, ensuring
-     * that the aspect ratio is maintained during the process. It utilizes the Intervention Image
-     * library to perform the resizing operation.
-     */
+    /** Resize the given image to the specified width while maintaining aspect ratio. */
     private function resizeImage($file, $width)
     {
         $manager = new ImageManager(new Driver);
@@ -390,17 +414,7 @@ class FileController
         return $manager->read($file)->scale(width: $width);
     }
 
-    /**
-     * Generate and return a preview of an image file at a specified custom size.
-     *
-     * This function checks if the user is authenticated before processing. It first verifies if
-     * a preview of the specified size already exists for the given file path. If a preview exists,
-     * it returns the existing preview. If the preview does not exist, and the original file is an image,
-     * the method resizes the image to the specified width while maintaining the aspect ratio and stores
-     * the resized image for future requests. The function also returns the original media file if it
-     * matches certain types such as SVG, PDF, video, or audio formats. Unauthorized access or non-existence
-     * of the file results in respective HTTP error responses.
-     */
+    /** Generate and return a preview of an image file at a specified custom size. */
     public function preview()
     {
         $disk = Directory::getAssetDisk();
@@ -434,8 +448,8 @@ class FileController
                     Storage::disk($disk)->put($previewPath, $imageData);
 
                     return $this->getFileResponse($previewPath);
-                } catch (NotReadableException $e) {
-                    Log::info('Failed Generating Image preview: '.json_encode($e));
+                } catch (\Throwable $e) {
+                    Log::info('Failed Generating Image preview: '.$e->getMessage());
                 }
             } elseif ($this->isSupportedMediaFile($mimeType)) {
                 return $this->getFileResponse($path);
@@ -445,11 +459,7 @@ class FileController
         return $this->getDefaultPreviewImage($path);
     }
 
-    /**
-     * Check if the MIME type corresponds to a supported media file
-     *
-     * Supported types include SVG images, PDF, video, and audio formats.
-     */
+    /** Check if the MIME type corresponds to a supported media file. */
     private function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
@@ -458,18 +468,7 @@ class FileController
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /**
-     * Retrieve a default image based on the file type and the directory prefix.
-     *
-     * This helper method selects a specific placeholder image for non-image files.
-     * It fetches the placeholder image from the public directory and returns it as an
-     * HTTP response with its corresponding MIME type. If the placeholder image is not found,
-     * a 404 error is returned.
-     *
-     * @param  string  $path
-     * @param  string  $directoryPrefix
-     * @return Response
-     */
+    /** Retrieve a default placeholder image based on the file type and directory prefix. */
     private function getDefaultImage($path, $directoryPrefix)
     {
         $extension = File::extension(basename($path));
@@ -480,17 +479,15 @@ class FileController
             $mimeType = Storage::disk('public')->mimeType($placeholderPath);
             $fileContent = Storage::disk('public')->get($placeholderPath);
 
-            return response($fileContent, 200)
-                ->header('Content-Type', $mimeType);
+            return $this->applyAssetCache(
+                response($fileContent, 200)->header('Content-Type', $mimeType)
+            );
         }
 
         return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
     }
 
-    /**
-     * Serve the extracted cover art for an audio asset.
-     * Returns 404 when the asset has no stored cover art.
-     */
+    /** Serve the extracted cover art for an audio asset. */
     public function coverArt(int $assetId)
     {
         if (! Auth::check()) {
@@ -521,39 +518,19 @@ class FileController
         return $this->getFileResponse($path);
     }
 
-    /**
-     * Retrieve a default thumbnail image based on the file type.
-     *
-     * @param  string  $path
-     * @return Response
-     */
+    /** Retrieve a default thumbnail image based on the file type. */
     public function getDefaultThumbnailImage($path)
     {
         return $this->getDefaultImage($path, 'grid');
     }
 
-    /**
-     * Retrieve a default preview image based on the file extension.
-     *
-     * @param  string  $path
-     * @return Response
-     */
+    /** Retrieve a default preview image based on the file extension. */
     public function getDefaultPreviewImage($path)
     {
         return $this->getDefaultImage($path, 'preview');
     }
 
-    /**
-     * Encode the given image into an appropriate format based on the file extension.
-     *
-     * This method determines the file extension from the provided path and converts
-     * the image into a matching format such as PNG, JPEG, WebP, GIF, BMP, TIFF, or AVIF.
-     * If the extension is not recognized, it defaults to JPEG encoding.
-     *
-     * @param  Image  $image
-     * @param  string  $path
-     * @return string
-     */
+    /** Encode the given image into a format based on the file extension. */
     private function encodeImageByExtension($image, $path)
     {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));

@@ -48,17 +48,9 @@ it('rolls up direct + descendant asset counts onto every directory', function ()
     expect($rollup[$leafB->id])->toBe(0);
 });
 
-it('attaches assets_total_count onto tree nodes returned by getDirectoryTreeOnly', function () {
+it('getDirectoryTreeOnly returns structure without inline counts (counts load lazily)', function () {
     [$root, $parent, $leafA, $leafB] = seedRollupFixture();
 
-    $tree = $this->repository->getDirectoryTreeOnly();
-    $flat = collect($tree)->flatMap(fn ($node) => collect($node->descendantsAndSelf ?? [])->all());
-    // Simpler: pull a flat collection by querying back per id.
-    $rootRow = Directory::find($root->id);
-    $parentRow = Directory::find($parent->id);
-
-    // The tree-builder passes through model attributes — reload via the
-    // repository so we exercise the same attachment path the controller uses.
     $treeNodes = $this->repository->getDirectoryTreeOnly();
     $byId = [];
     $collect = function ($nodes) use (&$collect, &$byId) {
@@ -71,10 +63,19 @@ it('attaches assets_total_count onto tree nodes returned by getDirectoryTreeOnly
     };
     $collect($treeNodes);
 
-    expect((int) $byId[$root->id]->assets_total_count)->toBe(3);
-    expect((int) $byId[$parent->id]->assets_total_count)->toBe(3);
-    expect((int) $byId[$leafA->id]->assets_total_count)->toBe(2);
-    expect((int) $byId[$leafB->id]->assets_total_count)->toBe(0);
+    // Structure is present (root + its pre-loaded children) with has_children…
+    expect($byId)->toHaveKey($root->id);
+    expect($byId)->toHaveKey($parent->id);
+    expect((bool) $byId[$root->id]->has_children)->toBeTrue();
+
+    // …but the heavy subtree counts are no longer embedded — they are fetched
+    // lazily via the asset-counts endpoint (getSubtreeAssetCounts).
+    expect($byId[$root->id]->assets_total_count ?? null)->toBeNull();
+    expect($byId[$parent->id]->assets_total_count ?? null)->toBeNull();
+
+    $counts = $this->repository->getSubtreeAssetCounts([$root->id, $parent->id]);
+    expect($counts[$root->id])->toBe(3);
+    expect($counts[$parent->id])->toBe(3);
 });
 
 it('keeps the existing direct assets_count untouched alongside the rollup', function () {
@@ -120,7 +121,7 @@ it('returns zero counts for all directories when allowed list is empty', functio
     expect($rollup[$leafA->id] ?? 0)->toBe(0);
 });
 
-it('getDirectoryTreeOnly uses role-granted ids for asset counts when ACL is active', function () {
+it('the lazy roll-up uses role-granted ids for asset counts when ACL is active', function () {
     [$root, $parent, $leafA, $leafB] = seedRollupFixture();
 
     // Create a custom-role admin granted only to leafA.
@@ -133,9 +134,8 @@ it('getDirectoryTreeOnly uses role-granted ids for asset counts when ACL is acti
     ]);
     app(DirectoryPermissionService::class)->flush();
 
+    // root and parent are visible (ancestors of leafA); leafB is not.
     $tree = $this->repository->getDirectoryTreeOnly();
-
-    // Flatten tree to a map of id => node.
     $byId = [];
     $collect = function ($nodes) use (&$collect, &$byId) {
         foreach ($nodes as $node) {
@@ -147,12 +147,18 @@ it('getDirectoryTreeOnly uses role-granted ids for asset counts when ACL is acti
     };
     $collect($tree);
 
-    // root and parent are visible (ancestors of leafA) but their rollup count
-    // must only include leafA's 2 assets, not the parent's own 1 asset.
-    expect((int) $byId[$root->id]->assets_total_count)->toBe(2);
-    expect((int) $byId[$parent->id]->assets_total_count)->toBe(2);
-    expect((int) $byId[$leafA->id]->assets_total_count)->toBe(2);
-
+    expect($byId)->toHaveKey($root->id);
+    expect($byId)->toHaveKey($parent->id);
     // leafB is not visible (not an ancestor or grant of leafA).
     expect(isset($byId[$leafB->id]))->toBeFalse();
+
+    // The ACL-scoped roll-up (used by the asset-counts endpoint) only counts
+    // leafA's 2 assets for the ancestors — not the parent's own direct asset.
+    $service = app(DirectoryPermissionService::class);
+    $counts = $this->repository->getSubtreeAssetCounts(
+        [$root->id, $parent->id],
+        $service->directlyGrantedIds()
+    );
+    expect($counts[$root->id])->toBe(2);
+    expect($counts[$parent->id])->toBe(2);
 });

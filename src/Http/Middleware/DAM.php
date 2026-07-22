@@ -3,15 +3,28 @@
 namespace Webkul\DAM\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Schema;
+use Webkul\DAM\Models\DamConfiguration;
 
 class DAM
 {
-    /**
-     * Handle an incoming request;
-     */
+    private static bool $tableExists = false;
+
+    /** Handle an incoming request;. */
     public function handle($request, Closure $next)
     {
-        // abort_if(! core()->getConfigData(''), 404);
+        if (! self::$tableExists) {
+            self::$tableExists = Schema::hasTable('dam_configuration');
+        }
+
+        if (self::$tableExists) {
+            DamConfiguration::all()->each(function ($row) {
+                $path = DamConfiguration::KEY_MAP[$row->key] ?? null;
+                if ($path) {
+                    config([$path => filter_var($row->value, FILTER_VALIDATE_BOOLEAN)]);
+                }
+            });
+        }
 
         return $next($request);
     }

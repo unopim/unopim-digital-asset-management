@@ -64,7 +64,6 @@
             </div>
         </header>
 
-        {{-- Scrollable content --}}
         <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
             @if ($assets->isEmpty())
                 <div class="bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 p-12 text-center">
@@ -73,7 +72,7 @@
                     </p>
                 </div>
             @else
-                <div id="dam-asset-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div id="dam-asset-grid" class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
                     @foreach ($assets as $asset)
                         @php
                             $thumbnailUrl   = route('dam.share.thumbnail', ['token' => $share->token, 'assetId' => $asset->id]);
@@ -234,7 +233,7 @@
 
         function buildCardHTML(asset) {
             const ext      = (asset.extension || '').toLowerCase();
-            const extUpper = ext.toUpperCase();
+            const extUpper = esc(ext.toUpperCase());
             const badgeCls = badgeColor(asset.file_type, ext);
             const badgeHtml = ext
                 ? `<span class="absolute top-1.5 right-1.5 z-20 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide text-white shadow-md ${badgeCls}">${extUpper}</span>`
@@ -306,8 +305,8 @@
         }, { rootMargin: '300px' });
 
         observer.observe(sentinel);
-        }, 0); /* end setTimeout */
-        }); /* end window load */
+        }, 0);
+        });
     })();
     </script>
     @endpush

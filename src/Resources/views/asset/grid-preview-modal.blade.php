@@ -14,7 +14,6 @@
     @include('dam::asset.preview-modal.audio.audio-player-script')
 
     <script type="text/x-template" id="v-dam-grid-preview-modal-template">
-        {{-- Loading overlay --}}
         <div
             v-if="isLoading"
             class="fixed inset-0 z-[10010] flex items-center justify-center bg-white dark:bg-gray-900"
@@ -25,7 +24,6 @@
             </svg>
         </div>
 
-        {{-- Full viewer — same template as edit page --}}
         @include('dam::asset.preview-modal.viewer-modal')
     </script>
 

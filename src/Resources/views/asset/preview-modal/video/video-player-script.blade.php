@@ -47,7 +47,6 @@ window._damVideoPlayer = {
     },
 
     methods: {
-        // ── Lifecycle helpers ─────────────────────────────────────────
         videoResetState() {
             this.videoSpeed = 1; this.videoIsPlaying = false;
             this.videoCurrentTime = 0; this.videoDuration = 0;
@@ -86,7 +85,6 @@ window._damVideoPlayer = {
             document.removeEventListener('fullscreenchange', this.videoOnFullscreenChange);
         },
 
-        // ── Playback controls ─────────────────────────────────────────
         setVideoSpeed(rate) {
             this.videoSpeed = rate;
             if (this.$refs.videoEl) this.$refs.videoEl.playbackRate = rate;
@@ -174,7 +172,6 @@ window._damVideoPlayer = {
             } catch(_) {}
         },
 
-        // ── Seek ──────────────────────────────────────────────────────
         videoOnSeekDown(e) {
             e.preventDefault();
             this.videoIsSeeking = true;
@@ -216,7 +213,6 @@ window._damVideoPlayer = {
 
         videoOnSeekLeave() { this.videoSeekTooltipVisible = false; },
 
-        // ── Volume ────────────────────────────────────────────────────
         videoOnVolume(e) {
             const v = parseFloat(e.target.value);
             this.videoVolume = v;
@@ -224,7 +220,6 @@ window._damVideoPlayer = {
             try { localStorage.setItem('dam_video_volume', v); } catch(_) {}
         },
 
-        // ── Native video events ───────────────────────────────────────
         videoOnTimeUpdate() {
             const el = this.$refs.videoEl;
             if (!el || this.videoIsSeeking) return;
@@ -254,7 +249,6 @@ window._damVideoPlayer = {
 
         videoOnCanPlay() { this.videoIsBuffering = false; },
 
-        // ── Action menu ───────────────────────────────────────────────
         videoCopyLink(url) {
             url = url || window.location.href;
             const done = () => {

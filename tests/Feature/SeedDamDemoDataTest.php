@@ -9,6 +9,9 @@ use Webkul\DAM\Models\Directory;
 
 beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
+
+    $this->damResetAssetTables();
+
     app(DirectoryTableSeeder::class)->run();
 });
 

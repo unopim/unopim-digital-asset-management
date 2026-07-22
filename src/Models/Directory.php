@@ -49,17 +49,13 @@ class Directory extends Model implements DirectoryContract
             ->where('share_type', Share::TYPE_DIRECTORY);
     }
 
-    /**
-     * check if possible to delete this directory
-     */
+    /** Check if this directory can be deleted. */
     public function isDeletable()
     {
         return ! in_array($this->id, self::NON_DELETABLE_DRECTORIES);
     }
 
-    /**
-     * check if possible to copy this directory
-     */
+    /** Check if this directory can be copied. */
     public function isCopyable()
     {
         return ! in_array($this->id, self::NON_DELETABLE_DRECTORIES);
@@ -73,19 +69,14 @@ class Directory extends Model implements DirectoryContract
         return DirectoryFactory::new();
     }
 
-    /**
-     * Overrides the default Eloquent query builder.
-     *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return Builder
-     */
+    /** Override the default Eloquent query builder. */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
     }
 
     /**
-     * Generate path for directory
+     * Generate the path for the directory.
      */
     public function generatePath(): string
     {
@@ -99,7 +90,7 @@ class Directory extends Model implements DirectoryContract
     }
 
     /**
-     * Detect the Assets Disk
+     * Detect the assets disk.
      */
     public static function getAssetDisk(): string
     {
@@ -113,7 +104,7 @@ class Directory extends Model implements DirectoryContract
     }
 
     /**
-     * Check if the Configured Disk is Private
+     * Check if the configured disk is private.
      */
     public function privateSupport(string $path, string $disk): bool
     {
@@ -127,7 +118,7 @@ class Directory extends Model implements DirectoryContract
     }
 
     /**
-     * Check if the Configure Disk is s3
+     * Check if the configured disk is s3.
      */
     public function awsSupport(string $path, string $disk): bool
     {
@@ -146,7 +137,7 @@ class Directory extends Model implements DirectoryContract
     }
 
     /**
-     * Check if the Directory is writable
+     * Check if the directory is writable.
      */
     public function isWritable(string $path): bool
     {
@@ -157,5 +148,28 @@ class Directory extends Model implements DirectoryContract
         }
 
         return $this->privateSupport($path, $disk);
+    }
+
+    /**
+     * Return a name unique within the given parent directory.
+     */
+    public static function uniqueName(string $name, int $parentId): string
+    {
+        if (! static::where('name', $name)->where('parent_id', $parentId)->exists()) {
+            return $name;
+        }
+
+        $candidate = $name.' (copy)';
+        if (! static::where('name', $candidate)->where('parent_id', $parentId)->exists()) {
+            return $candidate;
+        }
+
+        $i = 1;
+        do {
+            $candidate = $name.' (copy) ('.$i.')';
+            $i++;
+        } while (static::where('name', $candidate)->where('parent_id', $parentId)->exists());
+
+        return $candidate;
     }
 }

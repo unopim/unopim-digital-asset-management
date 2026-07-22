@@ -85,12 +85,10 @@
 <script type="text/x-template" id="v-dam-public-player-template">
     <div class="relative w-full h-full">
 
-        {{-- ── Video player ─────────────────────────────────────────── --}}
         <template v-if="previewData.file_type === 'video'">
             @include('dam::asset.preview-modal.video.video-player')
         </template>
 
-        {{-- ── Audio player ─────────────────────────────────────────── --}}
         <template v-else-if="previewData.file_type === 'audio'">
             @include('dam::asset.preview-modal.audio.audio-player')
         </template>

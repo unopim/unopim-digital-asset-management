@@ -55,8 +55,12 @@ it('validates comment creation fields via api', function () {
 });
 
 it('updates an existing comment via api', function () {
+    $admin = Admin::latest('id')->first();
     $asset = Asset::factory()->create();
-    $comment = AssetComments::factory()->create(['dam_asset_id' => $asset->id]);
+    $comment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+        'admin_id'     => $admin->id,
+    ]);
 
     $response = $this->withHeaders($this->headers)
         ->putJson(route('admin.api.dam.comment.update', $comment->id), [
@@ -78,8 +82,12 @@ it('returns 404 when updating a non-existent comment via api', function () {
 });
 
 it('deletes a comment via api', function () {
+    $admin = Admin::latest('id')->first();
     $asset = Asset::factory()->create();
-    $comment = AssetComments::factory()->create(['dam_asset_id' => $asset->id]);
+    $comment = AssetComments::factory()->create([
+        'dam_asset_id' => $asset->id,
+        'admin_id'     => $admin->id,
+    ]);
 
     $response = $this->withHeaders($this->headers)
         ->deleteJson(route('admin.api.dam.comment.delete', $comment->id));

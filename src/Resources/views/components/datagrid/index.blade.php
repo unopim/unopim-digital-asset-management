@@ -261,10 +261,14 @@
                     let newPage;
 
                     if (typeof directionOrPageNumber === 'string') {
-                        if (directionOrPageNumber === 'previous') {
+                        if (directionOrPageNumber === 'first') {
+                            newPage = 1;
+                        } else if (directionOrPageNumber === 'previous') {
                             newPage = this.available.meta.current_page - 1;
                         } else if (directionOrPageNumber === 'next') {
                             newPage = this.available.meta.current_page + 1;
+                        } else if (directionOrPageNumber === 'last') {
+                            newPage = this.available.meta.last_page;
                         } else {
                             console.warn('Invalid Direction Provided : ' + directionOrPageNumber);
 
@@ -492,10 +496,6 @@
                     }
                 },
 
-                //================================================================
-                // Filters logic, will move it from here once completed.
-                //================================================================
-
                 findAppliedColumn(columnIndex) {
                     return this.applied.filters.columns.find(column => column.index === columnIndex);
                 },
@@ -532,10 +532,6 @@
 
                     this.get();
                 },
-
-                //================================================================
-                // Mass actions logic, will move it from here once completed.
-                //================================================================
 
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
@@ -700,10 +696,6 @@
                     });
                 },
 
-                //=======================================================================================
-                // Support for previous applied values in datagrids. All code is based on local storage.
-                //=======================================================================================
-
                 updateDatagrids() {
                     let datagrids = this.getDatagrids();
 
@@ -763,11 +755,6 @@
                     );
                 },
 
-                //================================================================
-                // Remaining logic, will check.
-                //================================================================
-
-                // refactor when not in that much use case...
                 performAction(action) {
                     const method = action.method.toLowerCase();
 

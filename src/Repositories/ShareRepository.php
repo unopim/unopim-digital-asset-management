@@ -15,6 +15,11 @@ class ShareRepository extends Repository
         return Share::class;
     }
 
+    public function queryBuilder()
+    {
+        return $this;
+    }
+
     public function createForAsset(int $assetId, ?DateTimeInterface $expiresAt, ?int $userId, ?string $name = null): Share
     {
         return $this->create([

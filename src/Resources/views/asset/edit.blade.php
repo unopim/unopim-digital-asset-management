@@ -1,4 +1,4 @@
-<x-dam::layouts.with-history.asset>
+<x-dam::layouts.with-history.asset :return-directory-id="$directory?->id" >
     <x-slot:title>
         @lang('dam::app.admin.dam.asset.edit.title')
     </x-slot:title>
@@ -151,45 +151,18 @@
                 enctype="multipart/form-data"
                 method="PUT"
             >
-                <!-- body content -->
                 <div class="flex gap-2.5 mt-3.5 flex-wrap">
                     <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
 
-                        <!-- Left sub Component -->
                         <div class="flex flex-col flex-1 bg-white dark:bg-cherry-900 rounded-lg box-shadow min-h-0">
 
-                            <div class="flex items-stretch flex-1 min-h-0">
-
-                                {{-- Prev arrow --}}
-                                <div class="max-sm:hidden flex items-center justify-center px-2 shrink-0">
-                                    <template v-if="prevAssetId">
-                                        <button
-                                            type="button"
-                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
-                                            :class="{ 'opacity-60 pointer-events-none': isNavigating }"
-                                            title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
-                                            aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
-                                            @click="navigateTo(prevAssetId)"
-                                        >
-                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
-                                        </button>
-                                    </template>
-                                    <template v-else>
-                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
-                                              aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}">
-                                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
-                                        </span>
-                                    </template>
-                                </div>
-
-                                {{-- Preview content --}}
-                                <div class="relative flex flex-col flex-1 gap-2 overflow-y-auto overflow-x-hidden items-center justify-start py-2 min-w-0">
-                                    {{-- Mobile overlay: prev arrow --}}
+                            <div class="relative flex flex-1 min-h-0">
+                                <div class="group relative flex flex-col flex-1 gap-2 overflow-y-auto overflow-x-hidden items-center justify-start py-2 min-w-0">
                                     <button
                                         v-if="prevAssetId"
                                         type="button"
-                                        class="flex sm:!hidden absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full bg-black/55 text-white shadow-md z-10"
-                                        :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                         @click.stop="navigateTo(prevAssetId)"
@@ -197,12 +170,11 @@
                                         <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
                                     </button>
 
-                                    {{-- Mobile overlay: next arrow --}}
                                     <button
                                         v-if="nextAssetId"
                                         type="button"
-                                        class="flex sm:!hidden absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full bg-black/55 text-white shadow-md z-10"
-                                        :class="{ 'opacity-60 pointer-events-none': isNavigating }"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                         @click.stop="navigateTo(nextAssetId)"
@@ -216,33 +188,9 @@
 
                                     {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
                                 </div>
-
-                                {{-- Next arrow --}}
-                                <div class="max-sm:hidden flex items-center justify-center px-2 shrink-0">
-                                    <template v-if="nextAssetId">
-                                        <button
-                                            type="button"
-                                            class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
-                                            :class="{ 'opacity-60 pointer-events-none': isNavigating }"
-                                            title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
-                                            aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
-                                            @click="navigateTo(nextAssetId)"
-                                        >
-                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
-                                        </button>
-                                    </template>
-                                    <template v-else>
-                                        <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60"
-                                              aria-disabled="true" aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}">
-                                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
-                                        </span>
-                                    </template>
-                                </div>
-
                             </div>
                         </div>
 
-                        <!-- Right sub-component -->
                         <div class="flex flex-col gap-5 w-[360px] max-w-full h-full max-sm:w-full bg-white dark:bg-cherry-900 rounded-lg box-shadow p-4">
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.before', ['asset' => $asset]) !!}
 
@@ -475,10 +423,8 @@
             });
         </script>
 
-        <!-- **** Asset Preview Modal **** -->
         @include('dam::asset.preview-modal')
 
-        <!-- **** Tab Badge **** -->
         <script type="module">
             app.component('v-dam-tab-badge', {
                 props: {
@@ -510,7 +456,6 @@
             });
         </script>
 
-        <!-- **** Badge Live Updates **** -->
         <script type="module">
             (() => {
                 const assetId = {{ $asset->id }};
@@ -551,7 +496,6 @@
             })();
         </script>
 
-        <!-- **** File Type Icon **** -->
         <script type="module">
             app.component('v-dam-file-type-icon', {
                 props: {
@@ -590,7 +534,6 @@
             });
         </script>
 
-        <!-- **** Asset Counter **** -->
         <script type="module">
             app.component('v-dam-asset-counter', {
                 props: {
@@ -619,7 +562,6 @@
             });
         </script>
 
-        <!-- **** Custom Download **** -->
         <script
             type="text/x-template"
             id="v-custom-download-template"
@@ -665,7 +607,6 @@
                     ref="assetCustomDownloadForm"
                 >
                     <x-admin::modal ref="assetCustomDownloadModal">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -674,7 +615,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.before') !!}
 
@@ -684,7 +624,6 @@
                                 v-model="selectedItem"
                             />
 
-                            <!-- format -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.custom-download.format')
@@ -708,7 +647,6 @@
                             </x-admin::form.control-group>
 
                             <div class="flex gap-4 items-top">
-                                <!-- width -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.width')
@@ -727,7 +665,6 @@
                                     <x-admin::form.control-group.error control-name="width" />
                                 </x-admin::form.control-group>
     
-                                <!-- height -->
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.height')
@@ -750,7 +687,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -775,7 +711,6 @@
                     ref="svgCustomDownloadForm"
                 >
                     <x-admin::modal ref="svgCustomDownloadModal">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -784,7 +719,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.before') !!}
 
@@ -794,7 +728,6 @@
                                 v-model="selectedItem"
                             />
 
-                            <!-- format -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.custom-download.format')
@@ -820,7 +753,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.custom_download.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -947,7 +879,6 @@
             });
         </script>
 
-        <!-- **** Rename **** -->
         <script
             type="text/x-template"
             id="v-rename-asset-template"
@@ -962,7 +893,6 @@
                 </button>
             @endif
             <div style="position: absolute; width: 0; height: 0; overflow: visible;">
-            <!-- Asset Rename -->
             <x-admin::form
                 v-slot="{ meta, errors, handleSubmit }"
                 as="div"
@@ -973,7 +903,6 @@
                     ref="assetRenameForm"
                 >
                     <x-admin::modal ref="assetRenameModal" @toggle="focusNameInput">
-                        <!-- Modal Header -->
                         <x-slot:header>
                             <p
                                 class="text-lg text-gray-800 dark:text-white font-bold"
@@ -982,7 +911,6 @@
                             </p>
                         </x-slot>
 
-                        <!-- Modal Content -->
                         <x-slot:content>
                             {!! view_render_event('unopim.admin.dam.asset.rename.before') !!}
 
@@ -992,7 +920,6 @@
                                 v-model="selectedItem.id"
                             />
 
-                            <!-- name -->
                             <x-admin::form.control-group>
                                 <x-admin::form.control-group.label class="required">
                                     @lang('dam::app.admin.dam.asset.edit.file-name')
@@ -1015,7 +942,6 @@
                             {!! view_render_event('unopim.admin.dam.asset.rename.after') !!}
                         </x-slot>
 
-                        <!-- Modal Footer -->
                         <x-slot:footer>
                             <div class="flex gap-x-2.5 items-center">
                                 <button
@@ -1128,7 +1054,6 @@
             });
         </script>
 
-        <!-- **** Reupload **** -->
         <script
             type="text/x-template"
             id="v-reupload-asset-template"
@@ -1275,7 +1200,6 @@
             });
         </script>
 
-        <!-- **** Delete **** -->
         <script
             type="text/x-template"
             id="v-delete-asset-template"

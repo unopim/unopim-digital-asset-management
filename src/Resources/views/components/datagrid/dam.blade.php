@@ -26,7 +26,6 @@
                 aria-hidden="true"
             ></div>
 
-            <!-- Action-in-flight overlay (mass delete / mass action) -->
             <div
                 v-if="actionInFlight"
                 class="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
@@ -199,6 +198,15 @@
                     this.treeBusy = !! busy;
                 });
 
+                // After the shared tag modal finishes a legacy-datagrid assignment,
+                // clear the selection and reload so the new tags show immediately.
+                this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
+                    if (context && context !== 'legacy-datagrid') return;
+                    this.applied.massActions.indices = [];
+                    this.applied.massActions.meta.mode = 'none';
+                    this.get();
+                });
+
                 this.boot();
             },
 
@@ -360,10 +368,14 @@
                     let newPage;
 
                     if (typeof directionOrPageNumber === 'string') {
-                        if (directionOrPageNumber === 'previous') {
+                        if (directionOrPageNumber === 'first') {
+                            newPage = 1;
+                        } else if (directionOrPageNumber === 'previous') {
                             newPage = this.available.meta.current_page - 1;
                         } else if (directionOrPageNumber === 'next') {
                             newPage = this.available.meta.current_page + 1;
+                        } else if (directionOrPageNumber === 'last') {
+                            newPage = this.available.meta.last_page;
                         } else {
                             console.warn('Invalid Direction Provided : ' + directionOrPageNumber);
 
@@ -405,6 +417,10 @@
                         this.applied.pagination.page = 1;
                     }
 
+                    /**
+                     * Keep the current selection when only the page size changes — the
+                     * same rows are still shown, just paginated differently.
+                     */
                     this.get();
                 },
 
@@ -596,10 +612,6 @@
                     }
                 },
 
-                //================================================================
-                // Filters logic, will move it from here once completed.
-                //================================================================
-
                 findAppliedColumn(columnIndex) {
                     return this.applied.filters.columns.find(column => column.index === columnIndex);
                 },
@@ -636,10 +648,6 @@
 
                     this.get();
                 },
-
-                //================================================================
-                // Mass actions logic, will move it from here once completed.
-                //================================================================
 
                 setCurrentSelectionMode() {
                     this.applied.massActions.meta.mode = 'none';
@@ -745,6 +753,17 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
+                    // Assign-tags opens the shared tag modal instead of the generic confirm flow.
+                    // The modal posts the assignment itself; we just refresh on `dam:tag-assign:done`.
+                    if (actionType === 'assign-tags') {
+                        this.$emitter.emit('dam:open-tag-assign-modal', {
+                            assetIds: [...this.applied.massActions.indices],
+                            context: 'legacy-datagrid',
+                        });
+
+                        return;
+                    }
+
                     const selectedCount = this.applied.massActions.indices.length;
                     const startStatus = (label) => {
                         this.actionStatusLabel = label.replace(':count', selectedCount);
@@ -836,10 +855,6 @@
                     });
                 },
 
-                //=======================================================================================
-                // Support for previous applied values in datagrids. All code is based on local storage.
-                //=======================================================================================
-
                 updateDatagrids() {
                     let datagrids = this.getDatagrids();
 
@@ -899,11 +914,6 @@
                     );
                 },
 
-                //================================================================
-                // Remaining logic, will check.
-                //================================================================
-
-                // refactor when not in that much use case...
                 performAction(action) {
                     const method = action.method.toLowerCase();
 

@@ -12,11 +12,6 @@ use Webkul\DataGrid\Enums\ColumnTypeEnum;
 
 class AssetDataGrid extends DataGrid
 {
-    /**
-     * Default sort column of datagrid.
-     *
-     * @var ?string
-     */
     protected $sortColumn = 'dam_assets.updated_at';
 
     protected $sortOrder = 'desc';
@@ -35,9 +30,6 @@ class AssetDataGrid extends DataGrid
         protected FileController $fileController
     ) {}
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareQueryBuilder()
     {
         $prefix = DB::getTablePrefix();
@@ -65,6 +57,7 @@ class AssetDataGrid extends DataGrid
         $this->addFilter('id', 'dam_assets.id');
         $this->addFilter('file_name', 'dam_assets.file_name');
         $this->addFilter('extension', 'dam_assets.extension');
+        $this->addFilter('path', 'dam_assets.path');
         $this->addFilter('tag', 'dam_tags.name');
         $this->addFilter('created_at', 'dam_assets.created_at');
         $this->addFilter('updated_at', 'dam_assets.updated_at');
@@ -77,9 +70,6 @@ class AssetDataGrid extends DataGrid
         $service = app(DirectoryPermissionService::class);
 
         if (! $service->bypass()) {
-            // Strict: only assets in directly-granted dirs. Ancestor dirs
-            // visible in the tree (via canView expansion) must not leak their
-            // assets here.
             $allowedIds = $service->directlyGrantedIds();
 
             if (empty($allowedIds)) {
@@ -92,9 +82,6 @@ class AssetDataGrid extends DataGrid
         return $queryBuilder;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareColumns()
     {
         $this->addColumn([
@@ -187,9 +174,6 @@ class AssetDataGrid extends DataGrid
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function formatData(): array
     {
         $formattedData = parent::formatData();
@@ -199,38 +183,40 @@ class AssetDataGrid extends DataGrid
         return $formattedData;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function processRequestedFilters(array $requestedFilters)
     {
+        $prefix = DB::getTablePrefix();
+
         foreach ($requestedFilters as $requestedColumn => $requestedValues) {
             if ($requestedColumn === 'all') {
-                $this->queryBuilder->where(function ($scopeQueryBuilder) use ($requestedValues) {
+                $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $requestedValues) {
                     foreach ($requestedValues as $value) {
                         collect($this->columns)
-                            ->filter(fn ($column) => $column->searchable && $column->type !== ColumnTypeEnum::BOOLEAN->value)
-                            ->each(fn ($column) => $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%'));
+                            ->filter(fn ($column) => $column->searchable
+                                && $column->type !== ColumnTypeEnum::BOOLEAN->value
+                                && $column->type !== ColumnTypeEnum::DATE_RANGE->value
+                                && $column->type !== ColumnTypeEnum::DATE_TIME_RANGE->value)
+                            ->each(fn ($column) => $scopeQueryBuilder->orWhereRaw(
+                                'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                ['%'.strtolower($value).'%']
+                            ));
                     }
                 });
             } else {
                 $column = collect($this->columns)->first(fn ($c) => $c->index === $requestedColumn);
 
                 if ($requestedColumn === 'directory_id') {
-                    // Expand to descendants server-side; frontend sends only the selected id.
-                    $expandedIds = collect();
-                    foreach ($requestedValues as $rootId) {
-                        $expandedIds->push((int) $rootId);
-                        $expandedIds = $expandedIds->merge(
-                            Directory::descendantsOf($rootId)->pluck('id')
-                        );
-                    }
-                    $expandedIds = $expandedIds->unique()->values()->all();
+                    $this->queryBuilder->where(function ($q) use ($requestedValues) {
+                        foreach ($requestedValues as $rootId) {
+                            $root = Directory::select('_lft', '_rgt')->find((int) $rootId);
+                            if ($root) {
+                                $q->orWhereBetween('dam_directories._lft', [$root->_lft, $root->_rgt]);
+                            }
+                        }
+                    });
 
-                    if (empty($expandedIds)) {
+                    if (empty($requestedValues)) {
                         $this->queryBuilder->whereRaw('1 = 0');
-                    } else {
-                        $this->queryBuilder->whereIn($this->customFilterColumns[$requestedColumn], $expandedIds);
                     }
 
                     continue;
@@ -268,9 +254,12 @@ class AssetDataGrid extends DataGrid
 
                 switch ($column->type) {
                     case ColumnTypeEnum::STRING->value:
-                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
+                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $column, $requestedValues) {
                             foreach ($requestedValues as $value) {
-                                $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%');
+                                $scopeQueryBuilder->orWhereRaw(
+                                    'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                    ['%'.strtolower($value).'%']
+                                );
                             }
                         });
 
@@ -315,9 +304,12 @@ class AssetDataGrid extends DataGrid
                         break;
 
                     default:
-                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($column, $requestedValues) {
+                        $this->queryBuilder->where(function ($scopeQueryBuilder) use ($prefix, $column, $requestedValues) {
                             foreach ($requestedValues as $value) {
-                                $scopeQueryBuilder->orWhere($column->getDatabaseColumnName(), 'LIKE', '%'.$value.'%');
+                                $scopeQueryBuilder->orWhereRaw(
+                                    'LOWER('.$prefix.$column->getDatabaseColumnName().') LIKE ?',
+                                    ['%'.strtolower($value).'%']
+                                );
                             }
                         });
 
@@ -329,13 +321,17 @@ class AssetDataGrid extends DataGrid
         return $this->queryBuilder;
     }
 
-    /**
-     * Prepare mass actions.
-     *
-     * @return void
-     */
     public function prepareMassActions()
     {
+        if (bouncer()->hasPermission('dam.asset.update')) {
+            $this->addMassAction([
+                'title'   => trans('dam::app.admin.dam.tag.mass-action.assign-tags'),
+                'url'     => route('admin.dam.assets.mass_assign_tags'),
+                'method'  => 'POST',
+                'options' => ['actionType' => 'assign-tags'],
+            ]);
+        }
+
         if (bouncer()->hasPermission('dam.asset.mass_delete')) {
             $this->addMassAction([
                 'title'   => trans('admin::app.catalog.products.index.datagrid.delete'),

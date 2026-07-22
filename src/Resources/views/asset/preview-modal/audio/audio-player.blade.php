@@ -55,12 +55,9 @@
 
 <div class="relative flex flex-col items-center justify-center gap-4 w-full h-full p-6 mt-4">
     <div class="absolute inset-x-0 top-0 h-48 pointer-events-none" style="background: linear-gradient(to bottom, rgba(139,92,246,0.07) 0%, transparent 100%);"></div>
-    <!-- Circular disc -->
     <div class="flex items-center justify-center h-52 w-52 shrink-0">
 
-        <!-- Canvas ring + pulse rings -->
         <div class="relative flex items-center justify-center h-52 w-52">
-            <!-- Ambient glow -->
             <div
                 class="absolute inset-0 rounded-full pointer-events-none"
                 :style="{ background: audioIsPlaying ? 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)' }"
@@ -78,7 +75,6 @@
                 <span class="audio-ring-2"></span>
             </div>
 
-            <!-- Fallback image — circular disc (front) -->
             <div class="relative z-10 h-28 w-28 rounded-full bg-violet-50 dark:bg-gray-800 ring-2 ring-violet-200 dark:ring-violet-900 shadow-lg flex items-center justify-center overflow-hidden" :class="audioIsPlaying ? 'audio-disc-spinning' : ''">
                 <img
                     :src="previewData.coverArtUrl || previewData.placeholderSvg"
@@ -106,7 +102,6 @@
 
     <div class="flex flex-col gap-2 w-full max-w-lg">
 
-        <!-- Custom seek bar -->
         <div
             ref="audioSeekContainer"
             class="relative h-4 group cursor-pointer"
@@ -115,14 +110,12 @@
             @mousemove="audioOnSeekHover"
             @mouseleave="audioOnSeekLeave"
         >
-            <!-- Tooltip -->
             <div
                 v-show="audioSeekTooltipVisible && audioDuration"
                 class="absolute px-1.5 py-0.5 rounded shadow-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-mono pointer-events-none whitespace-nowrap z-10"
                 :style="{ left: audioSeekTooltipX + 'px', bottom: 'calc(100% + 8px)', transform: 'translateX(-50%)' }"
             >@{{ audioSeekTooltip }}</div>
 
-            <!-- Track: full bg / played -->
             <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 <div
                     class="absolute inset-y-0 left-0 bg-violet-500"
@@ -130,23 +123,19 @@
                 ></div>
             </div>
 
-            <!-- Playhead thumb -->
             <div
                 class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-violet-600 shadow pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                 :style="{ left: (audioDuration ? (audioCurrentTime / audioDuration) * 100 : 0) + '%' }"
             ></div>
         </div>
 
-        <!-- Time display -->
         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 font-mono tabular-nums">
             <span>@{{ audioCurrentTimeDisplay }}</span>
             <span>@{{ audioDurationDisplay }}</span>
         </div>
 
-        <!-- Controls row -->
         <div class="flex items-center justify-center gap-3 mt-1">
 
-            <!-- Volume with mute button -->
             <div class="flex items-center gap-1.5 mr-auto">
                 <button
                     type="button"
@@ -179,7 +168,6 @@
                 </div>
             </div>
 
-            <!-- Skip back 10s -->
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
@@ -192,7 +180,6 @@
                 @lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.10s')
             </button>
 
-            <!-- Play / Pause -->
             <button
                 type="button"
                 class="flex items-center justify-center w-10 h-10 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors shrink-0"
@@ -206,7 +193,6 @@
                 </svg>
             </button>
 
-            <!-- Skip forward 10s -->
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
@@ -219,7 +205,6 @@
                 </svg>
             </button>
 
-            <!-- Speed selector dropdown -->
             <div class="dam-ctrl-desktop relative items-center shrink-0">
                 <button
                     ref="audioSpeedBtn"
@@ -262,7 +247,6 @@
                 </template>
             </div>
 
-            <!-- Loop toggle -->
             <button
                 type="button"
                 class="flex items-center justify-center w-7 h-7 rounded transition-colors shrink-0 ml-auto"

@@ -3,29 +3,29 @@
 namespace Webkul\DAM\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Enums\EventType;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory as ModelDirectory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Traits\ActionRequest as ActionRequestTrait;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 
-class MoveDirectoryStructure
+class MoveDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $timeout = 3600;
+
     public function __construct(protected int $directoryId, protected int $newParentId, protected int $userId) {}
 
-    /**
-     * Handle the event.
-     *
-     * @return void
-     */
-    public function handle()
+    public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
             throw new \Exception('User not found');
@@ -39,7 +39,8 @@ class MoveDirectoryStructure
             throw new \Exception(trans('dam::app.admin.dam.index.directory.not-found'));
         }
 
-        $oldPath = $directory->generatePath();
+        $oldRelativePath = $directory->generatePath();
+        $oldStoragePath = sprintf('%s/%s', ModelDirectory::ASSETS_DIRECTORY, $oldRelativePath);
 
         $name = $this->setDirectoryNameForCopy($directory->name, $this->newParentId);
 
@@ -47,21 +48,32 @@ class MoveDirectoryStructure
 
         $directoryRepository->isDirectoryWritable($newParentDirectory, 'move');
 
-        if ($newParentDirectory && ! $newParentDirectory->isDescendantOf($directory) && $directory->id !== $newParentDirectory->id) {
-            $directory->name = $name;
-            $directory->parent()->associate($newParentDirectory)->save();
-        } else {
+        if (! $newParentDirectory || $newParentDirectory->isDescendantOf($directory) || $directory->id === $newParentDirectory->id) {
             throw new \Exception(trans('dam::app.admin.dam.index.directory.cannot-move'));
         }
 
         try {
-            $this->updateDirectoryParentAndChildren($directory, $directoryRepository);
+            DB::transaction(function () use ($directory, $newParentDirectory, $name) {
+                $directory->name = $name;
+                $directory->parent()->associate($newParentDirectory)->save();
+
+                $this->rebuildDescendantNodes($directory);
+            });
 
             $directory->refresh();
 
-            $newPath = $directory->generatePath();
+            $newRelativePath = $directory->generatePath();
+            $newStoragePath = sprintf('%s/%s', ModelDirectory::ASSETS_DIRECTORY, $newRelativePath);
 
-            $directoryRepository->createDirectoryWithStorage($newPath, $oldPath);
+            $disk = ModelDirectory::getAssetDisk();
+
+            if ($disk === ModelDirectory::ASSETS_DISK_AWS) {
+                $this->moveS3Prefix($disk, $oldStoragePath, $newStoragePath);
+            }
+
+            $this->batchReplaceAssetPaths($directory, $oldStoragePath, $newStoragePath);
+
+            $directoryRepository->createDirectoryWithStorage($newRelativePath, $oldRelativePath);
 
             $this->completed(EventType::MOVE_DIRECTORY_STRUCTURE->value, $this->userId);
         } catch (\Exception $e) {
@@ -70,65 +82,76 @@ class MoveDirectoryStructure
     }
 
     /**
-     * update the directory parent with the children directory
+     * Rebuild nested-set bounds for every descendant after re-parenting.
      */
-    public function updateDirectoryParentAndChildren(ModelDirectory $originalDirectory, $directoryRepository): void
+    private function rebuildDescendantNodes(ModelDirectory $root): void
     {
-        foreach ($originalDirectory->children as $child) {
-            $child->save();
+        $queue = [];
 
-            // Set the new child to the new directory
-            $child->appendToNode($originalDirectory)->save();
-            $this->updateDirectoryParentAndChildren($child, $directoryRepository);
-
-            $this->moveAssets($child);
+        foreach ($root->children as $child) {
+            $queue[] = [$child, $root];
         }
 
-        $this->moveAssets($originalDirectory);
+        while (! empty($queue)) {
+            [$node, $parent] = array_shift($queue);
+
+            $node->appendToNode($parent)->save();
+
+            foreach ($node->children as $grandchild) {
+                $queue[] = [$grandchild, $node];
+            }
+        }
     }
 
     /**
-     * Move the assets of the directory
+     * Bulk-replace the storage path prefix for every asset in the subtree.
      */
-    public function moveAssets(ModelDirectory $directory): void
+    private function batchReplaceAssetPaths(ModelDirectory $directory, string $oldPrefix, string $newPrefix): void
     {
-        $path = $directory->generatePath();
-        $disk = ModelDirectory::getAssetDisk();
-        // On object stores like S3 there are no real directories, so the
-        // folder-level rename performed later is a no-op and assets would be
-        // orphaned. Move each file individually for those drivers.
-        $movePerFile = $disk === ModelDirectory::ASSETS_DISK_AWS;
+        if ($oldPrefix === $newPrefix) {
+            return;
+        }
 
-        foreach ($directory->assets()->get() as $asset) {
-            $oldAssetPath = $asset->path;
-            $newAssetPath = sprintf('%s/%s/%s', ModelDirectory::ASSETS_DIRECTORY, $path, $asset->file_name);
+        $subtreeDirIds = $directory->descendants()->pluck('id')->prepend($directory->id);
 
-            if (
-                $movePerFile
-                && $oldAssetPath
-                && $oldAssetPath !== $newAssetPath
-            ) {
-                try {
-                    if (
-                        Storage::disk($disk)->exists($oldAssetPath)
-                        && ! Storage::disk($disk)->exists($newAssetPath)
-                    ) {
-                        Storage::disk($disk)->move($oldAssetPath, $newAssetPath);
-                    }
-                } catch (\Throwable $e) {
-                    Log::error('DAM: failed to move asset file on storage', [
-                        'asset_id' => $asset->id,
-                        'from'     => $oldAssetPath,
-                        'to'       => $newAssetPath,
-                        'disk'     => $disk,
-                        'error'    => $e->getMessage(),
-                    ]);
+        $pivotTable = (new Asset)->directories()->getTable();
+        $assetIds = DB::table($pivotTable)
+            ->whereIn('directory_id', $subtreeDirIds)
+            ->distinct()
+            ->pluck('asset_id');
 
-                    throw $e;
-                }
+        if ($assetIds->isEmpty()) {
+            return;
+        }
+
+        DB::table((new Asset)->getTable())
+            ->whereIn('id', $assetIds)
+            ->update([
+                'path' => DB::raw(
+                    'REPLACE(path, '.DB::getPdo()->quote($oldPrefix).', '.DB::getPdo()->quote($newPrefix).')'
+                ),
+            ]);
+    }
+
+    /**
+     * Move every S3 object from the old prefix to the new prefix.
+     */
+    private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
+    {
+        foreach (Storage::disk($disk)->allFiles($oldPrefix) as $file) {
+            $destination = $newPrefix.substr($file, strlen($oldPrefix));
+
+            try {
+                Storage::disk($disk)->move($file, $destination);
+            } catch (\Throwable $e) {
+                Log::error('DAM MoveDirectoryStructure: S3 file move failed', [
+                    'from'  => $file,
+                    'to'    => $destination,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw $e;
             }
-
-            $asset->update(['path' => $newAssetPath]);
         }
     }
 }

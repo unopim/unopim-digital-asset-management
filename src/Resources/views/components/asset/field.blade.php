@@ -8,170 +8,66 @@
 <v-asset-field
     name="{{ $name }}"
     asset-values="{{ (is_array($assetValues) ? implode(',', $assetValues) : $assetValues) }}"
-    width="{{ $width }}"    
+    width="{{ $width }}"
     height="{{ $height }}"
     :errors="errors"
 >
     <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" />
 </v-asset-field>
 
+@include('dam::asset.picker-modal')
+
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-field-template">
-        <!-- Panel Content -->
+
         <div class="grid">
             <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" v-if="isLoading" />
 
-            <div class="flex flex-wrap gap-3" v-else>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" v-else>
                 <input type="hidden" :name="name + '[]'" value="" v-if="assets.length === 0">
 
-                <!-- Uploaded assets -->
-                <div 
+                <draggable
+                    class="contents"
+                    ghost-class="draggable-ghost"
                     v-bind="{animation: 200}"
-                    v-for="(element, index) in assets"
+                    :list="assets"
+                    item-key="id"
+                    handle=".icon-drag"
                 >
-                    <v-asset-field-item
-                        :name="name"
-                        :index="index"
-                        :asset="element"
-                        :width="width"
-                        :height="height"
-                        @onRemove="remove($event)"
-                    >
-                    </v-asset-field-item>
-                </div>
+                    <template #item="{ element, index }">
+                        <v-asset-field-item
+                            :name="name"
+                            :index="index"
+                            :asset="element"
+                            :width="width"
+                            :height="height"
+                            @onRemove="remove($event)"
+                        >
+                        </v-asset-field-item>
+                    </template>
+                </draggable>
 
-                <!-- Add Asset -->
                 <label
-                    class="grid justify-items-center items-center w-full h-[120px] max-w-[210px] max-h-[120px] border border-dashed dark:border-gray-300 rounded cursor-pointer transition-all hover:border-gray-400 border-gray-300"
-                    :style="{'max-width': this.width, 'max-height': this.height}"
-                    :for="$.uid + '_assetImageInput'"
-                    @click="setCurrentAssets();$refs.assetPickerModal.open()"
+                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-violet-500 dark:hover:border-violet-400 hover:shadow-md"
+                    @click="openPicker"
                 >
-                    <div class="flex flex-col items-center">
-                        <span class="icon-dam-folder text-2xl"></span>
-                        <p class="grid text-sm text-gray-600 dark:text-gray-300 font-semibold text-center">
-                            @lang('dam::app.admin.components.asset.field.add-asset')
-                        </p>
-                    </div>
+                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-violet-600 transition-colors"></span>
+                    <p class="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        @lang('dam::app.admin.components.asset.field.add-asset')
+                    </p>
                 </label>
 
-                <x-dam::modal ref="assetPickerModal">
-                    <x-slot:header>
-                        <div class="flex gap-x-2.5">
-                            <!-- save selected assets -->
-                            <span 
-                                class="text-gray-800 dark:text-white font-semibold"
-                            >
-                                @lang('dam::app.admin.components.asset.field.assign-assets')
-                            </span>
-                        </div>
-                    </x-slot>
-
-                    <!--Modal Content -->
-                    <x-slot:content>
-                        <div class="flex gap-3">
-                            @if (bouncer()->hasPermission('dam.directory.index'))
-                                <x-dam::asset.picker.directory-tree />
-                            @endif
-
-                            <x-dam::asset.picker 
-                                :src="route('admin.dam.asset_picker.index')"
-                                ref="datagrid"
-                            >
-                                <template #body-header="{ records, meta, massActions, selectAllRecords }">
-                                    <div class="flex gap-2 items-center justify-between pb-4" v-if="records.length">
-                                        <!-- Select All -->
-                                        <div class="flex gap-2">
-                                            <label for="mass_action_select_all_records">
-                                                <input
-                                                    type="checkbox"
-                                                    name="mass_action_select_all_records"
-                                                    id="mass_action_select_all_records"
-                                                    class="peer hidden"
-                                                    :checked="['all', 'partial'].includes(meta.mode)"
-                                                    @change="selectAllRecords"
-                                                >
-    
-                                                <span
-                                                    class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
-                                                    :class="[
-                                                        meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-violet-700 ' : (
-                                                        meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-violet-700' : ''
-                                                        ),
-                                                    ]"
-                                                >
-                                                </span>
-                                                
-                                            </label>
-                                            <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white"  >@lang("Select All")</span>
-                                        </div>
-                                        
-                                        @if (bouncer()->hasPermission('dam.asset_assign'))
-                                            <span 
-                                                @click="saveAssets"
-                                                class="secondary-button"
-                                            >
-                                                Assign
-                                            </span>
-                                        @endif
-                                    </div>
-                                </template>
-                                <template #body="{ columns, records, performAction, setCurrentSelectionMode, meta, applied, isLoading }">
-                                    <template v-if="! isLoading && records.length">
-                                        <div
-                                            v-for="record in records"
-                                        >
-
-                                            <!-- Select asset -->
-                                            <label :for="`mass_action_select_record_${record[meta.primary_column]}`" class="cursor-pointer">
-                                                <div class="grid image-card relative overflow-hidden transition-all hover:border-gray-400 group">
-                                                    <img 
-                                                        :src="record.path"
-                                                        :alt="record.file_name"
-                                                        class="w-full h-full object-cover object-top"
-                                                    >
-                                                </div>
-                                                <div class="flex gap-2 items-center mt-2.5">
-                                                    <input
-                                                        type="checkbox"
-                                                        class="peer hidden"
-                                                        :name="`mass_action_select_record_${record[meta.primary_column]}`"
-                                                        :value="record[meta.primary_column]"
-                                                        :id="`mass_action_select_record_${record[meta.primary_column]}`"
-                                                        v-model="applied.massActions.indices"
-                                                        @change="setCurrentSelectionMode"
-                                                    >
-                                                    
-                                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
-                                                    </span>
-
-                                                    <h2 class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </template>
-    
-                                    <template v-else>
-                                        <x-admin::shimmer.datagrid.table.body isMultiRow="false" />
-                                    </template>
-    
-                                </template>
-                            </x-dam::asset.picker>
-                        </div>
-                    </x-slot>
-                </x-dam::modal>
-
+                <v-dam-asset-picker ref="assetPicker" @assign="onAssign"></v-dam-asset-picker>
             </div>
-        </div>  
+        </div>
     </script>
 
     <script type="text/x-template" id="v-asset-field-item-template">
-        <div class="grid gap-2">
-            <div class="grid justify-items-center min-w-[120px] max-h-[120px] relative rounded overflow-hidden transition-all hover:border-gray-400 group" :style="{'width': this.width, 'height': this.height}">
-                <!-- Image Preview -->
+        <div class="group relative flex flex-col rounded-lg border border-gray-200 dark:border-cherry-800 bg-white dark:bg-cherry-900 overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-violet-300 dark:hover:border-violet-700">
+            <div class="relative w-full">
                 <img
                     :src="asset.url"
-                    class="w-full h-full object-cover object-top"
+                    class="w-full h-[140px] object-cover object-top bg-gray-100 dark:bg-cherry-800"
                     v-if="!imgLoadError"
                     v-on:error="imgLoadError = true"
                 />
@@ -179,62 +75,41 @@
                     v-if="imgLoadError"
                     :src="typePlaceholder"
                     :data-href="asset.url"
-                    class="absolute inset-0 w-full h-full object-cover object-top cursor-pointer"
+                    class="w-full h-[140px] object-cover object-top bg-gray-100 dark:bg-cherry-800 cursor-pointer"
                     @click="window.location.href = asset.url"
                 />
-                <div class="flex flex-col justify-between invisible w-full p-3 bg-white dark:bg-cherry-800 absolute top-0 bottom-0 opacity-80 transition-all group-hover:visible">
-                    <!-- Actions -->
-                    <div class="flex items-center justify-center h-full">
-                        <span
-                            class="icon-dam-download text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="download"
-                            title="@lang('dam::app.admin.components.asset.field.download')"
-                        ></span>
 
-                        <span
-                            class="icon-dam-full text-2xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="preview"
-                            v-if="'image' === asset.file_type"
-                            title="@lang('dam::app.admin.components.asset.field.preview')"
-                        ></span>
+                <div class="absolute inset-0 flex items-end justify-center gap-2 p-2 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+                    <span class="icon-drag text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-grab active:cursor-grabbing"></span>
 
-                        <span
-                            class="icon-cancel text-3xl p-1.5 rounded-md cursor-pointer hover:bg-violet-100 dark:hover:bg-gray-800"
-                            @click="remove"
-                            title="@lang('dam::app.admin.components.asset.field.remove')"
-                        ></span>
+                    <span
+                        class="icon-view text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
+                        @click="preview"
+                        aria-label="@lang('dam::app.admin.components.asset.field.preview')"
+                    ></span>
 
-                        <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
-                    </div>
+                    <span
+                        class="icon-dam-download text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
+                        @click="download"
+                        aria-label="@lang('dam::app.admin.components.asset.field.download')"
+                    ></span>
+
+                    <span
+                        class="icon-delete text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-red-500/80 cursor-pointer"
+                        @click="remove"
+                        aria-label="@lang('dam::app.admin.components.asset.field.remove')"
+                    ></span>
+
+                    <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
                 </div>
             </div>
 
-            <!-- Image Name -->
-            <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold break-all" v-text="asset.file_name"></p>
+            <p
+                class="px-2 py-1.5 text-xs text-gray-700 dark:text-gray-300 text-center truncate"
+                v-text="asset.file_name"
+            ></p>
         </div>
 
-        <!-- Modal Component for Preview -->
-        <x-dam::modal ref="assetPreviewModal" no-class="true">
-            <x-slot:content class="flex items-center">
-                <div class="flex flex-row gap-3 justify-between w-full">
-                    <div class="flex justify-center w-full">
-                        <img 
-                            :src="asset.previewUrl" 
-                            alt="Preview" 
-                            class="w-max"
-                            v-if="asset"
-                        />
-                    </div>
-                    <div>
-                        <span
-                            class="icon-cancel text-3xl cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 hover:rounded-md"
-                            @click="toggle"
-                        >
-                        </span>
-                    </div>
-                </div>
-            </x-slot>
-        </x-dam::modal>
     </script>
 
     <script type="module">
@@ -243,7 +118,7 @@
 
             props: {
                 name: {
-                    type: String, 
+                    type: String,
                     default: 'images',
                 },
 
@@ -272,9 +147,6 @@
                 return {
                     assets: [],
 
-                    placeholders: [
-                    ],
-
                     currentAssets: [],
 
                     isLoading: false,
@@ -283,8 +155,6 @@
 
             mounted() {
                 this.fetchAssets(this.assetValues, true);
-
-                this.$emitter.on('change-datagrid', this.loadAssetValues);
             },
 
             methods: {
@@ -294,14 +164,20 @@
                     this.assets.splice(index, 1);
                 },
 
-                async saveAssets() {
-                    let selectedIds = [];
+                openPicker() {
+                    this.setCurrentAssets();
 
+                    this.$refs.assetPicker.open(this.currentAssets);
+                },
+
+                async onAssign(ids) {
                     const prevAssets = this.assets;
 
                     this.assets = [];
 
-                    this.$refs.datagrid.applied.massActions.indices.forEach(id => {
+                    let selectedIds = [];
+
+                    ids.forEach(id => {
                         let existing = prevAssets.filter(asset => asset.id === id);
 
                         if (existing.length === 1) {
@@ -311,41 +187,12 @@
                         }
                     });
 
-                    selectedIds = await this.fetchAssets(selectedIds);
+                    const fetched = selectedIds.length ? await this.fetchAssets(selectedIds) : [];
 
                     this.assets = [
                         ...this.assets,
-                        ...selectedIds
+                        ...(fetched || [])
                     ];
-
-                    this.$refs.assetPickerModal.close();
-                },
-
-                parseJson(value, silent = false) {
-                    try {
-                        return JSON.parse(value);
-                    } catch (e) {
-                        if (! silent) {
-                            console.error(e);
-                        }
-
-                        return value;
-                    }
-                },
-
-                loadAssetValues() {
-                    if (this.currentAssets.length && this.$refs?.datagrid?.applied?.massActions?.indices) {
-                        let selectedIndices = this.$refs.datagrid.applied.massActions.indices;
-
-                        this.$refs.datagrid.applied.massActions.indices = [
-                            ...this.currentAssets.filter(id => ! selectedIndices.includes(id)),
-                            ...selectedIndices
-                        ];
-
-                        this.currentAssets = [];
-
-                        this.$refs.datagrid.setCurrentSelectionMode()
-                    }
                 },
 
                 fetchAssets(assetIds, initialize = false) {
@@ -409,18 +256,8 @@
                     window.open(downloadLink, '_self');
                 },
 
-                preview(record) {
-                    if (! this.asset.previewUrl) {
-                        this.setPreviewUrl();
-                    }
-
-                    this.$refs.assetPreviewModal.open();
-                },
-
-                setPreviewUrl() {
-                    let filePath = encodeURIComponent(this.asset.storage_file_path);
-
-                    this.asset.previewUrl = `{{ route('admin.dam.file.preview', '') }}?path=${filePath}`;
+                preview() {
+                    this.$emitter.emit('dam-open-preview', this.asset.id);
                 },
             }
         });
