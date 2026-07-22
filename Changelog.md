@@ -1,37 +1,34 @@
 # CHANGELOG for unopim-digital-asset-management
-
-## **Version 2.2.1** - UnoPim v2.1.x Compatibility
+## **Version 2.2.1**
 
 ### Features & Enhancements
 
-- **Tag management datagrid** — A dedicated **DAM → Tags** page lists every tag in a datagrid with its name, per-tag asset count, and creation date, plus search, filters, sorting, inline edit/delete, and bulk delete. Tags are created here and can be assigned to assets — individually or via mass-assign — from the gallery. ACL-gated via `dam.tags.*`.
+* **Tag Management** — Added a new **DAM → Tags** page to create and manage tags. You can search, filter, sort, edit, delete, and bulk delete tags, as well as assign them to single or multiple assets.
 
-- **Configuration** — A **DAM → Configuration** settings page (ACL-gated) toggles directory-tree asset visibility, the Explorer view, its bookmarks panel, and its directory-tree sidebar, without touching `.env`.
+* **Configuration** — Added a new **DAM → Configuration** page to enable or disable the directory tree asset visibility, Explorer view, Explorer bookmarks panel, and Explorer directory tree sidebar.
 
-* **Lazy In-Tree Asset Directory Listing** — Implemented lazy loading for the asset directory tree to improve performance. Directories are now loaded in batches of **100 items** at a time, with a **"Load More"** option to fetch additional directories on demand, ensuring faster initial loading and better scalability for large directory structures.
+* **Lazy Directory Loading** — Improved directory tree performance by loading directories in batches of **100 items** with a **Load More** option.
 
-
-* **Asset Bulk Edit** — Updated and implemented the **Asset Bulk Edit** feature using the core product datagrid. The functionality is now fully integrated and working as expected.
+* **Asset Bulk Edit** — Updated the Asset Bulk Edit feature using the core datagrid for a more consistent editing experience.
 
 ### Fixed
 
-- **AWS S3 Video Support** — Added proper video support for AWS S3 by fixing the asset handling logic, ensuring video files stored in S3 are correctly detected, processed, and accessible across the DAM.
+* **AWS S3 Video Support** — Fixed video handling for assets stored in AWS S3.
 
-- **Newly-created subdirectories inaccessible until page reload** — Folder upload and bulk folder-structure creation auto-grant new subdirectories to the creator's role, but the client never learned which directories were created, so they showed as "View only" in the tree/explorer/grid until a manual refresh. Both endpoints now report the granted directory IDs and the UI updates immediately, matching the existing behaviour for the "New Folder" action.
+* **New Folder Access** — Fixed an issue where newly created folders required a page refresh before they became fully accessible.
 
-- **Untranslated Tag management and upload-control strings** — The Tag feature (datagrid, create/edit modals, mass-assign) and the background-upload pause/resume/cancel/retry controls were shipped with English text in every non-English locale. Native translations added across all 29 supported locales.
+* **Translations** — Added missing translations for the Tag Management feature and background upload controls across all supported languages.
 
-- **Drag and Drop** — Updated the DAM modal by adding the **Asset Picker**, **Asset Full View**, and **file upload** functionality with drag-and-drop support.
-
-
+* **Drag and Drop** — Improved the DAM modal with drag-and-drop support for the Asset Picker, Asset Full View, and file uploads.
 
 ### Security
 
-- **Blocked executable & HTML uploads** — Upload validation now rejects `.html`, `.htm`, `.xhtml`, `.shtml`, `.hta`, `.phtml`, and `.phar` files and the `text/html` content type, alongside the existing script extensions.
+* **Blocked Unsafe Uploads** — Prevented uploads of HTML and other executable web file types.
 
-- **Safe asset serving** — Uploaded files that are not genuine media are always served as downloads, and every asset response carries `X-Content-Type-Options: nosniff` and a restrictive `Content-Security-Policy`, so a stored HTML/SVG file can no longer execute script in the application's origin (`FileController::fetchFile`, the public share stream, and SVG thumbnails).
+* **Safer Asset Serving** — Improved asset security by preventing unsafe files from being rendered directly in the browser.
 
-- **Authorization on bulk & folder operations** — Asset-property mass-delete now requires the property-delete permission, asset mass-delete enforces the per-directory ACL boundary per item, and folder upload requires the `dam.asset.upload` permission.
+* **Improved Permissions** — Strengthened permission checks for bulk asset operations and folder uploads.
+
 
 ## **Version 2.1.1** — Demo Data Seed & API Improvements
 
