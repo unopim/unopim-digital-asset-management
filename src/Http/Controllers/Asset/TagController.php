@@ -226,10 +226,16 @@ class TagController extends Controller
 
         $directoryIds = array_values(array_filter(
             array_unique(array_map('intval', $directoryIds)),
-            fn (int $id) => $bypass || $service->canView($id)
+            fn (int $id) => $bypass || $service->canAccess($id)
         ));
 
         if (empty($directoryIds)) {
+            return 0;
+        }
+
+        $grantedIds = $bypass ? null : $service->directlyGrantedIds();
+
+        if ($grantedIds !== null && empty($grantedIds)) {
             return 0;
         }
 
@@ -242,7 +248,7 @@ class TagController extends Controller
         $dirTable = (new Directory)->getTable();
         $now = now()->toDateTimeString();
 
-        $subtreeDirIds = function ($query) use ($roots, $dirTable) {
+        $subtreeDirIds = function ($query) use ($roots, $dirTable, $grantedIds) {
             $query->select('id')->from($dirTable)->where(function ($scope) use ($roots) {
                 foreach ($roots as $i => $root) {
                     $scope->{$i === 0 ? 'where' : 'orWhere'}(function ($range) use ($root) {
@@ -251,6 +257,10 @@ class TagController extends Controller
                     });
                 }
             });
+
+            if ($grantedIds !== null) {
+                $query->whereIn('id', $grantedIds);
+            }
         };
 
         $nowLiteral = DB::getPdo()->quote($now);

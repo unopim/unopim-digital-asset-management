@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Error en actualitzar el directori',
                     'moved-success'                             => 'Directori mogut correctament',
                     'cannot-move'                               => 'No es pot moure el directori',
+                    'cannot-copy'                               => 'No es pot copiar una carpeta dins d’ella mateixa ni dins d’una subcarpeta seva.',
                     'fetch-all-success'                         => 'Directoris obtinguts correctament',
                     'can-not-deleted'                           => 'No es pot eliminar el directori perquè és el Directori Arrel.',
                     'deleting-in-progress'                      => 'Eliminació del directori en curs',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'L\'idioma seleccionat no s\'ha trobat o actualment està desactivat.',
+                ],
+                'sort-order' => [
+                    'required' => 'El camp Ordre de classificació és obligatori quan Afegir al filtre està activat.',
                 ],
             ],
         ],

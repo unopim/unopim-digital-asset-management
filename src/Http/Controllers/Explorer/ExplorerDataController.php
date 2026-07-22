@@ -24,6 +24,12 @@ class ExplorerDataController extends Controller
      */
     public function filterOptions(): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.view'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $properties = DB::table('dam_asset_properties')
             ->where('is_filterable', true)
             ->distinct()
@@ -38,6 +44,12 @@ class ExplorerDataController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.view'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'directory_id'        => 'required|integer|min:1|exists:dam_directories,id',
             'search'              => 'nullable|string|max:255',
@@ -276,6 +288,12 @@ class ExplorerDataController extends Controller
 
     public function countItems(Request $request): JsonResponse
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.view'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $request->validate([
             'asset_ids'       => 'nullable|array',
             'asset_ids.*'     => 'integer|min:1',
@@ -283,8 +301,14 @@ class ExplorerDataController extends Controller
             'directory_ids.*' => 'integer|min:1',
         ]);
 
+        $bypass = $this->permissionService->bypass();
+        $grantedIds = $bypass ? null : $this->permissionService->directlyGrantedIds();
+
         $assetIds = array_unique(array_map('intval', $request->input('asset_ids', [])));
-        $dirIds = array_unique(array_map('intval', $request->input('directory_ids', [])));
+        $dirIds = array_values(array_filter(
+            array_unique(array_map('intval', $request->input('directory_ids', []))),
+            fn (int $id) => $bypass || $this->permissionService->canAccess($id)
+        ));
 
         $fileCount = count($assetIds);
 
@@ -299,6 +323,11 @@ class ExplorerDataController extends Controller
                         ->where('_rgt', '<=', $root->_rgt);
                 });
             }
+
+            if ($grantedIds !== null) {
+                $subtreeQuery->whereIn('id', $grantedIds);
+            }
+
             $allDirIds = $subtreeQuery->pluck('id');
 
             $fileCount += DB::table('dam_asset_directory')

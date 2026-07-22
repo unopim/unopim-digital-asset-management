@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Pembaruan direktori gagal',
                     'moved-success'                             => 'Direktori berhasil dipindahkan',
                     'cannot-move'                               => 'Tidak dapat memindahkan direktori',
+                    'cannot-copy'                               => 'Tidak dapat menyalin folder ke dalam dirinya sendiri atau ke subfoldernya.',
                     'fetch-all-success'                         => 'Direktori berhasil diambil',
                     'can-not-deleted'                           => 'Direktori tidak dapat dihapus karena merupakan Direktori Root.',
                     'deleting-in-progress'                      => 'Proses penghapusan direktori sedang berlangsung',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Bahasa yang dipilih tidak ditemukan atau saat ini dinonaktifkan.',
+                ],
+                'sort-order' => [
+                    'required' => 'Kolom Urutan sortir wajib diisi saat Tambahkan ke Filter diaktifkan.',
                 ],
             ],
         ],

@@ -112,6 +112,8 @@ it('returns 404 when updating a missing tag', function () {
 });
 
 it('paginates the autocomplete tag list', function () {
+    $this->damResetAssetTables();
+
     foreach (range(1, 30) as $i) {
         Tag::create(['name' => sprintf('tag-%02d', $i)]);
     }

@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Oppdatering av mappe mislyktes',
                     'moved-success'                             => 'Mappe flyttet',
                     'cannot-move'                               => 'Kan ikke flytte mappen',
+                    'cannot-copy'                               => 'Kan ikke kopiere en mappe inn i seg selv eller en av sine egne undermapper.',
                     'fetch-all-success'                         => 'Mapper hentet',
                     'can-not-deleted'                           => 'Mappen kan ikke slettes fordi den er rotmappen.',
                     'deleting-in-progress'                      => 'Sletting av mappe pågår',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Det valgte språket ble ikke funnet eller er for øyeblikket deaktivert.',
+                ],
+                'sort-order' => [
+                    'required' => 'Feltet Sorteringsrekkefølge er påkrevd når Legg til i filter er aktivert.',
                 ],
             ],
         ],

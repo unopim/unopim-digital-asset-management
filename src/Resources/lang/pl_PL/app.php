@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Aktualizacja katalogu nie powiodła się',
                     'moved-success'                             => 'Katalog został pomyślnie przeniesiony',
                     'cannot-move'                               => 'Nie można przenieść katalogu',
+                    'cannot-copy'                               => 'Nie można skopiować folderu do niego samego ani do jego podfolderu.',
                     'fetch-all-success'                         => 'Katalogi zostały pomyślnie pobrane',
                     'can-not-deleted'                           => 'Katalogu nie można usunąć, ponieważ jest katalogiem głównym.',
                     'deleting-in-progress'                      => 'Usuwanie katalogu w toku',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Wybrany język nie został znaleziony lub jest obecnie wyłączony.',
+                ],
+                'sort-order' => [
+                    'required' => 'Pole Kolejność sortowania jest wymagane, gdy opcja Dodaj do filtra jest włączona.',
                 ],
             ],
         ],

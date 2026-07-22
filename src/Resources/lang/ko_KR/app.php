@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => '디렉토리 업데이트 실패',
                     'moved-success'                             => '디렉터리가 성공적으로 이동되었습니다',
                     'cannot-move'                               => '디렉토리를 이동할 수 없습니다',
+                    'cannot-copy'                               => '폴더를 자기 자신이나 자신의 하위 폴더로 복사할 수 없습니다.',
                     'fetch-all-success'                         => '디렉터리를 성공적으로 가져왔습니다',
                     'can-not-deleted'                           => '루트 디렉터리이므로 삭제할 수 없습니다.',
                     'deleting-in-progress'                      => '디렉터리 삭제가 진행 중입니다',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => '선택한 언어를 찾을 수 없거나 현재 비활성화되어 있습니다.',
+                ],
+                'sort-order' => [
+                    'required' => '필터에 추가가 활성화된 경우 정렬 순서는 필수입니다.',
                 ],
             ],
         ],

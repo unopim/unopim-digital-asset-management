@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Nabigo ang pag-update ng direktoryo',
                     'moved-success'                             => 'Matagumpay na nailipat ang direktoryo',
                     'cannot-move'                               => 'Hindi maaaring ilipat ang direktoryo',
+                    'cannot-copy'                               => 'Hindi maaaring kopyahin ang folder sa sarili nito o sa sarili nitong sub-folder.',
                     'fetch-all-success'                         => 'Matagumpay na nakuha ang mga direktoryo',
                     'can-not-deleted'                           => 'Hindi maaaring tanggalin ang direktoryo dahil ito ang Root Directory.',
                     'deleting-in-progress'                      => 'Isinasagawa ang pagtanggal ng direktoryo',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Ang napiling wika ay hindi nahanap o kasalukuyang hindi pinagana.',
+                ],
+                'sort-order' => [
+                    'required' => 'Kailangan ang Pagkakasunod-sunod ng pag-uuri kapag naka-enable ang Idagdag sa Filter.',
                 ],
             ],
         ],

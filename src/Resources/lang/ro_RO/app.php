@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Actualizarea directorului a eșuat',
                     'moved-success'                             => 'Director mutat cu succes',
                     'cannot-move'                               => 'Nu se poate muta directorul',
+                    'cannot-copy'                               => 'Un folder nu poate fi copiat în el însuși sau într-un subfolder propriu.',
                     'fetch-all-success'                         => 'Directoare preluate cu succes',
                     'can-not-deleted'                           => 'Directorul nu poate fi șters deoarece este Directorul Rădăcină.',
                     'deleting-in-progress'                      => 'Ștergerea directorului este în curs',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Limba selectată nu a putut fi găsită sau este momentan dezactivată.',
+                ],
+                'sort-order' => [
+                    'required' => 'Câmpul Ordinea de sortare este obligatoriu când Adaugă la filtru este activat.',
                 ],
             ],
         ],

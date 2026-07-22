@@ -191,7 +191,7 @@ return [
     ], [
         'key'   => 'dam.assets',
         'name'  => 'dam::app.admin.acl.assets',
-        'route' => 'admin.dam.index',
+        'route' => 'admin.dam.assets.index',
         'sort'  => 4,
     ], [
         'key'   => 'dam.shares',

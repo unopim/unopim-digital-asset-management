@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => '更新目录失败',
                     'moved-success'                             => '目录移动成功',
                     'cannot-move'                               => '无法移动目录',
+                    'cannot-copy'                               => '无法将文件夹复制到其自身或其子文件夹中。',
                     'fetch-all-success'                         => '目录获取成功',
                     'can-not-deleted'                           => '不能删除根目录。',
                     'deleting-in-progress'                      => '目录删除中',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => '所选语言未找到或当前已被禁用。',
+                ],
+                'sort-order' => [
+                    'required' => '启用“添加到筛选”时，排序顺序为必填项。',
                 ],
             ],
         ],

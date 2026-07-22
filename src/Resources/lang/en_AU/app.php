@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Directory update failed',
                     'moved-success'                             => 'Directory moved successfully',
                     'cannot-move'                               => 'Cannot move directory',
+                    'cannot-copy'                               => 'Cannot copy a folder into itself or one of its own sub-folders.',
                     'fetch-all-success'                         => 'Directories fetched successfully',
                     'can-not-deleted'                           => 'Directory cannot be deleted as it is Root Directory.',
                     'deleting-in-progress'                      => 'Directory deleting in-progress',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'The selected language could not be found or is currently disabled',
+                ],
+                'sort-order' => [
+                    'required' => 'The Sort order field is required when Add to Filter is enabled.',
                 ],
             ],
         ],

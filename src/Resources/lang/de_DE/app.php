@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Verzeichnisaktualisierung fehlgeschlagen',
                     'moved-success'                             => 'Verzeichnis erfolgreich verschoben',
                     'cannot-move'                               => 'Verzeichnis kann nicht verschoben werden',
+                    'cannot-copy'                               => 'Ein Ordner kann nicht in sich selbst oder in einen seiner Unterordner kopiert werden.',
                     'fetch-all-success'                         => 'Verzeichnisse erfolgreich abgerufen',
                     'can-not-deleted'                           => 'Verzeichnis kann nicht gelöscht werden, da es das Root-Verzeichnis ist.',
                     'deleting-in-progress'                      => 'Verzeichnis wird gelöscht',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Die ausgewählte Sprache wurde nicht gefunden oder ist derzeit deaktiviert.',
+                ],
+                'sort-order' => [
+                    'required' => 'Das Feld Sortierreihenfolge ist erforderlich, wenn „Zum Filter hinzufügen“ aktiviert ist.',
                 ],
             ],
         ],

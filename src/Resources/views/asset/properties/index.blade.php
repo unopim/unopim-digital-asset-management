@@ -276,7 +276,7 @@
 
                         <x-admin::form.control-group v-if="!!selectedProperty.is_filterable">
                             <div class="flex items-center gap-1.5">
-                                <x-admin::form.control-group.label class="!mb-0">
+                                <x-admin::form.control-group.label class="required !mb-0">
                                     @lang('dam::app.admin.dam.asset.properties.index.create.sort-order')
                                 </x-admin::form.control-group.label>
                                 <span
@@ -286,19 +286,23 @@
                                 ></span>
                             </div>
 
-                            {{-- Plain HTML input on purpose: x-admin::form.control-group.control
-                                 wraps in <v-field> and filters attributes by name, which drops
-                                 `v-model.number` — leaving the field disconnected from the model. --}}
-                            <input
+                            {{-- Bound with plain `v-model`: the control component filters attributes
+                                 by exact name, so `v-model.number` would be dropped. The controller
+                                 casts to int on write. --}}
+                            <x-admin::form.control-group.control
                                 type="number"
                                 name="sort_order"
                                 min="0"
                                 max="9999"
                                 step="1"
-                                v-model.number="selectedProperty.sort_order"
-                                :placeholder="@js(trans('dam::app.admin.dam.asset.properties.index.create.sort-order-placeholder'))"
-                                class="w-full py-2.5 px-3 border rounded-md text-sm text-gray-600 dark:text-gray-300 transition-all hover:border-gray-400 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400 dark:bg-cherry-900 dark:hover:border-slate-300 dark:border-gray-600 mt-1.5"
+                                class="mt-1.5"
+                                rules="required|integer|min_value:0|max_value:9999"
+                                v-model="selectedProperty.sort_order"
+                                :label="trans('dam::app.admin.dam.asset.properties.index.create.sort-order')"
+                                :placeholder="trans('dam::app.admin.dam.asset.properties.index.create.sort-order-placeholder')"
                             />
+
+                            <x-admin::form.control-group.error control-name="sort_order" />
                         </x-admin::form.control-group>
                     </x-slot:content>
 

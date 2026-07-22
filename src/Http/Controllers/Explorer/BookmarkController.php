@@ -9,11 +9,27 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Webkul\DAM\Models\ExplorerBookmark;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 class BookmarkController extends Controller
 {
+    public function __construct(
+        protected DirectoryPermissionService $permissionService
+    ) {}
+
+    protected function authorizeBookmarks(): void
+    {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.view'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+    }
+
     public function index(): JsonResponse
     {
+        $this->authorizeBookmarks();
+
         $bookmarks = ExplorerBookmark::where('user_id', Auth::id())
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -24,6 +40,8 @@ class BookmarkController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorizeBookmarks();
+
         $request->validate([
             'directory_id' => 'required|integer|exists:dam_directories,id',
             'name'         => 'required|string|max:255',
@@ -31,6 +49,13 @@ class BookmarkController extends Controller
 
         $userId = Auth::id();
         $directoryId = $request->integer('directory_id');
+
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($directoryId)) {
+            return response()->json(
+                ['message' => trans('dam::app.admin.explorer.access-denied')],
+                403
+            );
+        }
 
         $existing = ExplorerBookmark::where('user_id', $userId)
             ->where('directory_id', $directoryId)
@@ -67,6 +92,8 @@ class BookmarkController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
+        $this->authorizeBookmarks();
+
         ExplorerBookmark::where('id', $id)
             ->where('user_id', Auth::id())
             ->delete();

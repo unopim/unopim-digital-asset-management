@@ -105,7 +105,35 @@ class MassMove implements ShouldQueue
                                 array_map(fn ($id) => ['asset_id' => $id, 'directory_id' => $this->targetId], $successIds)
                             );
 
-                            Asset::upsert($updates, ['id'], ['path', 'file_name']);
+                            $assetTable = DB::getTablePrefix().(new Asset)->getTable();
+
+                            $pathCase = 'CASE id';
+                            $nameCase = 'CASE id';
+                            $pathBindings = [];
+                            $nameBindings = [];
+
+                            foreach ($updates as $update) {
+                                $pathCase .= ' WHEN ? THEN ?';
+                                $nameCase .= ' WHEN ? THEN ?';
+                                $pathBindings[] = $update['id'];
+                                $pathBindings[] = $update['path'];
+                                $nameBindings[] = $update['id'];
+                                $nameBindings[] = $update['file_name'];
+                            }
+
+                            $pathCase .= ' END';
+                            $nameCase .= ' END';
+
+                            DB::update(
+                                sprintf(
+                                    'update %s set path = %s, file_name = %s where id in (%s)',
+                                    $assetTable,
+                                    $pathCase,
+                                    $nameCase,
+                                    implode(',', array_fill(0, count($successIds), '?'))
+                                ),
+                                array_merge($pathBindings, $nameBindings, $successIds)
+                            );
                         });
 
                         $done += count($updates);

@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => '更新目錄失敗',
                     'moved-success'                             => '目錄移動成功',
                     'cannot-move'                               => '無法移動目錄',
+                    'cannot-copy'                               => '無法將資料夾複製到其自身或其子資料夾中。',
                     'fetch-all-success'                         => '目錄擷取成功',
                     'can-not-deleted'                           => '此為根目錄，無法刪除。',
                     'deleting-in-progress'                      => '目錄刪除進行中',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => '找不到所選語言，或該語言目前已停用。',
+                ],
+                'sort-order' => [
+                    'required' => '啟用「新增至篩選」時，排序順序為必填欄位。',
                 ],
             ],
         ],

@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Échec de la mise à jour du répertoire',
                     'moved-success'                             => 'Répertoire déplacé avec succès',
                     'cannot-move'                               => 'Impossible de déplacer le répertoire',
+                    'cannot-copy'                               => 'Impossible de copier un dossier dans lui-même ou dans l’un de ses sous-dossiers.',
                     'fetch-all-success'                         => 'Répertoires récupérés avec succès',
                     'can-not-deleted'                           => 'Le répertoire ne peut pas être supprimé car il s\'agit du répertoire racine.',
                     'deleting-in-progress'                      => 'Suppression du répertoire en cours',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'La langue sélectionnée est introuvable ou actuellement désactivée.',
+                ],
+                'sort-order' => [
+                    'required' => 'Le champ Ordre de tri est obligatoire lorsque Ajouter au filtre est activé.',
                 ],
             ],
         ],

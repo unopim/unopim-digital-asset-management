@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Map bijwerken mislukt',
                     'moved-success'                             => 'Map succesvol verplaatst',
                     'cannot-move'                               => 'Map kan niet worden verplaatst',
+                    'cannot-copy'                               => 'Een map kan niet naar zichzelf of naar een eigen submap worden gekopieerd.',
                     'fetch-all-success'                         => 'Mappen succesvol opgehaald',
                     'can-not-deleted'                           => 'Map kan niet worden verwijderd, omdat het de rootmap is.',
                     'deleting-in-progress'                      => 'Map wordt verwijderd',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'De geselecteerde taal is niet gevonden of momenteel uitgeschakeld.',
+                ],
+                'sort-order' => [
+                    'required' => 'Het veld Sorteervolgorde is verplicht wanneer Toevoegen aan filter is ingeschakeld.',
                 ],
             ],
         ],

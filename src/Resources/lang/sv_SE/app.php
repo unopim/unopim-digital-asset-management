@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Uppdatering av mapp misslyckades',
                     'moved-success'                             => 'Katalog flyttad',
                     'cannot-move'                               => 'Det går inte att flytta mappen',
+                    'cannot-copy'                               => 'Det går inte att kopiera en mapp till sig själv eller till en egen undermapp.',
                     'fetch-all-success'                         => 'Kataloger hämtade',
                     'can-not-deleted'                           => 'Katalogen kan inte tas bort eftersom det är rotkatalogen.',
                     'deleting-in-progress'                      => 'Borttagning av katalog pågår',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Det valda språket kunde inte hittas eller är för närvarande inaktiverat.',
+                ],
+                'sort-order' => [
+                    'required' => 'Fältet Sorteringsordning är obligatoriskt när Lägg till i filter är aktiverat.',
                 ],
             ],
         ],

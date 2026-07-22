@@ -44,6 +44,12 @@ class CopyDirectory implements ShouldQueue
 
         try {
             $source = Directory::with(['assets', 'children'])->findOrFail($this->sourceId);
+            $target = Directory::findOrFail($this->targetId);
+
+            if ($target->id === $source->id || $target->isDescendantOf($source)) {
+                throw new \RuntimeException(trans('dam::app.admin.dam.index.directory.cannot-copy'));
+            }
+
             $newName = Directory::uniqueName($source->name, $this->targetId);
 
             DB::transaction(function () use ($source, $newName) {

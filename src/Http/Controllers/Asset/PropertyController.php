@@ -41,8 +41,9 @@ class PropertyController extends Controller
         $this->damAuthorizeAsset($id);
 
         $messages = [
-            'name.required' => trans('dam::app.admin.validation.property.name.required'),
-            'name.unique'   => trans('dam::app.admin.validation.property.name.unique'),
+            'name.required'          => trans('dam::app.admin.validation.property.name.required'),
+            'name.unique'            => trans('dam::app.admin.validation.property.name.unique'),
+            'sort_order.required_if' => trans('dam::app.admin.validation.property.sort-order.required'),
         ];
 
         $this->validate(request(), [
@@ -50,7 +51,7 @@ class PropertyController extends Controller
             'language'      => 'required',
             'value'         => 'required|max:1000',
             'is_filterable' => 'sometimes|boolean',
-            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+            'sort_order'    => 'required_if:is_filterable,1|integer|min:0|max:9999',
             'name'          => [
                 'required',
                 'min:3',
@@ -99,7 +100,8 @@ class PropertyController extends Controller
         $this->damAuthorizeAsset((int) $property->dam_asset_id);
 
         $messages = [
-            'name.unique' => trans('dam::app.admin.validation.property.name.unique'),
+            'name.unique'            => trans('dam::app.admin.validation.property.name.unique'),
+            'sort_order.required_if' => trans('dam::app.admin.validation.property.sort-order.required'),
         ];
 
         $this->validate(request(), [
@@ -116,7 +118,7 @@ class PropertyController extends Controller
             ],
             'value'         => 'required',
             'is_filterable' => 'sometimes|boolean',
-            'sort_order'    => 'sometimes|integer|min:0|max:9999',
+            'sort_order'    => 'required_if:is_filterable,1|integer|min:0|max:9999',
         ], $messages);
 
         $payload = array_merge(

@@ -66,7 +66,30 @@ class DamUpdater
     /** Tables that currently exist — a new-in-release table isn't dumped until it has been migrated. */
     private function existingTables(): array
     {
-        return array_values(array_filter(DamTables::ALL, fn ($t) => Schema::hasTable($t)));
+        $tables = array_filter(DamTables::ALL, fn ($t) => Schema::hasTable($t));
+
+        $migrations = $this->migrationsTable();
+
+        if (Schema::hasTable($migrations)) {
+            $tables[] = $migrations;
+        }
+
+        return array_values($tables);
+    }
+
+    /**
+     * Restoring DAM schema without the ledger would leave Laravel believing the
+     * reverted migrations had already run, permanently wedging dam:update.
+     */
+    private function migrationsTable(): string
+    {
+        $migrations = config('database.migrations', 'migrations');
+
+        if (is_array($migrations)) {
+            return (string) ($migrations['table'] ?? 'migrations');
+        }
+
+        return (string) $migrations;
     }
 
     /**
@@ -76,6 +99,17 @@ class DamUpdater
     public function buildDumpCommand(string $sqlPath, ?array $tables = null): array
     {
         $tables ??= DamTables::ALL;
+
+        if ($tables === []) {
+            throw new \RuntimeException('Refusing to dump: no DAM tables resolved, which would export the entire database.');
+        }
+
+        $prefix = DB::getTablePrefix();
+
+        if ($prefix !== '') {
+            $tables = array_map(fn ($t) => $prefix.$t, $tables);
+        }
+
         $conn = config('database.connections.'.config('database.default'));
         $driver = $conn['driver'] ?? 'mysql';
 

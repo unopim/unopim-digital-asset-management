@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Neuspjelo ažuriranje direktorija',
                     'moved-success'                             => 'Direktorij je uspješno premješten',
                     'cannot-move'                               => 'Direktorij se ne može premjestiti',
+                    'cannot-copy'                               => 'Mapu nije moguće kopirati u samu sebe ili u vlastitu podmapu.',
                     'fetch-all-success'                         => 'Direktoriji su uspješno dohvaćeni',
                     'can-not-deleted'                           => 'Direktorij se ne može obrisati jer je korijenski direktorij.',
                     'deleting-in-progress'                      => 'Brisanje direktorija je u tijeku',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Odabrani jezik nije pronađen ili je trenutno onemogućen.',
+                ],
+                'sort-order' => [
+                    'required' => 'Polje Redoslijed sortiranja obavezno je kada je Dodaj u filtar omogućeno.',
                 ],
             ],
         ],

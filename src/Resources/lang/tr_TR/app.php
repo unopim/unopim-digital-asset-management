@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Dizin güncelleme başarısız',
                     'moved-success'                             => 'Dizin başarıyla taşındı',
                     'cannot-move'                               => 'Dizin taşınamıyor',
+                    'cannot-copy'                               => 'Bir klasör kendi içine veya kendi alt klasörüne kopyalanamaz.',
                     'fetch-all-success'                         => 'Dizinler başarıyla alındı',
                     'can-not-deleted'                           => 'Dizin kök dizin olduğu için silinemez.',
                     'deleting-in-progress'                      => 'Dizin silme işlemi devam ediyor',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Seçilen dil bulunamadı veya şu anda devre dışı.',
+                ],
+                'sort-order' => [
+                    'required' => 'Filtreye Ekle etkinleştirildiğinde Sıralama düzeni alanı zorunludur.',
                 ],
             ],
         ],

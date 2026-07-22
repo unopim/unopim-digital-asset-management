@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Hakemiston päivitys epäonnistui',
                     'moved-success'                             => 'Hakemisto siirretty onnistuneesti',
                     'cannot-move'                               => 'Hakemistoa ei voi siirtää',
+                    'cannot-copy'                               => 'Kansiota ei voi kopioida itseensä tai omaan alikansioonsa.',
                     'fetch-all-success'                         => 'Hakemistot haettu onnistuneesti',
                     'can-not-deleted'                           => 'Hakemistoa ei voi poistaa, koska se on juurihakemisto.',
                     'deleting-in-progress'                      => 'Hakemiston poistaminen on käynnissä',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Valittua kieltä ei löytynyt tai se on tällä hetkellä poistettu käytöstä.',
+                ],
+                'sort-order' => [
+                    'required' => 'Järjestys-kenttä on pakollinen, kun Lisää suodattimeen on käytössä.',
                 ],
             ],
         ],

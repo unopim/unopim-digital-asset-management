@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Falha ao atualizar diretório',
                     'moved-success'                             => 'Diretório movido com sucesso',
                     'cannot-move'                               => 'Não é possível mover o diretório',
+                    'cannot-copy'                               => 'Não é possível copiar uma pasta para dentro de si mesma ou de uma subpasta sua.',
                     'fetch-all-success'                         => 'Diretórios obtidos com sucesso',
                     'can-not-deleted'                           => 'O diretório não pode ser eliminado pois é o Diretório Raiz.',
                     'deleting-in-progress'                      => 'Eliminação do diretório em curso',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'O idioma selecionado não foi encontrado ou está atualmente desativado.',
+                ],
+                'sort-order' => [
+                    'required' => 'O campo Ordem de ordenação é obrigatório quando Adicionar ao filtro está ativado.',
                 ],
             ],
         ],

@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Opdatering af mappe mislykkedes',
                     'moved-success'                             => 'Mappe flyttet',
                     'cannot-move'                               => 'Kan ikke flytte mappe',
+                    'cannot-copy'                               => 'En mappe kan ikke kopieres ind i sig selv eller i en af sine egne undermapper.',
                     'fetch-all-success'                         => 'Mapper hentet',
                     'can-not-deleted'                           => 'Mappen kan ikke slettes, da det er rodmappen.',
                     'deleting-in-progress'                      => 'Sletning af mappe er i gang',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Det valgte sprog kunne ikke findes eller er deaktiveret.',
+                ],
+                'sort-order' => [
+                    'required' => 'Feltet Sorteringsrækkefølge er påkrævet, når Tilføj til filter er aktiveret.',
                 ],
             ],
         ],

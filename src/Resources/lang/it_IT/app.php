@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Aggiornamento della directory non riuscito',
                     'moved-success'                             => 'Directory spostata con successo',
                     'cannot-move'                               => 'Impossibile spostare la directory',
+                    'cannot-copy'                               => 'Impossibile copiare una cartella in se stessa o in una sua sottocartella.',
                     'fetch-all-success'                         => 'Directory recuperate con successo',
                     'can-not-deleted'                           => 'La directory non può essere eliminata in quanto è la Directory Radice.',
                     'deleting-in-progress'                      => 'Eliminazione della directory in corso',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'La lingua selezionata non è stata trovata o è attualmente disabilitata.',
+                ],
+                'sort-order' => [
+                    'required' => 'Il campo Ordinamento è obbligatorio quando Aggiungi al filtro è attivo.',
                 ],
             ],
         ],

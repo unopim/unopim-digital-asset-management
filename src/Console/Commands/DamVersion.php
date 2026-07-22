@@ -19,7 +19,6 @@ class DamVersion extends Command
         return self::SUCCESS;
     }
 
-    /** Read the top "Version X.Y[.Z]" heading from the package Changelog. */
     public static function resolveVersion(): string
     {
         $changelog = dirname(__DIR__, 3).'/Changelog.md';
@@ -29,6 +28,6 @@ class DamVersion extends Command
             return $m[1];
         }
 
-        return '0.0';
+        return '1.0.0';
     }
 }

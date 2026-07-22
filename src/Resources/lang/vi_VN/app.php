@@ -110,6 +110,7 @@ return [
                     'update-failed'                             => 'Cập nhật thư mục thất bại',
                     'moved-success'                             => 'Thư mục đã được di chuyển thành công',
                     'cannot-move'                               => 'Không thể di chuyển thư mục',
+                    'cannot-copy'                               => 'Không thể sao chép thư mục vào chính nó hoặc vào thư mục con của nó.',
                     'fetch-all-success'                         => 'Đã lấy danh sách thư mục thành công',
                     'can-not-deleted'                           => 'Không thể xóa vì đây là thư mục gốc.',
                     'deleting-in-progress'                      => 'Đang tiến hành xóa thư mục',
@@ -675,6 +676,9 @@ return [
                 ],
                 'language' => [
                     'not-found' => 'Không tìm thấy ngôn ngữ đã chọn hoặc hiện đang bị vô hiệu hóa.',
+                ],
+                'sort-order' => [
+                    'required' => 'Trường Thứ tự sắp xếp là bắt buộc khi bật Thêm vào bộ lọc.',
                 ],
             ],
         ],

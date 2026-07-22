@@ -80,9 +80,23 @@ class FileController
 
         $request->validate(['file' => 'required|file']);
 
+        $file = $request->file('file');
+
+        if (AssetHelper::isForbiddenFile(
+            strtolower($file->getClientOriginalExtension()),
+            $file->getMimeType(),
+            $file->getClientOriginalName(),
+            $file->getRealPath()
+        )) {
+            return response()->json(
+                ['error' => trans('dam::app.admin.dam.index.directory.not-allowed')],
+                422
+            );
+        }
+
         $disk = Directory::getAssetDisk();
         $directory = Str::random(10).'/files';
-        $path = Storage::disk($disk)->put($directory, $request->file);
+        $path = Storage::disk($disk)->put($directory, $file);
 
         return response()->json(['path' => $path]);
     }
@@ -101,6 +115,8 @@ class FileController
         if (! $path || str_contains($path, '..')) {
             return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
         }
+
+        $this->assertPathAllowed($path);
 
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
@@ -129,6 +145,22 @@ class FileController
             return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 400);
         }
 
+        $this->assertPathAllowed($path);
+
+        $file = $request->file('file');
+
+        if (AssetHelper::isForbiddenFile(
+            strtolower($file->getClientOriginalExtension()),
+            $file->getMimeType(),
+            $file->getClientOriginalName(),
+            $file->getRealPath()
+        )) {
+            return response()->json(
+                ['error' => trans('dam::app.admin.dam.index.directory.not-allowed')],
+                422
+            );
+        }
+
         $disk = Directory::getAssetDisk();
         if (Storage::disk($disk)->exists($path)) {
 
@@ -136,7 +168,7 @@ class FileController
 
             $directory = Str::random(10).'/files';
 
-            $newPath = Storage::disk($disk)->put($directory, $request->file);
+            $newPath = Storage::disk($disk)->put($directory, $file);
 
             return response()->json(['new_path' => $newPath]);
         } else {

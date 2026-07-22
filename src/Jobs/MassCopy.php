@@ -164,6 +164,10 @@ class MassCopy implements ShouldQueue
                     continue;
                 }
 
+                if ($targetDirectory->id === $source->id || $targetDirectory->isDescendantOf($source)) {
+                    throw new \RuntimeException(trans('dam::app.admin.dam.index.directory.cannot-copy'));
+                }
+
                 $newName = Directory::uniqueName($source->name, $this->targetId);
 
                 $newRoot = Directory::create(['name' => $newName, 'parent_id' => $this->targetId]);

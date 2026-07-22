@@ -45,12 +45,15 @@ class CopyController extends Controller
         $asset = Asset::findOrFail($request->integer('asset_id'));
         $targetId = $request->integer('target_directory_id');
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($targetId)) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($targetId)) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
         $sourceDir = $asset->directories()->first();
-        if ($sourceDir && ! $this->permissionService->bypass() && ! $this->permissionService->canView($sourceDir->id)) {
+
+        if (! $this->permissionService->bypass()
+            && (! $sourceDir || ! $this->permissionService->canAccess($sourceDir->id))
+        ) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
@@ -102,11 +105,11 @@ class CopyController extends Controller
         $sourceId = $request->integer('directory_id');
         $targetId = $request->integer('target_directory_id');
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($targetId)) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($targetId)) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($sourceId)) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($sourceId)) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
@@ -138,16 +141,23 @@ class CopyController extends Controller
             'target_id' => 'required|integer|exists:dam_directories,id',
         ]);
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($request->integer('target_id'))) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($request->integer('target_id'))) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($request->integer('source_id'))) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($request->integer('source_id'))) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
         $source = Directory::findOrFail($request->integer('source_id'));
         $target = Directory::findOrFail($request->integer('target_id'));
+
+        if ($target->id === $source->id || $target->isDescendantOf($source)) {
+            return response()->json([
+                'message' => trans('dam::app.admin.dam.index.directory.cannot-copy'),
+            ], 422);
+        }
+
         $newName = Directory::uniqueName($source->name, $target->id);
 
         $newRoot = Directory::create(['name' => $newName, 'parent_id' => $target->id]);
@@ -181,7 +191,7 @@ class CopyController extends Controller
 
         $targetId = $request->integer('target_directory_id');
 
-        if (! $this->permissionService->bypass() && ! $this->permissionService->canView($targetId)) {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($targetId)) {
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
@@ -202,7 +212,9 @@ class CopyController extends Controller
 
                 $sourceDir = $asset->directories()->first();
 
-                if ($sourceDir && ! $this->permissionService->bypass() && ! $this->permissionService->canView($sourceDir->id)) {
+                if (! $this->permissionService->bypass()
+                    && (! $sourceDir || ! $this->permissionService->canAccess($sourceDir->id))
+                ) {
                     return false;
                 }
 
@@ -213,7 +225,7 @@ class CopyController extends Controller
         $dirIds = array_filter(
             array_map('intval', $request->input('directory_ids', [])),
             function (int $id) {
-                if (! $this->permissionService->bypass() && ! $this->permissionService->canView($id)) {
+                if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($id)) {
                     return false;
                 }
 
