@@ -157,7 +157,7 @@
                 },
 
                 editImage(recordId) {
-                    window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId);
+                    this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId));
                 },
 
                 previewImage(recordId) {

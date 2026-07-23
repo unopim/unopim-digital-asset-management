@@ -74,6 +74,29 @@ module.exports = async function globalSetup(config) {
       mutated = true;
     }
   }
+
+  // Expand the sidebar. The core layout collapses the sidebar by default
+  // (`sidebar_collapsed` cookie missing → treated as 1), which hides the menu
+  // text labels — so headless tests that assert on the "DAM" sidebar
+  // link/label would never see them. Seeding the cookie = 0 keeps the sidebar
+  // open (as a navigating user would), the same state these tests were written
+  // against.
+  state.cookies = state.cookies || [];
+  if (! state.cookies.some((c) => c.name === 'sidebar_collapsed')) {
+    const host = (() => { try { return new URL(baseURL).hostname; } catch { return 'localhost'; } })();
+    state.cookies.push({
+      name: 'sidebar_collapsed',
+      value: '0',
+      domain: host,
+      path: '/',
+      expires: oneDayFromNow,
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax',
+    });
+    mutated = true;
+  }
+
   if (mutated) fs.writeFileSync(STORAGE_PATH, JSON.stringify(state, null, 2));
 
   // Seed test assets (floral.jpg + mp4/wav/pdf) via real Chromium so they exist for every spec.

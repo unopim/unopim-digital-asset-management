@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\AvifEncoder;
+use Intervention\Image\Encoders\BmpEncoder;
+use Intervention\Image\Encoders\GifEncoder;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\TiffEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -411,7 +418,7 @@ class FileController
     {
         $manager = new ImageManager(new Driver);
 
-        return $manager->read($file)->scale(width: $width);
+        return $manager->decode($file)->scale(width: $width);
     }
 
     /** Generate and return a preview of an image file at a specified custom size. */
@@ -536,14 +543,14 @@ class FileController
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         return match ($extension) {
-            'png'                 => $image->toPng(),
-            'webp'                => $image->toWebp(),
-            'gif'                 => $image->toGif(),
-            'bmp'                 => $image->toBmp(),
-            'tiff', 'tif'         => $image->toTiff(),
-            'avif'                => $image->toAvif(),
-            'jpg', 'jpeg', 'jfif' => $image->toJpeg(),
-            default               => $image->toJpeg(),
+            'png'                 => $image->encode(new PngEncoder),
+            'webp'                => $image->encode(new WebpEncoder),
+            'gif'                 => $image->encode(new GifEncoder),
+            'bmp'                 => $image->encode(new BmpEncoder),
+            'tiff', 'tif'         => $image->encode(new TiffEncoder),
+            'avif'                => $image->encode(new AvifEncoder),
+            'jpg', 'jpeg', 'jfif' => $image->encode(new JpegEncoder),
+            default               => $image->encode(new JpegEncoder),
         };
     }
 }

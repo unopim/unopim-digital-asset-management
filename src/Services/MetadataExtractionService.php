@@ -192,7 +192,7 @@ class MetadataExtractionService
                 return $this->errorResponse("File not found: $path");
             }
 
-            $image = (new ImageManager(new Driver))->read($tempPath);
+            $image = (new ImageManager(new Driver))->decode($tempPath);
             $exif = $image->exif();
 
             if ($exif && ! is_array($exif)) {

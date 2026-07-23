@@ -1,5 +1,33 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## **Version 2.3.0**
+
+### Compatibility
+
+* **Laravel 13 / PHP 8.4** — Made the DAM module compatible with the latest UnoPim core (Laravel 13, PHP 8.4). Previously targeted Laravel 12 / PHP 8.3. `composer.json` now requires `php ^8.4` and `intervention/image ^4.0`.
+
+* **intervention/image v4** — Migrated all image processing to the intervention/image v4 API: `ImageManager::read()` → `decode()`, and the `Image::toJpeg()/toPng()/…` convenience encoders → `Image::encode(new JpegEncoder/PngEncoder/…)`. Updated `greyscale()` → `grayscale()` and `flip()/flop()` → `flip(Direction::HORIZONTAL|VERTICAL)`. Affects thumbnail/preview generation, the image editor, metadata extraction, PDF thumbnails, public share viewing, and asset download-with-transform.
+
+* **SPA navigation** — Aligned the module with the new core's Ajax-navigation layer: programmatic `window.location.href` / `location.reload()` navigations now route through `$navigate()` (`window.unopim.visit`) so the Explorer, datagrids, asset picker, asset edit, and comments navigate without a full page reload.
+
+* **Frontend build** — Aligned the DAM Vite/Tailwind toolchain with the core Admin toolchain (Vite 6, laravel-vite-plugin 1.2, Tailwind 3, Vue 3.5); fixed the `dam-vite.hot` hot-file name to match `unopim-vite` config.
+
+### Fixed
+
+* **Attribute validation signature** — Updated `DAM\Models\Attribute::fieldTypeValidations()` to match the new core signature `(?int $id = null, array $allowedPathPrefixes = [])`, restoring boot.
+
+* **Directory tree render** — Guarded the Explorer directory-tree root node against an unresolved `formattedItems[0]` during initial render.
+
+* **API property permission** — Added the missing `api.dam.property.getById` api-acl mapping for `admin.api.dam.property.get`, which the stricter core API scope middleware now requires (was returning 403).
+
+* **Asset edit layout** — Removed the hardcoded `ltr:pl-[286px]` (and collapsed `pl-[85px]`) sidebar offset from the asset-edit layout. The new core sidebar is an in-flow flex item, so the fixed padding double-offset the content and left a large empty gutter on the left. The content div now uses `flex-1 min-w-0` like the core layout and fills the available width.
+
+### Core component adoption
+
+* **Breadcrumbs** — DAM pages now use the core `<x-admin::layouts.page-header>` / `<x-admin::breadcrumbs>` so they show the standard menu-trail breadcrumb like the rest of UnoPim (`DAM / Tags`, `DAM / Shared Links`, `DAM / Configuration`, and `DAM / Assets / <file>` on the asset-edit page). Replaced the custom `<p>`-based page titles on the Tags, Shared Links and Configuration pages.
+
+* **Unsaved-changes / Save bar** — The DAM Configuration page now uses the core `<x-admin::form ajax>` component, which brings the recently-added tracked-form behavior: no full page reload on save, the sticky "You have unsaved changes" bar with Save/Discard, and the leave-page guard. The existing dependent-toggle logic continues to work. No controller change was needed — the core `ConvertAjaxFormRedirect` middleware turns the redirect into the JSON the ajax form expects.
+
 ## **Version 2.2.0**
 
 ### Features & Enhancements

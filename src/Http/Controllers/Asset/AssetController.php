@@ -1175,7 +1175,7 @@ class AssetController extends Controller
             try {
                 $disk = Directory::getAssetDisk();
                 $fileContent = Storage::disk($disk)->get($asset->path);
-                $image = (new ImageManager(new Driver))->read($fileContent);
+                $image = (new ImageManager(new Driver))->decode($fileContent);
 
                 if ($width || $height) {
                     $image->scale($width ? (int) $width : null, $height ? (int) $height : null);

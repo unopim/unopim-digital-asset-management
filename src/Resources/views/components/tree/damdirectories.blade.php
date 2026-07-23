@@ -622,7 +622,7 @@
     <div
             class="relative"
             ref="treeContainer"
-            v-else-if="formattedItems"
+            v-else-if="formattedItems && formattedItems.length"
         >
             <div
                 v-if="moveStatusLabel"

@@ -6,11 +6,10 @@
     {!! view_render_event('unopim.dam.tags.list.before') !!}
 
     <v-dam-tags-page>
-        <div class="flex justify-between items-center">
-            <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                @lang('dam::app.admin.dam.tag.index.title')
-            </p>
-        </div>
+        <x-admin::layouts.page-header
+            :title="trans('dam::app.admin.dam.tag.index.title')"
+            :description="trans('dam::app.admin.dam.tag.index.description')"
+        />
 
         <x-admin::shimmer.datagrid />
     </v-dam-tags-page>
@@ -20,23 +19,18 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-tags-page-template">
             <div>
-                <div class="flex justify-between items-center gap-4 flex-wrap">
-                    <div>
-                        <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                            @lang('dam::app.admin.dam.tag.index.title')
-                        </p>
-
-                        <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-                            @lang('dam::app.admin.dam.tag.index.description')
-                        </p>
-                    </div>
-
+                <x-admin::layouts.page-header
+                    :title="trans('dam::app.admin.dam.tag.index.title')"
+                    :description="trans('dam::app.admin.dam.tag.index.description')"
+                >
                     @if (bouncer()->hasPermission('dam.tags.create'))
-                        <button type="button" class="primary-button" @click="openCreate">
-                            @lang('dam::app.admin.dam.tag.index.create')
-                        </button>
+                        <x-slot:actions>
+                            <button type="button" class="primary-button" @click="openCreate">
+                                @lang('dam::app.admin.dam.tag.index.create')
+                            </button>
+                        </x-slot:actions>
                     @endif
-                </div>
+                </x-admin::layouts.page-header>
 
                 <x-admin::datagrid src="{{ route('admin.dam.tags.index') }}" ref="datagrid">
                     <template #header="{ columns, actions, applied, sortPage, selectAllRecords, available, isLoading }">

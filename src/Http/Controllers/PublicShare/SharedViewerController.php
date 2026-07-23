@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\AvifEncoder;
+use Intervention\Image\Encoders\BmpEncoder;
+use Intervention\Image\Encoders\GifEncoder;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\TiffEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Helpers\AssetHelper;
@@ -241,7 +248,7 @@ class SharedViewerController extends Controller
             try {
                 $mimeType = Storage::disk($disk)->mimeType($path);
                 $image = (new ImageManager(new Driver))
-                    ->read(Storage::disk($disk)->get($path))
+                    ->decode(Storage::disk($disk)->get($path))
                     ->scale(width: 300);
                 $imageData = $this->encodeImageByExtension($image, $path);
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
@@ -477,14 +484,14 @@ class SharedViewerController extends Controller
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         return match ($extension) {
-            'png'                 => $image->toPng(),
-            'webp'                => $image->toWebp(),
-            'gif'                 => $image->toGif(),
-            'bmp'                 => $image->toBmp(),
-            'tiff', 'tif'         => $image->toTiff(),
-            'avif'                => $image->toAvif(),
-            'jpg', 'jpeg', 'jfif' => $image->toJpeg(),
-            default               => $image->toJpeg(),
+            'png'                 => $image->encode(new PngEncoder),
+            'webp'                => $image->encode(new WebpEncoder),
+            'gif'                 => $image->encode(new GifEncoder),
+            'bmp'                 => $image->encode(new BmpEncoder),
+            'tiff', 'tif'         => $image->encode(new TiffEncoder),
+            'avif'                => $image->encode(new AvifEncoder),
+            'jpg', 'jpeg', 'jfif' => $image->encode(new JpegEncoder),
+            default               => $image->encode(new JpegEncoder),
         };
     }
 

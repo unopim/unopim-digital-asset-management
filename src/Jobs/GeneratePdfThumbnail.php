@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Process\Process;
 use Webkul\DAM\Models\Asset;
@@ -75,9 +76,9 @@ class GeneratePdfThumbnail implements ShouldQueue
             }
 
             $manager = new ImageManager(new Driver);
-            $jpegData = (string) $manager->read(file_get_contents($tmpPng))
+            $jpegData = (string) $manager->decode(file_get_contents($tmpPng))
                 ->scale(width: 300)
-                ->toJpeg(quality: 80);
+                ->encode(new JpegEncoder(quality: 80));
 
             Storage::disk($disk)->put($cachedRelative, $jpegData);
 

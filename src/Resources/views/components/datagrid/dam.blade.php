@@ -919,7 +919,7 @@
 
                     switch (method) {
                         case 'get':
-                            window.location.href = action.url;
+                            this.$navigate(action.url);
 
                             break;
 

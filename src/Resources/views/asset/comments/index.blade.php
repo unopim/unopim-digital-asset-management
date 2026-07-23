@@ -249,7 +249,7 @@
 
                 onCommentPosted(payload) {
                     if (! payload?.comment) {
-                        location.reload();
+                        this.$navigate(window.location.href);
                         return;
                     }
 
@@ -258,7 +258,7 @@
 
                 onReplyPosted(parent, payload) {
                     if (! payload?.comment) {
-                        location.reload();
+                        this.$navigate(window.location.href);
                         return;
                     }
 

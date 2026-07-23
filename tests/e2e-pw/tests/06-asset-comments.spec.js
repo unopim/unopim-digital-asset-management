@@ -33,10 +33,12 @@ test.describe('DAM Asset Comments', () => {
 
   test('Comments tab loads', async ({ adminPage }) => {
     await navigateToCommentsTab(adminPage);
-    const hasAddComment = await adminPage.locator('#app').getByText('Add Comment').first().isVisible().catch(() => false);
-    const hasNoComments = await adminPage.locator('#app').getByText('No Comments Yet').first().isVisible().catch(() => false);
-    const hasPostComment = await adminPage.locator('#app').getByText('Post Comment').first().isVisible().catch(() => false);
-    expect(hasAddComment || hasNoComments || hasPostComment).toBeTruthy();
+    // Wait for the comments panel to finish rendering after the SPA tab switch.
+    // A point-in-time isVisible() check can race the async component mount, so
+    // assert on any of the panel's texts with an auto-waiting expectation.
+    await expect(
+      adminPage.locator('#app').getByText(/Add Comment|No Comments Yet|Post Comment/).first()
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('Post Comment button is visible', async ({ adminPage }) => {

@@ -220,7 +220,7 @@ app.component('v-dam-explorer-ctx', {
         doBookmark()    { this.$emit('bookmark', this.item); this.close(); },
 
         preview()     { this.$emitter.emit('dam-open-preview', this.item.id); this.close(); },
-        edit()        { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', this.item.id); },
+        edit()        { this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', this.item.id)); },
         renameAsset() { this.$emitter.emit(`dam:explorer-rename-asset:${this.tabId}`, { asset: this.item }); this.close(); },
         download()    { window.open(`{{ route('admin.dam.assets.download', ':id') }}`.replace(':id', this.item.id), '_self'); this.close(); },
         ctxRefresh(delayed = false) {

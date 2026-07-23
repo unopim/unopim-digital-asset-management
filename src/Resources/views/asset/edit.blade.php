@@ -1034,7 +1034,7 @@
                                 });
 
                                 resetForm();
-                                location.reload();
+                                this.$navigate(window.location.href);
                             })
                             .catch(error => {
                                 if (error.response.status == 422) {
@@ -1171,12 +1171,14 @@
                                 this.$emitter.emit('add-flash', { type: 'error', message: reUploadFileTooLargeMsg });
                                 return;
                             }
-                            location.reload();
                             this.$emitter.emit('uploaded-assets', response.data.file);
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
                                 message: response.data.message
                             });
+
+                            // SPA re-visit (no full reload) so the replaced asset renders fresh.
+                            this.$navigate(window.location.href);
 
                         }).catch((error) => {
                             if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED') {
@@ -1326,7 +1328,7 @@
                                             message: response.data.message
                                         });
 
-                                        window.location.assign("{{ route('admin.dam.assets.index') }}");
+                                        this.$navigate("{{ route('admin.dam.assets.index') }}");
                                     })
                                     .catch((error) => {
                                         this.$emitter.emit('add-flash', {

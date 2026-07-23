@@ -244,7 +244,7 @@ app.component('v-dam-explorer-list', {
             this.showCtx(e, { id: this.currentDirId, can_access: this.canAccessCurrentDir }, 'space');
         },
         preview(id) { this.$emitter.emit('dam-open-preview', id); },
-        edit(id)    { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id); },
+        edit(id)    { this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id)); },
         del(asset) {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {

@@ -10,21 +10,20 @@
         $toggleClass = "rounded-full w-9 h-5 bg-gray-200 cursor-pointer peer-focus:ring-violet-300 after:bg-white dark:after:bg-white after:border-gray-300 dark:after:border-white peer-checked:bg-violet-700 dark:peer-checked:bg-violet-700 peer peer-checked:after:border-white peer-checked:after:ltr:translate-x-full peer-checked:after:rtl:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:ltr:left-0.5 after:rtl:right-0.5 peer-focus:outline-none after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:bg-cherry-800";
     @endphp
 
-    <form method="POST" action="{{ route('admin.dam.configuration.update') }}">
-        @csrf
-
-        <div class="bg-white dark:bg-cherry-800 -mx-4 px-4 pb-2.5">
-            <div class="flex gap-4 justify-between items-center max-sm:flex-wrap">
-                <p class="text-xl font-bold dark:text-white text-gray-800">
-                    @lang('dam::app.admin.configuration.title')
-                </p>
-                @if ($canUpdate)
-                <button type="submit" class="primary-button">
-                    @lang('dam::app.admin.configuration.save-btn')
-                </button>
-                @endif
-            </div>
-        </div>
+    <x-admin::form
+        method="POST"
+        :action="route('admin.dam.configuration.update')"
+        ajax
+    >
+        <x-admin::layouts.page-header :title="trans('dam::app.admin.configuration.title')">
+            @if ($canUpdate)
+                <x-slot:actions>
+                    <button type="submit" class="primary-button">
+                        @lang('dam::app.admin.configuration.save-btn')
+                    </button>
+                </x-slot:actions>
+            @endif
+        </x-admin::layouts.page-header>
 
         {{-- Section label (left) + settings card (right), like the Magic AI settings page. --}}
         <div class="grid grid-cols-[1fr_2fr] gap-10 mt-6 max-xl:grid-cols-1 {{ $canUpdate ? '' : 'opacity-60 pointer-events-none select-none' }}">
@@ -152,7 +151,7 @@
             </div>
         </div>
 
-    </form>
+    </x-admin::form>
 
     {{-- Pushed to the scripts stack (outside the Vue #app, which strips inline scripts) and
          invoked from the parents' native onchange, which survives Vue's compile. --}}

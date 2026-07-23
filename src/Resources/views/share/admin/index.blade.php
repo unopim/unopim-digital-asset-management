@@ -6,15 +6,10 @@
     {!! view_render_event('unopim.dam.shares.list.before') !!}
 
     <v-dam-shares-page>
-        <div class="flex justify-between items-center">
-            <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                @lang('dam::app.admin.dam.share.index.title')
-            </p>
-        </div>
-
-        <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-            @lang('dam::app.admin.dam.share.index.description')
-        </p>
+        <x-admin::layouts.page-header
+            :title="trans('dam::app.admin.dam.share.index.title')"
+            :description="trans('dam::app.admin.dam.share.index.description')"
+        />
 
         <x-admin::shimmer.datagrid />
     </v-dam-shares-page>
@@ -24,15 +19,10 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-shares-page-template">
             <div>
-                <div class="flex justify-between items-center">
-                    <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                        @lang('dam::app.admin.dam.share.index.title')
-                    </p>
-                </div>
-
-                <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-                    @lang('dam::app.admin.dam.share.index.description')
-                </p>
+                <x-admin::layouts.page-header
+                    :title="trans('dam::app.admin.dam.share.index.title')"
+                    :description="trans('dam::app.admin.dam.share.index.description')"
+                />
 
                 <x-admin::datagrid src="{{ route('admin.dam.shares.index') }}" ref="datagrid">
                     <template #header="{ columns, actions, applied, sortPage, isLoading }">
