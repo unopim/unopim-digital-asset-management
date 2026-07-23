@@ -1,32 +1,33 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## **Version 2.3.0**
+## **Version 3.0.0**
 
-### Compatibility
+This is a big update. The main goal is to make the DAM work with the **newest version of UnoPim**, and along the way we made it faster and easier to use.
 
-* **Laravel 13 / PHP 8.4** — Made the DAM module compatible with the latest UnoPim core (Laravel 13, PHP 8.4). Previously targeted Laravel 12 / PHP 8.3. `composer.json` now requires `php ^8.4` and `intervention/image ^4.0`.
+### What's new for you
 
-* **intervention/image v4** — Migrated all image processing to the intervention/image v4 API: `ImageManager::read()` → `decode()`, and the `Image::toJpeg()/toPng()/…` convenience encoders → `Image::encode(new JpegEncoder/PngEncoder/…)`. Updated `greyscale()` → `grayscale()` and `flip()/flop()` → `flip(Direction::HORIZONTAL|VERTICAL)`. Affects thumbnail/preview generation, the image editor, metadata extraction, PDF thumbnails, public share viewing, and asset download-with-transform.
+* **Works with the latest UnoPim.** The DAM now runs on the newest UnoPim (built on Laravel 13 and PHP 8.4). If your UnoPim is up to date, the DAM will simply work.
 
-* **SPA navigation** — Aligned the module with the new core's Ajax-navigation layer: programmatic `window.location.href` / `location.reload()` navigations now route through `$navigate()` (`window.unopim.visit`) so the Explorer, datagrids, asset picker, asset edit, and comments navigate without a full page reload.
+* **Faster, smoother screens.** Moving around the DAM — opening the Explorer, switching tabs, editing an asset — no longer reloads the whole page. Everything feels quicker and there's no more "flash" when you click.
 
-* **Frontend build** — Aligned the DAM Vite/Tailwind toolchain with the core Admin toolchain (Vite 6, laravel-vite-plugin 1.2, Tailwind 3, Vue 3.5); fixed the `dam-vite.hot` hot-file name to match `unopim-vite` config.
+* **You always know where you are.** Every DAM page now shows a small trail at the top, like **DAM / Tags** or **DAM / Assets / my-photo.jpg**, just like the rest of UnoPim. You can click a part of the trail to jump back.
 
-### Fixed
+* **A friendly "unsaved changes" reminder.** On the DAM → Configuration page, when you change a setting a little bar slides up from the bottom with **Save** and **Discard** buttons. Your change is saved right away (no page reload), and if you try to leave without saving, the DAM gently reminds you first.
 
-* **Attribute validation signature** — Updated `DAM\Models\Attribute::fieldTypeValidations()` to match the new core signature `(?int $id = null, array $allowedPathPrefixes = [])`, restoring boot.
+### What we fixed
 
-* **Directory tree render** — Guarded the Explorer directory-tree root node against an unresolved `formattedItems[0]` during initial render.
+* **Images work again.** After moving to the new UnoPim, image thumbnails and previews had stopped showing, and the built-in image editor (crop, rotate, flip, brightness, background color, black-and-white) had stopped working. All of this is fixed.
 
-* **API property permission** — Added the missing `api.dam.property.getById` api-acl mapping for `admin.api.dam.property.get`, which the stricter core API scope middleware now requires (was returning 403).
+* **No more empty gap on the asset page.** The "edit asset" screen used to have a large blank strip on the left. The page now uses the full width.
 
-* **Asset edit layout** — Removed the hardcoded `ltr:pl-[286px]` (and collapsed `pl-[85px]`) sidebar offset from the asset-edit layout. The new core sidebar is an in-flow flex item, so the fixed padding double-offset the content and left a large empty gutter on the left. The content div now uses `flex-1 min-w-0` like the core layout and fills the available width.
+* **Small display and permission glitches** left over from the upgrade have been cleaned up.
 
-### Core component adoption
+### For developers (technical notes)
 
-* **Breadcrumbs** — DAM pages now use the core `<x-admin::layouts.page-header>` / `<x-admin::breadcrumbs>` so they show the standard menu-trail breadcrumb like the rest of UnoPim (`DAM / Tags`, `DAM / Shared Links`, `DAM / Configuration`, and `DAM / Assets / <file>` on the asset-edit page). Replaced the custom `<p>`-based page titles on the Tags, Shared Links and Configuration pages.
-
-* **Unsaved-changes / Save bar** — The DAM Configuration page now uses the core `<x-admin::form ajax>` component, which brings the recently-added tracked-form behavior: no full page reload on save, the sticky "You have unsaved changes" bar with Save/Discard, and the leave-page guard. The existing dependent-toggle logic continues to work. No controller change was needed — the core `ConvertAjaxFormRedirect` middleware turns the redirect into the JSON the ajax form expects.
+* Now requires `php ^8.4` and `intervention/image ^4.0`. All image code was migrated to the intervention/image v4 API: `ImageManager::read()` → `decode()`, `Image::toJpeg()/toPng()/…` → `Image::encode(new JpegEncoder/PngEncoder/…)`, `greyscale()` → `grayscale()`, and `flip()/flop()` → `flip(Direction::HORIZONTAL|VERTICAL)`.
+* Aligned with the new core's Ajax navigation: programmatic `window.location.href` / `location.reload()` calls now route through `$navigate()` (`window.unopim.visit`), so the Explorer, datagrids, asset picker, asset edit and comments navigate without a full reload. Matched the DAM Vite/Tailwind toolchain to core Admin (Vite 6, laravel-vite-plugin 1.2, Tailwind 3, Vue 3.5).
+* Adopted core components instead of custom markup: `<x-admin::layouts.page-header>` / `<x-admin::breadcrumbs>` for breadcrumbs, and `<x-admin::form ajax>` for the tracked "unsaved changes" save bar (the core `ConvertAjaxFormRedirect` middleware converts the redirect to JSON — no controller change needed).
+* Fixes: `Attribute::fieldTypeValidations()` signature match, Explorer tree root-node render guard, asset-edit layout width (`flex-1 min-w-0`, removed the hardcoded sidebar offset), and the missing `api.dam.property.getById` api-acl mapping (the stricter core API scope middleware requires it).
 
 ## **Version 2.2.0**
 
