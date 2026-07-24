@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\DAM\Contracts\AssetComments as AssetCommentsContract;
 use Webkul\DAM\Database\Factories\CommentFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;

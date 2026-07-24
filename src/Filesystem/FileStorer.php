@@ -6,7 +6,6 @@ use Webkul\Core\Filesystem\FileStorer as BaseFileStorer;
 
 class FileStorer extends BaseFileStorer
 {
-
     public function store(string $path, mixed $file, $fileName = null, array $options = [])
     {
         $name = $fileName ?? $this->getFileName($file);

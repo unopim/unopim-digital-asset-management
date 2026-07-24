@@ -11,7 +11,6 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class DirectoryRepository extends Repository
 {
-
     public const DEFAULT_TREE_PAGE_SIZE = 100;
 
     protected $copyDirectory;

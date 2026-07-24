@@ -9,7 +9,6 @@ use Webkul\DAM\Models\ActionRequest;
 
 class ActionRequestController
 {
-
     public function fetchStatus(string $eventType)
     {
         try {

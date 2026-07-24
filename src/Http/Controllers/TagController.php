@@ -4,7 +4,6 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Tag\TagDataGrid;
 use Webkul\DAM\Http\Requests\TagRequest;
@@ -13,7 +12,6 @@ use Webkul\DAM\Repositories\AssetTagRepository;
 
 class TagController extends Controller
 {
-
     public function __construct(
         protected AssetTagRepository $tagRepository,
     ) {}

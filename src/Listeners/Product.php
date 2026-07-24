@@ -7,7 +7,6 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 class Product
 {
-
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetResourceMappingRepository $assetResourceMappingRepository

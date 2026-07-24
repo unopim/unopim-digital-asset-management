@@ -15,7 +15,6 @@ use Webkul\DAM\Support\DamTables;
 
 class DamUpdater
 {
-
     public const TRACKED = ['dam_assets', 'dam_directories', 'dam_tags'];
 
     public function countRows(): array

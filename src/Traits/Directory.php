@@ -8,7 +8,6 @@ use Webkul\DAM\Models\Directory as ModelDirectory;
 
 trait Directory
 {
-
     protected function setDirectoryNameForCopy(string $originalName, int $parentId): string
     {
         $name = $originalName;

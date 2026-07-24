@@ -12,7 +12,6 @@ use Webkul\DAM\Models\DamConfiguration;
 
 class ConfigurationController extends Controller
 {
-
     public function index(): View
     {
         if (! bouncer()->hasPermission('dam.configuration.index')) {

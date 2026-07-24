@@ -4,14 +4,12 @@ namespace Webkul\DAM\ApiDataSource;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Webkul\AdminApi\ApiDataSource;
-use Webkul\DAM\Database\Eloquent\Builder;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetDataSource extends ApiDataSource
 {
-
     protected $sortColumn = 'dam_assets.id';
 
     public function __construct(

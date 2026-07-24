@@ -12,7 +12,6 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class UploadController extends Controller
 {
-
     public function __construct(
         protected DirectoryPermissionService $permissionService,
     ) {}

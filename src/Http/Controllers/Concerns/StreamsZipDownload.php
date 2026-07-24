@@ -16,7 +16,6 @@ use ZipStream\ZipStream;
 
 trait StreamsZipDownload
 {
-
     protected function buildZipStreamResponse(
         array $files,
         string $folderPath,

@@ -1208,6 +1208,7 @@ app.component('v-dam-tab', {
                 }).then(() => {
                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-asset-done')" });
                     this.fetch();
+                    this.$emitter.emit('dam:tree-reload');
                     if (originTabId && originTabId !== this.tabId) {
                         this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
                     }
@@ -1235,6 +1236,7 @@ app.component('v-dam-tab', {
                                     this.operationOverlay = { show: false, label: '', progress: null, fileCount: null };
                                     this.$emitter.emit('add-flash', { type: 'success', message: "@lang('dam::app.admin.explorer.context.move-done')" });
                                     this.$emitter.emit(`dam:explorer-ctx-refresh:${tabId}`);
+                                    this.$emitter.emit('dam:tree-reload');
                                     if (originTabId && originTabId !== tabId) {
                                         this.$emitter.emit(`dam:explorer-ctx-refresh:${originTabId}`);
                                     }

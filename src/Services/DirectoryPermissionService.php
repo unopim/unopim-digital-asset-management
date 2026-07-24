@@ -7,7 +7,6 @@ use Webkul\DAM\Models\Directory;
 
 class DirectoryPermissionService
 {
-
     protected ?array $viewableIdsCache = null;
 
     protected ?int $cachedForAdminId = null;

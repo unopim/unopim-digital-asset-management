@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Enums\EventType;
 use Webkul\DAM\Http\Requests\DirectoryRequest;
 use Webkul\DAM\Jobs\DeleteDirectory as DeleteDirectoryJob;
-use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;

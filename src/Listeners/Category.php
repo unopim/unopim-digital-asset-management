@@ -9,7 +9,6 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 class Category
 {
-
     public function __construct(
         protected AssetRepository $assetRepository,
         protected CategoryFieldRepository $categoryFieldRepository,

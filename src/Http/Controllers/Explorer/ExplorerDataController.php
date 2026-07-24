@@ -14,7 +14,6 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class ExplorerDataController extends Controller
 {
-
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}

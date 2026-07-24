@@ -2,7 +2,6 @@
 
 namespace Webkul\DAM\Services;
 
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -10,7 +9,6 @@ use Webkul\DAM\Helpers\AssetHelper;
 
 class MetadataExtractionService
 {
-
     private array $strippedExiftoolKeys = [
         'ExifToolVersion'     => true,
         'SourceFile'          => true,

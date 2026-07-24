@@ -2,7 +2,6 @@
 
 namespace Webkul\DAM\Http\Controllers\Asset;
 
-use Illuminate\Http\JsonResponse;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Asset\LinkedResourcesDataGrid;
 use Webkul\DAM\Traits\AssetAccessControl;

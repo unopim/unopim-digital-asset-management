@@ -8,7 +8,6 @@ use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 
 class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
 {
-
     public function __construct(
         AttributeService $attributeService,
         protected AssetRepository $assetRepository

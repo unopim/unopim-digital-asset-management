@@ -8,7 +8,6 @@ use Webkul\DAM\Models\Directory;
 
 class AssetHelper
 {
-
     public static function getMaxUploadSizeKb(): int
     {
         $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));

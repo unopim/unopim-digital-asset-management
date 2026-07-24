@@ -6,7 +6,6 @@ namespace Webkul\DAM\Support;
 
 final class DamTables
 {
-
     public const ALL = [
         'dam_action_request',
         'dam_asset_comments',

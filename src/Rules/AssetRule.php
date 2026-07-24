@@ -7,7 +7,6 @@ use Webkul\Attribute\Contracts\Attribute;
 
 class AssetRule implements ValidationRule
 {
-
     public function __construct(
         protected Attribute $productAttribute,
     ) {}

@@ -15,7 +15,6 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Exporter extends BaseExporter
 {
-
     public function __construct(
         JobTrackBatchRepository $exportBatchRepository,
         FileExportFileBuffer $exportFileBuffer,

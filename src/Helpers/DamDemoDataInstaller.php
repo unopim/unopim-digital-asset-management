@@ -13,7 +13,6 @@ use Webkul\DAM\Models\Directory;
 
 class DamDemoDataInstaller
 {
-
     public function seed(?Closure $reporter = null, bool $force = false): array
     {
         $report = $reporter ?? static fn (string $message) => null;
