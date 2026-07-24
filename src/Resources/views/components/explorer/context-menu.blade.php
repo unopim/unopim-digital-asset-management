@@ -6,7 +6,7 @@
         :style="{ top: finalTop + 'px', left: finalLeft + 'px', visibility: ready ? 'visible' : 'hidden' }"
     >
         <template v-if="itemType === 'directory'">
-            {{-- Open / Open in new tab always available even for transit-only dirs --}}
+
             <button class="flex items-center gap-2 w-full text-left px-4 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-cherry-700" @click="doNavigate">
                 <i class="icon-dam-folder text-sm text-zinc-600 dark:text-white"></i>
                 @lang('dam::app.admin.explorer.context.open')
@@ -16,7 +16,6 @@
                 @lang('dam::app.admin.explorer.context.open-new-tab')
             </button>
 
-            {{-- Write actions only for directories the user is actually granted --}}
             <template v-if="item && item.can_access">
                 <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
                 @if (bouncer()->hasPermission('dam.asset.upload'))
@@ -81,7 +80,7 @@
                 @endif
             </template>
             <template v-else>
-                {{-- Transit ancestor: user can navigate but not modify --}}
+
                 <div class="border-t border-gray-100 dark:border-cherry-700 my-1"></div>
                 <p class="px-4 py-1.5 text-xs text-gray-400 dark:text-slate-500 italic select-none">
                     @lang('dam::app.admin.permissions.no-actions')
@@ -89,7 +88,6 @@
             </template>
         </template>
 
-        {{-- Space actions (right-click on empty area in current directory) --}}
         <template v-else-if="itemType === 'space'">
             <template v-if="item && item.can_access">
                 @if (bouncer()->hasPermission('dam.asset.upload'))
@@ -119,7 +117,7 @@
                 </template>
             </template>
             <template v-else>
-                {{-- No write access to this directory (root or transit ancestor) --}}
+
                 <p class="px-4 py-1.5 text-xs text-gray-400 dark:text-slate-500 italic select-none">
                     @lang('dam::app.admin.permissions.no-actions')
                 </p>

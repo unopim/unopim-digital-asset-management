@@ -10,7 +10,6 @@ class DAM
 {
     private static bool $tableExists = false;
 
-    /** Handle an incoming request;. */
     public function handle($request, Closure $next)
     {
         if (! self::$tableExists) {

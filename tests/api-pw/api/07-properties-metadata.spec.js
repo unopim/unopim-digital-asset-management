@@ -1,12 +1,4 @@
-/**
- * Metadata — modelled by the DAM "asset properties" API: a localized
- * name/type/value entry attached to an asset. Covers create, fetch, update and
- * delete with positive, negative, and boundary (min/max length) cases.
- *
- * Validation contract (from PropertyController): name required min:3 max:100 and
- * unique per asset+language; value required max:1000; type & language required;
- * unknown/inactive locale → 400.
- */
+
 
 const { test, expect, env } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -34,7 +26,6 @@ test.afterAll(async () => {
   await support?.dispose();
 });
 
-/** Create a property and return its id (precondition for fetch/update/delete). */
 async function seedProperty(api, overrides = {}) {
   const res = await propertyHelper.add(api, assetId, testData.property({ language: env.locale, ...overrides }));
   expect(res.status, JSON.stringify(res.body)).toBe(STATUS.OK);
@@ -80,10 +71,6 @@ test.describe('Metadata — create', () => {
     expect(second.status).toBe(STATUS.UNPROCESSABLE_ENTITY);
   });
 
-  // NOTE: the property-add endpoint does not validate asset existence and the
-  // API guard bypasses the directory ACL, so posting to a non-existent asset id
-  // hits a DB foreign-key error (500) rather than a clean 4xx. That is a server
-  // gap, not a behaviour worth asserting here, so it is intentionally not tested.
 });
 
 test.describe('Metadata — fetch', () => {

@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Salvează',
-            'title'    => 'Configurare DAM',
+            'title'    => 'Configurare',
             'saved'    => 'Configurarea a fost salvată cu succes.',
             'general'  => [
                 'title'            => 'Setări generale',

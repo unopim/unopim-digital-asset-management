@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
 
         plugins: [
             vue(),
-            
+
             laravel({
                 hotFile: "../../../public/dam-vite.hot",
                 publicDirectory: "../../../public",

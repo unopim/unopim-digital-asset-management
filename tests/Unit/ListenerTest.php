@@ -8,7 +8,6 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
-/** Product listener */
 it('creates product asset mappings for active asset attributes with values', function () {
     $assetField = Mockery::mock();
     $assetField->code = 'image_field';
@@ -71,7 +70,6 @@ it('deletes product asset mappings when asset value is empty', function () {
     (new ProductListener($assetRepo, $mappingRepo))->afterCreateOrupdate($product);
 });
 
-/** Category listener */
 it('creates category asset mappings using common additional data', function () {
     $assetField = Mockery::mock(CategoryField::class);
     $assetField->code = 'icon';

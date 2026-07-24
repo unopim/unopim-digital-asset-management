@@ -14,14 +14,11 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class ExplorerDataController extends Controller
 {
-    /** Create a new instance. */
+
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}
 
-    /**
-     * Return the available file types and filterable property names for the explorer.
-     */
     public function filterOptions(): JsonResponse
     {
         abort_unless(
@@ -77,6 +74,11 @@ class ExplorerDataController extends Controller
             return response()->json(['message' => trans('dam::app.admin.explorer.access-denied')], 403);
         }
 
+        $subtreeDirIds = Directory::query()
+            ->whereBetween('_lft', [$dir->_lft, $dir->_rgt])
+            ->pluck('id')
+            ->all();
+
         $search = $request->input('search');
         $sortBy = $request->input('sort_by', 'name');
         $sortOrder = $request->input('sort_order', 'asc');
@@ -101,9 +103,10 @@ class ExplorerDataController extends Controller
         $dirQuery = Directory::query();
 
         if ($search) {
-            // Search matches by name across the whole tree, not just the
-            // current directory's subtree (still ACL-filtered below).
+
             $dirQuery->where('name', $likeOperator, '%'.strtolower($search).'%')
+                ->whereIn('id', $subtreeDirIds)
+                ->where('id', '!=', $dir->id)
                 ->limit(200);
         } else {
             $dirQuery->where('parent_id', $dir->id);
@@ -135,8 +138,6 @@ class ExplorerDataController extends Controller
                 'can_access'     => $directlyGrantedIds === null || in_array($d->id, $directlyGrantedIds),
             ]);
 
-        // A search term or any active filter finds assets anywhere in the tree;
-        // only plain browsing stays scoped to the current directory.
         $globalAssetScope = (bool) (
             $search || $filterFileName || $filterExtension || $filterFileType || $filterTag
             || $filterCreatedFrom || $filterCreatedTo || $filterUpdatedFrom || $filterUpdatedTo
@@ -144,7 +145,7 @@ class ExplorerDataController extends Controller
         );
 
         $buildAssetQuery = function () use (
-            $dir, $search, $globalAssetScope, $directlyGrantedIds, $likeOperator,
+            $dir, $search, $globalAssetScope, $directlyGrantedIds, $likeOperator, $subtreeDirIds,
             $filterFileName, $filterExtension, $filterFileType, $filterTag,
             $filterCreatedFrom, $filterCreatedTo,
             $filterUpdatedFrom, $filterUpdatedTo,
@@ -154,15 +155,15 @@ class ExplorerDataController extends Controller
 
             $q = Asset::query();
 
-            $q->whereExists(function ($sub) use ($dir, $globalAssetScope, $directlyGrantedIds) {
+            $q->whereExists(function ($sub) use ($dir, $globalAssetScope, $directlyGrantedIds, $subtreeDirIds) {
                 $sub->select(DB::raw(1))
                     ->from('dam_asset_directory')
                     ->whereColumn('dam_asset_directory.asset_id', 'dam_assets.id');
 
-                // Search / filters match assets anywhere; plain browsing lists
-                // only the assets that live in the current directory.
                 if (! $globalAssetScope) {
                     $sub->where('dam_asset_directory.directory_id', $dir->id);
+                } else {
+                    $sub->whereIn('dam_asset_directory.directory_id', $subtreeDirIds);
                 }
 
                 if ($directlyGrantedIds !== null) {

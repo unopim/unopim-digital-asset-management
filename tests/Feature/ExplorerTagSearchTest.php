@@ -11,8 +11,6 @@ beforeEach(fn () => $this->loginAsAdmin());
 it('finds an asset by its tag name via the explorer global search', function () {
     $dir = Directory::factory()->create(['name' => 'Campaign', 'parent_id' => null]);
 
-    // Tagged asset whose file name does NOT contain the search term — so a hit can
-    // only come from the tag, proving the search reaches the tag relationship.
     $tagged = Asset::factory()->create(['file_name' => 'IMG_001.jpg']);
     $tagged->directories()->attach($dir->id);
     $tagged->tags()->attach(Tag::create(['name' => 'sunset'])->id);

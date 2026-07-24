@@ -30,43 +30,26 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
 
     protected $fillable = ['admin_id', 'parent_id', 'comments', 'dam_asset_id'];
 
-    /**
-     * Get the asset this comment belongs to.
-     */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'dam_asset_id');
     }
 
-    /**
-     * Get the admin who authored the comment.
-     */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'admin_id');
     }
 
-    /**
-     * Get the reply comments for this comment.
-     *
-     * @return HasMany
-     */
     public function children()
     {
         return $this->hasMany(AssetComments::class, 'parent_id');
     }
 
-    /**
-     * Create a new factory instance for the model.
-     */
     protected static function newFactory(): Factory
     {
         return CommentFactory::new();
     }
 
-    /**
-     * Get the asset id used as the history primary model.
-     */
     public function getPrimaryModelIdForHistory(): int
     {
         return $this->dam_asset_id;

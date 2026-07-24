@@ -20,7 +20,6 @@ class CommentController extends Controller
         protected AdminRepository $adminRepository,
     ) {}
 
-    /** Fetch the comments. */
     public function comments($id)
     {
         $this->damAuthorizeAsset((int) $id);
@@ -30,9 +29,6 @@ class CommentController extends Controller
         return new JsonResponse($property);
     }
 
-    /**
-     * Fetch user info.
-     */
     public function getUserInfo($id): JsonResponse
     {
         $user = $this->adminRepository->find($id);
@@ -62,7 +58,6 @@ class CommentController extends Controller
         ]);
     }
 
-    /** Create a new comment. */
     public function commentCreate($id)
     {
         $this->damAuthorizeAsset((int) $id);
@@ -91,9 +86,6 @@ class CommentController extends Controller
         ]);
     }
 
-    /**
-     * Update the comment message.
-     */
     public function commentUpdate(): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.asset.comment.update')) {
@@ -125,9 +117,6 @@ class CommentController extends Controller
         ]);
     }
 
-    /**
-     * Delete the comment thread.
-     */
     public function commentDelete(): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.asset.comment.delete')) {

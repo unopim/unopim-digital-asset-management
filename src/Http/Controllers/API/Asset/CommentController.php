@@ -19,9 +19,6 @@ class CommentController extends Controller
         protected AssetCommentsRepository $assetCommentRepository,
     ) {}
 
-    /**
-     * Fetch a comment by id.
-     */
     public function comments(int $id): JsonResponse
     {
 
@@ -42,7 +39,6 @@ class CommentController extends Controller
         ], 200);
     }
 
-    /** Update the specified comment. */
     public function update(int $id)
     {
         $comment = $this->assetCommentRepository->find($id);
@@ -82,7 +78,6 @@ class CommentController extends Controller
         }
     }
 
-    /** Delete the specified comment. */
     public function delete(int $id)
     {
         $comment = $this->assetCommentRepository->find($id);
@@ -119,7 +114,6 @@ class CommentController extends Controller
         }
     }
 
-    /** Create a new comment. */
     public function createComment(Request $request)
     {
         $messages = [

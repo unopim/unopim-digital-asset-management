@@ -96,10 +96,6 @@ it('returns 404 when deleting a non-existent directory via api', function () {
         ->assertStatus(404);
 });
 
-// ---------------------------------------------------------------------------
-// Permission-gating tests (Task 3)
-// ---------------------------------------------------------------------------
-
 function makeCustomDirApiHeaders(Directory $grantedDir): array
 {
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);

@@ -17,9 +17,6 @@ class DirectoryFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the directory has a parent.
-     */
     public function withParent(?Directory $parent = null): static
     {
         return $this->state(function (array $attributes) use ($parent) {

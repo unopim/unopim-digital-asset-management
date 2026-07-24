@@ -30,9 +30,6 @@ class ImageEditController
 {
     use AssetAccessControl;
 
-    /**
-     * Crop and/or resize an asset image and persist the result.
-     */
     public function resize(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -99,9 +96,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
-    /**
-     * Apply brightness, contrast, sharpen, and blur adjustments to an asset image.
-     */
     public function adjust(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -142,9 +136,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-adjusted')]);
     }
 
-    /**
-     * Apply greyscale and/or invert filters to an asset image.
-     */
     public function filters(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -181,9 +172,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
-    /**
-     * Rotate and/or flip an asset image and persist the result.
-     */
     public function transform(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -221,7 +209,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-transformed')]);
     }
 
-    /** Read an asset's image for editing; returns null when missing or undecodable. */
     private function readAssetImage(Asset $asset, string $disk)
     {
         try {
@@ -425,9 +412,6 @@ class ImageEditController
         }
     }
 
-    /**
-     * Parse #RRGGBB into [r, g, b] integers.
-     */
     private function parseHexColor(string $hex): array
     {
         $hex = ltrim($hex, '#');
@@ -439,9 +423,6 @@ class ImageEditController
         ];
     }
 
-    /**
-     * Average the 4 corner pixels to estimate the background color.
-     */
     private function sampleCornerBackground($gd, int $w, int $h): array
     {
         $sumR = $sumG = $sumB = 0;
@@ -455,9 +436,6 @@ class ImageEditController
         return [(int) round($sumR / 4), (int) round($sumG / 4), (int) round($sumB / 4)];
     }
 
-    /**
-     * Scanline flood fill from edge-matched seeds.
-     */
     private function floodFillBackground($gd, int $w, int $h, int $bgR, int $bgG, int $bgB, int $fillColor, int $tolerance): void
     {
         $tolSq = $tolerance * $tolerance;

@@ -13,9 +13,6 @@ trait ActionRequest
 
     protected $user;
 
-    /**
-     * Get the action request.
-     */
     public function getActionRequest(): self
     {
         return $this->actionRequest;
@@ -26,9 +23,6 @@ trait ActionRequest
         return $this->user ?? $this->user = Admin::find(Auth::id());
     }
 
-    /**
-     * Start the action.
-     */
     public function start(string $eventType, array $options = []): self
     {
         $this->user = Admin::find(Auth::id());
@@ -54,9 +48,6 @@ trait ActionRequest
         return $this;
     }
 
-    /**
-     * completed Action.
-     */
     public function completed(string $eventType, int $userId, array $options = []): self
     {
         $whereCondition = [

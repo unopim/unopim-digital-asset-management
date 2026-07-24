@@ -1,9 +1,4 @@
-{{--
-    Explorer toolbar partial — search, filter drawer, pagination.
-    Rendered inside v-dam-tab-template via @include in tab.blade.php.
-    All Vue bindings (searchInput, meta, etc.) resolve to v-dam-tab's scope.
-    @once guard prevents double-render when index.blade.php also includes this file.
---}}
+
 @once('v-dam-explorer-toolbar')
         <template v-if="loading && ! meta">
             <x-admin::shimmer.datagrid.toolbar />

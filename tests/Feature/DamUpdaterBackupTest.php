@@ -32,7 +32,7 @@ it('creates a unique backup dir', function () {
     $b = $updater->backupDir('2026-07-03_10-00-00');
 
     expect(is_dir($a))->toBeTrue()
-        ->and($b)->not->toBe($a); // second call must not collide
+        ->and($b)->not->toBe($a);
 
     @rmdir($a);
     @rmdir($b);

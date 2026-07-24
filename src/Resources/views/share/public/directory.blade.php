@@ -99,7 +99,6 @@
                         >
                             <div class="dam-card-img">
 
-                                {{-- Shimmer skeleton shown while thumbnail loads --}}
                                 <div class="dam-shimmer absolute inset-0 z-0 flex items-center justify-center">
                                     <img
                                         src="{{ $placeholderSvg }}"
@@ -137,7 +136,6 @@
                     @endforeach
                 </div>
 
-                {{-- Infinite-scroll sentinel + spinner --}}
                 @if ($assets->hasMorePages())
                     <div id="dam-scroll-sentinel" class="flex justify-center items-center py-10" aria-hidden="true">
                         <svg class="animate-spin w-8 h-8 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -162,7 +160,7 @@
 
     @push('scripts')
     <script>
-    /* Strip dam-card-new after each SSR card animates in, before Vue re-renders on load */
+
     (function () {
         var g = document.getElementById('dam-asset-grid');
         if (g) {
@@ -175,7 +173,6 @@
         }
     })();
 
-    /* Scroll-to-top button — injected outside Vue's #app so Vue re-render can't detach it */
     (function () {
         var btn = document.createElement('button');
         btn.setAttribute('aria-label', 'Scroll to top');
@@ -200,11 +197,6 @@
         const ENDPOINT   = '{{ route('dam.share.list_assets', $share->token) }}';
         const startPage  = {{ $assets->currentPage() }};
 
-        /*
-         * Vue (app.js module) registers its load handler after this inline script
-         * (deferred modules execute after regular scripts). Our load handler fires
-         * first, so we use setTimeout(0) to run after Vue's synchronous app.mount().
-         */
         window.addEventListener('load', function () {
         setTimeout(function () {
         const grid      = document.getElementById('dam-asset-grid');

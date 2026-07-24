@@ -1,10 +1,4 @@
-/**
- * Folder (directory) management — create, read, list/tree, rename (update),
- * delete, and nested-folder operations, with negative and edge-case coverage.
- *
- * Note on status codes (from the API contract): create → 201, get/list/update
- * → 200, delete → 202 (deletion is queued as a job).
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -21,7 +15,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  // Best-effort cleanup of anything left undeleted by a test.
+
   for (const id of createdIds) {
     await folderHelper.deleteFolder(support.client, id).catch(() => {});
   }
@@ -127,7 +121,7 @@ test.describe('Folder — nested operations', () => {
 
     const get = await folderHelper.getFolder(api, child.id);
     expect(get.status).toBe(STATUS.OK);
-    // The child should report its parent when the payload exposes it.
+
     if (get.body.data?.parent_id !== undefined) {
       expect(get.body.data.parent_id).toBe(parent.id);
     }

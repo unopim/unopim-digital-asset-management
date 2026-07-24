@@ -63,7 +63,7 @@
                         height: cropImgH + 'px',
                     }"
                 >
-                    <!-- crop box with box-shadow dark mask outside -->
+
                     <div
                         class="absolute border-2 border-white/90 pointer-events-auto"
                         :style="{
@@ -131,7 +131,6 @@
                             <span class="text-xs text-red-600 dark:text-red-400">@{{ bgPlatformError }}</span>
                         </div>
 
-                        <!-- Platform + model: hidden when color sub-tab is in Normal mode -->
                         <template v-if="bgSubTab !== 'color' || bgColorMode === 'ai'">
 
                         <div>

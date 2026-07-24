@@ -25,7 +25,6 @@ class Share extends Model implements HistoryContract, ShareContract
 
     protected $historyTags = ['Share'];
 
-    /** Internal bookkeeping columns excluded from the history feed. */
     protected $auditExclude = [
         'view_count',
         'download_count',
@@ -70,9 +69,6 @@ class Share extends Model implements HistoryContract, ShareContract
         return $this->belongsTo(Directory::class, 'target_id');
     }
 
-    /**
-     * Resolve the underlying target model regardless of share_type.
-     */
     public function target(): ?Model
     {
         return $this->share_type === self::TYPE_ASSET

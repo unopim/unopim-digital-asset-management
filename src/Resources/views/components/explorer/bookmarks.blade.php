@@ -72,8 +72,6 @@ app.component('v-dam-bookmarks', {
             this.reloadBookmarks();
         });
 
-        // A tab's toolbar star toggles by directory_id (it doesn't know the
-        // bookmark row id) — resolve it here, where the list lives.
         this.$emitter.on('dam:remove-bookmark', ({ directoryId }) => {
             this.removeByDirectory(directoryId);
         });
@@ -115,7 +113,6 @@ app.component('v-dam-bookmarks', {
             if (bm) this.remove(bm.id);
         },
 
-        /** Tell the rest of the explorer which directories are currently bookmarked. */
         broadcast() {
             this.$emitter.emit('dam:bookmarks-changed', this.bookmarks.map(b => b.directory_id));
         },

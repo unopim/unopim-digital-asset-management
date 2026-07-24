@@ -8,9 +8,7 @@ use Webkul\DAM\Models\Directory;
 
 class AssetHelper
 {
-    /**
-     * Determine the effective max upload size from PHP's runtime limits.
-     */
+
     public static function getMaxUploadSizeKb(): int
     {
         $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));
@@ -24,9 +22,6 @@ class AssetHelper
         return $candidates ? (int) min($candidates) : PHP_INT_MAX;
     }
 
-    /**
-     * Format a kilobyte count into a human-readable string.
-     */
     public static function humanReadableSize(int $kilobytes): string
     {
         if ($kilobytes >= 1024 * 1024) {
@@ -40,9 +35,6 @@ class AssetHelper
         return $kilobytes.' KB';
     }
 
-    /**
-     * Convert a php.ini shorthand size to kilobytes.
-     */
     protected static function iniValueToKb(string $value): int
     {
         $value = trim($value);
@@ -62,11 +54,6 @@ class AssetHelper
         };
     }
 
-    /**
-     * Determine the file type category from its MIME type.
-     *
-     * @return string
-     */
     public static function getFileType($file)
     {
         $mimeType = $file->getMimeType();
@@ -92,11 +79,6 @@ class AssetHelper
         return 'document';
     }
 
-    /**
-     * fetch file type based on the extension.
-     *
-     * @return void
-     */
     public static function getFileTypeUsingExtension(string $extension)
     {
         $extension = strtolower($extension);
@@ -122,9 +104,6 @@ class AssetHelper
         }
     }
 
-    /**
-     * Displayable File name.
-     */
     public static function getDisplayFileName(string $fileName): string
     {
         if (strlen($fileName) > 29) {
@@ -134,9 +113,6 @@ class AssetHelper
         return $fileName;
     }
 
-    /**
-     * Resolve the most appropriate preview URL for an asset.
-     */
     public static function getPreviewUrl(string $path, ?int $size = null): string
     {
         $previewUrl = route('admin.dam.file.preview', [
@@ -169,7 +145,6 @@ class AssetHelper
         return $previewUrl;
     }
 
-    /** Check if the MIME type corresponds to a supported media file. */
     public static function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
@@ -178,14 +153,6 @@ class AssetHelper
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /**
-     * Whether a MIME type is safe to serve inline in the browser.
-     *
-     * Only genuine media types are safe. Anything else (HTML, XML, text, etc.)
-     * must be forced to download so a stored file cannot execute script in the
-     * application's own origin. SVG is XML and can carry script, so it is only
-     * ever served inline behind a restrictive Content-Security-Policy.
-     */
     public static function isInlineSafeMime(?string $mimeType): bool
     {
         $mimeType = strtolower(trim((string) $mimeType));
@@ -202,15 +169,6 @@ class AssetHelper
             || $mimeType === 'application/pdf';
     }
 
-    /**
-     * Security headers applied to every asset-content response.
-     *
-     * Blocks MIME sniffing and (via CSP) any script/plugin execution for
-     * documents rendered inline, neutralising stored-XSS through uploaded
-     * HTML/SVG while still allowing images, styles and media to render.
-     *
-     * @return array<string, string>
-     */
     public static function assetResponseHeaders(): array
     {
         return [
@@ -219,9 +177,6 @@ class AssetHelper
         ];
     }
 
-    /**
-     * Check if given extension or mime type is forbidden for upload.
-     */
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = [
@@ -293,9 +248,6 @@ class AssetHelper
         return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));
     }
 
-    /**
-     * The DAM ships a "no records found" placeholder SVG (no-records-found.svg).
-     */
     public static function isPlaceholderImage(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $isSvg = $extension === 'svg' || $mimeType === 'image/svg+xml';

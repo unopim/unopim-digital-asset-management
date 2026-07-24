@@ -14,17 +14,11 @@ class AssetResourceMappingRepository extends Repository
 
     const PRODUCT_TYPE_MAPPING = 'product';
 
-    /**
-     * Get the model class name.
-     */
     public function model(): string
     {
         return AssetResourceMapping::class;
     }
 
-    /**
-     * Create asset mappings for either categories or products.
-     */
     public function createAssetMappings(
         array|Collection $assets,
         string|int $identifier,
@@ -75,9 +69,6 @@ class AssetResourceMappingRepository extends Repository
         return $createdMappings;
     }
 
-    /**
-     * Delete asset mappings based on the provided mappings.
-     */
     public function deleteMappings(array $mappingsToDelete): void
     {
         if (! empty($mappingsToDelete)) {
@@ -87,17 +78,11 @@ class AssetResourceMappingRepository extends Repository
         }
     }
 
-    /**
-     * Create asset mappings for a category.
-     */
     public function createCategoryAssetMappings(array|Collection $assets, string|int $categoryId, string $relatedField): array
     {
         return $this->createAssetMappings($assets, $categoryId, $relatedField, true);
     }
 
-    /**
-     * Create asset mappings for a product.
-     */
     public function createProductAssetMappings(array|Collection $assets, string|int $productId, string $relatedField): array
     {
         return $this->createAssetMappings($assets, $productId, $relatedField, false);

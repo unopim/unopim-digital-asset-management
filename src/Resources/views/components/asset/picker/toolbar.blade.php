@@ -25,17 +25,17 @@
 
                 <div class="ltr:pl-2.5 rtl:pr-2.5">
                     <p class="text-sm font-light text-gray-800 dark:text-white">
-                        <!-- Need to manage this translation. -->
+
                         @{{ "@lang('admin::app.components.datagrid.toolbar.results')".replace(':total', available.meta.total) }}
                     </p>
                 </div>
 
                 <div
-                    class="ltr:pl-2.5 rtl:pr-2.5" 
+                    class="ltr:pl-2.5 rtl:pr-2.5"
                     v-if="applied.massActions.indices.length"
                 >
                     <p class="text-sm font-light text-gray-800 dark:text-white">
-                        <!-- Need to manage this translation. -->
+
                         @{{ "@lang('admin::app.components.datagrid.toolbar.length-of')".replace(':length', applied.massActions.indices.length) }}
 
                         @{{ "@lang('admin::app.components.datagrid.toolbar.selected')".replace(':total', available.meta.total) }}

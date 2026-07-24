@@ -308,17 +308,15 @@ it('extracts and stores audio cover art when reuploading audio via the api', fun
 });
 
 it('only lists assets from granted directories for a custom-role api user', function () {
-    // granted directory + asset
+
     $grantedDir = Directory::factory()->create();
     $grantedAsset = Asset::factory()->create();
     $grantedAsset->directories()->attach($grantedDir->id);
 
-    // denied directory + asset
     $deniedDir = Directory::factory()->create();
     $deniedAsset = Asset::factory()->create();
     $deniedAsset->directories()->attach($deniedDir->id);
 
-    // Get a custom-role user — use getAuthenticationHeaders() then override the admin's role
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => ['dam.assets.index']]);
     DB::table('dam_directory_role')->insert([
         'directory_id' => $grantedDir->id,
@@ -327,7 +325,7 @@ it('only lists assets from granted directories for a custom-role api user', func
         'updated_at'   => now(),
     ]);
     $headers = $this->getAuthenticationHeaders();
-    // The admin created by getAuthenticationHeaders() is the latest Admin
+
     $admin = Admin::latest('id')->first();
     $admin->update(['role_id' => $role->id]);
     app(DirectoryPermissionService::class)->flush();
@@ -340,10 +338,6 @@ it('only lists assets from granted directories for a custom-role api user', func
     expect($ids)->toContain($grantedAsset->id);
     expect($ids)->not->toContain($deniedAsset->id);
 });
-
-// ---------------------------------------------------------------------------
-// Helper — custom-role user granted only to a specific directory
-// ---------------------------------------------------------------------------
 
 function makeCustomAssetApiHeaders(Directory $grantedDir): array
 {
@@ -360,10 +354,6 @@ function makeCustomAssetApiHeaders(Directory $grantedDir): array
 
     return $headers;
 }
-
-// ---------------------------------------------------------------------------
-// Directory-permission gate tests (Task 4)
-// ---------------------------------------------------------------------------
 
 it('returns 403 when showing an asset in a denied directory via api', function () {
     $denied = Directory::factory()->create();

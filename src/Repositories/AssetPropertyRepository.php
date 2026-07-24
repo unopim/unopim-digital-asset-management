@@ -14,7 +14,6 @@ class AssetPropertyRepository extends Repository
         return AssetProperty::class;
     }
 
-    /** Create asset property. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -22,7 +21,6 @@ class AssetPropertyRepository extends Repository
         return $asset;
     }
 
-    /** Update asset property. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);

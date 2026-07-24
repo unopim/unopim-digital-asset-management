@@ -2,14 +2,14 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="ltr" class="{{ (request()->cookie('dark_mode') ?? 0) ? 'dark' : '' }}">
     <head>
-        
+
         {!! view_render_event('unopim.admin.layout.head.before') !!}
         {!! view_render_event('unopim.admin.layout.head') !!}
-        
+
         <title>{{ $title ?? '' }}</title>
 
         <meta charset="UTF-8">
-        
+
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="base-url" content="{{ url()->to('/') }}">
@@ -17,9 +17,9 @@
         <meta http-equiv="content-language" content="{{ app()->getLocale() }}">
 
         @stack('meta')
-        
+
         @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-        
+
         <link
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
             rel="stylesheet"
@@ -34,8 +34,6 @@
             href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
             rel="stylesheet"
         />
-
-        <!-- <link rel="preload" as="image" href="{{ url('cache/logo/pim.png') }}"> -->
 
         @if ($favicon = core()->getConfigData('general.design.admin_logo.favicon'))
             <link
@@ -81,12 +79,9 @@
                 ref="appLayout"
             >
                 <x-admin::layouts.sidebar />
-                
-                                
+
                 <div class="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 max-lg:!px-4 transition-all duration-300">
                     {!! view_render_event('unopim.admin.layouts.tabs.before') !!}
-
-                    <x-admin::breadcrumbs :leaf="$label ?? ''" class="mb-3" />
 
                     <div class="flex flex-wrap justify-between gap-2 items-center">
                         <div class="flex min-w-0">
@@ -121,14 +116,7 @@
                     <v-asset-lock-zone>
                     <div class="tabs">
                         @php
-                            
-                            /**
-                             *   Each item should be an associative array containing the following keys:
-                             * - url: The URL for the tab.
-                             * - code: A unique code identifier for the tab.
-                             * - name: The translation key for the tab's label.
-                             * - icon: The icon class for the tab's icon.
-                             */
+
                             $defaultTabs = [
                                 [
                                     'url'    => '?',
@@ -150,7 +138,7 @@
                             $queryString = rtrim($queryString, '=');
 
                             $activeTab = collect($items)->firstWhere('code', $queryString)['code'] ?? $items[0]['code'];
-                            
+
                         @endphp
 
                         <div class="flex flex-wrap gap-4 my-4 border-b-2 max-sm:hidden dark:border-gray-800 items-center">
@@ -177,25 +165,25 @@
 
                     @if ($activeTab === 'history')
                         {!! view_render_event('unopim.settings.channels.list.before') !!}
-                        
+
                         <x-admin::history src="{{ route('admin.history.index',[$entityName, request()->id]) }}" >
                         </x-admin::history>
-                        
+
                         {!! view_render_event('unopim.settings.channels.list.after') !!}
 
-                    @elseif ($activeTab === 'preview')    
+                    @elseif ($activeTab === 'preview')
                         {!! view_render_event('unopim.settings.slot.content.before') !!}
-                        
+
                         {{ $slot }}
-                        
+
                         {!! view_render_event('unopim.settings.slot.content.after') !!}
-                    
-                    @elseif ($activeTab === 'properties')    
+
+                    @elseif ($activeTab === 'properties')
                         {{$properties}}
-                    
-                    @elseif ($activeTab === 'comments')    
+
+                    @elseif ($activeTab === 'comments')
                         {{$comments}}
-                    
+
                     @elseif ($activeTab === 'linked-resources')
                         {{$linked_resources}}
 
@@ -285,7 +273,6 @@
 
         {!! view_render_event('unopim.admin.layout.vue-app-mount.before') !!}
 
-     
         {!! view_render_event('bagisto.admin.layout.vue-app-mount.after') !!}
     </body>
 </html>

@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Simpan',
-            'title'    => 'Konfigurasi DAM',
+            'title'    => 'Konfigurasi',
             'saved'    => 'Konfigurasi berhasil disimpan.',
             'general'  => [
                 'title'            => 'Pengaturan Umum',

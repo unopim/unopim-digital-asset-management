@@ -18,7 +18,6 @@ beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
 });
 
-/** Grant a role direct access to a directory (per-directory ACL boundary). */
 function grantDirectoryAccess(int $roleId, int $directoryId): void
 {
     DB::table('dam_directory_role')->insert([
@@ -28,8 +27,6 @@ function grantDirectoryAccess(int $roleId, int $directoryId): void
         'updated_at'   => now(),
     ]);
 }
-
-/* ───────────────────────── Finding #1: stored XSS ───────────────────────── */
 
 it('forces an HTML asset to download through a public share, even when inline is requested', function () {
     config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
@@ -47,11 +44,6 @@ it('forces an HTML asset to download through a public share, even when inline is
 
     $share = Share::factory()->forAsset($asset->id)->create();
 
-    /**
-     * The controller is invoked directly (rather than over HTTP) so the
-     * assertion targets the stream-response hardening itself, independent of
-     * the public-share route wiring.
-     */
     $controller = app(SharedViewerController::class);
     $request = Request::create('/', 'GET', ['disposition' => 'inline']);
 
@@ -61,8 +53,6 @@ it('forces an HTML asset to download through a public share, even when inline is
     expect($response->headers->get('X-Content-Type-Options'))->toBe('nosniff');
     expect($response->headers->get('Content-Security-Policy'))->not->toBeNull();
 });
-
-/* ─────────────── Finding #2: asset-property mass delete authz ─────────────── */
 
 it('denies asset-property mass delete to an admin without the property-delete permission', function () {
     $this->loginWithPermissions('custom', ['dashboard']);
@@ -105,8 +95,6 @@ it('skips properties on assets outside the admin\'s granted directories during m
     $this->assertDatabaseHas('dam_asset_properties', ['id' => $deniedProp->id]);
 });
 
-/* ─────────────── Finding #3: asset mass delete directory boundary ─────────── */
-
 it('skips assets outside the admin\'s granted directories during mass delete', function () {
     $disk = Directory::getAssetDisk();
     $admin = $this->loginWithPermissions('custom', ['dam.asset.mass_delete']);
@@ -130,8 +118,6 @@ it('skips assets outside the admin\'s granted directories during mass delete', f
     $this->assertDatabaseMissing('dam_assets', ['id' => $allowedAsset->id]);
     $this->assertDatabaseHas('dam_assets', ['id' => $deniedAsset->id]);
 });
-
-/* ─────────────── Finding #4: folder upload permission gate ────────────────── */
 
 it('denies folder upload to an admin without the upload permission', function () {
     $admin = $this->loginWithPermissions('custom', ['dashboard']);

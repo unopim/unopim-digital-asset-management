@@ -5,7 +5,6 @@ const os = require('os');
 const isCI = !!process.env.CI;
 const STORAGE_STATE = path.resolve(__dirname, '.state/admin-auth.json');
 
-/* Single worker: artisan serve is single-threaded, can't handle concurrent requests */
 const workerCount = 1;
 
 module.exports = defineConfig({
@@ -32,7 +31,6 @@ module.exports = defineConfig({
   use: {
     baseURL: process.env.BASE_URL || 'http://127.0.0.1:8000',
 
-    /* Reuse authenticated session across all tests */
     storageState: STORAGE_STATE,
 
     trace: 'on-first-retry',

@@ -14,14 +14,12 @@ beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
 });
 
-// Index Page for DAM Asset
 it('should return the asset index page', function () {
     $this->get(route('admin.dam.assets.index'))
         ->assertOk()
         ->assertSeeText(trans('dam::app.admin.dam.index.title'));
 });
 
-// Return the Edit Page
 it('should return the asset edit page', function () {
     $assetId = Asset::factory()->create()->id;
 
@@ -32,7 +30,6 @@ it('should return the asset edit page', function () {
         ->assertSeeText(trans('dam::app.admin.dam.asset.edit.save-btn'));
 });
 
-// Show the Asset
 it('should return the asset detail page', function () {
     $asset = Asset::factory()->create();
 
@@ -64,7 +61,6 @@ it('edit view passes directoryAncestors to blade', function () {
     $response->assertViewHas('fileSize');
 });
 
-// Update the Asset
 it('should update the asset details successfully', function () {
     $asset = Asset::factory()->create();
 
@@ -87,7 +83,6 @@ it('should update the asset details successfully', function () {
     ]);
 });
 
-// Upload Asset File
 it('should upload the asset file to the specified directory', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -123,7 +118,6 @@ it('should upload the asset file to the specified directory', function () {
     ]);
 });
 
-// Re-Upload Asset File
 it('should re-upload the asset file to the specified directory and update the asset record', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -169,7 +163,6 @@ it('should re-upload the asset file to the specified directory and update the as
     ]);
 });
 
-// Delete the asset
 it('should delete a asset successfully', function () {
     $assetId = Asset::factory()->create()->id;
 
@@ -180,7 +173,6 @@ it('should delete a asset successfully', function () {
     $this->assertDatabaseMissing($this->getFullTableName(Asset::class), ['id' => $assetId]);
 });
 
-// Mass Delete the Asset
 it('should mass delete the asset successfully', function () {
     $assetIds = Asset::factory()->createMany(3)->pluck('id')->toArray();
 
@@ -193,7 +185,6 @@ it('should mass delete the asset successfully', function () {
     }
 });
 
-// Download the Asset
 it('should allow downloading the asset file', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -232,7 +223,6 @@ it('should redirect to s3 presigned url on download when disk is aws', function 
     expect($response->headers->get('Location'))->not->toBeEmpty();
 });
 
-// Custom Download Asset
 it('should allow custom downloading of the asset', function () {
     $assetDisk = Directory::getAssetDisk();
     Storage::fake($assetDisk);
@@ -252,7 +242,6 @@ it('should allow custom downloading of the asset', function () {
     $response->assertHeader('Content-Type', 'image/png');
 });
 
-// Rename File
 it('should rename the file name', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -293,7 +282,6 @@ it('should rename the file name', function () {
     Storage::disk($disk)->assertExists($newPath);
 });
 
-// Upload forbidden file type
 it('should reject uploading a forbidden file type', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -315,7 +303,6 @@ it('should reject uploading a forbidden file type', function () {
         ->assertJson(['success' => false]);
 });
 
-// Show non-existent asset
 it('should return 404 when showing a non-existent asset', function () {
     $response = $this->getJson(route('admin.dam.assets.show', 99999));
 
@@ -326,7 +313,6 @@ it('should return 404 when showing a non-existent asset', function () {
         ]);
 });
 
-// Update non-existent asset
 it('should return 404 when updating a non-existent asset', function () {
     $response = $this->putJson(route('admin.dam.assets.update', 99999), [
         'file_name' => 'test.png',
@@ -339,7 +325,6 @@ it('should return 404 when updating a non-existent asset', function () {
         ]);
 });
 
-// Delete non-existent asset
 it('should return 404 when deleting a non-existent asset', function () {
     $response = $this->deleteJson(route('admin.dam.assets.destroy', 99999));
 
@@ -350,7 +335,6 @@ it('should return 404 when deleting a non-existent asset', function () {
         ]);
 });
 
-// Prevent delete when resource mapped
 it('should prevent deletion of an asset that has linked resources', function () {
     $asset = Asset::factory()->create();
 
@@ -371,7 +355,6 @@ it('should prevent deletion of an asset that has linked resources', function () 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), ['id' => $asset->id]);
 });
 
-// Rename validation
 it('should validate rename requires a valid file name', function () {
     $response = $this->postJson(route('admin.dam.assets.rename'), [
         'id'        => 1,
@@ -382,7 +365,6 @@ it('should validate rename requires a valid file name', function () {
         ->assertJsonValidationErrors(['file_name']);
 });
 
-// Upload validation - missing files
 it('should validate upload requires files and directory_id', function () {
     $response = $this->postJson(route('admin.dam.assets.upload'), []);
 
@@ -390,7 +372,6 @@ it('should validate upload requires files and directory_id', function () {
         ->assertJsonValidationErrors(['files', 'directory_id']);
 });
 
-// Mass Update Asset
 it('should mass update assets and dispatch update events', function () {
     Event::fake();
 
@@ -409,7 +390,6 @@ it('should mass update assets and dispatch update events', function () {
     }
 });
 
-// Linked Resources DataGrid
 it('should return linked resources datagrid as json', function () {
     Asset::factory()->create();
 
@@ -420,7 +400,6 @@ it('should return linked resources datagrid as json', function () {
     expect($response->json())->toBeArray();
 });
 
-// Move the Assets
 it('should move asset from one directory to another', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -462,8 +441,6 @@ it('should move asset from one directory to another', function () {
     Storage::disk($disk)->assertMissing($originalPath);
 });
 
-// ── Download Compressed ───────────────────────────────────────────────────
-
 it('should download asset as a zip file', function () {
     $disk = Directory::getAssetDisk();
     Storage::fake($disk);
@@ -502,8 +479,6 @@ it('should return 404 when compressed-download file is missing from storage', fu
         ->assertNotFound();
 });
 
-// ── Metadata ──────────────────────────────────────────────────────────────
-
 it('should return cached metadata for an asset', function () {
     $asset = Asset::factory()->create([
         'meta_data' => ['FileType' => 'JPEG', 'ImageWidth' => 800],
@@ -528,7 +503,6 @@ it('should flatten exif sub-keys from cached metadata', function () {
         ->assertOk()
         ->assertJson(['success' => true]);
 
-    // exif scalar values merged to top level; 'exif' key removed
     $data = $response->json('data');
     expect($data)->toHaveKey('Make');
     expect($data)->toHaveKey('Model');
@@ -548,8 +522,6 @@ it('should return error when asset has no metadata and file is missing', functio
         ->assertOk()
         ->assertJson(['success' => false]);
 });
-
-// ── Drag-Move (tree) ──────────────────────────────────────────────────────
 
 function seedAssetMove(): array
 {

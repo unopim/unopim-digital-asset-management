@@ -33,7 +33,6 @@ it('skips directory if it is an ancestor of the target (circular move)', functio
     $parent = Directory::factory()->create(['name' => 'Parent', 'parent_id' => null]);
     $child = Directory::factory()->create(['name' => 'Child', 'parent_id' => $parent->id]);
 
-    // Trying to move parent INTO child — circular, must be skipped
     $response = $this->postJson(route('admin.dam.explorer.mass_move'), [
         'asset_ids'           => [],
         'directory_ids'       => [$parent->id],

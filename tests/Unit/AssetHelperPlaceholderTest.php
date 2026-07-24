@@ -2,11 +2,6 @@
 
 use Webkul\DAM\Helpers\AssetHelper;
 
-/**
- * The DAM "no records found" placeholder SVG must not be uploadable as a real
- * asset. Detection is by content signature (robust to rename + re-serialization)
- * or filename stem, and only SVGs are inspected.
- */
 const PLACEHOLDER_SVG = <<<'SVG'
 <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M76.9143 80.5715L84.1143 87.7715M61.7143 74.9715L71.3143 65.3715M61.7143 65.3715L71.3143 74.9715M80.9143 70.1715C80.9143 66.3524 79.3971 62.6897 76.6966 59.9891C73.9961 57.2886 70.3334 55.7715 66.5143 55.7715C62.6951 55.7715 59.0324 57.2886 56.3319 59.9891C53.6314 62.6897 52.1143 66.3524 52.1143 70.1715C52.1143 73.9906 53.6314 77.6533 56.3319 80.3538C59.0324 83.0543 62.6951 84.5715 66.5143 84.5715C70.3334 84.5715 73.9961 83.0543 76.6966 80.3538C79.3971 77.6533 80.9143 73.9906 80.9143 70.1715Z" stroke="#7C3AEC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -33,7 +28,7 @@ it('blocks the placeholder SVG by content signature even when renamed', function
 });
 
 it('blocks a re-serialized copy of the placeholder SVG', function () {
-    // Browser/SVGO re-serialization: XML prolog + expanded tags; path data intact.
+
     $reSerialized = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".str_replace('/>', '></path>', PLACEHOLDER_SVG);
     $path = writeTempSvg($reSerialized);
 
@@ -52,14 +47,14 @@ it('allows an unrelated SVG upload', function () {
     $path = writeTempSvg($svg);
 
     expect(AssetHelper::isForbiddenFile('svg', 'image/svg+xml', 'company-logo.svg', $path))->toBeFalse();
-    // Name + type only (no content read) — a normal SVG is still allowed.
+
     expect(AssetHelper::isForbiddenFile('svg', 'image/svg+xml', 'company-logo.svg'))->toBeFalse();
 
     @unlink($path);
 });
 
 it('does not treat non-SVG files as the placeholder', function () {
-    // Same bytes, but a png extension/mime — not inspected as an SVG.
+
     $path = writeTempSvg(PLACEHOLDER_SVG);
 
     expect(AssetHelper::isForbiddenFile('png', 'image/png', 'no-records-found.png', $path))->toBeFalse();

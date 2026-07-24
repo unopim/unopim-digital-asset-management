@@ -110,15 +110,15 @@ Route::group([
         Route::get('/cover-art/{assetId}', 'coverArt')->name('admin.dam.file.cover-art');
     });
 
-    Route::controller(ShareController::class)->prefix('shares')->group(function () {
-        Route::get('', 'index')->name('admin.dam.shares.index');
-        Route::post('', 'store')->name('admin.dam.shares.store');
-        Route::patch('{id}', 'update')->name('admin.dam.shares.update')->where('id', '[0-9]+');
-        Route::patch('{id}/revoke', 'revoke')->name('admin.dam.shares.revoke')->where('id', '[0-9]+');
-        Route::delete('{id}', 'destroy')->name('admin.dam.shares.destroy')->where('id', '[0-9]+');
-        Route::patch('{id}/reauthorize', 'reauthorize')->name('admin.dam.shares.reauthorize')->where('id', '[0-9]+');
+    Route::controller(ShareController::class)->prefix('shared-links')->group(function () {
+        Route::get('', 'index')->name('admin.dam.shared-links.index');
+        Route::post('', 'store')->name('admin.dam.shared-links.store');
+        Route::patch('{id}', 'update')->name('admin.dam.shared-links.update')->where('id', '[0-9]+');
+        Route::patch('{id}/revoke', 'revoke')->name('admin.dam.shared-links.revoke')->where('id', '[0-9]+');
+        Route::delete('{id}', 'destroy')->name('admin.dam.shared-links.destroy')->where('id', '[0-9]+');
+        Route::patch('{id}/reauthorize', 'reauthorize')->name('admin.dam.shared-links.reauthorize')->where('id', '[0-9]+');
         Route::get('active/{type}/{targetId}', 'activeForTarget')
-            ->name('admin.dam.shares.active_for_target')
+            ->name('admin.dam.shared-links.active_for_target')
             ->where('type', 'asset|directory')
             ->where('targetId', '[0-9]+');
     });

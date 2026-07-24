@@ -1,15 +1,4 @@
-{{--
-    Shared "Assign Tags" mass-action modal.
 
-    A single global Vue component reused by BOTH the legacy asset datagrid and the
-    explorer. It is driven entirely through the emitter so callers stay decoupled:
-
-      • open  →  emit  'dam:open-tag-assign-modal'  with { assetIds: [...], context }
-      • done  →  it emits 'dam:tag-assign:done' with { context } after a successful assign
-                 so the caller can refresh its own grid / explorer.
-
-    Mount it once per page with <x-dam::tag.assign-modal />.
---}}
 @pushOnce('scripts')
     <script type="text/x-template" id="v-dam-tag-assign-modal-template">
         <x-admin::modal ref="assignTagModal">
@@ -87,8 +76,7 @@
 
             computed: {
                 subtitle() {
-                    // When folders are part of the selection the asset count is resolved
-                    // server-side (recursively), so show the recursive wording instead.
+
                     if (this.directoryIds.length) {
                         return "@lang('dam::app.admin.dam.tag.mass-action.modal-subtitle-recursive')";
                     }
@@ -119,9 +107,7 @@
             },
 
             methods: {
-                // Fetch a page of tags from the server, optionally narrowed by a search
-                // term. Server-side search + pagination keeps the dropdown responsive
-                // with hundreds of tags instead of loading them all up front.
+
                 loadTags(query = '') {
                     this.tagsLoading = true;
 
@@ -130,8 +116,7 @@
                         })
                         .then(({ data }) => {
                             const fetched = (data?.data ?? []).map(t => t.name);
-                            // Keep already-selected tags in the option list so their
-                            // chips stay intact even when filtered out by a search.
+
                             this.options = [...new Set([...this.selectedTags, ...fetched])];
                         })
                         .catch(() => {
@@ -153,7 +138,6 @@
                     const value = (newTag || '').trim();
                     if (! value) return;
 
-                    // Avoid duplicates (case-insensitive) in both the option list and the selection.
                     const lower = value.toLowerCase();
                     if (! this.options.some(o => o.toLowerCase() === lower)) {
                         this.options.push(value);

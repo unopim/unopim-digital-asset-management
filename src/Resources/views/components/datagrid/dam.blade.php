@@ -1,25 +1,22 @@
 @props(['isMultiRow' => false])
 
-<v-datagrid {{ $attributes }}>
+<v-dam-datagrid {{ $attributes }}>
     <x-admin::shimmer.datagrid :isMultiRow="$isMultiRow" />
 
     {{ $slot }}
-</v-datagrid>
+</v-dam-datagrid>
 
 @pushOnce('scripts')
     <script
         type="text/x-template"
-        id="v-datagrid-template"
+        id="v-dam-datagrid-template"
     >
         <div
             class="relative"
             :class="{ 'pointer-events-none cursor-not-allowed': gridLocked }"
             :aria-busy="gridLocked"
         >
-            <!-- Dim overlay while grid is locked (tree busy / action in flight).
-                 Uses a child absolute element so the parent stays at z:auto
-                 (no stacking context), keeping the filter drawer's fixed
-                 elements in the root stacking context above the sticky navbar. -->
+
             <div
                 v-if="gridLocked && !actionInFlight"
                 class="absolute inset-0 bg-white/60 dark:bg-cherry-900/60 z-[1] rounded-lg"
@@ -88,8 +85,8 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid', {
-            template: '#v-datagrid-template',
+        app.component('v-dam-datagrid', {
+            template: '#v-dam-datagrid-template',
 
             props: ['src'],
 
@@ -153,17 +150,11 @@
             },
 
             computed: {
-                // Freeze the directory tree only while a destructive request
-                // is actually in flight (mass-delete / mass-action / per-row
-                // delete). Selection alone does NOT lock — the user should be
-                // free to click around until they confirm the action.
+
                 gridBusy() {
                     return !! this.actionInFlight;
                 },
-                // Visual lock for the grid surface — true while this side is
-                // mutating OR the tree side is mid-mutation. Keeps grid UI
-                // non-interactive during in-flight mass-delete/mass-action,
-                // matching the tree's own lockout.
+
                 gridLocked() {
                     return this.actionInFlight || this.treeBusy;
                 },
@@ -198,8 +189,6 @@
                     this.treeBusy = !! busy;
                 });
 
-                // After the shared tag modal finishes a legacy-datagrid assignment,
-                // clear the selection and reload so the new tags show immediately.
                 this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
                     if (context && context !== 'legacy-datagrid') return;
                     this.applied.massActions.indices = [];
@@ -211,11 +200,7 @@
             },
 
             methods: {
-                /**
-                 * Initialization: This function checks for any previously saved filters in local storage and applies them as needed.
-                 *
-                 * @returns {void}
-                 */
+
                 boot() {
                     let datagrids = this.getDatagrids();
 
@@ -254,11 +239,6 @@
                     this.get();
                 },
 
-                /**
-                 * Get. This will prepare params from the `applied` props and fetch the data from the backend.
-                 *
-                 * @returns {void}
-                 */
                 get(extraParams = {}) {
                     let params = {
                         pagination: {
@@ -297,9 +277,7 @@
                             }
                         })
                         .then((response) => {
-                            /**
-                             * Precisely taking all the keys to the data prop to avoid adding any extra keys from the response.
-                             */
+
                             const {
                                 id,
                                 columns,
@@ -328,10 +306,6 @@
 
                             this.updateDatagrids();
 
-                            /**
-                             * This event should be fired at the end, but only in the GET method. This allows the export feature to listen to it
-                             * and update its properties accordingly.
-                             */
                             this.$emitter.emit('change-datagrid', {
                                 available: this.available,
                                 applied: this.applied
@@ -353,17 +327,6 @@
                         });
                 },
 
-                /**
-                 * Change Page.
-                 *
-                 * The reason for choosing the numeric approach over the URL approach is to prevent any conflicts with our existing
-                 * URLs. If we were to use the URL approach, it would introduce additional arguments in the `get` method, necessitating
-                 * the addition of a `url` prop. Instead, by using the numeric approach, we can let Axios handle all the query parameters
-                 * using the `applied` prop. This allows for a cleaner and more straightforward implementation.
-                 *
-                 * @param {string|integer} directionOrPageNumber
-                 * @returns {void}
-                 */
                 changePage(directionOrPageNumber) {
                     let newPage;
 
@@ -389,9 +352,6 @@
                         return;
                     }
 
-                    /**
-                     * Check if the `newPage` is within the valid range.
-                     */
                     if (newPage >= 1 && newPage <= this.available.meta.last_page) {
                         this.applied.pagination.page = newPage;
 
@@ -401,35 +361,16 @@
                     }
                 },
 
-                /**
-                 * Change per page option.
-                 *
-                 * @param {integer} option
-                 * @returns {void}
-                 */
                 changePerPageOption(option) {
                     this.applied.pagination.perPage = option;
 
-                    /**
-                     * When the total records are less than the number of data per page, we need to reset the page.
-                     */
                     if (this.available.meta.last_page >= this.applied.pagination.page) {
                         this.applied.pagination.page = 1;
                     }
 
-                    /**
-                     * Keep the current selection when only the page size changes — the
-                     * same rows are still shown, just paginated differently.
-                     */
                     this.get();
                 },
 
-                /**
-                 * Sort Page.
-                 *
-                 * @param {object} column
-                 * @returns {void}
-                 */
                 sortPage(column) {
                     if (column.sortable) {
                         this.applied.sort = {
@@ -437,23 +378,12 @@
                             order: this.applied.sort.order === 'asc' ? 'desc' : 'asc',
                         };
 
-                        /**
-                         * When the sorting changes, we need to reset the page.
-                         */
                         this.applied.pagination.page = 1;
 
                         this.get();
                     }
                 },
 
-                /**
-                 * Filter Page.
-                 *
-                 * @param {object} $event
-                 * @param {object} column
-                 * @param {object} additional
-                 * @returns {void}
-                 */
                 filterPage($event, column = null, additional = {}) {
                     let quickFilter = additional?.quickFilter;
 
@@ -481,10 +411,7 @@
                                 break;
                         }
                     } else {
-                        /**
-                         * Here, either a real event will come or a string value. If a string value is present, then
-                         * we create a similar event-like structure to avoid any breakage and make it easy to use.
-                         */
+
                         if ($event?.target?.value === undefined) {
                             $event = {
                                 target: {
@@ -500,9 +427,6 @@
                         }
                     }
 
-                    /**
-                     * We need to reset the page on filtering.
-                     */
                     this.applied.pagination.page = 1;
                     if ('search' == $event.srcElement?.name) {
                         this.get();
@@ -521,11 +445,6 @@
                 applyFilter(column, requestedValue, additional = {}) {
                     let appliedColumn = this.findAppliedColumn(column?.index);
 
-                    /**
-                     * If no column is found, it means that search from the toolbar have been
-                     * activated. In this case, we will search for `all` indices and update the
-                     * value accordingly.
-                     */
                     if (! column) {
                         let appliedColumn = this.findAppliedColumn('all');
 
@@ -544,13 +463,8 @@
                             });
                         }
 
-                        /**
-                         * Else, we will look into the sidebar filters and update the value accordingly.
-                         */
                     } else {
-                        /**
-                         * Here if value already exists, we will not do anything.
-                         */
+
                         if (
                             requestedValue === undefined ||
                             requestedValue === '' ||
@@ -633,9 +547,6 @@
 
                     appliedColumn.value = appliedColumn?.value.filter(value => value !== appliedColumnValue);
 
-                    /**
-                     * Clean up is done here. If there are no applied values present, there is no point in including the applied column as well.
-                     */
                     if (!appliedColumn.value.length) {
                         this.applied.filters.columns = this.applied.filters.columns.filter(column => column
                             .index !== columnIndex);
@@ -753,8 +664,6 @@
                     const method = action.method.toLowerCase();
                     const actionType = action?.options?.actionType?.toLowerCase() ?? '';
 
-                    // Assign-tags opens the shared tag modal instead of the generic confirm flow.
-                    // The modal posts the assignment itself; we just refresh on `dam:tag-assign:done`.
                     if (actionType === 'assign-tags') {
                         this.$emitter.emit('dam:open-tag-assign-modal', {
                             assetIds: [...this.applied.massActions.indices],

@@ -1,15 +1,6 @@
 const { test, expect } = require('../utils/fixtures');
 const { navigateTo } = require('../utils/helpers');
 
-/**
- * Verifies the recursive asset-count chip on directory rows. The backend
- * computes a rollup that includes own direct assets + every descendant's
- * assets, exposed as `assets_total_count` on each directory node, and the
- * tree renders the value in a small chip after the directory name.
- *
- * Always visible, independent of DAM_TREE_SHOW_ASSETS — the chip is folder-
- * level metadata, distinct from inline asset leaf rows.
- */
 test.describe('DAM Tree — recursive asset-count chip', () => {
   test('root directory row renders the asset-total chip with a numeric value', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
@@ -26,11 +17,8 @@ test.describe('DAM Tree — recursive asset-count chip', () => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
 
-    // Wait for the tree to mount.
     await adminPage.locator('.tree-container').first().waitFor({ state: 'visible', timeout: 15000 });
 
-    // Count badges load lazily (a separate asset-counts fetch), so a chip is not
-    // in the DOM until that resolves — wait for the first one to render.
     const chips = adminPage.locator('[data-asset-total-count]');
     await chips.first().waitFor({ state: 'attached', timeout: 15000 });
 

@@ -336,7 +336,7 @@ window._damImageViewer = {
                 const res = await window.axios.post(url, { color });
                 this.bgPreviewDataUrl = res.data.dataUrl;
             } catch (_) {
-                // silent — original image stays visible
+
             } finally {
                 this.bgPreviewLoading = false;
             }

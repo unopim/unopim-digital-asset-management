@@ -2,30 +2,10 @@ const { test, expect } = require('../utils/fixtures');
 const { navigateTo, generateUid } = require('../utils/helpers');
 const path = require('path');
 
-// DAM_TREE_SHOW_ASSETS gates the in-tree asset listing. The assertions below
-// that look for `.tree-container-assets-details` / fetched
-// `/directory-assets/{id}` are valid only when the toggle is ON. CI default is
-// OFF — those tests are skipped there. Spec 18 covers default-OFF behavior.
 const SHOW_ASSETS_ON = ['1', 'true', 'yes', 'on']
   .includes(String(process.env.DAM_TREE_SHOW_ASSETS ?? '').toLowerCase());
 const REQUIRES_SHOW_ASSETS_ON = 'requires DAM_TREE_SHOW_ASSETS=true';
 
-/**
- * Lazy-load assets per directory on expand.
- *
- * Behavior under test:
- *   1. Initial DAM tree render returns directories only (no asset eager-load).
- *   2. Expanding a directory triggers a single fetch to
- *      `admin.dam.directory.assets/{id}` and renders asset rows beneath.
- *   3. Subsequent expand/collapse uses the cache (no refetch).
- *   4. Asset mutations (upload, drag-move, delete) invalidate cache so the
- *      tree reflects current state.
- *   5. Drag-move of a single asset between directories hits
- *      `admin.dam.assets.moved` and the asset relocates in the tree.
- */
-
-// Scope menu-item lookups to the tree's right-click context menu; several labels
-// (Add Directory, Upload Files) also live in the always-mounted "+ New" dropdown.
 const treeMenu = (page) => page.locator('.dam-tree-context-menu');
 
 async function expandDirectory(page, dirName) {
@@ -93,9 +73,6 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForTimeout(1500);
 
-    // Root assets eager-load on mount via `loadRootAssets()`. Subdir assets
-    // must not be eager-loaded — assert no asset row sits inside any nested
-    // `.tree-container-details` wrapper before user expands it.
     const nestedAssetRows = adminPage.locator(
       '.tree-container-details .tree-container-assets-details'
     );
@@ -113,19 +90,15 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await navigateTo(adminPage, 'dam');
     await createDirectory(adminPage, dirName);
 
-    // Select the new dir and upload an asset so the dir has assets_count > 0.
     const dirRow = adminPage.locator('.tree-container-details').filter({ hasText: dirName }).first()
       .locator('> .flex').first();
     await dirRow.click({ force: true });
     await adminPage.waitForTimeout(400);
     await uploadIntoSelectedDirectory(adminPage, path.resolve(__dirname, '../assets/floral.jpg'));
 
-    // Reload to reset tree state.
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForTimeout(800);
 
-    // Now attach request listener AFTER initial load (Root fetch already done),
-    // then click the dir to trigger lazy fetch.
     const calls = [];
     adminPage.on('request', req => {
       if (/\/admin\/dam\/directory\/directory-assets\/\d+/.test(req.url())) {
@@ -153,7 +126,6 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await navigateTo(adminPage, 'dam');
     await createDirectory(adminPage, dirName);
 
-    // Click new dir to select it, then upload one asset into it.
     const dirRow = adminPage.locator('.tree-container-details').filter({ hasText: dirName }).first()
       .locator('> .flex').first();
     await dirRow.click({ force: true });
@@ -161,14 +133,12 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
 
     await uploadIntoSelectedDirectory(adminPage, path.resolve(__dirname, '../assets/floral.jpg'));
 
-    // Reload page to reset tree state, then expand the dir.
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForTimeout(800);
 
     await expandDirectory(adminPage, dirName);
     await adminPage.waitForTimeout(1500);
 
-    // Asset row should appear inside the expanded directory.
     const assetRows = adminPage.locator('.tree-container-details')
       .filter({ hasText: dirName }).first()
       .locator('.tree-container-assets-details');
@@ -188,11 +158,10 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     }
 
     const row = childDir.locator('> .flex').first();
-    // First expand — triggers fetch.
+
     await row.click({ force: true });
     await adminPage.waitForTimeout(1000);
 
-    // Start counting requests AFTER first fetch.
     const calls = [];
     adminPage.on('request', req => {
       if (/\/admin\/dam\/directory\/directory-assets\/\d+/.test(req.url())) {
@@ -200,10 +169,9 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
       }
     });
 
-    // Collapse.
     await row.click({ force: true });
     await adminPage.waitForTimeout(400);
-    // Re-expand.
+
     await row.click({ force: true });
     await adminPage.waitForTimeout(800);
 
@@ -224,14 +192,12 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await dirRow.click({ force: true });
     await adminPage.waitForTimeout(500);
 
-    // Expand once (empty fetch — no assets yet).
     await dirRow.click({ force: true });
     await adminPage.waitForTimeout(800);
     await dirRow.click({ force: true });
 
     await uploadIntoSelectedDirectory(adminPage, path.resolve(__dirname, '../assets/floral.jpg'));
 
-    // After upload, tree should reflect it under the dir without manual reload.
     const assetRows = adminPage.locator('.tree-container-details')
       .filter({ hasText: dirName }).first()
       .locator('.tree-container-assets-details');
@@ -240,12 +206,6 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await deleteDirectory(adminPage, dirName);
   });
 
-  // Drag UX is covered end-to-end at the API layer by Pest
-  // (`AssetTreeDragMoveTest`). Programmatic Sortable.js drag in Chromium is
-  // unreliable (Sortable uses synthesized pointer events, Playwright's
-  // mouse/dragTo doesn't always trigger its observers). Here we verify the
-  // *drop-zone wiring* — that both source and target directories mount the
-  // asset draggable wrapper after expand, which is the prerequisite for drag.
   test('drop zones mount on both source and target after expand', async ({ adminPage }) => {
     test.skip(! SHOW_ASSETS_ON, REQUIRES_SHOW_ASSETS_ON);
     test.setTimeout(90000);
@@ -257,7 +217,6 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await createDirectory(adminPage, srcName);
     await createDirectory(adminPage, dstName);
 
-    // Upload one asset into src so it has assets_count > 0.
     const srcSelectRow = adminPage.locator('.tree-container-details').filter({ hasText: srcName }).first()
       .locator('> .flex').first();
     await srcSelectRow.click({ force: true });
@@ -271,13 +230,10 @@ test.describe('DAM Tree — Lazy Asset Load', () => {
     await expandDirectory(adminPage, dstName);
     await adminPage.waitForTimeout(1500);
 
-    // Source dir: visible asset row mounted (`.tree-container-assets-details`).
     const srcAssets = adminPage.locator('.tree-container-details').filter({ hasText: srcName }).first()
       .locator('.tree-container-assets-details');
     await expect(srcAssets.first()).toBeVisible({ timeout: 10000 });
 
-    // Target dir's draggable group element (id="assets-items") must exist
-    // inside its sub-tree wrapper so the drop zone is wired.
     const dstWrapper = adminPage.locator('.tree-container-details').filter({ hasText: dstName }).first();
     const dstDropZone = dstWrapper.locator('#assets-items');
     expect(await dstDropZone.count()).toBeGreaterThanOrEqual(1);

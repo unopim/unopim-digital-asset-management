@@ -15,11 +15,7 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Exporter extends BaseExporter
 {
-    /**
-     * Create a new instance.
-     *
-     * @return void
-     */
+
     public function __construct(
         JobTrackBatchRepository $exportBatchRepository,
         FileExportFileBuffer $exportFileBuffer,
@@ -37,7 +33,6 @@ class Exporter extends BaseExporter
         );
     }
 
-    /** {@inheritDoc} */
     protected function setAttributesValues(array $values, mixed $filePath)
     {
         $attributeValues = [];
@@ -109,9 +104,6 @@ class Exporter extends BaseExporter
         return $attributeValues;
     }
 
-    /**
-     * Generates a public URL for a given file path.
-     */
     public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
     {
         if ($isAssetField) {
@@ -121,7 +113,6 @@ class Exporter extends BaseExporter
         return Storage::url($filePath);
     }
 
-    /** Copy media file from a source path to a destination path. */
     public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
     {
         $disk = Directory::getAssetDisk();

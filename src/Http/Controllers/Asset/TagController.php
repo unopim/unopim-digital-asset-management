@@ -20,7 +20,6 @@ class TagController extends Controller
         protected AssetTagRepository $assetTagRepository,
     ) {}
 
-    /** Add and update the asset tag. */
     protected function addOrUpdateTag(Request $request)
     {
         $request->validate([
@@ -81,7 +80,6 @@ class TagController extends Controller
         ], 201);
     }
 
-    /** Remove the asset tag. */
     protected function removeTag(Request $request)
     {
         $request->validate([
@@ -129,7 +127,6 @@ class TagController extends Controller
         ], 201);
     }
 
-    /** Attach one or more tags to many assets at once. */
     protected function massAssignTags(Request $request)
     {
         $request->validate([
@@ -182,9 +179,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Tag explicitly selected assets one at a time so each emits the history sync event.
-     */
     protected function tagSelectedAssets(array $assetIds, array $tagIds): int
     {
         $updated = 0;
@@ -216,9 +210,6 @@ class TagController extends Controller
         return $updated;
     }
 
-    /**
-     * Recursively tag every asset contained in the given folders.
-     */
     protected function tagAssetsInDirectories(array $directoryIds, array $tagIds): int
     {
         $service = $this->damPermissionService();

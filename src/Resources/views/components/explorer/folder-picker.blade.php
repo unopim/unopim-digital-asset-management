@@ -2,25 +2,22 @@
 @push('scripts')
 <script type="text/x-template" id="v-dam-folder-picker-template">
     <div v-if="open" class="fixed inset-0 z-[10010] flex items-center justify-center" data-folder-picker>
-        {{-- Backdrop --}}
+
         <div class="absolute inset-0 bg-black/50" @click="$emit('close')"></div>
 
-        {{-- Modal --}}
         <div class="relative bg-white dark:bg-cherry-900 rounded-xl shadow-2xl w-[360px] h-[520px] flex flex-col">
 
-            {{-- Header --}}
             <div class="flex items-center justify-between gap-3 px-5 py-4 border-b dark:border-cherry-800">
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white truncate">
                     @lang('dam::app.admin.explorer.mass-actions.pick-dest')
                 </h3>
                 <div class="flex items-center gap-2 shrink-0">
-                    {{-- Reuse the same grid/list toggle as the assets page --}}
+
                     <v-dam-explorer-view-toggle :model-value="viewMode" @update:model-value="setView"></v-dam-explorer-view-toggle>
                     <button @click="$emit('close')" class="icon-cancel text-xl text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition"></button>
                 </div>
             </div>
 
-            {{-- Breadcrumb --}}
             <div class="flex items-center gap-1 px-5 py-2.5 text-sm flex-wrap border-b dark:border-cherry-800 min-h-[40px]">
                 <template v-for="(crumb, i) in breadcrumb" :key="crumb.id">
                     <button
@@ -32,7 +29,6 @@
                 </template>
             </div>
 
-            {{-- Search --}}
             <div class="px-3 py-2 border-b dark:border-cherry-800">
                 <div class="relative">
                     <input
@@ -51,19 +47,16 @@
                 </div>
             </div>
 
-            {{-- Folder list --}}
             <div class="flex-1 overflow-y-auto px-3 py-2">
                 <div v-if="loading || searchLoading" class="flex items-center justify-center h-32">
                     <span class="icon-spinner animate-spin text-2xl text-violet-500"></span>
                 </div>
 
-                {{-- Search results --}}
                 <template v-else-if="isSearching">
                     <p v-if="visibleSearchResults.length === 0" class="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-gray-500">
                         @lang('dam::app.admin.dam.index.directory.search.no-matches')
                     </p>
 
-                    {{-- List view --}}
                     <template v-else-if="viewMode === 'list'">
                         <button
                             v-for="result in visibleSearchResults"
@@ -79,7 +72,6 @@
                         </button>
                     </template>
 
-                    {{-- Grid view --}}
                     <div v-else class="grid grid-cols-3 gap-2">
                         <button
                             v-for="result in visibleSearchResults"
@@ -94,9 +86,8 @@
                     </div>
                 </template>
 
-                {{-- Browse mode --}}
                 <template v-else>
-                    {{-- Inline create folder (in the directory currently browsed) --}}
+
                     @if (bouncer()->hasPermission('dam.directory.store'))
                     <div v-if="currentDirId" class="mb-2">
                         <button
@@ -154,7 +145,6 @@
                         @lang('dam::app.admin.explorer.empty')
                     </p>
 
-                    {{-- List view --}}
                     <template v-else-if="viewMode === 'list'">
                         <button
                             v-for="dir in visibleDirs"
@@ -170,7 +160,6 @@
                         </button>
                     </template>
 
-                    {{-- Grid view --}}
                     <div v-else class="grid grid-cols-3 gap-2">
                         <button
                             v-for="dir in visibleDirs"
@@ -187,7 +176,6 @@
                 </template>
             </div>
 
-            {{-- Footer --}}
             <div class="flex items-center justify-end gap-3 px-5 py-4 border-t dark:border-cherry-800">
                 <button
                     @click="$emit('close')"
@@ -233,8 +221,7 @@ app.component('v-dam-folder-picker', {
             searchLoading:   false,
             debounceTimer:   null,
             creating:        { open: false, name: '', loading: false, error: '' },
-            // A new folder pre-selected as the destination, kept separate from the
-            // browsed directory so the breadcrumb stays put.
+
             selectedChildId: null,
         };
     },
@@ -265,7 +252,7 @@ app.component('v-dam-folder-picker', {
             this.searchResults = [];
             const q = (val || '').trim();
             if (q.length < 2) { this.searchLoading = false; return; }
-            // Search hides the browse-only create UI; drop its transient state.
+
             this.selectedChildId = null;
             this.cancelCreate();
             this.searchLoading = true;
@@ -308,7 +295,7 @@ app.component('v-dam-folder-picker', {
             this.query         = '';
             this.searchResults = [];
             this.currentDirId  = result.id;
-            // Build full navigable breadcrumb from ancestor chain returned by search API
+
             this.breadcrumb = result.path_ids.map((id, i) => ({
                 id,
                 name: result.path_names[i] ?? '',
@@ -384,7 +371,7 @@ app.component('v-dam-folder-picker', {
                 this.creating = { open: false, name: '', loading: false, error: '' };
 
                 if (dir && dir.id != null) {
-                    // Surface the new folder and pre-select it as the destination.
+
                     if (! this.dirs.some(d => d.id === dir.id)) {
                         this.dirs.unshift({ id: dir.id, name: dir.name });
                     }
@@ -418,8 +405,6 @@ app.component('v-dam-folder-picker', {
                 name = crumb ? crumb.name : '';
             }
 
-            // Emit the destination name alongside the id so callers can show it
-            // in the "moved/copied … to <destination>" success alert.
             this.$emit('picked', { id: targetId, name });
         },
 

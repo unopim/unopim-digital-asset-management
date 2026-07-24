@@ -57,7 +57,6 @@
     </div>
 </div>
 
-<!-- Inline asset preview — renders the actual media (no extra eye click) -->
 <div class="flex items-center justify-center w-full rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-900">
     <template v-if="previewData.file_type === 'image'">
         <div class="w-full" style="height: 70vh;">

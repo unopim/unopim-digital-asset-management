@@ -12,7 +12,7 @@
                     type="button"
                     class="primary-button"
                 >
-                    @lang('dam::app.admin.dam.asset.properties.index.create-btn')                    
+                    @lang('dam::app.admin.dam.asset.properties.index.create-btn')
                 </button>
             @endif
         </div>
@@ -75,7 +75,6 @@
                                 </label>
                             </p>
                         @endif
-                        
 
                         <p class="break-words">@{{ record.name }}</p>
 
@@ -141,7 +140,7 @@
 
                     <x-slot:content>
                         {!! view_render_event('dam.admin.dam.properties.create.before') !!}
-                        
+
                         <x-admin::form.control-group.control
                             type="hidden"
                             name="id"
@@ -166,7 +165,6 @@
                             <x-admin::form.control-group.error control-name="name" />
                         </x-admin::form.control-group>
 
-
                         <x-admin::form.control-group>
                             <x-admin::form.control-group.label class="required">
                                 @lang('dam::app.admin.dam.asset.properties.index.create.type')
@@ -174,8 +172,6 @@
 
                             @php
                                 $supportedTypes = ['text'];
-
-                                // @todo  need to do for other types 'textarea', 'price', 'boolean', 'select', 'multiselect', 'datetime', 'date', 'image', 'gallery', 'file', 'checkbox'
 
                                 $attributeTypes = [];
 
@@ -231,7 +227,7 @@
                                 label-by="name"
                                 ::disabled="true!== codeIsNew"
                             />
-                            
+
                             <x-admin::form.control-group.error control-name="language" />
                         </x-admin::form.control-group>
 
@@ -286,9 +282,6 @@
                                 ></span>
                             </div>
 
-                            {{-- Bound with plain `v-model`: the control component filters attributes
-                                 by exact name, so `v-model.number` would be dropped. The controller
-                                 casts to int on write. --}}
                             <x-admin::form.control-group.control
                                 type="number"
                                 name="sort_order"
@@ -378,7 +371,7 @@
                 },
 
                 editModel(url) {
-                
+
                     this.codeIsNew = false;
 
                     this.$axios.get(url)
@@ -388,7 +381,7 @@
                             this.$refs.propertyUpdateOrCreateModal.toggle();
                         })
                         .catch(error => {
-                            
+
                             this.$emitter.emit('add-flash', { type: 'error', message: error.response.data.message })
                         });
                 },
@@ -396,6 +389,4 @@
         })
     </script>
 @endPushOnce
-  
-
 

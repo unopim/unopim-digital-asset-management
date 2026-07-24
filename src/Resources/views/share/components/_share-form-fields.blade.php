@@ -1,18 +1,4 @@
-{{--
-    Shared share-link form fields (custom name + expiry select + no-expiry toggle).
-    Used by both the create section of share-link-modal and the share-edit-modal so
-    the create and edit experiences stay 1:1 in sync.
 
-    Each call passes the Vue data-paths to bind to, so the partial doesn't make
-    assumptions about the host component's data shape.
-
-    Required vars:
-      $nameModel        — v-model path for the custom-name input            (e.g. 'newShareName')
-      $expiryModel      — v-model path for the expiry multiselect option    (e.g. 'expiryOption')
-      $expiryOptionsRef — Vue array reference for the expiry options        (e.g. 'expiryOptions')
-      $noExpiryModel    — v-model path for the no-expiry checkbox           (e.g. 'noExpiry')
-      $disabledExpr     — Vue expression that disables the form while busy  (e.g. 'isCreating')
---}}
 <div class="flex flex-col gap-4">
     <x-admin::form.control-group>
         <x-admin::form.control-group.label>

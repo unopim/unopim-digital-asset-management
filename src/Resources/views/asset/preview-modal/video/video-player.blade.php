@@ -86,7 +86,6 @@
             </div>
         </div>
 
-        <!-- Controls row — always white (over dark gradient) -->
         <div class="flex items-center gap-2 px-4 pb-3 text-white">
 
             <button

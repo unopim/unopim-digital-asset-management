@@ -1,23 +1,11 @@
-/**
- * Folder (directory) helpers — reusable CRUD wrappers over the DAM directory
- * API. Specs use these for both the assertions under test and for arranging
- * fixtures (e.g. "given a folder, upload an asset into it").
- *
- * Every method returns the raw {@link ApiClient} result so callers can assert
- * on status/body; convenience accessors (`.id`) are exposed where useful.
- */
+
 
 const { ENDPOINTS } = require('../constants/endpoints');
 const { STATUS } = require('../constants/statusCodes');
 const testData = require('../test-data/testData');
 
 const folderHelper = {
-  /**
-   * Create a directory. Returns the API result with `.id` of the new folder.
-   *
-   * @param {import('../utils/apiHelper').ApiClient} api
-   * @param {{name?:string, parentId?:number|null}} [opts]
-   */
+
   async createFolder(api, { name = testData.folderName(), parentId = null } = {}) {
     const payload = { name };
     if (parentId !== null && parentId !== undefined) payload.parent_id = parentId;
@@ -28,10 +16,6 @@ const folderHelper = {
     return res;
   },
 
-  /**
-   * Create a folder and fail loudly if it could not be provisioned — use this
-   * when the folder is a precondition, not the thing under test.
-   */
   async createFolderOrThrow(api, opts = {}) {
     const res = await folderHelper.createFolder(api, opts);
     if (res.status !== STATUS.CREATED || !res.id) {

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/** Per-asset directory ACL gate. Layered on top of bouncer() — both the route ACL and. */
 trait AssetAccessControl
 {
     protected function damPermissionService(): DirectoryPermissionService
@@ -14,9 +13,6 @@ trait AssetAccessControl
         return app(DirectoryPermissionService::class);
     }
 
-    /**
-     * Resolve an asset's containing directory id (asset → dam_asset_directory pivot).
-     */
     protected function damAssetDirectoryId(?Asset $asset): ?int
     {
         if (! $asset) {
@@ -30,9 +26,6 @@ trait AssetAccessControl
         return $dirId ? (int) $dirId : null;
     }
 
-    /**
-     * Returns true when the current admin can act on the given asset id based.
-     */
     protected function damCanAccessAsset(int $assetId): bool
     {
         try {
@@ -54,9 +47,6 @@ trait AssetAccessControl
         }
     }
 
-    /**
-     * Abort 403 if the current admin cannot act on the given asset id.
-     */
     protected function damAuthorizeAsset(int $assetId): void
     {
         if (! $this->damCanAccessAsset($assetId)) {

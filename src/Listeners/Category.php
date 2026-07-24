@@ -9,22 +9,13 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 class Category
 {
-    /**
-     * Create a new listener instance.
-     *
-     * @return void
-     */
+
     public function __construct(
         protected AssetRepository $assetRepository,
         protected CategoryFieldRepository $categoryFieldRepository,
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
-    /**
-     * After category update.
-     *
-     * @return void
-     */
     public function afterUpdateOrCreate($category)
     {
         $activeAssetFields = $this->categoryFieldRepository->findWhere(['status' => 1, 'type' => 'asset']);
@@ -58,9 +49,6 @@ class Category
         }
     }
 
-    /**
-     * Return value from category data.
-     */
     protected function getCategoryValue(
         array $additionalData,
         CategoryField $field,

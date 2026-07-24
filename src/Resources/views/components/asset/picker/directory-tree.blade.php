@@ -25,8 +25,8 @@
         type="text/x-template"
         id="v-directory-tree-template"
     >
-    <div 
-            class="relative" 
+    <div
+            class="relative"
             ref="treeContainer"
             v-if="formattedItems"
         >
@@ -75,9 +75,8 @@
                 </div>
             </div>
 
-
-             <div 
-                v-if="isLoading" 
+             <div
+                v-if="isLoading"
                 :style="{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }"
                 class="absolute z-50"
             >
@@ -431,25 +430,24 @@
         });
     </script>
 
-
     <script
         type="text/x-template"
         id="v-directory-tree-asset-item-template"
     >
-        <div 
+        <div
             class="tree-container-assets-details"
             @click.stop="setFilters(item)"
-        >    
+        >
             <div
                 class="flex gap-1 w-full p-1 cursor-pointer"
             >
                 <span>
-                    <i 
+                    <i
                         class="text-xl transition-all group-hover:text-gray-800 dark:text-gray-300 dark:group-hover:text-white cursor-grab"
                         :class="getFileTypeIcon(item)"
                     ></i>
                 </span>
-                <span 
+                <span
                     class="text-sm"
                     :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-gray-300'"
                 >

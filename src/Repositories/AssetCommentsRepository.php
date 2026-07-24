@@ -14,7 +14,6 @@ class AssetCommentsRepository extends Repository
         return AssetComments::class;
     }
 
-    /** Create comment. */
     public function create(array $data)
     {
         $asset = $this->model->create($data);
@@ -22,7 +21,6 @@ class AssetCommentsRepository extends Repository
         return $asset;
     }
 
-    /** Update comment. */
     public function update(array $data, $id, $asset = 'id')
     {
         $asset = $this->find($id);

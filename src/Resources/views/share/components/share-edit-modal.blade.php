@@ -1,10 +1,4 @@
-{{--
-    Share edit modal. Triggered via:
-        this.$emitter.emit('open-share-edit-modal', { url, record })
 
-    Reuses the shared share-form partial so the create + edit experiences
-    stay 1:1 in sync.
---}}
 <v-share-edit-modal></v-share-edit-modal>
 
 @pushOnce('scripts')
@@ -83,11 +77,7 @@
             }
         },
         methods: {
-            /**
-             * Pick the nearest expiry option to a future ISO timestamp.
-             * If the date has passed (revoked-edge case) or isn't parseable,
-             * fall back to 7 days.
-             */
+
             optionForExpiry(expiresAt) {
                 if (!expiresAt) return this.expiryOptions.find(o => o.value === 7) ?? this.expiryOptions[0];
 
@@ -96,7 +86,6 @@
 
                 const daysLeft = Math.max(1, Math.round((target - Date.now()) / 86_400_000));
 
-                // Snap to the closest predefined option (1 / 7 / 30 / 365).
                 return this.expiryOptions.reduce((best, current) =>
                     Math.abs(current.value - daysLeft) < Math.abs(best.value - daysLeft) ? current : best
                 , this.expiryOptions[0]);

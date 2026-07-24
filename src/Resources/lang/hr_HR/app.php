@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Spremi',
-            'title'    => 'DAM Konfiguracija',
+            'title'    => 'Konfiguracija',
             'saved'    => 'Konfiguracija uspješno spremljena.',
             'general'  => [
                 'title'            => 'Opće postavke',

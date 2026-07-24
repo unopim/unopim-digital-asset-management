@@ -241,7 +241,6 @@
 
         let damPrimaryManager = null;
 
-
         const damFileBag = new Map();
 
         const DAM_IDB_NAME  = 'dam_uploads';
@@ -336,8 +335,8 @@
                     isDragOver: false,
                     dragCounter: 0,
                     hintCardStyle: {},
-                    activeSessions: [],    
-                    sessions: [],          
+                    activeSessions: [],
+                    sessions: [],
                     nextSessionId: 1,
                     nextJobId: 1,
                     rowHeight: DAM_ROW_H,
@@ -416,7 +415,6 @@
                     this.activeSessions.push(session);
                     session = this.activeSessions[this.activeSessions.length - 1];
 
-                    // Folder "creating" jobs (visual) for the directory structure.
                     for (const dirPath of [...folderPaths].sort()) {
                         const segs       = dirPath.split('/');
                         const name       = segs[segs.length - 1];
@@ -424,7 +422,6 @@
                         session.jobs.push(this.makeJob({ name, parentPath, relativePath: dirPath, fileSize: 0, isFolder: true, status: 'creating' }));
                     }
 
-                    // File jobs (queued). Bytes held non-reactively in damFileBag.
                     for (const item of items) {
                         const rel        = item.relativePath || item.file.name;
                         const segs       = rel.split('/');
@@ -440,7 +437,6 @@
                     }
                     session.queuedCount = items.length;
 
-                    // Stash bytes for resume when the batch fits a safe quota.
                     session.resumable = await this.canStashBatch(session.bytesTotal);
                     if (session.resumable) {
                         for (const job of session.jobs) {
@@ -455,11 +451,8 @@
                     }
                     this.persistState();
 
-                    // Register the background upload session so it can be
-                    // paused / cancelled / retried and survive a reload.
                     await this.startTracker(session);
 
-                    // Phase 1: create the directory structure (idempotent).
                     if (folderPaths.length) {
                         try {
                             const res = await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
@@ -474,7 +467,6 @@
                         this.persistState();
                     }
 
-                    // Phase 2: upload files through the concurrency pool.
                     await this.runWorkers(session);
 
                     await this.finishSession(session);
@@ -505,9 +497,6 @@
                     return this.$axios.post(url).catch(() => {});
                 },
 
-                // Called once the worker pool drains normally. A session that is
-                // paused or cancelled is left untouched (its handler owns it); one
-                // that finished with errors stays active so the user can Retry.
                 async finishSession(session) {
                     if (session.cancelled || session.paused) return;
 
@@ -524,9 +513,6 @@
                     this.persistState();
                 },
 
-                // Pause: stop feeding the pool and abort any in-flight transfers
-                // (they are re-queued). Active count falls to zero so the grid
-                // unlocks and existing assets can be browsed mid-upload.
                 pauseSession(session) {
                     session.paused = true;
                     session.jobs.forEach((j) => {
@@ -544,8 +530,6 @@
                     await this.finishSession(session);
                 },
 
-                // Retry: re-queue transfer-failed files (their bytes are retained)
-                // and ask the server to re-run any failed background finalisation.
                 async retrySession(session) {
                     let requeued = 0;
                     for (const job of session.jobs) {
@@ -565,8 +549,6 @@
                     await this.finishSession(session);
                 },
 
-                // Retry a single failed file. Its bytes were retained (see
-                // afterJob), so we just re-queue it and spin the worker pool.
                 async retryJob(session, job) {
                     if (job.isFolder || job.status !== 'error' || ! damFileBag.has(job.id)) return;
                     job.status = 'queued';
@@ -605,7 +587,7 @@
                     const queue = session.jobs.filter(j => ! j.isFolder && j.status === 'queued');
                     let cursor = 0;
                     const next = () => {
-                        // Pause / cancel stops the pool from starting new transfers.
+
                         if (session.paused || session.cancelled) return Promise.resolve();
                         if (cursor >= queue.length) return Promise.resolve();
                         const job = queue[cursor++];
@@ -662,9 +644,7 @@
                             job.status = 'done';
                             job.progress = 100;
                             if (folder) this.announceGrantedDirectories(res.data.granted_directory_ids);
-                            // Track the ids of the assets this session created so
-                            // consumers (e.g. the product edit asset picker) can
-                            // auto-select freshly uploaded assets once it finishes.
+
                             if (! session.uploadedAssetIds) session.uploadedAssetIds = [];
                             (res.data.files || []).forEach(f => {
                                 if (f && f.id != null) session.uploadedAssetIds.push(f.id);
@@ -672,8 +652,7 @@
                         }
                     } catch (error) {
                         job._abort = null;
-                        // A pause/cancel abort is not a real failure: re-queue on
-                        // pause, drop silently on cancel. Everything else is an error.
+
                         const aborted = this.$axios.isCancel?.(error)
                             || error?.code === 'ERR_CANCELED'
                             || error?.name === 'CanceledError'
@@ -696,8 +675,7 @@
                 },
 
                 afterJob(session, job) {
-                    // Keep the bytes of a failed transfer so Retry can re-send it;
-                    // only successful jobs release their buffered file.
+
                     if (job.status === 'done') {
                         damFileBag.delete(job.id);
                         if (DAM_RESUME_ENABLED) damUploadStore.del(job.id);
@@ -706,12 +684,8 @@
                     this.scheduleAggregate(session);
                     this.persistState();
 
-                    // No mid-upload grid re-render: finalisation runs in the
-                    // background and the grid refreshes once, when the session
-                    // completes — so a bulk upload never disturbs existing assets.
                 },
 
-                // ── Progress counters (O(1) per tick instead of array re-scan) ──
                 bumpCounters(session, job) {
                     if (job.status === 'done')  { session.doneCount++;  session.bytesDone += job.fileSize || 0; }
                     if (job.status === 'error') { session.errorCount++; }
@@ -769,21 +743,15 @@
                 sessionActiveCount(session) {
                     return session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating').length;
                 },
-                // Files still to settle (queued or in-flight). Unlike the active
-                // count this only decreases, so control buttons keyed off it don't
-                // flicker between batches or when a paused job is re-queued.
+
                 sessionRemaining(session) {
                     return session.jobs.filter(u => ! u.isFolder && (u.status === 'queued' || u.status === 'uploading')).length;
                 },
-                // Files left interrupted by a page reload whose bytes could not be
-                // restored (large batches aren't stashed). They can't be resumed —
-                // the user must re-add them — but the session can still be cancelled.
+
                 sessionInterruptedCount(session) {
                     return session.jobs.filter(u => ! u.isFolder && u.status === 'interrupted').length;
                 },
-                // Anything not yet finished successfully/failed: drives whether the
-                // Cancel control is offered (so a reload-interrupted session isn't
-                // stuck with no controls but the close button).
+
                 sessionOutstanding(session) {
                     return this.sessionRemaining(session) + this.sessionInterruptedCount(session);
                 },
@@ -894,8 +862,7 @@
                         s.cancelled = false;
                         s.paused = false;
                         s.jobs.forEach(j => {
-                            // Unfinished jobs are provisionally interrupted; resumeSessions()
-                            // promotes any whose bytes survive in IndexedDB back to queued.
+
                             if (j.status === 'uploading' || j.status === 'queued' || j.status === 'creating') {
                                 j.status = 'interrupted';
                             }

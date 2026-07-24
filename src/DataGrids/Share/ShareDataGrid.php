@@ -27,10 +27,6 @@ class ShareDataGrid extends DataGrid
         parent::addAction($action);
     }
 
-    /**
-     * Let a column search/sort on a real column via `database_column_name` when its
-     * `index` is a SELECT alias, which a WHERE clause cannot reference.
-     */
     public function addColumn(array $column): void
     {
         $databaseColumnName = $column['database_column_name'] ?? null;
@@ -229,7 +225,7 @@ class ShareDataGrid extends DataGrid
                 'icon'   => 'icon-edit',
                 'title'  => trans('dam::app.admin.dam.share.datagrid.edit'),
                 'method' => 'edit-share',
-                'url'    => fn ($row) => route('admin.dam.shares.update', $row->id),
+                'url'    => fn ($row) => route('admin.dam.shared-links.update', $row->id),
             ]);
         }
 
@@ -247,7 +243,7 @@ class ShareDataGrid extends DataGrid
                 'icon'      => 'icon-cancel',
                 'title'     => trans('dam::app.admin.dam.share.datagrid.revoke'),
                 'method'    => 'PATCH',
-                'url'       => fn ($row) => route('admin.dam.shares.revoke', $row->id),
+                'url'       => fn ($row) => route('admin.dam.shared-links.revoke', $row->id),
                 'condition' => fn ($row) => empty($row->revoked_at),
             ]);
         }
@@ -258,7 +254,7 @@ class ShareDataGrid extends DataGrid
                 'icon'      => 'icon-delete',
                 'title'     => trans('dam::app.admin.dam.share.datagrid.delete'),
                 'method'    => 'DELETE',
-                'url'       => fn ($row) => route('admin.dam.shares.destroy', $row->id),
+                'url'       => fn ($row) => route('admin.dam.shared-links.destroy', $row->id),
             ]);
         }
     }

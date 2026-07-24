@@ -27,7 +27,6 @@ class Asset extends Model implements AssetContract, HistoryAuditable
         'meta_data' => 'array',
     ];
 
-    /** Columns excluded from history generation. */
     protected $auditExclude = [
         'id',
     ];
@@ -65,15 +64,11 @@ class Asset extends Model implements AssetContract, HistoryAuditable
             ->where('share_type', Share::TYPE_ASSET);
     }
 
-    /** Get the path without the file system root. */
     public function getPathWithOutFileSystemRoot()
     {
         return str_replace(Directory::ASSETS_DIRECTORY.'/', '', $this->path);
     }
 
-    /**
-     * Create a new factory instance for the model.
-     */
     protected static function newFactory(): Factory
     {
         return AssetFactory::new();

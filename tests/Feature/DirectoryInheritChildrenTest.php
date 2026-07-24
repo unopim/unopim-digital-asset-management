@@ -17,19 +17,16 @@ it('role with inherit_children sees subdirectories created by another role', fun
     $parent = Directory::factory()->create(['name' => 'InheritParent', 'parent_id' => null]);
     Storage::disk($disk)->makeDirectory('assets/'.$parent->name);
 
-    // Grant parent to both roles
     DB::table('dam_directory_role')->insert([
         ['directory_id' => $parent->id, 'role_id' => $roleB->id, 'created_at' => now(), 'updated_at' => now()],
         ['directory_id' => $parent->id, 'role_id' => $roleC->id, 'created_at' => now(), 'updated_at' => now()],
     ]);
 
-    // Enable inherit_children for role B only
     DB::table('dam_role_settings')->updateOrInsert(
         ['role_id' => $roleB->id],
         ['all_directories' => false, 'inherit_children' => true, 'created_at' => now(), 'updated_at' => now()]
     );
 
-    // C creates a subdirectory
     $adminC = Admin::factory()->create(['role_id' => $roleC->id]);
     $this->actingAs($adminC, 'admin');
     app(DirectoryPermissionService::class)->flush();
@@ -43,7 +40,6 @@ it('role with inherit_children sees subdirectories created by another role', fun
     $cSubDir = Directory::where('name', 'CSubDir')->first();
     expect($cSubDir)->not->toBeNull();
 
-    // B (with inherit_children) should be able to access CSubDir
     $adminB = Admin::factory()->create(['role_id' => $roleB->id]);
     $this->actingAs($adminB, 'admin');
     app(DirectoryPermissionService::class)->flush();
@@ -68,13 +64,11 @@ it('role without inherit_children cannot access subdirectories created by anothe
         ['directory_id' => $parent->id, 'role_id' => $roleC->id, 'created_at' => now(), 'updated_at' => now()],
     ]);
 
-    // inherit_children NOT set for B
     DB::table('dam_role_settings')->updateOrInsert(
         ['role_id' => $roleB->id],
         ['all_directories' => false, 'inherit_children' => false, 'created_at' => now(), 'updated_at' => now()]
     );
 
-    // C creates a subdirectory
     $adminC = Admin::factory()->create(['role_id' => $roleC->id]);
     $this->actingAs($adminC, 'admin');
     app(DirectoryPermissionService::class)->flush();
@@ -86,7 +80,6 @@ it('role without inherit_children cannot access subdirectories created by anothe
 
     $cSubDir = Directory::where('name', 'CSubDirNoInherit')->first();
 
-    // B (without inherit_children) should NOT access CSubDir
     $adminB = Admin::factory()->create(['role_id' => $roleB->id]);
     $this->actingAs($adminB, 'admin');
     app(DirectoryPermissionService::class)->flush();

@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Gem',
-            'title'    => 'DAM Konfiguration',
+            'title'    => 'Konfiguration',
             'saved'    => 'Konfiguration gemt.',
             'general'  => [
                 'title'            => 'Generelle indstillinger',

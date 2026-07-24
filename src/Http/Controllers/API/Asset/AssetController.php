@@ -32,7 +32,6 @@ class AssetController extends Controller
     use AssetAccessControl;
     use DirectoryTrait;
 
-    /** Create a new instance. */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
@@ -42,19 +41,11 @@ class AssetController extends Controller
         protected MetadataExtractionService $metadataExtractionService
     ) {}
 
-    /**
-     * Return the asset datagrid listing.
-     */
     public function index(): JsonResponse
     {
         return app(AssetDataSource::class)->toJson();
     }
 
-    /**
-     * Download files from public URLs and convert them to uploaded files.
-     *
-     * @return array|JsonResponse
-     */
     public function downloadAndConvertFiles(Request $request)
     {
         $imageUrls = $request->input('files');
@@ -137,13 +128,6 @@ class AssetController extends Controller
         return $files;
     }
 
-    /**
-     * Guard a user-supplied remote URL against SSRF before the server fetches it.
-     *
-     * Only http/https is allowed, and every IP the host resolves to must be a
-     * public address — loopback, link-local (incl. cloud metadata 169.254.169.254),
-     * private (RFC1918) and reserved ranges are rejected.
-     */
     private function isSafeRemoteUrl(string $url): bool
     {
         $parts = parse_url($url);
@@ -191,9 +175,6 @@ class AssetController extends Controller
         return true;
     }
 
-    /**
-     * Upload one or more assets to a directory.
-     */
     public function upload(Request $request): JsonResponse
     {
         set_time_limit(0);
@@ -329,11 +310,6 @@ class AssetController extends Controller
         return response()->json($response, count($errors) === 0 ? 201 : 422);
     }
 
-    /**
-     * Re-upload and replace an existing asset's file.
-     *
-     * @return JsonResponse
-     */
     public function reUpload(Request $request)
     {
         set_time_limit(0);
@@ -434,9 +410,6 @@ class AssetController extends Controller
         ], 201);
     }
 
-    /**
-     * Extract embedded cover art from audio assets and store it in meta_data.
-     */
     private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
     {
         if (! str_starts_with($mimeType ?? '', 'audio/')) {
@@ -460,9 +433,6 @@ class AssetController extends Controller
         $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
     }
 
-    /**
-     * Format a kilobyte value into a human readable size string.
-     */
     protected function humanReadableSize(int $kilobytes): string
     {
         if ($kilobytes >= 1024 * 1024) {
@@ -476,9 +446,6 @@ class AssetController extends Controller
         return $kilobytes.' KB';
     }
 
-    /**
-     * Display the specified asset.
-     */
     public function show(int $id): JsonResponse
     {
         $asset = $this->assetRepository->find($id);
@@ -574,9 +541,6 @@ class AssetController extends Controller
         ], 200);
     }
 
-    /**
-     * Return data for editing the specified asset.
-     */
     public function edit(int $id): JsonResponse
     {
         $asset = $this->assetRepository->find($id);
@@ -624,9 +588,6 @@ class AssetController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified asset.
-     */
     public function update(Request $request, $id): JsonResponse
     {
         $asset = Asset::find($id);
@@ -672,9 +633,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Delete the specified asset.
-     */
     public function destroy($id): JsonResponse
     {
         $asset = Asset::find($id);
@@ -716,11 +674,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Download the asset file via a signed URL.
-     *
-     * @return StreamedResponse
-     */
     public function signedUrl(int $id)
     {
         $asset = Asset::find($id);

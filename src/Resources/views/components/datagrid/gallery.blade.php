@@ -6,7 +6,6 @@
     {{ $slot }}
 </v-gallery-table>
 
-
 @pushOnce('scripts')
     <script
         type="text/x-template"

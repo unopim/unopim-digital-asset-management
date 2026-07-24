@@ -1,7 +1,5 @@
 @php
-    // Use getPreviewUrl so S3-stored media (video/audio) resolves to a direct
-    // S3 URL that supports native range/streaming — the local preview route
-    // only works for local disks and breaks video playback on S3.
+
     $mediaUrl = \Webkul\DAM\Helpers\AssetHelper::getPreviewUrl($asset->path);
 
     $placeholderSvg = match($asset->file_type) {
@@ -62,8 +60,7 @@
 @include('dam::asset.preview-modal.audio.audio-player-script')
 
 <script type="module">
-    // Keep the plain CSRF token in the X-CSRF-TOKEN header so it's always valid
-    // regardless of cookie state. Blade re-renders this on every page load.
+
     window.axios.defaults.headers.common['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
 
     app.component('v-asset-preview-modal', {
@@ -137,18 +134,12 @@
                 if (e.key === 'Escape' && this.isInfoOpen) { this.isInfoOpen = false; return; }
                 if (e.key === 'Escape' && this.isEditOpen) { this.isEditOpen = false; this.editTool = null; this.editPrompt = ''; return; }
 
-                // Skip keyboard shortcuts when the user is typing into an input,
-                // textarea, contenteditable region, or the like — we don't want
-                // to hijack their input.
                 const target = e.target;
                 const tag = target && target.tagName;
                 if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) {
                     return;
                 }
 
-                // Inline preview: media controls work whenever a player is on
-                // the page. The legacy fullscreen modal still uses isOpen for
-                // Escape close, but media shortcuts no longer require it.
                 if (!this.isOpen && !this.$refs.videoEl && !this.$refs.audioEl) return;
                 const isVideoKey = this.$refs.videoEl && [' ', 'f', 'F', 'm', 'M', 'l', 'L', '+', '=', '-', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key);
                 switch (e.key) {
@@ -297,9 +288,6 @@
             this.imgMounted();
             this.videoMounted();
 
-            // Inline preview on the edit page replaces the old eye-modal flow.
-            // Reset/init the media-element refs once at mount so the player is
-            // ready as soon as Vue renders the inline DOM.
             this.imgResetState();
             this.videoResetState();
             this.audioResetState();

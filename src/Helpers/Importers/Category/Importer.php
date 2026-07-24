@@ -42,9 +42,6 @@ class Importer extends CategoryImporter
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareCategories(array $rowData, array &$categories): void
     {
         $isCategory = $this->isCategoryExist($rowData['code']);

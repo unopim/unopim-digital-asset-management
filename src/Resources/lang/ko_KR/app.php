@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => '저장',
-            'title'    => 'DAM 설정',
+            'title'    => '설정',
             'saved'    => '설정이 성공적으로 저장되었습니다.',
             'general'  => [
                 'title'            => '일반 설정',

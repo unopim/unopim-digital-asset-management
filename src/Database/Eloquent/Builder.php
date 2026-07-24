@@ -7,11 +7,7 @@ use Kalnoy\Nestedset\QueryBuilder as BaseBuilder;
 
 class Builder extends BaseBuilder
 {
-    /**
-     * Handle the operation.
-     *
-     * @return Collection
-     */
+
     public function ancestorsAndSelfAndDefaultOrder(int $id, array $columns = ['*'])
     {
         return $this->whereAncestorOf($id, true)->defaultOrder()->get($columns);

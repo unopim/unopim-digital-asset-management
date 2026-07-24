@@ -6,7 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/** Tracks a single background asset-upload session (state-driven pause/resume/cancel). */
 return new class extends Migration
 {
     public function up(): void

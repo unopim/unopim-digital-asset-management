@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Save',
-            'title'    => 'DAM Configuration',
+            'title'    => 'Configuration',
             'saved'    => 'Configuration saved successfully.',
             'general'  => [
                 'title'            => 'General Settings',

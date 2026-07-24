@@ -11,15 +11,6 @@ const SEED_ASSETS = [
   { filePath: path.resolve(__dirname, 'assets/sample.pdf'), searchName: 'sample.pdf' },
 ];
 
-/**
- * Authenticate via the API request context (server-to-server, no chromium UI),
- * so the captured cookies come from a real, completed POST /admin/login → 302
- * round-trip — not from an in-flight UI form submission. Then pin session-cookie
- * expiry so chromium doesn't drop them on reload as already-expired.
- *
- * After auth, seeds non-image test assets (mp4/wav/pdf) via a real Chromium
- * browser so they exist for every spec regardless of --grep or CI sharding.
- */
 module.exports = async function globalSetup(config) {
   fs.mkdirSync(path.dirname(STORAGE_PATH), { recursive: true });
 
@@ -29,7 +20,6 @@ module.exports = async function globalSetup(config) {
 
   const ctx = await request.newContext({ baseURL });
 
-  // GET the login page to seed XSRF-TOKEN + session cookies and grab the _token.
   const loginPage = await ctx.get('/admin/login');
   if (!loginPage.ok()) {
     throw new Error(`global-setup: GET /admin/login → ${loginPage.status()}`);
@@ -39,7 +29,6 @@ module.exports = async function globalSetup(config) {
   if (!tokenMatch) throw new Error('global-setup: could not find _token on /admin/login');
   const csrfToken = tokenMatch[1];
 
-  // POST credentials. Follow redirects so the auth-session cookie lands.
   const resp = await ctx.post('/admin/login', {
     form: { _token: csrfToken, email, password },
   });
@@ -47,24 +36,16 @@ module.exports = async function globalSetup(config) {
     throw new Error(`global-setup: login POST landed on ${resp.url()} (status ${resp.status()})`);
   }
 
-  // Verify the session actually authenticates /admin/dam.
   const dam = await ctx.get('/admin/dam');
   if (!dam.ok() || dam.url().includes('/login')) {
     throw new Error(`global-setup: GET /admin/dam after login → ${dam.status()} ${dam.url()}`);
   }
 
-  // Seed a custom-permission role so the role-edit DAM Permissions tab has a
-  // target role to attach grants to. The tab's v-if hides it for
-  // permission_type='all' roles (super-admin) which is the only role shipped
-  // by default, so without this seed the tab is never rendered in e2e runs.
   await ensureCustomRole(ctx);
 
   await ctx.storageState({ path: STORAGE_PATH });
   await ctx.dispose();
 
-  // Playwright marks server-set "session" cookies (no Expires header) with
-  // expires: -1. Chromium then drops them on context reload as expired, so
-  // every test would start unauthenticated. Pin those to a future timestamp.
   const state = JSON.parse(fs.readFileSync(STORAGE_PATH, 'utf8'));
   const oneDayFromNow = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
   let mutated = false;
@@ -75,12 +56,6 @@ module.exports = async function globalSetup(config) {
     }
   }
 
-  // Expand the sidebar. The core layout collapses the sidebar by default
-  // (`sidebar_collapsed` cookie missing → treated as 1), which hides the menu
-  // text labels — so headless tests that assert on the "DAM" sidebar
-  // link/label would never see them. Seeding the cookie = 0 keeps the sidebar
-  // open (as a navigating user would), the same state these tests were written
-  // against.
   state.cookies = state.cookies || [];
   if (! state.cookies.some((c) => c.name === 'sidebar_collapsed')) {
     const host = (() => { try { return new URL(baseURL).hostname; } catch { return 'localhost'; } })();
@@ -99,7 +74,6 @@ module.exports = async function globalSetup(config) {
 
   if (mutated) fs.writeFileSync(STORAGE_PATH, JSON.stringify(state, null, 2));
 
-  // Seed test assets (floral.jpg + mp4/wav/pdf) via real Chromium so they exist for every spec.
   await seedAssets(baseURL);
 };
 
@@ -112,9 +86,6 @@ async function ensureCustomRole(ctx) {
     const tokenMatch = html.match(/name="_token"\s+value="([^"]+)"/);
     if (! tokenMatch) return;
 
-    // Duplicate name on re-runs returns a redirect-back with a validation
-    // error; harmless since the prior row still satisfies the DAM permissions
-    // tab requirement of having at least one custom role to edit.
     await ctx.post('/admin/settings/roles/create', {
       form: {
         _token:          tokenMatch[1],

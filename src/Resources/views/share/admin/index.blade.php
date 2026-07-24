@@ -24,7 +24,7 @@
                     :description="trans('dam::app.admin.dam.share.index.description')"
                 />
 
-                <x-admin::datagrid src="{{ route('admin.dam.shares.index') }}" ref="datagrid">
+                <x-admin::datagrid src="{{ route('admin.dam.shared-links.index') }}" ref="datagrid">
                     <template #header="{ columns, actions, applied, sortPage, isLoading }">
                         <template v-if="isLoading">
                             <x-admin::shimmer.datagrid.table.head />
@@ -396,7 +396,7 @@
                     loadShares() {
                         if (!this.targetType || !this.targetId) return;
                         this.isLoading = true;
-                        const url = `{{ route('admin.dam.shares.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
+                        const url = `{{ route('admin.dam.shared-links.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
                             .replace('__type', this.targetType)
                             .replace('__id', this.targetId);
 
@@ -435,7 +435,7 @@
                             name: this.showAdvanced ? (this.advancedName?.trim() || null) : null,
                         };
 
-                        this.$axios.post(`{{ route('admin.dam.shares.store') }}`, payload)
+                        this.$axios.post(`{{ route('admin.dam.shared-links.store') }}`, payload)
                             .then(({ data }) => {
                                 if (data?.share) {
                                     this.currentShare = data.share;
@@ -513,7 +513,7 @@
                     revokeFromModal(share) {
                         if (this.isRevoking) return;
                         this.isRevoking = true;
-                        const url = `{{ route('admin.dam.shares.revoke', ':id') }}`.replace(':id', share.id);
+                        const url = `{{ route('admin.dam.shared-links.revoke', ':id') }}`.replace(':id', share.id);
 
                         this.$axios.patch(url)
                             .then(({ data }) => {

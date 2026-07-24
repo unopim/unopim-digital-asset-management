@@ -29,10 +29,6 @@ it('returns 404 when tag not found via api', function () {
         ->assertStatus(404);
 });
 
-// ---------------------------------------------------------------------------
-// Helper — custom-role user granted only to a specific directory
-// ---------------------------------------------------------------------------
-
 function makeTagCustomHeaders(Directory $grantedDir): array
 {
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
@@ -48,10 +44,6 @@ function makeTagCustomHeaders(Directory $grantedDir): array
 
     return $headers;
 }
-
-// ---------------------------------------------------------------------------
-// Directory-permission gate tests (Task 6)
-// ---------------------------------------------------------------------------
 
 it('returns 403 when adding a tag to an asset in a denied directory', function () {
     $denied = Directory::factory()->create();

@@ -18,12 +18,8 @@ class AssetDataGrid extends DataGrid
 
     protected $customFilterColumns = [];
 
-    /** Maps normalized prop index suffix → original DB name. */
     protected array $propNameMap = [];
 
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 50;
 
     public function __construct(

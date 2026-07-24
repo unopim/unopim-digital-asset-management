@@ -72,7 +72,6 @@
             <div class="bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden">
                 <div class="flex items-stretch">
 
-                    {{-- Prev arrow (desktop only — mobile uses overlay) --}}
                     @if (! $isAssetShare)
                     <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
                         @if ($prevUrl)
@@ -137,10 +136,10 @@
                             </p>
                         </div>
                     @endif
-                    {{-- Mobile overlay prev/next (hidden sm+, where side panels take over) --}}
+
                     @if (! $isAssetShare)
                     @php
-                        // Audio: place arrows at disc-center height (top of disc ≈ 40px + half disc 104px = 144px from flex-1 top)
+
                         $mobileNavStyle = $isAudio
                             ? 'background:rgba(0,0,0,0.5);top:144px;transform:none;'
                             : 'background:rgba(0,0,0,0.5);';
@@ -187,7 +186,6 @@
                     @endif
                 </div>
 
-                    {{-- Next arrow (desktop only — mobile uses overlay) --}}
                     @if (! $isAssetShare)
                     <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
                         @if ($nextUrl)

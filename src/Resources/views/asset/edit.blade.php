@@ -35,7 +35,6 @@
         </v-delete-asset>
     </x-slot>
 
-
     @php
         $items = [
             [
@@ -133,7 +132,7 @@
 
     <x-slot:navButtons>
         <v-share-asset-button :asset-id="{{ $asset->id }}"></v-share-asset-button>
-        {{-- Modal lives in the always-rendered tab strip so it survives tab switches --}}
+
         <v-share-link-modal></v-share-link-modal>
     </x-slot:navButtons>
 
@@ -150,6 +149,7 @@
                 :action="route('admin.dam.assets.update', $asset->id)"
                 enctype="multipart/form-data"
                 method="PUT"
+                ajax
             >
                 <div class="flex gap-2.5 mt-3.5 flex-wrap">
                     <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
@@ -651,7 +651,7 @@
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.width')
                                     </x-admin::form.control-group.label>
-    
+
                                     <x-admin::form.control-group.control
                                         type="text"
                                         name="width"
@@ -661,15 +661,15 @@
                                         :label="trans('dam::app.admin.dam.asset.edit.custom-download.width')"
                                         :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.width-placeholder')"
                                     />
-    
+
                                     <x-admin::form.control-group.error control-name="width" />
                                 </x-admin::form.control-group>
-    
+
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.height')
                                     </x-admin::form.control-group.label>
-    
+
                                     <x-admin::form.control-group.control
                                         type="text"
                                         name="height"
@@ -679,7 +679,7 @@
                                         :label="trans('dam::app.admin.dam.asset.edit.custom-download.height')"
                                         :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.height-placeholder')"
                                     />
-    
+
                                     <x-admin::form.control-group.error control-name="height" />
                                 </x-admin::form.control-group>
                             </div>
@@ -1057,7 +1057,7 @@
         <script
             type="text/x-template"
             id="v-reupload-asset-template"
-        >      
+        >
             @if (bouncer()->hasPermission('dam.asset.re_upload'))
                 <input type="file"
                     name="file"
@@ -1165,8 +1165,7 @@
                             },
                             signal: this.abortController.signal,
                         }).then((response) => {
-                            // Server-level errors (e.g. post_max_size exceeded) return 200 with an
-                            // HTML body instead of JSON. Detect by checking the data type.
+
                             if (typeof response.data !== 'object' || response.data === null) {
                                 this.$emitter.emit('add-flash', { type: 'error', message: reUploadFileTooLargeMsg });
                                 return;
@@ -1177,7 +1176,6 @@
                                 message: response.data.message
                             });
 
-                            // SPA re-visit (no full reload) so the replaced asset renders fresh.
                             this.$navigate(window.location.href);
 
                         }).catch((error) => {
@@ -1239,7 +1237,6 @@
             @endif
         </script>
 
-        <!-- **** Share button — opens the shared modal singleton (renders in the tab row's navButtons slot) **** -->
         <script type="text/x-template" id="v-share-asset-button-template">
             @if (bouncer()->hasPermission('dam.asset.share'))
             <button

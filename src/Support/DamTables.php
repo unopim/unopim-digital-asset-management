@@ -6,7 +6,7 @@ namespace Webkul\DAM\Support;
 
 final class DamTables
 {
-    /** Every table owned by the DAM package (used by backup/restore/verify). */
+
     public const ALL = [
         'dam_action_request',
         'dam_asset_comments',

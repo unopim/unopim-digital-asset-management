@@ -83,8 +83,7 @@ app.component('v-dam-explorer-folder-card', {
             ghost.appendChild(icon);
             ghost.appendChild(label);
             document.body.appendChild(ghost);
-            // Keep the drag image inside the viewport, anchored under the cursor.
-            // Rendering it off-screen makes Chrome capture a clipped snapshot.
+
             ghost.style.left = `${Math.min(Math.max(0, e.clientX - 48), window.innerWidth - ghost.offsetWidth)}px`;
             ghost.style.top = `${Math.min(Math.max(0, e.clientY - 50), window.innerHeight - ghost.offsetHeight)}px`;
             e.dataTransfer.setDragImage(ghost, 48, 50);

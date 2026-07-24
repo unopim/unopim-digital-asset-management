@@ -132,10 +132,7 @@ app.component('v-dam-asset-card', {
                 name:  this.asset.file_name,
                 tabId: this.tabId,
             }));
-            // Preview just the thumbnail, not the whole card, so the drag image
-            // is a clean square with no empty card footer. Anchored under the
-            // cursor and kept on-screen — an off-screen ghost is captured
-            // clipped by Chrome.
+
             const size = 96;
             const thumb = this.$el.querySelector('.image-card') ?? this.$el;
             const clone = thumb.cloneNode(true);

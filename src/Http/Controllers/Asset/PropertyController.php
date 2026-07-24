@@ -23,7 +23,6 @@ class PropertyController extends Controller
         protected FileStorer $fileStorer
     ) {}
 
-    /** Asset properties route. */
     public function properties(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -35,7 +34,6 @@ class PropertyController extends Controller
         return view('dam::asset.properties.index', compact('id'));
     }
 
-    /** Create a property. */
     public function propertiesCreate(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -82,7 +80,6 @@ class PropertyController extends Controller
         ]);
     }
 
-    /** Edit a property. */
     public function propertiesEdit(int $id)
     {
         $property = $this->assetPropertyRepository->findOrFail($id);
@@ -92,7 +89,6 @@ class PropertyController extends Controller
         return new JsonResponse($property);
     }
 
-    /** Update a property. */
     public function propertiesUpdate()
     {
         $id = request('id');
@@ -136,11 +132,6 @@ class PropertyController extends Controller
         ]);
     }
 
-    /**
-     * properties destroy.
-     *
-     * @return void
-     */
     public function propertiesDestroy()
     {
         $id = request('id');
@@ -163,9 +154,6 @@ class PropertyController extends Controller
         ], 500);
     }
 
-    /**
-     * Mass delete assets.
-     */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
         abort_unless(

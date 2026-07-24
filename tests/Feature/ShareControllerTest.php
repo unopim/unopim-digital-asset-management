@@ -14,7 +14,7 @@ beforeEach(function () {
 });
 
 it('lists the shares manage page', function () {
-    $this->get(route('admin.dam.shares.index'))
+    $this->get(route('admin.dam.shared-links.index'))
         ->assertOk()
         ->assertSeeText(trans('dam::app.admin.dam.share.index.title'));
 });
@@ -22,7 +22,7 @@ it('lists the shares manage page', function () {
 it('creates a share for an asset', function () {
     $asset = Asset::factory()->create();
 
-    $response = $this->post(route('admin.dam.shares.store'), [
+    $response = $this->post(route('admin.dam.shared-links.store'), [
         'share_type'  => Share::TYPE_ASSET,
         'target_id'   => $asset->id,
         'expiry_days' => 7,
@@ -42,7 +42,7 @@ it('creates a share for an asset', function () {
 it('creates a share for a directory', function () {
     $directory = Directory::factory()->create();
 
-    $this->post(route('admin.dam.shares.store'), [
+    $this->post(route('admin.dam.shared-links.store'), [
         'share_type'  => Share::TYPE_DIRECTORY,
         'target_id'   => $directory->id,
         'expiry_days' => 30,
@@ -54,7 +54,7 @@ it('creates a share for a directory', function () {
 it('creates a non-expiring share when no_expiry is true', function () {
     $asset = Asset::factory()->create();
 
-    $response = $this->post(route('admin.dam.shares.store'), [
+    $response = $this->post(route('admin.dam.shared-links.store'), [
         'share_type' => Share::TYPE_ASSET,
         'target_id'  => $asset->id,
         'no_expiry'  => 1,
@@ -66,7 +66,7 @@ it('creates a non-expiring share when no_expiry is true', function () {
 });
 
 it('rejects share creation for a non-existent target', function () {
-    $this->post(route('admin.dam.shares.store'), [
+    $this->post(route('admin.dam.shared-links.store'), [
         'share_type'  => Share::TYPE_ASSET,
         'target_id'   => 999999,
         'expiry_days' => 7,
@@ -76,7 +76,7 @@ it('rejects share creation for a non-existent target', function () {
 it('rejects share creation with invalid share_type', function () {
     $asset = Asset::factory()->create();
 
-    $this->postJson(route('admin.dam.shares.store'), [
+    $this->postJson(route('admin.dam.shared-links.store'), [
         'share_type' => 'banana',
         'target_id'  => $asset->id,
     ])->assertUnprocessable();
@@ -86,14 +86,14 @@ it('revokes a share', function () {
     $asset = Asset::factory()->create();
     $share = Share::factory()->forAsset($asset->id)->create();
 
-    $response = $this->patch(route('admin.dam.shares.revoke', $share->id));
+    $response = $this->patch(route('admin.dam.shared-links.revoke', $share->id));
 
     $response->assertOk()->assertJsonPath('success', true);
     expect($share->fresh()->revoked_at)->not->toBeNull();
 });
 
 it('returns 404 when revoking a non-existent share', function () {
-    $this->patch(route('admin.dam.shares.revoke', 999999))
+    $this->patch(route('admin.dam.shared-links.revoke', 999999))
         ->assertNotFound();
 });
 
@@ -101,7 +101,7 @@ it('hard-deletes a share', function () {
     $asset = Asset::factory()->create();
     $share = Share::factory()->forAsset($asset->id)->create();
 
-    $this->delete(route('admin.dam.shares.destroy', $share->id))
+    $this->delete(route('admin.dam.shared-links.destroy', $share->id))
         ->assertOk()
         ->assertJsonPath('success', true);
 
@@ -110,7 +110,7 @@ it('hard-deletes a share', function () {
 });
 
 it('returns 404 when hard-deleting a non-existent share', function () {
-    $this->delete(route('admin.dam.shares.destroy', 999999))
+    $this->delete(route('admin.dam.shared-links.destroy', 999999))
         ->assertNotFound();
 });
 
@@ -119,7 +119,7 @@ it('lists active shares for a target', function () {
     Share::factory()->forAsset($asset->id)->create();
     Share::factory()->forAsset($asset->id)->revoked()->create();
 
-    $response = $this->get(route('admin.dam.shares.active_for_target', [
+    $response = $this->get(route('admin.dam.shared-links.active_for_target', [
         'type'     => Share::TYPE_ASSET,
         'targetId' => $asset->id,
     ]));

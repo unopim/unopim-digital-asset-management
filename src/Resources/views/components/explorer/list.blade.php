@@ -284,8 +284,7 @@ app.component('v-dam-explorer-list', {
             setTimeout(() => ghost.remove(), 0);
             return ghost;
         },
-        // Keep the drag image inside the viewport, anchored under the cursor.
-        // Rendering it off-screen makes Chrome capture a clipped snapshot.
+
         _anchorDragGhost(ghost, e, anchorX, anchorY) {
             ghost.style.left = `${Math.min(Math.max(0, e.clientX - anchorX), window.innerWidth - ghost.offsetWidth)}px`;
             ghost.style.top = `${Math.min(Math.max(0, e.clientY - anchorY), window.innerHeight - ghost.offsetHeight)}px`;

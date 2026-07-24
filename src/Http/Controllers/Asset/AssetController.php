@@ -47,9 +47,6 @@ class AssetController extends Controller
         protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
-    /**
-     * Resolve the directory id an asset belongs to.
-     */
     protected function assetDirectoryId(?Asset $asset): ?int
     {
         if (! $asset) {
@@ -61,9 +58,6 @@ class AssetController extends Controller
         return $dirId ? (int) $dirId : null;
     }
 
-    /**
-     * Whether the current admin can act on this asset based on its directory.
-     */
     protected function canActOnAsset(?Asset $asset): bool
     {
         if ($this->permissionService->bypass()) {
@@ -79,7 +73,6 @@ class AssetController extends Controller
         return $this->permissionService->canAccess($dirId);
     }
 
-    /** Main route. */
     public function index()
     {
         if (request()->ajax()) {
@@ -89,7 +82,6 @@ class AssetController extends Controller
         return view('dam::asset.index');
     }
 
-    /** Show the form for editing the specified resource. */
     public function edit(int $id)
     {
         $asset = $this->assetRepository->find($id);
@@ -142,7 +134,6 @@ class AssetController extends Controller
         return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors', 'directory'));
     }
 
-    /** Get next and previous assets scoped to the asset's directory. */
     protected function getNextAndPreviousAssets($asset, $id, ?Directory $directory = null)
     {
         $assetModel = $this->assetRepository->model();
@@ -158,7 +149,6 @@ class AssetController extends Controller
         return $asset;
     }
 
-    /** Get metadata for a given asset id. */
     public function getMetadataById($id)
     {
         try {
@@ -201,9 +191,6 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Flatten scalar EXIF entries into the top-level metadata array.
-     */
     private function flattenExifMetadata(array $metaData): array
     {
         if (! isset($metaData['exif']) || ! is_array($metaData['exif'])) {
@@ -221,7 +208,6 @@ class AssetController extends Controller
         return array_merge($flatExif, $metaData);
     }
 
-    /** Upload the asset. */
     public function upload(Request $request)
     {
         set_time_limit(0);
@@ -355,9 +341,6 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Extract embedded cover art from audio assets and store its path in meta_data.
-     */
     private function attachAudioCoverArt(Asset $asset, ?string $localFilePath, ?string $mimeType, array $metaData, string $disk): void
     {
         if (! str_starts_with($mimeType ?? '', 'audio/')) {
@@ -381,9 +364,6 @@ class AssetController extends Controller
         $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
     }
 
-    /**
-     * Upload a folder, recreating its directory structure inside a DAM directory.
-     */
     public function uploadFolder(Request $request): JsonResponse
     {
         abort_unless(
@@ -610,7 +590,6 @@ class AssetController extends Controller
         }
     }
 
-    /** Re-upload the asset. */
     public function reUpload(Request $request)
     {
         set_time_limit(0);
@@ -718,9 +697,6 @@ class AssetController extends Controller
         ], 201);
     }
 
-    /**
-     * Resolve the upload session (tracker) for this request, if any.
-     */
     protected function resolveUploadTracker(Request $request, int $directoryId): ?UploadTracker
     {
         $sessionUuid = $request->input('session_uuid');
@@ -745,9 +721,6 @@ class AssetController extends Controller
         return $tracker->isActive() ? $tracker : null;
     }
 
-    /**
-     * Queue background finalisation for a freshly-uploaded asset.
-     */
     protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
     {
         $batchId = null;
@@ -763,9 +736,6 @@ class AssetController extends Controller
         ProcessAssetUpload::dispatch($asset->id, $batchId);
     }
 
-    /**
-     * Dispatch a queued job to generate a thumbnail for non-image media.
-     */
     protected function dispatchThumbnailJob(?Asset $asset): void
     {
         if (! $asset) {
@@ -783,9 +753,6 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Display the asset as a JSON payload for SPA navigation.
-     */
     public function show($id): JsonResponse
     {
         $asset = Asset::find($id);
@@ -883,7 +850,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /** Update the asset. */
     public function update(Request $request, $id)
     {
         $asset = Asset::find($id);
@@ -913,14 +879,11 @@ class AssetController extends Controller
 
         $asset->update($request->only(['file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'path']));
 
-        return response()->json([
-            'success' => true,
-            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'),
-            'asset'   => $asset,
-        ]);
+        return redirect()
+            ->back()
+            ->with('success', trans('dam::app.admin.dam.asset.datagrid.update-success'));
     }
 
-    /** Delete asset. */
     public function destroy($id)
     {
         $asset = Asset::find($id);
@@ -970,9 +933,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Mass delete assets.
-     */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
         $assetIds = $massDestroyRequest->input('indices');
@@ -1045,9 +1005,6 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Mass update assets.
-     */
     public function massUpdate(MassUpdateRequest $massUpdateRequest): JsonResponse
     {
         $data = $massUpdateRequest->all();
@@ -1065,7 +1022,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /** Download. */
     public function download(int $id)
     {
         $asset = Asset::find($id);
@@ -1093,7 +1049,6 @@ class AssetController extends Controller
         return Storage::disk($disk)->download($asset->path);
     }
 
-    /** Download asset wrapped in a ZIP archive. */
     public function downloadCompressed(int $id)
     {
         $asset = Asset::find($id);
@@ -1121,7 +1076,6 @@ class AssetController extends Controller
         return response()->download($zipPath, $baseName.'.zip')->deleteFileAfterSend(true);
     }
 
-    /** Custom download for images, allowing size and format adjustments. */
     public function customDownload(Request $request, int $id)
     {
         $format = $request->query('format', null);
@@ -1201,9 +1155,6 @@ class AssetController extends Controller
         return Storage::disk($disk)->download($asset->path);
     }
 
-    /**
-     * Rename asset file name.
-     */
     public function rename(Request $request): JsonResponse
     {
         $request->validate([
@@ -1286,9 +1237,6 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Moved asset directory location.
-     */
     public function moved(Request $request): JsonResponse
     {
         $id = $request->input('move_item_id');
@@ -1354,9 +1302,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Clear cached thumbnails, previews and cover art for an asset path.
-     */
     private function clearAssetCache(string $path, string $disk, ?int $assetId = null): void
     {
         Storage::disk($disk)->delete('thumbnails/'.$path);
@@ -1385,9 +1330,6 @@ class AssetController extends Controller
         return $kilobytes.' KB';
     }
 
-    /**
-     * Mapped asset with directory.
-     */
     protected function mappedWithDirectory($assetIds, $directoryId): ?Directory
     {
         $directory = $this->directoryRepository->find($directoryId);

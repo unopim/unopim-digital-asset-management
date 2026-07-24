@@ -5,7 +5,6 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** Background asset-upload session mirroring the core DataTransfer job_track state machine. */
 class UploadTracker extends Model
 {
     const STATE_PENDING = 'pending';
@@ -41,17 +40,11 @@ class UploadTracker extends Model
         'completed_at' => 'datetime',
     ];
 
-    /**
-     * Per-asset finalisation rows for this session.
-     */
     public function batches(): HasMany
     {
         return $this->hasMany(UploadBatch::class, 'upload_tracker_id');
     }
 
-    /**
-     * Whether a queued job should abort before touching the asset.
-     */
     public function shouldStop(): bool
     {
         return in_array($this->state, [
@@ -61,9 +54,6 @@ class UploadTracker extends Model
         ], true);
     }
 
-    /**
-     * Whether the session can still make progress or be resumed.
-     */
     public function isActive(): bool
     {
         return in_array($this->state, [

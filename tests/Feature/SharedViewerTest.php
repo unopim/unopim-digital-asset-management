@@ -15,10 +15,6 @@ beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
 });
 
-/**
- * Place a 1x1 PNG at the asset's stored path so the file-streaming public
- * endpoints have something to serve.
- */
 function placeAssetFile(Asset $asset): void
 {
     $disk = Directory::getAssetDisk();
@@ -64,8 +60,7 @@ it('shows the revoked landing for a revoked token', function () {
 });
 
 it('returns the not-found page for an unknown token', function () {
-    // Well-formed (matches the [A-Za-z0-9]{20,64} route regex) but
-    // never persisted, so the controller renders the not-found view.
+
     $this->get(route('dam.share.show', str_repeat('Z', 40)))
         ->assertNotFound()
         ->assertSeeText(trans('dam::app.share.public.not-found-title'));
@@ -98,7 +93,6 @@ it('renders the directory gallery and lists only direct files', function () {
     $assetB = Asset::factory()->create();
     $directory->assets()->attach([$assetA->id, $assetB->id]);
 
-    // An asset in a different directory should NOT appear in this share.
     $otherDir = Directory::factory()->create();
     $assetC = Asset::factory()->create();
     $otherDir->assets()->attach($assetC->id);
@@ -154,7 +148,6 @@ it('does not require authentication for any public share route', function () {
     $asset = Asset::factory()->create();
     $share = Share::factory()->forAsset($asset->id)->create();
 
-    // No login at all
     auth()->logout();
 
     $this->get(route('dam.share.show', $share->token))->assertOk();

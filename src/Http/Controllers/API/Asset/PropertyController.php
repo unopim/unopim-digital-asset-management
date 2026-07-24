@@ -23,7 +23,6 @@ class PropertyController extends Controller
         protected LocaleRepository $localeRepository
     ) {}
 
-    /** Get a property by id. */
     public function properties(int $id)
     {
         $property = $this->assetPropertyRepository->find($id);
@@ -44,7 +43,6 @@ class PropertyController extends Controller
         ], 200);
     }
 
-    /** Create a new property. */
     public function addProperty(int $id)
     {
         $this->damAuthorizeAsset($id);
@@ -100,9 +98,6 @@ class PropertyController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified property.
-     */
     public function update(Request $request, int $id): JsonResponse
     {
         $property = $this->assetPropertyRepository->find($id);
@@ -138,9 +133,6 @@ class PropertyController extends Controller
         }
     }
 
-    /**
-     * Delete the specified property.
-     */
     public function delete(Request $request, int $id): JsonResponse
     {
         $property = $this->assetPropertyRepository->find($id);

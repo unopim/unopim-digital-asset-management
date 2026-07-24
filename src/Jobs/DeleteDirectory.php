@@ -18,14 +18,8 @@ class DeleteDirectory implements ShouldQueue
 {
     use ActionRequestTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /** Create a new instance. */
     public function __construct(protected int $directoryId, protected int $userId) {}
 
-    /**
-     * Delete the directory and its children.
-     *
-     * @return void
-     */
     public function handle()
     {
         if (! $this->checkedUser($this->userId)) {
@@ -43,9 +37,6 @@ class DeleteDirectory implements ShouldQueue
         }
     }
 
-    /**
-     * Delete a directory and its children.
-     */
     public function deleteDirectoryAndChildren(int $directoryId, DirectoryRepository $directoryRepository): void
     {
         $root = $directoryRepository->find($directoryId);

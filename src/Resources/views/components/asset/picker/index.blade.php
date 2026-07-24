@@ -22,7 +22,7 @@
                         @click="navigateBreadcrumb(crumb)"
                         v-text="crumb.name"
                     ></span>
-                    <span v-if="i < breadcrumbs.length - 1" class="text-gray-400">/</span>
+
                 </template>
             </div>
 
@@ -90,7 +90,6 @@
                     isLoading: false,
                     searchDebounceTimer: null,
 
-                    // Directory path shown as a breadcrumb, built by the directory tree.
                     breadcrumbs: [],
 
                     available: {
@@ -137,7 +136,7 @@
                                 {
                                     index: 'all',
                                     value: [],
-                                }, 
+                                },
                             ],
                         },
                     },
@@ -153,7 +152,6 @@
                     this.applied.pagination.page = 1;
                 });
 
-                // Directory tree publishes the current path for the breadcrumb.
                 this.$emitter.on('picker:breadcrumb', (crumbs) => { this.breadcrumbs = crumbs || []; });
 
                 this.$emitter.on('data-grid:refresh', () => this.get())
@@ -170,16 +168,11 @@
             },
 
             methods: {
-                /** Navigate to a directory when a breadcrumb crumb is clicked. */
+
                 navigateBreadcrumb(crumb) {
                     this.$emitter.emit('picker:navigate-directory', { id: crumb.id });
                 },
 
-                /**
-                 * Initialization: This function checks for any previously saved filters in local storage and applies them as needed.
-                 *
-                 * @returns {void}
-                 */
                 boot() {
                     let datagrids = this.getDatagrids();
 
@@ -201,8 +194,6 @@
 
                             this.applied.sort = currentDatagrid.applied.sort;
 
-                            // this.applied.filters = currentDatagrid.applied.filters;
-
                             if (urlParams.has('search')) {
                                 let searchAppliedColumn = this.findAppliedColumn('all');
 
@@ -218,11 +209,6 @@
                     this.get();
                 },
 
-                /**
-                 * Get. This will prepare params from the `applied` props and fetch the data from the backend.
-                 *
-                 * @returns {void}
-                 */
                 get(extraParams = {}) {
                     let params = {
                         pagination: {
@@ -261,9 +247,7 @@
                             }
                         })
                         .then((response) => {
-                            /**
-                             * Precisely taking all the keys to the data prop to avoid adding any extra keys from the response.
-                             */
+
                             const {
                                 id,
                                 columns,
@@ -292,10 +276,6 @@
 
                             this.updateDatagrids();
 
-                            /**
-                             * This event should be fired at the end, but only in the GET method. This allows the export feature to listen to it
-                             * and update its properties accordingly.
-                             */
                             this.$emitter.emit('change-datagrid', {
                                 available: this.available,
                                 applied: this.applied
@@ -317,17 +297,6 @@
                         });
                 },
 
-                /**
-                 * Change Page.
-                 *
-                 * The reason for choosing the numeric approach over the URL approach is to prevent any conflicts with our existing
-                 * URLs. If we were to use the URL approach, it would introduce additional arguments in the `get` method, necessitating
-                 * the addition of a `url` prop. Instead, by using the numeric approach, we can let Axios handle all the query parameters
-                 * using the `applied` prop. This allows for a cleaner and more straightforward implementation.
-                 *
-                 * @param {string|integer} directionOrPageNumber
-                 * @returns {void}
-                 */
                 changePage(directionOrPageNumber) {
                     let newPage;
 
@@ -349,9 +318,6 @@
                         return;
                     }
 
-                    /**
-                     * Check if the `newPage` is within the valid range.
-                     */
                     if (newPage >= 1 && newPage <= this.available.meta.last_page) {
                         this.applied.pagination.page = newPage;
 
@@ -361,18 +327,9 @@
                     }
                 },
 
-                /**
-                 * Change per page option.
-                 *
-                 * @param {integer} option
-                 * @returns {void}
-                 */
                 changePerPageOption(option) {
                     this.applied.pagination.perPage = option;
 
-                    /**
-                     * When the total records are less than the number of data per page, we need to reset the page.
-                     */
                     if (this.available.meta.last_page >= this.applied.pagination.page) {
                         this.applied.pagination.page = 1;
                     }
@@ -380,12 +337,6 @@
                     this.get();
                 },
 
-                /**
-                 * Sort Page.
-                 *
-                 * @param {object} column
-                 * @returns {void}
-                 */
                 sortPage(column) {
                     if (column.sortable) {
                         this.applied.sort = {
@@ -393,23 +344,12 @@
                             order: this.applied.sort.order === 'asc' ? 'desc' : 'asc',
                         };
 
-                        /**
-                         * When the sorting changes, we need to reset the page.
-                         */
                         this.applied.pagination.page = 1;
 
                         this.get();
                     }
                 },
 
-                /**
-                 * Filter Page.
-                 *
-                 * @param {object} $event
-                 * @param {object} column
-                 * @param {object} additional
-                 * @returns {void}
-                 */
                 filterPage($event, column = null, additional = {}) {
                     let quickFilter = additional?.quickFilter;
 
@@ -437,10 +377,7 @@
                                 break;
                         }
                     } else {
-                        /**
-                         * Here, either a real event will come or a string value. If a string value is present, then
-                         * we create a similar event-like structure to avoid any breakage and make it easy to use.
-                         */
+
                         if ($event?.target?.value === undefined) {
                             $event = {
                                 target: {
@@ -456,9 +393,6 @@
                         }
                     }
 
-                    /**
-                     * We need to reset the page on filtering.
-                     */
                     this.applied.pagination.page = 1;
                     if ('search' == $event.srcElement.name) {
                         this.get();
@@ -477,11 +411,6 @@
                 applyFilter(column, requestedValue, additional = {}) {
                     let appliedColumn = this.findAppliedColumn(column?.index);
 
-                    /**
-                     * If no column is found, it means that search from the toolbar have been
-                     * activated. In this case, we will search for `all` indices and update the
-                     * value accordingly.
-                     */
                     if (! column) {
                         let appliedColumn = this.findAppliedColumn('all');
 
@@ -500,13 +429,8 @@
                             });
                         }
 
-                        /**
-                         * Else, we will look into the sidebar filters and update the value accordingly.
-                         */
                     } else {
-                        /**
-                         * Here if value already exists, we will not do anything.
-                         */
+
                         if (
                             requestedValue === undefined ||
                             requestedValue === '' ||
@@ -589,9 +513,6 @@
 
                     appliedColumn.value = appliedColumn?.value.filter(value => value !== appliedColumnValue);
 
-                    /**
-                     * Clean up is done here. If there are no applied values present, there is no point in including the applied column as well.
-                     */
                     if (!appliedColumn.value.length) {
                         this.applied.filters.columns = this.applied.filters.columns.filter(column => column
                             .index !== columnIndex);

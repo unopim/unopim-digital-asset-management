@@ -169,7 +169,6 @@
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
         </div>
 
-        {{-- Another tab has a selection in this folder — offer to select the same items here --}}
         <div
             v-if="showForeignSelectionOffer"
             class="flex items-center gap-2 px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 rounded-lg text-violet-700 dark:text-violet-300"
@@ -182,8 +181,6 @@
             >@lang('dam::app.admin.explorer.foreign-selection.action')</button>
         </div>
 
-        {{-- Content area — v-dam-drop-upload handles OS file/folder drops and is
-             the single upload manager; toolbar uploads enqueue into it via $refs. --}}
         <v-dam-drop-upload
             ref="dropUpload"
             class="flex-1 overflow-y-auto flex flex-col"
@@ -356,8 +353,7 @@ app.component('v-dam-tab', {
         canAccessCurrentDir() {
             return this.aclBypass || !!(this.meta?.can_access_current);
         },
-        // Another tab has a selection in the directory shown here — offer to select the
-        // same items in this tab (shown only while this tab has no selection of its own).
+
         foreignSelectionCount() {
             const f = this.currentDirId != null ? this.foreignSelections[this.currentDirId] : null;
             return f ? f.ids.length : 0;
@@ -386,7 +382,7 @@ app.component('v-dam-tab', {
     },
 
     watch: {
-        // Ask other tabs whether they have a selection in the directory this tab just opened.
+
         currentDirId(id) {
             if (id != null) this.$emitter.emit('dam:selection-query', { directoryId: id, requesterId: this.tabId });
         },
@@ -411,15 +407,11 @@ app.component('v-dam-tab', {
         this._onSidebarVisibility = (visible) => { this.sidebarVisible = visible; };
         this.$emitter.on('dam:sidebar-visibility-changed', this._onSidebarVisibility);
 
-        // Keep the toolbar star's bookmarked-state in sync with the bookmarks
-        // panel (the source of truth), whichever way a bookmark is added/removed.
         this._onBookmarksChanged = (ids) => { this.bookmarkedDirIds = ids ?? []; };
         this.$emitter.on('dam:bookmarks-changed', this._onBookmarksChanged);
 
         this.$emitter.on(`dam:explorer-ctx-refresh:${this.tabId}`, () => this.fetch());
 
-        // Track other tabs' selections in the same directory so this tab can offer to
-        // select the same items too.
         this._onForeignSelectionActive = ({ tabId, directoryId, ids }) => {
             if (tabId === this.tabId) return;
             this.foreignSelections[directoryId] = { tabId, ids: ids ?? [] };
@@ -437,8 +429,6 @@ app.component('v-dam-tab', {
         this.$emitter.on('dam:selection-cleared', this._onForeignSelectionCleared);
         this.$emitter.on('dam:selection-query', this._onSelectionQuery);
 
-        // Shared tag modal finished assigning tags to assets selected in THIS tab —
-        // clear the selection and refresh so the change is reflected.
         this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
             if (context !== `explorer:${this.tabId}`) return;
             this.clearSelection();
@@ -459,8 +449,6 @@ app.component('v-dam-tab', {
         });
         this.$emitter.on('dam:directory-mutated', () => this.fetch());
 
-        // Tree "Upload files" → route the pre-built FormData through the unified
-        // upload manager so it shows the same progress panel as every other upload.
         this.$emitter.on('dam:upload-files', (formData) => {
             const files = formData.getAll('files[]');
             if (! files.length) return;
@@ -472,8 +460,6 @@ app.component('v-dam-tab', {
             });
         });
 
-        // Refresh the listing whenever the upload manager finishes a batch that
-        // targeted this tab's current directory.
         this.$emitter.on('dam:uploads-refresh', ({ directoryId } = {}) => {
             if (! directoryId || Number(directoryId) === Number(this.currentDirId)) this.fetch();
         });
@@ -539,15 +525,13 @@ app.component('v-dam-tab', {
         });
 
         if (this.currentDirId) {
-            // Sync tree to the current directory before it loads so that
-            // setDefaultSeletedItem (which navigates to root) is suppressed.
+
             this.$emitter.emit('dam:explorer-tree-sync', { id: this.currentDirId });
-            // Seed history so the first navigation after reload has a valid Back state.
-            // fetch() will backfill the breadcrumb once the API responds.
+
             this.navHistory.push({ dirId: this.currentDirId, breadcrumb: [] });
             this.navIdx = 0;
             this.fetch();
-            // The watch only fires on change, so discover existing selections for the initial dir.
+
             this.$emitter.emit('dam:selection-query', { directoryId: this.currentDirId, requesterId: this.tabId });
         } else {
             this.loadRoot();
@@ -558,7 +542,6 @@ app.component('v-dam-tab', {
         if (this._onSidebarVisibility) this.$emitter.off('dam:sidebar-visibility-changed', this._onSidebarVisibility);
         if (this._onBookmarksChanged) this.$emitter.off('dam:bookmarks-changed', this._onBookmarksChanged);
 
-        // Tell other tabs this tab's selection is gone before it unmounts.
         if (this._heldSelectionDir != null) {
             this.$emitter.emit('dam:selection-cleared', { tabId: this.tabId, directoryId: this._heldSelectionDir });
         }
@@ -578,7 +561,6 @@ app.component('v-dam-tab', {
             this.computeSelectionMode();
         },
 
-        // Select the same items another tab has selected in this directory.
         adoptForeignSelection() {
             const f = this.currentDirId != null ? this.foreignSelections[this.currentDirId] : null;
             if (! f) return;
@@ -604,8 +586,6 @@ app.component('v-dam-tab', {
             this.broadcastSelection();
         },
 
-        // Broadcast this tab's selection (with its items) so other tabs viewing the same
-        // directory can offer to select the same items — or drop the offer when cleared.
         broadcastSelection() {
             if (this.selection.ids.length && this.currentDirId != null) {
                 this._heldSelectionDir = this.currentDirId;
@@ -617,8 +597,7 @@ app.component('v-dam-tab', {
         },
 
         openAssignTagsModal() {
-            // Tag the explicitly selected assets AND every asset inside the selected folders
-            // (recursively, resolved server-side) — so picking folders tags their contents too.
+
             const assetIds     = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
             const directoryIds = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
 
@@ -714,7 +693,7 @@ app.component('v-dam-tab', {
         },
 
         onFolderPickerPicked(payload) {
-            // Picker emits { id, name }; tolerate a bare id for safety.
+
             const targetDirId   = payload?.id ?? payload;
             const targetDirName = payload?.name ?? '';
             const mode = this.folderPicker.mode;
@@ -726,8 +705,6 @@ app.component('v-dam-tab', {
             }
         },
 
-        // Name of the folder currently open in this tab — used as the "source"
-        // in move/copy/delete success alerts.
         currentFolderName() {
             return this.breadcrumb[this.breadcrumb.length - 1]?.name ?? 'Root';
         },
@@ -737,10 +714,8 @@ app.component('v-dam-tab', {
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
             const sourceName = this.currentFolderName();
 
-            // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.moving')", progress: 0, fileCount: null };
 
-            // Fetch actual file count in background; update bar when ready
             this.$axios.post('{{ route("admin.dam.explorer.count_items") }}', {
                 asset_ids: assetIds, directory_ids: dirIds,
             }).then(({ data }) => {
@@ -813,10 +788,8 @@ app.component('v-dam-tab', {
             const dirIds   = this.selection.ids.filter(i => i.type === 'directory').map(i => i.id);
             const sourceName = this.currentFolderName();
 
-            // Show bar immediately with 0% progress so bar is visible from the start
             this.operationOverlay = { show: true, label: "@lang('dam::app.admin.explorer.mass-actions.copying')", progress: 0, fileCount: null };
 
-            // Fetch actual file count in background; update bar when ready
             this.$axios.post('{{ route("admin.dam.explorer.count_items") }}', {
                 asset_ids: assetIds, directory_ids: dirIds,
             }).then(({ data }) => {
@@ -982,7 +955,7 @@ app.component('v-dam-tab', {
             this.page         = 1;
 
             if (isRoot || this.breadcrumb.length === 0) {
-                // Show "… / folder" placeholder — API will replace with full ancestor path
+
                 this.breadcrumb = isRoot
                     ? [{ id: null, name: '…' }, { id: dir.id, name: dir.name ?? '…' }]
                     : [{ id: dir.id, name: dir.name ?? '…' }];
@@ -1045,7 +1018,7 @@ app.component('v-dam-tab', {
         },
 
         bookmark(dir) {
-            // Toggle: remove if this directory is already bookmarked, else add.
+
             if (this.bookmarkedDirIds.map(Number).includes(Number(dir.id))) {
                 this.$emitter.emit('dam:remove-bookmark', { directoryId: dir.id });
                 return;
@@ -1196,8 +1169,6 @@ app.component('v-dam-tab', {
 
         onPage(p) { this.page = p; this.fetch(); },
 
-        {{-- Changing the page size keeps the current selection — the same rows are
-             still there, just paginated differently. --}}
         onPerPage(pp) { this.perPage = pp; this.page = 1; this.fetch(); },
 
         sync() {
@@ -1291,8 +1262,6 @@ app.component('v-dam-tab', {
             const targetDirId = this.uploadTargetDirId ?? this.currentDirId;
             this.uploadTargetDirId = null;
 
-            // Every directory level along each path becomes a folder to create;
-            // files with content become upload jobs. Both flow through the manager.
             const folderPaths = new Set();
             files.forEach(f => {
                 const rel  = f.webkitRelativePath || f.name;

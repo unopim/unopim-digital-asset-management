@@ -1,11 +1,4 @@
-{{--
-    Fullscreen preview modal launched from the DAM grid's eye icon.
 
-    The eye icon on each gallery card emits `dam-open-preview` with the asset id;
-    this component fetches the asset from `admin.dam.assets.show` and delegates
-    rendering to the same viewer-modal, video-player, audio-player, and image-viewer
-    used on the asset edit page — giving identical playback / zoom / rotate behaviour.
---}}
 <v-dam-grid-preview-modal></v-dam-grid-preview-modal>
 
 @pushOnce('scripts')

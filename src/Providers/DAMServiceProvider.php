@@ -42,13 +42,10 @@ class DAMServiceProvider extends ServiceProvider
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
     ];
 
-    /** {@inheritDoc} */
     public function boot(Router $router)
     {
         $router->aliasMiddleware('dam', DAM::class);
 
-        // Named rate limiters for public share routes — separate buckets per IP per route type
-        // so 200 thumbnail requests don't exhaust the bucket used by view/download routes.
         RateLimiter::for('dam-share-thumb', function ($request) {
             return Limit::perMinute(1200)->by('thumb|'.$request->ip());
         });
@@ -128,7 +125,6 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-config');
     }
 
-    /** {@inheritDoc} */
     public function register()
     {
         $helpers = __DIR__.'/../Http/helpers.php';

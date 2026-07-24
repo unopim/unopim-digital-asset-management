@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'I-save',
-            'title'    => 'DAM Configuration',
+            'title'    => 'Configuration',
             'saved'    => 'Matagumpay na nai-save ang pagsasaayos.',
             'general'  => [
                 'title'            => 'Pangkalahatang Mga Setting',

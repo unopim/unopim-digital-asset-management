@@ -14,7 +14,6 @@ it('lists tags with their asset usage count in the datagrid', function () {
 
     Tag::create(['name' => 'unused']);
 
-    // The datagrid feed only returns JSON for XHR requests (request()->ajax()).
     $response = $this->getJson(route('admin.dam.tags.index'), ['X-Requested-With' => 'XMLHttpRequest']);
 
     $response->assertOk();
@@ -159,8 +158,7 @@ it('filters the autocomplete tag list by query', function () {
 });
 
 it('exposes the explorer translation keys introduced for the UI changes', function () {
-    // These must resolve to real strings (not echo the key back) so the
-    // blade @lang() references render correctly instead of leaking raw keys.
+
     foreach ([
         'dam::app.admin.explorer.action-completed',
         'dam::app.admin.explorer.bookmarks.remove',

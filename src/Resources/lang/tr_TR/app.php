@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Kaydet',
-            'title'    => 'DAM Yapılandırması',
+            'title'    => 'Yapılandırma',
             'saved'    => 'Yapılandırma başarıyla kaydedildi.',
             'general'  => [
                 'title'            => 'Genel Ayarlar',

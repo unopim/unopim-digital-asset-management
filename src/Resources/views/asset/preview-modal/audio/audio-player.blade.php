@@ -89,7 +89,6 @@
 
     <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate w-full max-w-xl text-center">@{{ previewData.file_name }}</p>
 
-    <!-- Hidden native audio element driven by Vue -->
     <audio
         ref="audioEl"
         class="hidden"

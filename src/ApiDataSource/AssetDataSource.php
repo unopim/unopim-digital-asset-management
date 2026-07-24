@@ -11,23 +11,13 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetDataSource extends ApiDataSource
 {
-    /** Default sort column of datagrid. */
+
     protected $sortColumn = 'dam_assets.id';
 
-    /**
-     * Create a new DataSource instance.
-     *
-     * @return void
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
     ) {}
 
-    /**
-     * Prepares the query builder for API requests.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
     public function prepareApiQueryBuilder()
     {
         $this->addFilter('file_type', ['='], 'dam_assets');
@@ -42,7 +32,6 @@ class AssetDataSource extends ApiDataSource
         return $this->assetRepository->queryBuilder();
     }
 
-    /** Inject directory permission scope into every query. */
     public function setDefaultFilters($queryBuilder)
     {
         $service = app(DirectoryPermissionService::class);
@@ -68,9 +57,6 @@ class AssetDataSource extends ApiDataSource
         return $queryBuilder;
     }
 
-    /**
-     * Format data for API response.
-     */
     public function formatData(): array
     {
         $paginator = $this->paginator->toArray();
@@ -78,11 +64,6 @@ class AssetDataSource extends ApiDataSource
         return array_map([$this, 'normalizeAsset'], $paginator['data'] ?? []);
     }
 
-    /**
-     * Get asset by its unique code (e.g. file name or identifier).
-     *
-     * @return array
-     */
     public function getByCode(string $code)
     {
         $this->prepareForSingleData();
@@ -109,11 +90,6 @@ class AssetDataSource extends ApiDataSource
         return $this->normalizeAsset($asset);
     }
 
-    /**
-     * Apply custom filters and operators.
-     *
-     * @return Builder
-     */
     public function operatorByFilter($scopeQueryBuilder, $requestedColumn, $value)
     {
         $filterTable = isset($this->fieldFiltersAndOperators[$requestedColumn]['filterTable'])
@@ -161,9 +137,6 @@ class AssetDataSource extends ApiDataSource
         return $scopeQueryBuilder;
     }
 
-    /**
-     * Normalize asset data for API response.
-     */
     protected function normalizeAsset(array $asset): array
     {
         $previewPath = isset($asset['path'])

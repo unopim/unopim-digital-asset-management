@@ -24,9 +24,6 @@ class DirectoryController
         protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
-    /**
-     * List all directories as a tree.
-     */
     public function index(Request $request): JsonResponse
     {
         $directories = $request->boolean('with_assets')
@@ -40,9 +37,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Store a newly created directory.
-     */
     public function store(DirectoryRequest $request): JsonResponse
     {
         $parentDirectoryId = $request->input('parent_id', 1);
@@ -98,9 +92,6 @@ class DirectoryController
         $this->permissionService->flush();
     }
 
-    /**
-     * Get a directory by its id.
-     */
     public function getDirectory(int $id): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
@@ -124,9 +115,6 @@ class DirectoryController
         ], 200);
     }
 
-    /**
-     * Update the specified directory.
-     */
     public function update(DirectoryRequest $request, int $id): JsonResponse
     {
         if (! $this->permissionService->canAccess($id)) {
@@ -168,9 +156,6 @@ class DirectoryController
         }
     }
 
-    /**
-     * Delete the specified directory.
-     */
     public function destroy(int $id): JsonResponse
     {
         if (! $this->permissionService->canAccess($id)) {

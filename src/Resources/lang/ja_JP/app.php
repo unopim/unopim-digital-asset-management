@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => '保存',
-            'title'    => 'DAM 設定',
+            'title'    => '設定',
             'saved'    => '設定を保存しました。',
             'general'  => [
                 'title'            => '一般設定',

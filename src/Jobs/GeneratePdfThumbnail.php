@@ -22,12 +22,8 @@ class GeneratePdfThumbnail implements ShouldQueue
 
     public int $timeout = 120;
 
-    /** Create a new instance. */
     public function __construct(protected int $assetId) {}
 
-    /**
-     * Generate and store a thumbnail image for a PDF asset.
-     */
     public function handle(): void
     {
         $asset = Asset::find($this->assetId);

@@ -198,9 +198,6 @@ class MassMove implements ShouldQueue
         }
     }
 
-    /**
-     * Move every S3 object under a prefix to a new prefix.
-     */
     private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
     {
         foreach (Storage::disk($disk)->allFiles($oldPrefix) as $file) {
@@ -220,9 +217,6 @@ class MassMove implements ShouldQueue
         }
     }
 
-    /**
-     * Replace the storage prefix for every asset in the directory subtree.
-     */
     private function batchReplaceAssetPaths(Directory $directory, string $oldPrefix, string $newPrefix): void
     {
         if ($oldPrefix === $newPrefix) {
@@ -250,9 +244,6 @@ class MassMove implements ShouldQueue
             ]);
     }
 
-    /**
-     * Resolve a unique asset name.
-     */
     private function resolveUniqueName(string $base, string $ext, array &$usedNames): string
     {
         $candidate = $base.$ext;

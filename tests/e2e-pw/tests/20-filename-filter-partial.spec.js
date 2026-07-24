@@ -11,9 +11,6 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
 
-    // Get the visible file name from the first asset card.
-    // h2 sits outside .image-card (sibling div in the v-for wrapper);
-    // use the img alt attribute which Vue binds to record.file_name.
     const firstCard = adminPage.locator('.image-card').first();
     await firstCard.waitFor({ state: 'visible', timeout: 30000 });
     const img = firstCard.locator('img').first();
@@ -22,11 +19,9 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     const baseName = fileName?.split('.')[0]?.trim();
     expect(baseName).toBeTruthy();
 
-    // Open filter panel
     await adminPage.getByText('Filter', { exact: true }).first().click();
     await adminPage.waitForTimeout(500);
 
-    // Fill file name filter with partial name (no extension)
     const fileNameInput = adminPage.getByPlaceholder('File Name').first();
     await fileNameInput.waitFor({ state: 'visible', timeout: 10000 });
 
@@ -41,7 +36,6 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     await adminPage.waitForLoadState('domcontentloaded');
     await adminPage.waitForTimeout(500);
 
-    // Asset should appear in results
     await expect(adminPage.locator('.image-card').first()).toBeVisible({ timeout: 15000 });
     await expect(adminPage.getByText(/\d+ Results/i).first()).toBeVisible();
   });

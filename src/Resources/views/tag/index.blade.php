@@ -6,10 +6,6 @@
     {!! view_render_event('unopim.dam.tags.list.before') !!}
 
     <v-dam-tags-page>
-        <x-admin::layouts.page-header
-            :title="trans('dam::app.admin.dam.tag.index.title')"
-            :description="trans('dam::app.admin.dam.tag.index.description')"
-        />
 
         <x-admin::shimmer.datagrid />
     </v-dam-tags-page>

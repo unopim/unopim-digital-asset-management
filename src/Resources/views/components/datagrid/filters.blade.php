@@ -28,8 +28,8 @@
                             type="button"
                             class="inline-flex w-full cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-800 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
                         >
-                            <span 
-                                class="text-sm text-gray-400 dark:text-gray-400" 
+                            <span
+                                class="text-sm text-gray-400 dark:text-gray-400"
                                 v-text="'@lang('admin::app.components.datagrid.filters.select')'"
                             >
                             </span>
@@ -54,7 +54,7 @@
                     class="flex items-center rounded bg-violet-100 px-2 py-1 font-semibold text-violet-700"
                     v-for="appliedColumnValue in getAppliedColumnValues(column.index)"
                 >
-                    <!-- Retrieving the label from the options based on the applied column value. -->
+
                     <span v-text="column.options.find((option => option.value == appliedColumnValue)).label"></span>
 
                     <span
@@ -95,8 +95,8 @@
                                 type="button"
                                 class="inline-flex w-full cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-800 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400 "
                             >
-                                <span 
-                                    class="text-sm text-gray-400 dark:text-gray-400" 
+                                <span
+                                    class="text-sm text-gray-400 dark:text-gray-400"
                                     v-text="'@lang('admin::app.components.datagrid.filters.select')'"
                                 >
                                 </span>
@@ -121,7 +121,7 @@
                         class="flex items-center rounded bg-violet-100 px-2 py-1 font-semibold text-violet-700"
                         v-for="appliedColumnValue in getAppliedColumnValues(column.index)"
                     >
-                        <!-- Retrieving the label from the options based on the applied column value. -->
+
                         <span v-text="column.options.params.options.find((option => option.value == appliedColumnValue)).label"></span>
 
                         <span
@@ -155,12 +155,12 @@
                 </div>
 
                 <div class="mb-2 mt-1.5">
-                    <v-datagrid-searchable-dropdown
+                    <v-dam-datagrid-searchable-dropdown
                         :datagrid-id="available.id"
                         :column="column"
                         @select-option="filterPage($event, column)"
                     >
-                    </v-datagrid-searchable-dropdown>
+                    </v-dam-datagrid-searchable-dropdown>
                 </div>
 
                 <div class="mb-4 flex gap-2 flex-wrap">
@@ -397,7 +397,7 @@
 </div>
 
 @pushOnce('scripts')
-    <script type="text/x-template" id="v-datagrid-searchable-dropdown-template">
+    <script type="text/x-template" id="v-dam-datagrid-searchable-dropdown-template">
         <x-admin::dropdown ::close-on-click="false">
             <x-slot:toggle>
                 <button
@@ -405,7 +405,7 @@
                     class="inline-flex w-full cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-800 px-2.5 py-1.5 text-center leading-6 text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-400 focus:border-gray-400 dark:focus:border-gray-400"
                 >
                     <span
-                        class="text-sm text-gray-400 dark:text-gray-400" 
+                        class="text-sm text-gray-400 dark:text-gray-400"
                         v-text="'@lang('admin::app.components.datagrid.filters.select')'"
                     >
                     </span>
@@ -462,8 +462,8 @@
     </script>
 
     <script type="module">
-        app.component('v-datagrid-searchable-dropdown', {
-            template: '#v-datagrid-searchable-dropdown-template',
+        app.component('v-dam-datagrid-searchable-dropdown', {
+            template: '#v-dam-datagrid-searchable-dropdown-template',
 
             props: ['datagridId', 'column'],
 

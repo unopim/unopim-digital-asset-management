@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Opslaan',
-            'title'    => 'DAM-configuratie',
+            'title'    => 'Configuratie',
             'saved'    => 'Configuratie succesvol opgeslagen.',
             'general'  => [
                 'title'            => 'Algemene instellingen',

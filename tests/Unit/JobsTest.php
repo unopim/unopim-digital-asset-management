@@ -14,9 +14,6 @@ beforeEach(function () {
     $this->loginAsAdmin();
 });
 
-/**
- * Helper to create a pending ActionRequest for the current user.
- */
 function createPendingActionRequest(string $eventType): void
 {
     ActionRequest::create([
@@ -25,8 +22,6 @@ function createPendingActionRequest(string $eventType): void
         'admin_id'   => auth()->id(),
     ]);
 }
-
-// DeleteDirectory Job Tests
 
 it('dispatches delete directory job', function () {
     Bus::fake();
@@ -74,8 +69,6 @@ it('delete directory job deletes directory and its assets', function () {
     $this->assertDatabaseMissing('dam_directories', ['id' => $directoryId]);
 });
 
-// CopyDirectoryStructure Job Tests
-
 it('dispatches copy directory structure job', function () {
     Bus::fake();
 
@@ -115,8 +108,6 @@ it('copy directory structure creates a new directory with copy suffix', function
         'parent_id' => $parent->id,
     ]);
 });
-
-// MoveDirectoryStructure Job Tests
 
 it('dispatches move directory structure job', function () {
     Bus::fake();

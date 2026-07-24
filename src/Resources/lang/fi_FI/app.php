@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Tallenna',
-            'title'    => 'DAM-asetukset',
+            'title'    => 'Asetukset',
             'saved'    => 'Asetukset tallennettu onnistuneesti.',
             'general'  => [
                 'title'            => 'Yleiset asetukset',

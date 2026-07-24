@@ -8,7 +8,7 @@ use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 
 class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
 {
-    /** Constructor for object creation. */
+
     public function __construct(
         AttributeService $attributeService,
         protected AssetRepository $assetRepository
@@ -16,9 +16,6 @@ class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
         parent::__construct($attributeService);
     }
 
-    /**
-     * Normalize attribute data with options for product.
-     */
     public function normalizeAttributes(array $attributeValues, array $options = []): array
     {
         $values = [];

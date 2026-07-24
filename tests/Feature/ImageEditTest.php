@@ -12,7 +12,6 @@ beforeEach(function () {
     Storage::fake($this->disk);
 });
 
-// Helper: create asset backed by a real PNG in fake storage
 function imageAsset(string $disk, string $ext = 'png'): Asset
 {
     $file = UploadedFile::fake()->image("test.{$ext}", 200, 200);
@@ -26,8 +25,6 @@ function imageAsset(string $disk, string $ext = 'png'): Asset
         'file_type' => 'image',
     ]);
 }
-
-// ── Resize / Crop ─────────────────────────────────────────────────────────
 
 it('should resize an image by width', function () {
     $asset = imageAsset($this->disk);
@@ -104,8 +101,6 @@ it('should reject negative crop coordinates', function () {
     ])->assertStatus(422);
 });
 
-// ── Adjust ────────────────────────────────────────────────────────────────
-
 it('should apply brightness adjustment', function () {
     $asset = imageAsset($this->disk);
 
@@ -168,8 +163,6 @@ it('should return 404 when adjust targets a non-existent asset', function () {
     $this->postJson(route('admin.dam.assets.image_edit.adjust', 99999), ['brightness' => 10])
         ->assertNotFound();
 });
-
-// ── Transform ─────────────────────────────────────────────────────────────
 
 it('should rotate image 90 degrees', function () {
     $asset = imageAsset($this->disk);
@@ -235,8 +228,6 @@ it('should return 404 when transform targets a non-existent asset', function () 
         ->assertNotFound();
 });
 
-// ── Filters ───────────────────────────────────────────────────────────────
-
 it('should apply greyscale filter', function () {
     $asset = imageAsset($this->disk);
 
@@ -282,8 +273,6 @@ it('should return 404 when filters targets a non-existent asset', function () {
     $this->postJson(route('admin.dam.assets.image_edit.filters', 99999), ['greyscale' => true])
         ->assertNotFound();
 });
-
-// ── Background – validation and platform resolution ───────────────────────
 
 it('should return 422 when bg-color has missing required fields', function () {
     $asset = imageAsset($this->disk);

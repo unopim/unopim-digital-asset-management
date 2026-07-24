@@ -687,7 +687,7 @@ return [
         ],
         'configuration' => [
             'save-btn' => 'Lưu',
-            'title'    => 'Cấu hình DAM',
+            'title'    => 'Cấu hình',
             'saved'    => 'Đã lưu cấu hình thành công.',
             'general'  => [
                 'title'            => 'Cài đặt chung',

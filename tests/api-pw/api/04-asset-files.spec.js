@@ -1,12 +1,4 @@
-/**
- * File operations — upload (multiple types), download (signed-URL flow),
- * reupload/replace, and file-validation edge cases (invalid type, empty file,
- * large file).
- *
- * Where the server's acceptance policy for a given file isn't guaranteed by the
- * routes/tests we read, assertions accept the documented set of valid outcomes
- * rather than over-specifying a behaviour that may be config-dependent.
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -44,7 +36,7 @@ test.describe('Upload — file types', () => {
 test.describe('Upload — validation & edge cases', () => {
   test('empty file upload', async ({ api }) => {
     const res = await assetHelper.upload(api, { file: testData.syntheticFile.empty(), directoryId });
-    // Either accepted as a 0-byte asset or rejected by validation — both valid.
+
     expect([STATUS.CREATED, STATUS.UNPROCESSABLE_ENTITY, STATUS.BAD_REQUEST]).toContain(res.status);
   });
 
@@ -74,7 +66,6 @@ test.describe('Download (signed-URL flow)', () => {
     expect(dl.body.success).toBe(true);
     expect(dl.body.data.download_url).toContain('signature=');
 
-    // The signed URL is public (signed middleware) — fetch it without a token.
     const streamed = await anonApi.get(dl.body.data.download_url);
     expect(streamed.status).toBe(STATUS.OK);
   });

@@ -9,13 +9,6 @@ beforeEach(function () {
     $this->loginAsAdmin();
 });
 
-/**
- * The DAM tab dispatches grants via the global `user.role.update.after` and
- * `user.role.create.after` events fired by Admin's RoleController. We exercise
- * that listener directly by dispatching the event with a faked request payload
- * — no need to drive the full HTTP form, which would couple the test to the
- * Admin package's blade structure.
- */
 function dispatchRoleUpdateWith(array $payload, Role $role): void
 {
     request()->replace($payload);
@@ -53,8 +46,6 @@ it('leaves existing grants untouched when the marker is absent', function () {
         'updated_at'   => now(),
     ]);
 
-    // Submission without the marker — simulates a permission_type='all' save
-    // where the tab's v-if hides the hidden input.
     dispatchRoleUpdateWith([
         'directories' => [],
     ], $role);
@@ -224,13 +215,11 @@ it('preserves explicit child grants when inherit_children strips expanded descen
     $child = Directory::create(['name' => 'PreserveChild', 'parent_id' => $parent->id]);
     $grandchild = Directory::create(['name' => 'PreserveGrand', 'parent_id' => $child->id]);
 
-    // Seed: parent + child both explicitly in DB (child was auto-granted by User B)
     DB::table('dam_directory_role')->insert([
         ['directory_id' => $parent->id, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()],
         ['directory_id' => $child->id, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()],
     ]);
 
-    // Form submits parent + child + grandchild (grandchild added by inherit expansion)
     dispatchRoleUpdateWith([
         'dam_directory_grants_managed' => '1',
         'dam_inherit_children'         => '1',

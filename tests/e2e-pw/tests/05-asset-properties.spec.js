@@ -1,16 +1,11 @@
 const { test, expect } = require('../utils/fixtures');
 const { navigateTo, generateUid, ensureAssetExists } = require('../utils/helpers');
 
-/**
- * Helper: Navigate to the Properties tab of the first asset.
- * Uses hover + edit icon pattern from the gallery view.
- */
 async function navigateToPropertiesTab(page) {
   await navigateTo(page, 'dam');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(2000);
 
-  // Hover over first image card and click edit
   const firstCard = page.locator('.image-card').first();
   await firstCard.waitFor({ state: 'visible', timeout: 20000 });
   await firstCard.hover();
@@ -19,11 +14,10 @@ async function navigateToPropertiesTab(page) {
   await page.waitForURL(/admin\/dam\/assets\/edit\/\d+/, { timeout: 30000 });
   await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
 
-  // Click Properties tab
   const propsTab = page.locator('#app').getByText('Properties').first();
   await propsTab.click();
   await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
-  // Ensure the "Create Property" button is from the real component, not shimmer
+
   await page.getByRole('button', { name: 'Create Property' }).waitFor({ state: 'visible', timeout: 15000 });
 }
 
@@ -73,10 +67,8 @@ test.describe('DAM Asset Properties', () => {
     await adminPage.getByRole('button', { name: 'Create Property' }).click();
     await adminPage.waitForTimeout(500);
 
-    // Fill Name
     await adminPage.getByPlaceholder('Name').fill(propName);
 
-    // Select Type — custom combobox component
     const typeCombo = adminPage.getByRole('combobox').filter({ hasText: 'Type' });
     await typeCombo.click();
     await adminPage.waitForTimeout(500);
@@ -85,7 +77,6 @@ test.describe('DAM Asset Properties', () => {
     await textOption.click();
     await adminPage.waitForTimeout(300);
 
-    // Select Language — custom combobox component
     const langCombo = adminPage.getByRole('combobox').filter({ hasText: 'Language' });
     await langCombo.click();
     await adminPage.waitForTimeout(500);
@@ -94,13 +85,10 @@ test.describe('DAM Asset Properties', () => {
     await langOption.click();
     await adminPage.waitForTimeout(300);
 
-    // Fill Value
     await adminPage.getByPlaceholder('Value').fill(`value_${uid}`);
 
-    // Save
     await adminPage.getByRole('button', { name: 'Save' }).click();
 
-    // Verify success - either toast or modal closes and property appears in grid
     await Promise.any([
       adminPage.locator('#app').getByText(/created successfully/i).first()
         .waitFor({ state: 'visible', timeout: 15000 }),

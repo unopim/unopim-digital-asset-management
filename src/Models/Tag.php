@@ -12,9 +12,6 @@ class Tag extends Model implements TagContract
 
     protected $fillable = ['name'];
 
-    /**
-     * Get the assets associated with the tag.
-     */
     public function assets(): BelongsToMany
     {
         return $this->belongsToMany(Asset::class, 'dam_asset_tag', 'tag_id', 'asset_id');

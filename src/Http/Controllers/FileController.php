@@ -27,14 +27,10 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/** Manages file operations and image thumbnails/previews on the asset disk. */
 class FileController
 {
     private const ASSET_CACHE_SECONDS = 86400;
 
-    /**
-     * Resolve the underlying asset path from a thumbnail/preview path, if any.
-     */
     protected function resolveOriginalAssetPath(string $path): string
     {
         if (Str::startsWith($path, 'thumbnails/')) {
@@ -52,7 +48,6 @@ class FileController
         return $path;
     }
 
-    /** Deny access when the current admin cannot view the asset's directory. */
     protected function assertPathAllowed(string $path)
     {
         $service = app(DirectoryPermissionService::class);
@@ -76,7 +71,6 @@ class FileController
         return null;
     }
 
-    /** Create a new file in the private storage. */
     public function createFile(Request $request)
     {
         abort_unless(
@@ -108,7 +102,6 @@ class FileController
         return response()->json(['path' => $path]);
     }
 
-    /** Remove the specified file from storage. */
     public function deleteFile(Request $request)
     {
         abort_unless(
@@ -135,7 +128,6 @@ class FileController
         }
     }
 
-    /** Update the specified file. */
     public function updateFile(Request $request)
     {
         abort_unless(
@@ -183,7 +175,6 @@ class FileController
         }
     }
 
-    /** Fetch a file from the private storage. */
     public function fetchFile(string $path)
     {
         if (! Auth::check()) {
@@ -213,7 +204,6 @@ class FileController
         }
     }
 
-    /** Generate and return a 300px thumbnail of an image file. */
     public function thumbnail()
     {
         $disk = Directory::getAssetDisk();
@@ -310,9 +300,6 @@ class FileController
         return $this->getDefaultThumbnailImage($path);
     }
 
-    /**
-     * Whether the request looks like a top-level browser navigation rather than a resource fetch.
-     */
     private function isBrowserNavigation(): bool
     {
         $accept = (string) request()->header('Accept', '');
@@ -320,9 +307,6 @@ class FileController
         return str_contains($accept, 'text/html');
     }
 
-    /**
-     * Resolve a URL the browser can navigate to for the underlying asset.
-     */
     private function resolveAssetOpenUrl(string $disk, string $path): ?string
     {
         if ($disk === Directory::ASSETS_DISK_AWS) {
@@ -342,7 +326,6 @@ class FileController
         return route('admin.dam.file.fetch', ['path' => $path]);
     }
 
-    /** Checks if the given file path points to an image file (SVG excluded unless included). */
     private function isImageFile($path, $includeSvg = false)
     {
         $disk = Directory::getAssetDisk();
@@ -360,7 +343,6 @@ class FileController
         return false;
     }
 
-    /** Checks if the given file path points to an SVG image file. */
     private function isSvgFile($path)
     {
         $disk = Directory::getAssetDisk();
@@ -372,7 +354,6 @@ class FileController
         return false;
     }
 
-    /** Returns an HTTP response containing the requested file. */
     private function applyAssetCache($response)
     {
         if ($response instanceof BinaryFileResponse) {
@@ -413,7 +394,6 @@ class FileController
         );
     }
 
-    /** Resize the given image to the specified width while maintaining aspect ratio. */
     private function resizeImage($file, $width)
     {
         $manager = new ImageManager(new Driver);
@@ -421,7 +401,6 @@ class FileController
         return $manager->decode($file)->scale(width: $width);
     }
 
-    /** Generate and return a preview of an image file at a specified custom size. */
     public function preview()
     {
         $disk = Directory::getAssetDisk();
@@ -466,7 +445,6 @@ class FileController
         return $this->getDefaultPreviewImage($path);
     }
 
-    /** Check if the MIME type corresponds to a supported media file. */
     private function isSupportedMediaFile($mimeType)
     {
         return Str::startsWith($mimeType, 'image/') ||
@@ -475,7 +453,6 @@ class FileController
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /** Retrieve a default placeholder image based on the file type and directory prefix. */
     private function getDefaultImage($path, $directoryPrefix)
     {
         $extension = File::extension(basename($path));
@@ -494,7 +471,6 @@ class FileController
         return response()->json(['error' => trans('dam::app.admin.dam.file.not-found')], 404);
     }
 
-    /** Serve the extracted cover art for an audio asset. */
     public function coverArt(int $assetId)
     {
         if (! Auth::check()) {
@@ -525,19 +501,16 @@ class FileController
         return $this->getFileResponse($path);
     }
 
-    /** Retrieve a default thumbnail image based on the file type. */
     public function getDefaultThumbnailImage($path)
     {
         return $this->getDefaultImage($path, 'grid');
     }
 
-    /** Retrieve a default preview image based on the file extension. */
     public function getDefaultPreviewImage($path)
     {
         return $this->getDefaultImage($path, 'preview');
     }
 
-    /** Encode the given image into a format based on the file extension. */
     private function encodeImageByExtension($image, $path)
     {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));

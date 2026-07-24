@@ -1,16 +1,4 @@
-{{--
-    Public share media player.
 
-    Usage:
-        <v-dam-public-player
-            media-url="{{ $inlineUrl }}"
-            mime-type="{{ $mime }}"
-            file-type="{{ $isVideo ? 'video' : 'audio' }}"
-            file-name="{{ $asset->file_name }}"
-            download-url="{{ $downloadUrl }}"
-            cover-art-url="{{ $thumbnailUrl }}"
-        ></v-dam-public-player>
---}}
 
 @pushOnce('styles')
 <style>
@@ -60,12 +48,12 @@
 }
 .audio-canvas-ring { transition: opacity 0.4s ease; }
 .audio-blob-rings  { transition: opacity 0.4s ease; }
-/* Responsive video controls: show all on desktop, hide secondary on mobile */
+
 .dam-ctrl-desktop { display: none; }
 @media (min-width: 525px) {
     .dam-ctrl-desktop { display: flex; }
 }
-/* Tailwind opacity modifier classes not compiled in admin CSS */
+
 .from-black\/90 {
     --tw-gradient-from: rgb(0 0 0 / .9) var(--tw-gradient-from-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(0 0 0 / 0));
