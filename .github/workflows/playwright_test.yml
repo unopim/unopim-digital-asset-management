@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: unopim/unopim
-          ref: 5b74a5ede24862d5f60fae1a7521de99e86cddfa
+          ref: f1a93ed2266818a78157836af356793168fa892f
           path: unopim
 
       - name: Set up Node.js
