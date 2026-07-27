@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Gestionare resurse',
                     'assets'        => 'Resurse',
                     'shares'        => 'Linkuri partajate',
                     'tags'          => 'Etichete',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Previzualizarea a eșuat',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Gestionarea resurselor digitale',
                 'datagrid' => [
                     'file-name'      => 'Nume Fișier',
                     'tags'           => 'Etichete',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Pleacă',
                 'upload-stay-page'               => 'Rămâi',
                 'drop-zone-hint'                 => 'Trageți fișiere sau foldere pentru a încărca',
+                'select-all'                     => 'Selectează tot',
+                'select-directory-to-upload'     => 'Selectează un director pentru încărcare.',
+                'upload-session'                 => [
+                    'uploading'            => 'Se încarcă :total fișier(e)…',
+                    'paused'               => 'În pauză — :done din :total încărcate',
+                    'interrupted'          => ':done din :total încărcate · :interrupted întrerupte',
+                    'failed'               => ':done încărcate, :failed eșuate',
+                    'completed'            => ':done din :total încărcate',
+                    'create-folder-failed' => 'Nu s-a putut crea folderul',
+                ],
                 'drop-zone-no-permission'        => 'Nu aveți permisiunea de a încărca aici.',
                 'upload-complete'                => 'Încărcare completă',
                 'item-upload-complete'           => 'Încărcare completă',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Nu există metadate disponibile',
                     'tags'                  => 'Etichete',
                     'select-tags'           => 'Alege sau Creează o Etichetă',
+                    'tag-attach-success'    => 'Eticheta a fost adăugată cu succes.',
+                    'tag-detach-success'    => 'Eticheta a fost eliminată din resursă cu succes.',
                     'directory-path'        => 'Calea directorului',
                     'no-directory'          => 'Niciun director atribuit',
                     'details'               => 'Detalii',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Fișierul nu a fost găsit pentru afișare',
                     'not-found-to-download'               => 'Fișierul nu a fost găsit pentru descărcare',
                     'edit-success'                        => 'Fișier încărcat cu succes',
+                    'no-file-name'                        => 'fără nume de fișier',
                     'show-success'                        => 'Fișier găsit cu succes',
                     'update-success'                      => 'Fișier actualizat cu succes',
                     'not-found-to-update'                 => 'Fișierul nu există',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Gestionare resurse',
             'asset'            => 'Activ',
             'property'         => 'Proprietate',
             'comment'          => 'Comentariu',
@@ -686,10 +699,11 @@ return [
             '401' => 'Această acțiune nu este autorizată.',
         ],
         'configuration' => [
-            'save-btn' => 'Salvează',
-            'title'    => 'Configurare',
-            'saved'    => 'Configurarea a fost salvată cu succes.',
-            'general'  => [
+            'save-btn'    => 'Salvează',
+            'title'       => 'Configurare',
+            'saved'       => 'Configurarea a fost salvată cu succes.',
+            'description' => 'Configurează setările de gestionare a resurselor digitale (DAM) pentru aplicația ta.',
+            'general'     => [
                 'title'            => 'Setări generale',
                 'description'      => 'Aceste setări controlează experiența generală de navigare DAM.',
                 'explorer-enabled' => [

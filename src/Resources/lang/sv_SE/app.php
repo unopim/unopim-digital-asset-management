@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Tillgångshantering',
                     'assets'        => 'Tillgångar',
                     'shares'        => 'Delade länkar',
                     'tags'          => 'Taggar',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Förhandsgranskning misslyckades',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digital tillgångshantering',
                 'datagrid' => [
                     'file-name'      => 'Filnamn',
                     'tags'           => 'Taggar',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Lämna',
                 'upload-stay-page'               => 'Stanna',
                 'drop-zone-hint'                 => 'Dra filer eller mappar för att ladda upp',
+                'select-all'                     => 'Markera alla',
+                'select-directory-to-upload'     => 'Välj en katalog att ladda upp till.',
+                'upload-session'                 => [
+                    'uploading'            => 'Laddar upp :total fil(er)…',
+                    'paused'               => 'Pausad — :done av :total uppladdade',
+                    'interrupted'          => ':done av :total uppladdade · :interrupted avbrutna',
+                    'failed'               => ':done uppladdade, :failed misslyckades',
+                    'completed'            => ':done av :total uppladdade',
+                    'create-folder-failed' => 'Det gick inte att skapa mappen',
+                ],
                 'drop-zone-no-permission'        => 'Du har inte behörighet att ladda upp här.',
                 'upload-complete'                => 'Uppladdning klar',
                 'item-upload-complete'           => 'Uppladdning klar',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Ingen metadata tillgänglig',
                     'tags'                  => 'Taggar',
                     'select-tags'           => 'Välj eller skapa en tagg',
+                    'tag-attach-success'    => 'Taggen har lagts till.',
+                    'tag-detach-success'    => 'Taggen har tagits bort från tillgången.',
                     'directory-path'        => 'Katalogsökväg',
                     'no-directory'          => 'Ingen katalog tilldelad',
                     'details'               => 'Detaljer',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Filen hittades inte för visning',
                     'not-found-to-download'               => 'Filen hittades inte för nedladdning',
                     'edit-success'                        => 'Fil uppladdad',
+                    'no-file-name'                        => 'inget filnamn',
                     'show-success'                        => 'Fil hittades',
                     'update-success'                      => 'Fil uppdaterad',
                     'not-found-to-update'                 => 'Filen finns inte',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Tillgångshantering',
             'asset'            => 'Tillgång',
             'property'         => 'Egenskap',
             'comment'          => 'Kommentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Den här åtgärden är inte auktoriserad.',
         ],
         'configuration' => [
-            'save-btn' => 'Spara',
-            'title'    => 'Konfiguration',
-            'saved'    => 'Konfigurationen sparades.',
-            'general'  => [
+            'save-btn'    => 'Spara',
+            'title'       => 'Konfiguration',
+            'saved'       => 'Konfigurationen sparades.',
+            'description' => 'Konfigurera inställningarna för digital tillgångshantering (DAM) för din applikation.',
+            'general'     => [
                 'title'            => 'Allmänna inställningar',
                 'description'      => 'Dessa inställningar styr den övergripande DAM-bläddringsupplevelsen.',
                 'explorer-enabled' => [

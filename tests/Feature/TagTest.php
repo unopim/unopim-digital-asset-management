@@ -19,7 +19,7 @@ it('should add a new tag to an asset', function () {
     $response->assertStatus(201)
         ->assertJson([
             'success' => true,
-            'message' => trans('Tag attached successfully'),
+            'message' => trans('dam::app.admin.dam.asset.edit.tag-attach-success'),
         ]);
 
     $this->assertDatabaseHas('dam_tags', ['name' => 'new-tag']);
@@ -72,7 +72,7 @@ it('should remove a tag from an asset', function () {
     $response->assertStatus(201)
         ->assertJson([
             'success' => true,
-            'message' => trans('Tag removed from asset successfully'),
+            'message' => trans('dam::app.admin.dam.asset.edit.tag-detach-success'),
         ]);
 
     expect($asset->refresh()->tags)->toHaveCount(0);

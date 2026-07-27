@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Ressursstyring',
                     'assets'        => 'Ressurser',
                     'shares'        => 'Delte lenker',
                     'tags'          => 'Tagger',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Forhåndsvisning mislyktes',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digital ressursstyring',
                 'datagrid' => [
                     'file-name'      => 'Filnavn',
                     'tags'           => 'Tagger',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Forlat',
                 'upload-stay-page'               => 'Bli',
                 'drop-zone-hint'                 => 'Dra filer eller mapper for å laste opp',
+                'select-all'                     => 'Velg alle',
+                'select-directory-to-upload'     => 'Velg en mappe å laste opp til.',
+                'upload-session'                 => [
+                    'uploading'            => 'Laster opp :total fil(er)…',
+                    'paused'               => 'Satt på pause — :done av :total lastet opp',
+                    'interrupted'          => ':done av :total lastet opp · :interrupted avbrutt',
+                    'failed'               => ':done lastet opp, :failed mislyktes',
+                    'completed'            => ':done av :total lastet opp',
+                    'create-folder-failed' => 'Kunne ikke opprette mappen',
+                ],
                 'drop-zone-no-permission'        => 'Du har ikke tillatelse til å laste opp her.',
                 'upload-complete'                => 'Opplasting fullført',
                 'item-upload-complete'           => 'Opplasting fullført',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Ingen metadata tilgjengelig',
                     'tags'                  => 'Tagger',
                     'select-tags'           => 'Velg eller opprett en tagg',
+                    'tag-attach-success'    => 'Etikett lagt til.',
+                    'tag-detach-success'    => 'Etikett fjernet fra ressursen.',
                     'directory-path'        => 'Mappebane',
                     'no-directory'          => 'Ingen mappe tildelt',
                     'details'               => 'Detaljer',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Filen ble ikke funnet for visning',
                     'not-found-to-download'               => 'Filen ble ikke funnet for nedlasting',
                     'edit-success'                        => 'Fil lastet opp',
+                    'no-file-name'                        => 'ingen filnavn',
                     'show-success'                        => 'Fil funnet',
                     'update-success'                      => 'Fil oppdatert',
                     'not-found-to-update'                 => 'Filen finnes ikke',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Ressursstyring',
             'asset'            => 'Ressurs',
             'property'         => 'Egenskap',
             'comment'          => 'Kommentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Denne handlingen er ikke autorisert.',
         ],
         'configuration' => [
-            'save-btn' => 'Lagre',
-            'title'    => 'Konfigurasjon',
-            'saved'    => 'Konfigurasjon lagret.',
-            'general'  => [
+            'save-btn'    => 'Lagre',
+            'title'       => 'Konfigurasjon',
+            'saved'       => 'Konfigurasjon lagret.',
+            'description' => 'Konfigurer innstillingene for digital ressursstyring (DAM) for applikasjonen din.',
+            'general'     => [
                 'title'            => 'Generelle innstillinger',
                 'description'      => 'Disse innstillingene styrer den generelle DAM-bla-opplevelsen.',
                 'explorer-enabled' => [

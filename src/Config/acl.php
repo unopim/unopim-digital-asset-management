@@ -5,7 +5,7 @@ return [
         'key'   => 'dam',
         'name'  => 'dam::app.admin.acl.menu',
         'route' => 'admin.dam.index',
-        'sort'  => 11,
+        'sort'  => 10,
     ], [
         'key'   => 'dam.asset',
         'name'  => 'dam::app.admin.acl.asset',

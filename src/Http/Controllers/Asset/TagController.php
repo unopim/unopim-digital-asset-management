@@ -76,7 +76,7 @@ class TagController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
-            'message' => trans('Tag attached successfully'),
+            'message' => trans('dam::app.admin.dam.asset.edit.tag-attach-success'),
         ], 201);
     }
 
@@ -123,7 +123,7 @@ class TagController extends Controller
         return response()->json([
             'success' => true,
             'file'    => $asset,
-            'message' => trans('Tag removed from asset successfully'),
+            'message' => trans('dam::app.admin.dam.asset.edit.tag-detach-success'),
         ], 201);
     }
 

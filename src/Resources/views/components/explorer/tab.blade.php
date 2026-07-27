@@ -913,6 +913,8 @@ app.component('v-dam-tab', {
                     ...filterParams,
                 },
             }).then(({ data }) => {
+                this._recoveringToRoot = false;
+
                 this.dirs   = data.directories;
                 this.assets = data.assets;
                 this.meta   = data.meta;
@@ -936,12 +938,34 @@ app.component('v-dam-tab', {
                 this.sync();
             }).catch(err => {
                 const status = err?.response?.status;
-                if (status === 404 || status === 403) {
-                    this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('dam::app.admin.explorer.folder.deleted')" });
-                    this.navHistory = [];
-                    this.navIdx = -1;
-                    this.loadRoot();
+
+                /**
+                 * A directory that no longer exists fails the endpoint's `exists` validation rule,
+                 * which responds 422 — 404 only covers the narrow window where the row disappears
+                 * between validation and lookup. Because 422 was not recovered from, a stale
+                 * `dam_explorer_active_dir` (or a restored tab pointing at a removed folder) left
+                 * the explorer empty on every visit instead of falling back to root.
+                 */
+                if (! [400, 403, 404, 422].includes(status)) {
+                    return;
                 }
+
+                // Recover once. If root itself cannot be loaded, stop rather than loop.
+                if (this._recoveringToRoot) {
+                    return;
+                }
+
+                this._recoveringToRoot = true;
+
+                this.$emitter.emit('add-flash', { type: 'warning', message: "@lang('dam::app.admin.explorer.folder.deleted')" });
+
+                this.navHistory = [];
+                this.navIdx = -1;
+                this.currentDirId = null;
+
+                try { localStorage.removeItem('dam_explorer_active_dir'); } catch {}
+
+                this.loadRoot();
             }).finally(() => { this.loading = false; });
         },
 

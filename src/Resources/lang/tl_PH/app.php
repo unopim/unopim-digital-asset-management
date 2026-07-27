@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Pamamahala ng Asset',
                     'assets'        => 'Mga Asset',
                     'shares'        => 'Mga Shared na Link',
                     'tags'          => 'Mga Tag',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Nabigo ang preview',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Pamamahala ng Digital na Asset',
                 'datagrid' => [
                     'file-name'      => 'Pangalan ng File',
                     'tags'           => 'Mga Tag',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Umalis',
                 'upload-stay-page'               => 'Manatili',
                 'drop-zone-hint'                 => 'I-drag ang mga file o folder para mag-upload',
+                'select-all'                     => 'Piliin Lahat',
+                'select-directory-to-upload'     => 'Pumili ng direktoryo na pag-a-upload-an.',
+                'upload-session'                 => [
+                    'uploading'            => 'Ina-upload ang :total na file…',
+                    'paused'               => 'Naka-pause — :done sa :total ang na-upload',
+                    'interrupted'          => ':done sa :total ang na-upload · :interrupted ang naantala',
+                    'failed'               => ':done ang na-upload, :failed ang nabigo',
+                    'completed'            => ':done sa :total ang na-upload',
+                    'create-folder-failed' => 'Hindi nagawa ang folder',
+                ],
                 'drop-zone-no-permission'        => 'Wala kang pahintulot na mag-upload dito.',
                 'upload-complete'                => 'Kumpleto ang pag-upload',
                 'item-upload-complete'           => 'Kumpleto na ang pag-angkat',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Walang magagamit na metadata',
                     'tags'                  => 'Mga Tag',
                     'select-tags'           => 'Pumili o Gumawa ng Tag',
+                    'tag-attach-success'    => 'Matagumpay na naidagdag ang tag.',
+                    'tag-detach-success'    => 'Matagumpay na naalis ang tag sa asset.',
                     'directory-path'        => 'Landas ng Direktoryo',
                     'no-directory'          => 'Walang direktoryong itinalaga',
                     'details'               => 'Mga Detalye',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Hindi nahanap ang file para sa display',
                     'not-found-to-download'               => 'Hindi nahanap ang file para sa download',
                     'edit-success'                        => 'Matagumpay na Na-upload ang File',
+                    'no-file-name'                        => 'walang pangalan ng file',
                     'show-success'                        => 'Matagumpay na Nahanap ang File',
                     'update-success'                      => 'Matagumpay na Na-update ang File',
                     'not-found-to-update'                 => 'Hindi umiiral ang File',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Pamamahala ng Asset',
             'asset'            => 'Mga Asset',
             'property'         => 'Katangian',
             'comment'          => 'Komento',
@@ -686,10 +699,11 @@ return [
             '401' => 'Hindi awtorisado ang aksyong ito.',
         ],
         'configuration' => [
-            'save-btn' => 'I-save',
-            'title'    => 'Configuration',
-            'saved'    => 'Matagumpay na nai-save ang pagsasaayos.',
-            'general'  => [
+            'save-btn'    => 'I-save',
+            'title'       => 'Configuration',
+            'saved'       => 'Matagumpay na nai-save ang pagsasaayos.',
+            'description' => 'I-configure ang mga setting ng Digital Asset Management (DAM) para sa iyong aplikasyon.',
+            'general'     => [
                 'title'            => 'Pangkalahatang Mga Setting',
                 'description'      => 'Kinokontrol ng mga setting na ito ang pangkalahatang karanasan sa pag-browse ng DAM.',
                 'explorer-enabled' => [

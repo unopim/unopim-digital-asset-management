@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Resurssienhallinta',
                     'assets'        => 'Resurssit',
                     'shares'        => 'Jaetut linkit',
                     'tags'          => 'Tunnisteet',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Esikatselun lataaminen epäonnistui',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digitaalisten resurssien hallinta',
                 'datagrid' => [
                     'file-name'      => 'Tiedoston nimi',
                     'tags'           => 'Tunnisteet',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Poistu',
                 'upload-stay-page'               => 'Jää',
                 'drop-zone-hint'                 => 'Vedä tiedostoja tai kansioita ladataksesi',
+                'select-all'                     => 'Valitse kaikki',
+                'select-directory-to-upload'     => 'Valitse hakemisto, johon ladataan.',
+                'upload-session'                 => [
+                    'uploading'            => 'Ladataan :total tiedosto(a)…',
+                    'paused'               => 'Keskeytetty — :done / :total ladattu',
+                    'interrupted'          => ':done / :total ladattu · :interrupted keskeytynyt',
+                    'failed'               => ':done ladattu, :failed epäonnistui',
+                    'completed'            => ':done / :total ladattu',
+                    'create-folder-failed' => 'Kansion luonti epäonnistui',
+                ],
                 'drop-zone-no-permission'        => 'Sinulla ei ole oikeutta ladata tänne.',
                 'upload-complete'                => 'Lataus valmis',
                 'item-upload-complete'           => 'Lataus valmis',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Metatietoja ei ole saatavilla',
                     'tags'                  => 'Tunnisteet',
                     'select-tags'           => 'Valitse tai luo tunniste',
+                    'tag-attach-success'    => 'Tunniste lisätty.',
+                    'tag-detach-success'    => 'Tunniste poistettu resurssista.',
                     'directory-path'        => 'Hakemistopolku',
                     'no-directory'          => 'Ei hakemistoa määritetty',
                     'details'               => 'Tiedot',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Tiedostoa ei löydy näyttöä varten',
                     'not-found-to-download'               => 'Tiedostoa ei löydy latausta varten',
                     'edit-success'                        => 'Tiedosto lähetetty onnistuneesti',
+                    'no-file-name'                        => 'ei tiedostonimeä',
                     'show-success'                        => 'Tiedosto löydetty onnistuneesti',
                     'update-success'                      => 'Tiedosto päivitetty onnistuneesti',
                     'not-found-to-update'                 => 'Tiedostoa ei ole olemassa',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Resurssienhallinta',
             'asset'            => 'Resurssi',
             'property'         => 'Ominaisuus',
             'comment'          => 'Kommentti',
@@ -686,10 +699,11 @@ return [
             '401' => 'Tähän toimintoon ei ole valtuutusta.',
         ],
         'configuration' => [
-            'save-btn' => 'Tallenna',
-            'title'    => 'Asetukset',
-            'saved'    => 'Asetukset tallennettu onnistuneesti.',
-            'general'  => [
+            'save-btn'    => 'Tallenna',
+            'title'       => 'Asetukset',
+            'saved'       => 'Asetukset tallennettu onnistuneesti.',
+            'description' => 'Määritä sovelluksesi digitaalisten resurssien hallinnan (DAM) asetukset.',
+            'general'     => [
                 'title'            => 'Yleiset asetukset',
                 'description'      => 'Nämä asetukset ohjaavat DAM:n yleistä selailukokemusta.',
                 'explorer-enabled' => [

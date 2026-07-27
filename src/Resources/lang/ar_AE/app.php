@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'إدارة الأصول',
                     'assets'        => 'الأصول',
                     'shares'        => 'الروابط المشتركة',
                     'tags'          => 'الوسوم',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'مغادرة',
                 'upload-stay-page'               => 'ابق',
                 'drop-zone-hint'                 => 'اسحب الملفات أو المجلدات للرفع',
+                'select-all'                     => 'تحديد الكل',
+                'select-directory-to-upload'     => 'اختر دليلاً للرفع إليه.',
+                'upload-session'                 => [
+                    'uploading'            => 'جارٍ رفع :total ملف…',
+                    'paused'               => 'متوقف مؤقتًا — تم رفع :done من :total',
+                    'interrupted'          => 'تم رفع :done من :total · :interrupted متوقف',
+                    'failed'               => 'تم رفع :done، فشل :failed',
+                    'completed'            => 'تم رفع :done من :total',
+                    'create-folder-failed' => 'تعذّر إنشاء المجلد',
+                ],
                 'drop-zone-no-permission'        => 'ليس لديك إذن للتحميل هنا.',
                 'upload-complete'                => 'اكتمل الرفع',
                 'item-upload-complete'           => 'اكتمل الرفع',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'لا توجد بيانات وصفية متاحة',
                     'tags'                  => 'العلامات',
                     'select-tags'           => 'اختر أو أنشئ علامة',
+                    'tag-attach-success'    => 'تمت إضافة الوسم بنجاح.',
+                    'tag-detach-success'    => 'تمت إزالة الوسم من الأصل بنجاح.',
                     'directory-path'        => 'مسار الدليل',
                     'no-directory'          => 'لم يتم تعيين أي دليل',
                     'details'               => 'التفاصيل',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'لم يتم العثور على الملف للعرض',
                     'not-found-to-download'               => 'لم يتم العثور على الملف للتحميل',
                     'edit-success'                        => 'تم تعديل الملف بنجاح',
+                    'no-file-name'                        => 'بدون اسم ملف',
                     'show-success'                        => 'تم العثور على الملف بنجاح',
                     'update-success'                      => 'تم تحديث الملف بنجاح',
                     'not-found-to-update'                 => 'الملف غير موجود',
@@ -686,10 +699,11 @@ return [
             '401' => 'هذا الإجراء غير مصرح به.',
         ],
         'configuration' => [
-            'save-btn' => 'حفظ',
-            'title'    => 'إعدادات',
-            'saved'    => 'تم حفظ الإعدادات بنجاح.',
-            'general'  => [
+            'save-btn'    => 'حفظ',
+            'title'       => 'إعدادات',
+            'saved'       => 'تم حفظ الإعدادات بنجاح.',
+            'description' => 'اضبط إعدادات إدارة الأصول الرقمية (DAM) لتطبيقك.',
+            'general'     => [
                 'title'            => 'الإعدادات العامة',
                 'description'      => 'تتحكم هذه الإعدادات في تجربة تصفح DAM بشكل عام.',
                 'explorer-enabled' => [

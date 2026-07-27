@@ -4,9 +4,9 @@ namespace Webkul\DAM\Helpers\Exporters\Product;
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\Attribute\Repositories\AttributeRepository;
-use Webkul\Attribute\Rules\AttributeTypes;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as BaseExporter;
 use Webkul\DataTransfer\Helpers\Sources\Export\ProductSource;
@@ -32,75 +32,67 @@ class Exporter extends BaseExporter
         );
     }
 
-    protected function setAttributesValues(array $values, mixed $filePath)
+    protected function setAttributesValues(array $values, mixed $filePath, ?string $locale = null): array
     {
-        $attributeValues = [];
+        $attributeValues = parent::setAttributesValues($values, $filePath, $locale);
+
         $filters = $this->getFilters();
-        $withMedia = (bool) $filters['with_media'];
+        $withMedia = (bool) ($filters['with_media'] ?? false);
         $mediaSourceType = $filters['media_source_type'] ?? 'zip';
 
-        foreach ($this->attributes as $key => $attribute) {
-            $attributeCode = $attribute->code;
-
-            if ($attributeCode == 'sku') {
+        foreach ($this->attributeMeta as $meta) {
+            if (($meta['type'] ?? null) !== EventServiceProvider::ASSET_ATTRIBUTE_TYPE) {
                 continue;
             }
 
-            $attributeType = $attribute->type;
+            $code = $meta['code'];
 
-            $attributeValues[$attributeCode] = $values[$attributeCode] ?? null;
-
-            if ($attributeType == AttributeTypes::PRICE_ATTRIBUTE_TYPE) {
-                $priceData = ! empty($attributeValues[$attributeCode]) ? $attributeValues[$attributeCode] : [];
-
-                foreach ($this->currencies as $value) {
-                    $attributeValues[$attributeCode.' ('.$value.')'] = $priceData[$value] ?? null;
-                }
-
-                unset($attributeValues[$attributeCode]);
+            if (! $this->isAttributeValueExported($code)) {
+                continue;
             }
 
-            if (in_array($attributeType, [AttributeTypes::FILE_ATTRIBUTE_TYPE, AttributeTypes::IMAGE_ATTRIBUTE_TYPE, 'asset'])) {
-                $isAssetField = false;
-                $mediaValues = [];
+            $paths = $this->resolveAssetPaths($values[$code] ?? null);
 
-                $exitingFilePaths = $values[$attributeCode] ?? [];
-
-                if ($attributeType === 'asset' && $this->assetRepository && is_string($exitingFilePaths)) {
-                    $assets = str_contains($exitingFilePaths, ',') ? explode(',', $exitingFilePaths) : [$exitingFilePaths];
-
-                    $exitingFilePaths = $this->assetRepository->findWhereIn('id', $assets)->pluck('path')->toArray();
-
-                    $attributeValues[$attributeCode] = implode(', ', $exitingFilePaths);
-
-                    $isAssetField = true;
-                }
-
-                if ($withMedia) {
-                    $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
-
-                    foreach ($exitingFilePaths as $exitingFilePath) {
-                        if ($mediaSourceType == 'url') {
-                            $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
-
-                            continue;
-                        }
-
-                        $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
-
-                        $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
-                    }
-
-                    $attributeValues[$attributeCode] = empty($mediaValues) ? $attributeValues[$attributeCode] : implode(', ', $mediaValues);
-                }
+            if (empty($paths)) {
+                continue;
             }
 
-            if (isset($attributeValues[$attributeCode]) && is_array($attributeValues[$attributeCode])) {
-                $attributeValues[$attributeCode] = implode(', ', $attributeValues[$attributeCode]);
+            if ($withMedia && $mediaSourceType === 'url') {
+                $attributeValues[$code] = implode(', ', array_map(
+                    fn ($path) => $this->makePublicUrlMedia($path, true),
+                    $paths
+                ));
+
+                continue;
+            }
+
+            $attributeValues[$code] = implode(', ', $paths);
+
+            if ($withMedia) {
+                foreach ($paths as $path) {
+                    $this->copyMedia($path, $filePath->getTemporaryPath().'/'.$path, true);
+                }
             }
         }
 
         return $attributeValues;
+    }
+
+    protected function resolveAssetPaths(mixed $rawValue): array
+    {
+        if (empty($rawValue)) {
+            return [];
+        }
+
+        $ids = is_array($rawValue)
+            ? $rawValue
+            : array_filter(array_map('trim', explode(',', (string) $rawValue)), 'strlen');
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        return $this->assetRepository->findWhereIn('id', $ids)->pluck('path')->filter()->values()->all();
     }
 
     public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
@@ -112,7 +104,7 @@ class Exporter extends BaseExporter
         return Storage::url($filePath);
     }
 
-    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
+    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false): void
     {
         $disk = Directory::getAssetDisk();
 

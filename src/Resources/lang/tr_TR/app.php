@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Varlık yönetimi',
                     'assets'        => 'Varlıklar',
                     'shares'        => 'Paylaşılan Bağlantılar',
                     'tags'          => 'Etiketler',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Önizleme başarısız',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Dijital varlık yönetimi',
                 'datagrid' => [
                     'file-name'      => 'Dosya adı',
                     'tags'           => 'Etiketler',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Ayrıl',
                 'upload-stay-page'               => 'Kal',
                 'drop-zone-hint'                 => 'Yüklemek için dosya veya klasörleri sürükleyin',
+                'select-all'                     => 'Tümünü seç',
+                'select-directory-to-upload'     => 'Yükleme yapılacak dizini seçin.',
+                'upload-session'                 => [
+                    'uploading'            => ':total dosya yükleniyor…',
+                    'paused'               => 'Duraklatıldı — :total dosyadan :done yüklendi',
+                    'interrupted'          => ':total dosyadan :done yüklendi · :interrupted kesildi',
+                    'failed'               => ':done yüklendi, :failed başarısız',
+                    'completed'            => ':total dosyadan :done yüklendi',
+                    'create-folder-failed' => 'Klasör oluşturulamadı',
+                ],
                 'drop-zone-no-permission'        => 'Bu konuma yükleme yapma izniniz yok.',
                 'upload-complete'                => 'Yükleme tamamlandı',
                 'item-upload-complete'           => 'Yükleme tamamlandı',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Kullanılabilir meta veri yok',
                     'tags'                  => 'Etiketler',
                     'select-tags'           => 'Bir etiket seçin veya oluşturun',
+                    'tag-attach-success'    => 'Etiket başarıyla eklendi.',
+                    'tag-detach-success'    => 'Etiket varlıktan başarıyla kaldırıldı.',
                     'directory-path'        => 'Dizin Yolu',
                     'no-directory'          => 'Dizin atanmadı',
                     'details'               => 'Detaylar',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Görüntüleme için dosya bulunamadı',
                     'not-found-to-download'               => 'İndirme için dosya bulunamadı',
                     'edit-success'                        => 'Dosya başarıyla yüklendi',
+                    'no-file-name'                        => 'dosya adı yok',
                     'show-success'                        => 'Dosya başarıyla bulundu',
                     'update-success'                      => 'Dosya başarıyla güncellendi',
                     'not-found-to-update'                 => 'Dosya mevcut değil',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Varlık yönetimi',
             'asset'            => 'Varlık',
             'property'         => 'Özellik',
             'comment'          => 'Yorum',
@@ -686,10 +699,11 @@ return [
             '401' => 'Bu işlem için yetkiniz yok.',
         ],
         'configuration' => [
-            'save-btn' => 'Kaydet',
-            'title'    => 'Yapılandırma',
-            'saved'    => 'Yapılandırma başarıyla kaydedildi.',
-            'general'  => [
+            'save-btn'    => 'Kaydet',
+            'title'       => 'Yapılandırma',
+            'saved'       => 'Yapılandırma başarıyla kaydedildi.',
+            'description' => 'Uygulamanız için dijital varlık yönetimi (DAM) ayarlarını yapılandırın.',
+            'general'     => [
                 'title'            => 'Genel Ayarlar',
                 'description'      => 'Bu ayarlar genel DAM gezinme deneyimini kontrol eder.',
                 'explorer-enabled' => [

@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Gestão de recursos',
                     'assets'        => 'Recursos',
                     'shares'        => 'Ligações partilhadas',
                     'tags'          => 'Etiquetas',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Falha na pré-visualização',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Gestão de recursos digitais',
                 'datagrid' => [
                     'file-name'      => 'Nome do Ficheiro',
                     'tags'           => 'Etiquetas',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Sair',
                 'upload-stay-page'               => 'Ficar',
                 'drop-zone-hint'                 => 'Arraste ficheiros ou pastas para carregar',
+                'select-all'                     => 'Selecionar tudo',
+                'select-directory-to-upload'     => 'Selecione um diretório para enviar.',
+                'upload-session'                 => [
+                    'uploading'            => 'Enviando :total arquivo(s)…',
+                    'paused'               => 'Pausado — :done de :total enviados',
+                    'interrupted'          => ':done de :total enviados · :interrupted interrompidos',
+                    'failed'               => ':done enviados, :failed com falha',
+                    'completed'            => ':done de :total enviados',
+                    'create-folder-failed' => 'Falha ao criar a pasta',
+                ],
                 'drop-zone-no-permission'        => 'Não tem permissão para carregar aqui.',
                 'upload-complete'                => 'Carregamento concluído',
                 'item-upload-complete'           => 'Upload concluído',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Nenhum metadado disponível',
                     'tags'                  => 'Etiquetas',
                     'select-tags'           => 'Escolher ou Criar uma Etiqueta',
+                    'tag-attach-success'    => 'Tag adicionada com sucesso.',
+                    'tag-detach-success'    => 'Tag removida do recurso com sucesso.',
                     'directory-path'        => 'Caminho do directório',
                     'no-directory'          => 'Nenhum directório atribuído',
                     'details'               => 'Detalhes',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Ficheiro não encontrado para visualização',
                     'not-found-to-download'               => 'Ficheiro não encontrado para transferência',
                     'edit-success'                        => 'Ficheiro carregado com sucesso',
+                    'no-file-name'                        => 'sem nome de arquivo',
                     'show-success'                        => 'Ficheiro encontrado com sucesso',
                     'update-success'                      => 'Ficheiro atualizado com sucesso',
                     'not-found-to-update'                 => 'O ficheiro não existe',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Gestão de recursos',
             'asset'            => 'Ativo',
             'property'         => 'Propriedade',
             'comment'          => 'Comentário',
@@ -686,10 +699,11 @@ return [
             '401' => 'Esta ação não está autorizada.',
         ],
         'configuration' => [
-            'save-btn' => 'Guardar',
-            'title'    => 'Configuração',
-            'saved'    => 'Configuração guardada com sucesso.',
-            'general'  => [
+            'save-btn'    => 'Guardar',
+            'title'       => 'Configuração',
+            'saved'       => 'Configuração guardada com sucesso.',
+            'description' => 'Configure as opções de gestão de recursos digitais (DAM) da sua aplicação.',
+            'general'     => [
                 'title'            => 'Definições Gerais',
                 'description'      => 'Estas definições controlam a experiência geral de navegação no DAM.',
                 'explorer-enabled' => [

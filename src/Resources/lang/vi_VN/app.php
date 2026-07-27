@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Quản lý tài sản',
                     'assets'        => 'Tài sản',
                     'shares'        => 'Liên kết chia sẻ',
                     'tags'          => 'Thẻ',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Xem trước thất bại',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Quản lý tài sản số',
                 'datagrid' => [
                     'file-name'      => 'Tên tệp',
                     'tags'           => 'Thẻ',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Rời đi',
                 'upload-stay-page'               => 'Ở lại',
                 'drop-zone-hint'                 => 'Kéo tệp hoặc thư mục để tải lên',
+                'select-all'                     => 'Chọn tất cả',
+                'select-directory-to-upload'     => 'Chọn thư mục để tải lên.',
+                'upload-session'                 => [
+                    'uploading'            => 'Đang tải lên :total tệp…',
+                    'paused'               => 'Tạm dừng — đã tải lên :done trên :total',
+                    'interrupted'          => 'đã tải lên :done trên :total · :interrupted bị gián đoạn',
+                    'failed'               => 'đã tải lên :done, :failed thất bại',
+                    'completed'            => 'đã tải lên :done trên :total',
+                    'create-folder-failed' => 'Không thể tạo thư mục',
+                ],
                 'drop-zone-no-permission'        => 'Bạn không có quyền tải lên tại đây.',
                 'upload-complete'                => 'Tải lên hoàn tất',
                 'item-upload-complete'           => 'Tải lên hoàn tất',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Không có siêu dữ liệu khả dụng',
                     'tags'                  => 'Thẻ',
                     'select-tags'           => 'Chọn hoặc tạo một thẻ',
+                    'tag-attach-success'    => 'Đã thêm thẻ thành công.',
+                    'tag-detach-success'    => 'Đã xóa thẻ khỏi tài sản thành công.',
                     'directory-path'        => 'Đường dẫn thư mục',
                     'no-directory'          => 'Không có thư mục được gán',
                     'details'               => 'Chi tiết',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Không tìm thấy tệp để hiển thị',
                     'not-found-to-download'               => 'Không tìm thấy tệp để tải xuống',
                     'edit-success'                        => 'Đã tải lên tệp thành công',
+                    'no-file-name'                        => 'không có tên tệp',
                     'show-success'                        => 'Đã tìm thấy tệp thành công',
                     'update-success'                      => 'Đã cập nhật tệp thành công',
                     'not-found-to-update'                 => 'Tệp không tồn tại',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Quản lý tài sản',
             'asset'            => 'Tài sản',
             'property'         => 'Thuộc tính',
             'comment'          => 'Bình luận',
@@ -686,10 +699,11 @@ return [
             '401' => 'Hành động này không được phép.',
         ],
         'configuration' => [
-            'save-btn' => 'Lưu',
-            'title'    => 'Cấu hình',
-            'saved'    => 'Đã lưu cấu hình thành công.',
-            'general'  => [
+            'save-btn'    => 'Lưu',
+            'title'       => 'Cấu hình',
+            'saved'       => 'Đã lưu cấu hình thành công.',
+            'description' => 'Cấu hình các thiết lập Quản lý tài sản số (DAM) cho ứng dụng của bạn.',
+            'general'     => [
                 'title'            => 'Cài đặt chung',
                 'description'      => 'Các cài đặt này kiểm soát toàn bộ trải nghiệm duyệt trong DAM.',
                 'explorer-enabled' => [

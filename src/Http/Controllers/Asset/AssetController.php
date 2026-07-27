@@ -879,9 +879,10 @@ class AssetController extends Controller
 
         $asset->update($request->only(['file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'path']));
 
-        return redirect()
-            ->back()
-            ->with('success', trans('dam::app.admin.dam.asset.datagrid.update-success'));
+        return response()->json([
+            'success' => true,
+            'message' => trans('dam::app.admin.dam.asset.datagrid.update-success'),
+        ]);
     }
 
     public function destroy($id)

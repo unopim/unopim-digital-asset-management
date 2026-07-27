@@ -17,7 +17,7 @@
     >
         <x-admin::layouts.page-header
             :title="trans('dam::app.admin.configuration.title')"
-            :description="trans('Configure the Digital Asset Management (DAM) settings for your application.')"
+            :description="trans('dam::app.admin.configuration.description')"
         >
             @if ($canUpdate)
                 <x-slot:actions>

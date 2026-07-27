@@ -6,11 +6,31 @@
     @push('styles')
         @unoPimVite(['src/Resources/assets/css/app.css'], 'dam')
     <style>
-        .dam-desktop-nav { display: none; }
-        .dam-mobile-nav  { display: flex; }
-        @media (min-width: 525px) {
-            .dam-desktop-nav { display: flex; }
-            .dam-mobile-nav  { display: none; }
+        {{--
+            Pin the document to the viewport so the viewer never scrolls. The wrapper is sized
+            against the body's content box rather than the viewport directly, so any padding an
+            injected bar adds to the body (the Debugbar adds ~33px in local dev) is subtracted
+            from the available height instead of pushing the footer off-screen.
+        --}}
+        html,
+        body {
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        {{-- The layout nests the page inside #app, so the percentage chain has to run through it. --}}
+        #app,
+        .dam-share-viewport {
+            height: 100%;
+        }
+
+        {{-- Touch devices never fire :hover, so keep the navigation permanently visible there. --}}
+        @media (hover: none) {
+            .dam-share-nav { opacity: 1; }
         }
     </style>
     @endpush
@@ -38,9 +58,9 @@
             : null;
     @endphp
 
-    <div class="min-h-screen bg-gray-50 dark:bg-cherry-950 flex flex-col">
-        <header class="bg-white dark:bg-cherry-900 border-b border-gray-200 dark:border-cherry-800 px-6 py-4">
-            <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+    <div class="dam-share-viewport bg-gray-50 dark:bg-cherry-950 flex flex-col overflow-hidden">
+        <header class="shrink-0 bg-white dark:bg-cherry-900 border-b border-gray-200 dark:border-cherry-800 px-6 py-4">
+            <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3 min-w-0">
                     @if ($backUrl)
                         <a
@@ -68,39 +88,18 @@
             </div>
         </header>
 
-        <main class="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
-            <div class="bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden">
-                <div class="flex items-stretch">
-
-                    @if (! $isAssetShare)
-                    <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
-                        @if ($prevUrl)
-                            <a
-                                href="{{ $prevUrl }}"
-                                class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
-                                title="@lang('dam::app.admin.dam.asset.edit.previous')"
-                                aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
-                            >
-                                <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
-                            </a>
-                        @else
-                            <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60">
-                                <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
-                            </span>
-                        @endif
-                    </div>
-                    @endif
-
-                <div class="flex-1 min-w-0 relative flex items-center justify-center bg-gray-100 dark:bg-cherry-800">
+        <main class="flex flex-1 min-h-0 w-full flex-col px-4 py-4">
+            <div class="flex flex-1 min-h-0 flex-col bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden">
+                <div class="group relative flex flex-1 min-h-0 items-center justify-center bg-gray-100 dark:bg-cherry-800">
                     @if ($isImage)
-                        <div class="w-full" style="height: 70vh;">
+                        <div class="w-full h-full">
                             <v-zoomable-image
                                 src="{{ $inlineUrl }}"
                                 alt="{{ $asset->file_name }}"
                             ></v-zoomable-image>
                         </div>
                     @elseif ($isVideo)
-                        <div class="w-full relative" style="aspect-ratio: 16/9; max-height: 70vh;">
+                        <div class="relative w-full h-full">
                             <v-dam-public-player
                                 media-url="{{ $inlineUrl }}"
                                 mime-type="{{ $mime }}"
@@ -110,7 +109,7 @@
                             ></v-dam-public-player>
                         </div>
                     @elseif ($isAudio)
-                        <div class="w-full" style="min-height: 420px;">
+                        <div class="w-full h-full">
                             <v-dam-public-player
                                 media-url="{{ $inlineUrl }}"
                                 mime-type="{{ $mime }}"
@@ -124,8 +123,8 @@
                     @elseif ($isPdf)
                         <iframe
                             src="{{ $inlineUrl }}"
-                            class="w-full"
-                            style="height: 70vh; border: 0;"
+                            class="w-full h-full"
+                            style="border: 0;"
                             title="{{ $asset->file_name }}"
                         ></iframe>
                     @else
@@ -138,76 +137,31 @@
                     @endif
 
                     @if (! $isAssetShare)
-                    @php
+                        @if ($prevUrl)
+                            <a
+                                href="{{ $prevUrl }}"
+                                class="dam-share-nav absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                title="@lang('dam::app.admin.dam.asset.edit.previous')"
+                                aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
+                            >
+                                <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
+                            </a>
+                        @endif
 
-                        $mobileNavStyle = $isAudio
-                            ? 'background:rgba(0,0,0,0.5);top:144px;transform:none;'
-                            : 'background:rgba(0,0,0,0.5);';
-                        $mobileNavDisabledStyle = $isAudio
-                            ? 'background:rgba(0,0,0,0.35);top:144px;transform:none;'
-                            : 'background:rgba(0,0,0,0.35);';
-                    @endphp
-                    @if ($prevUrl)
-                        <a
-                            href="{{ $prevUrl }}"
-                            class="dam-mobile-nav absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20"
-                            style="{{ $mobileNavStyle }}"
-                            aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
-                        >
-                            <span class="text-2xl leading-none" aria-hidden="true">&#8249;</span>
-                        </a>
-                    @else
-                        <span
-                            class="dam-mobile-nav absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20 opacity-30 cursor-not-allowed select-none"
-                            style="{{ $mobileNavDisabledStyle }}"
-                            aria-hidden="true"
-                        >
-                            <span class="text-2xl leading-none">&#8249;</span>
-                        </span>
-                    @endif
-                    @if ($nextUrl)
-                        <a
-                            href="{{ $nextUrl }}"
-                            class="dam-mobile-nav absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20"
-                            style="{{ $mobileNavStyle }}"
-                            aria-label="@lang('dam::app.admin.dam.asset.edit.next')"
-                        >
-                            <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
-                        </a>
-                    @else
-                        <span
-                            class="dam-mobile-nav absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 items-center justify-center rounded-full text-white shadow-md z-20 opacity-30 cursor-not-allowed select-none"
-                            style="{{ $mobileNavDisabledStyle }}"
-                            aria-hidden="true"
-                        >
-                            <span class="text-2xl leading-none">&#8250;</span>
-                        </span>
-                    @endif
-                    @endif
-                </div>
-
-                    @if (! $isAssetShare)
-                    <div class="dam-desktop-nav items-center justify-center px-2 shrink-0">
                         @if ($nextUrl)
                             <a
                                 href="{{ $nextUrl }}"
-                                class="flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition-colors"
+                                class="dam-share-nav absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
                                 title="@lang('dam::app.admin.dam.asset.edit.next')"
                                 aria-label="@lang('dam::app.admin.dam.asset.edit.next')"
                             >
                                 <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
                             </a>
-                        @else
-                            <span class="flex w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed select-none opacity-60">
-                                <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
-                            </span>
                         @endif
-                    </div>
                     @endif
-
                 </div>
 
-                <div class="px-6 py-4 border-t border-gray-200 dark:border-cherry-800">
+                <div class="shrink-0 px-6 py-4 border-t border-gray-200 dark:border-cherry-800">
                     <dl class="grid grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 text-sm">
                         <div>
                             <dt class="text-gray-500 dark:text-slate-400">@lang('dam::app.share.public.file-name')</dt>
@@ -228,13 +182,13 @@
             </div>
 
             @if ($share->expires_at)
-                <p class="mt-4 text-xs text-gray-500 dark:text-slate-400 text-center">
+                <p class="shrink-0 mt-3 text-xs text-gray-500 dark:text-slate-400 text-center">
                     @lang('dam::app.share.public.expires-on') {{ $share->expires_at->toDayDateTimeString() }}
                 </p>
             @endif
         </main>
 
-        <footer class="text-center text-xs text-gray-400 dark:text-slate-500 py-4">
+        <footer class="shrink-0 text-center text-xs text-gray-400 dark:text-slate-500 py-3">
             @lang('dam::app.share.public.powered-by-dam')
         </footer>
     </div>

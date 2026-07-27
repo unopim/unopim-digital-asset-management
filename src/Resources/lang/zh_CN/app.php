@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => '资产管理',
                     'assets'        => '资产',
                     'shares'        => '共享链接',
                     'tags'          => '标签',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => '预览失败',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => '数字资产管理',
                 'datagrid' => [
                     'file-name'      => '文件名',
                     'tags'           => '标签',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => '离开',
                 'upload-stay-page'               => '留下',
                 'drop-zone-hint'                 => '拖拽文件或文件夹以上传',
+                'select-all'                     => '全选',
+                'select-directory-to-upload'     => '请选择要上传到的目录。',
+                'upload-session'                 => [
+                    'uploading'            => '正在上传 :total 个文件…',
+                    'paused'               => '已暂停 — 已上传 :done / :total',
+                    'interrupted'          => '已上传 :done / :total · :interrupted 个中断',
+                    'failed'               => '已上传 :done 个，:failed 个失败',
+                    'completed'            => '已上传 :done / :total',
+                    'create-folder-failed' => '无法创建文件夹',
+                ],
                 'drop-zone-no-permission'        => '您没有在此处上传的权限。',
                 'upload-complete'                => '上传完成',
                 'item-upload-complete'           => '上传完成',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => '没有可用的元数据',
                     'tags'                  => '标签',
                     'select-tags'           => '选择或创建标签',
+                    'tag-attach-success'    => '标签添加成功。',
+                    'tag-detach-success'    => '已从资产中移除标签。',
                     'directory-path'        => '目录路径',
                     'no-directory'          => '未分配目录',
                     'details'               => '详情',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => '找不到用于显示的文件',
                     'not-found-to-download'               => '找不到用于下载的文件',
                     'edit-success'                        => '文件上传成功',
+                    'no-file-name'                        => '无文件名',
                     'show-success'                        => '文件找到成功',
                     'update-success'                      => '文件更新成功',
                     'not-found-to-update'                 => '文件不存在',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => '资产管理',
             'asset'            => '资产',
             'property'         => '属性',
             'comment'          => '评论',
@@ -686,10 +699,11 @@ return [
             '401' => '此操作未经授权。',
         ],
         'configuration' => [
-            'save-btn' => '保存',
-            'title'    => '配置',
-            'saved'    => '配置已成功保存。',
-            'general'  => [
+            'save-btn'    => '保存',
+            'title'       => '配置',
+            'saved'       => '配置已成功保存。',
+            'description' => '配置应用的数字资产管理 (DAM) 设置。',
+            'general'     => [
                 'title'            => '常规设置',
                 'description'      => '这些设置控制 DAM 的整体浏览体验。',
                 'explorer-enabled' => [

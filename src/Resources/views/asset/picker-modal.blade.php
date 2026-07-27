@@ -15,7 +15,11 @@
 @pushOnce('scripts')
     <script type="text/x-template" id="v-dam-asset-picker-template">
         <div>
-            <x-dam::modal ref="assetPickerModal">
+            <x-admin::modal
+                ref="assetPickerModal"
+                type="full"
+                :prevent-submit="true"
+            >
                 <x-slot:header>
                     <div class="flex gap-x-2.5">
                         <span class="text-gray-800 dark:text-white font-semibold">
@@ -61,7 +65,7 @@
                                             >
                                             </span>
                                         </label>
-                                        <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">@lang("Select All")</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">@lang('dam::app.admin.dam.index.select-all')</span>
                                     </div>
 
                                     <div class="flex items-center gap-2 ml-auto">
@@ -144,7 +148,7 @@
                     </div>
                     </v-dam-drop-upload>
                 </x-slot>
-            </x-dam::modal>
+            </x-admin::modal>
         </div>
     </script>
 
@@ -219,7 +223,7 @@
 
                     const dirId = this.pickerCurrentDirectory?.id;
                     if (! dirId) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: 'Select a directory to upload into.' });
+                        this.$emitter.emit('add-flash', { type: 'warning', message: @js(trans('dam::app.admin.dam.index.select-directory-to-upload')) });
                         e.target.value = '';
                         return;
                     }

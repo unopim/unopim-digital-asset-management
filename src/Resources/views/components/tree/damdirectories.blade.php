@@ -3,14 +3,14 @@
     <x-dam::tree.search />
     <x-dam::tree.asset-count-badge />
 
-    <v-tree-view
+    <v-dam-tree-view
         :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
         :accessible-ids='@json(dam_accessible_dir_ids())'
         :show-assets="{{ config('dam.tree.show_assets') ? 'true' : 'false' }}"
         :visible="{{ $visible ? 'true' : 'false' }}"
     >
         <x-admin::shimmer.tree />
-    </v-tree-view>
+    </v-dam-tree-view>
 </div>
 
 @pushOnce('scripts')
@@ -174,7 +174,7 @@
             >
                 <template #item="{ element, index }">
                     <div class="sub-tree-container">
-                        <v-tree-item
+                        <v-dam-tree-item
                             class="sub-tree-item"
                             :item="element"
                             :key="element.id"
@@ -187,7 +187,7 @@
                             :deletingDirectoryId="deletingDirectoryId"
                             :copyingDirectoryId="copyingDirectoryId"
                             :treeLocked="treeLocked"
-                        ></v-tree-item>
+                        ></v-dam-tree-item>
                     </div>
                 </template>
             </draggable>
@@ -269,7 +269,7 @@
     </draggable>
 </script>
 <script type="module">
-    app.component('v-tree-item', {
+    app.component('v-dam-tree-item', {
         template: "#v-item-template",
         inject: ['damTreeShowAssets'],
         props: {
@@ -574,7 +574,7 @@
         }
     });
 </script>
-<script type="text/x-template" id="v-tree-view-template">
+<script type="text/x-template" id="v-dam-tree-view-template">
     <template v-if="treeLoading">
         <div class="tree-container overflow-hidden" style="max-height: calc(100vh - 360px);">
             <x-admin::shimmer.tree />
@@ -640,7 +640,7 @@
                 >
                     <template #item="{ element, index }">
                         <div class="parent-tree-container ml-6">
-                            <v-tree-item
+                            <v-dam-tree-item
                                 class="item"
                                 :item="element"
                                 :key="element.id"
@@ -653,7 +653,7 @@
                                 :deletingDirectoryId="deletingDirectoryId"
                                 :copyingDirectoryId="copyingDirectoryId"
                                 :treeLocked="treeBusy"
-                            ></v-tree-item>
+                            ></v-dam-tree-item>
                         </div>
                     </template>
                 </draggable>
@@ -1019,8 +1019,8 @@
 <script type="module">
     const damTreeMaxFileUploads = @js((int) ini_get('max_file_uploads'));
 
-    app.component('v-tree-view', {
-        template: '#v-tree-view-template',
+    app.component('v-dam-tree-view', {
+        template: '#v-dam-tree-view-template',
         props: {
             src: {
                 type: String,

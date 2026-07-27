@@ -4,7 +4,7 @@
 
 This is a big update. The main goal is to make the DAM work with the **newest version of UnoPim**, and along the way we made it faster and easier to use.
 
-### What's new for you
+### Features & Enhancements
 
 * **Works with the latest UnoPim.** The DAM now runs on the newest UnoPim (built on Laravel 13 and PHP 8.4). If your UnoPim is up to date, the DAM will simply work.
 
@@ -14,7 +14,7 @@ This is a big update. The main goal is to make the DAM work with the **newest ve
 
 * **A friendly "unsaved changes" reminder.** On the DAM → Configuration page, when you change a setting a little bar slides up from the bottom with **Save** and **Discard** buttons. Your change is saved right away (no page reload), and if you try to leave without saving, the DAM gently reminds you first.
 
-### What we fixed
+### Fixed
 
 * **Images work again.** After moving to the new UnoPim, image thumbnails and previews had stopped showing, and the built-in image editor (crop, rotate, flip, brightness, background color, black-and-white) had stopped working. All of this is fixed.
 
@@ -22,12 +22,8 @@ This is a big update. The main goal is to make the DAM work with the **newest ve
 
 * **Small display and permission glitches** left over from the upgrade have been cleaned up.
 
-### For developers (technical notes)
+* **Fixed directory search behaviour:** Updated the search functionality so it now searches only within the currently selected directory instead of returning results from the entire DAM.
 
-* Now requires `php ^8.4` and `intervention/image ^4.0`. All image code was migrated to the intervention/image v4 API: `ImageManager::read()` → `decode()`, `Image::toJpeg()/toPng()/…` → `Image::encode(new JpegEncoder/PngEncoder/…)`, `greyscale()` → `grayscale()`, and `flip()/flop()` → `flip(Direction::HORIZONTAL|VERTICAL)`.
-* Aligned with the new core's Ajax navigation: programmatic `window.location.href` / `location.reload()` calls now route through `$navigate()` (`window.unopim.visit`), so the Explorer, datagrids, asset picker, asset edit and comments navigate without a full reload. Matched the DAM Vite/Tailwind toolchain to core Admin (Vite 6, laravel-vite-plugin 1.2, Tailwind 3, Vue 3.5).
-* Adopted core components instead of custom markup: `<x-admin::layouts.page-header>` / `<x-admin::breadcrumbs>` for breadcrumbs, and `<x-admin::form ajax>` for the tracked "unsaved changes" save bar (the core `ConvertAjaxFormRedirect` middleware converts the redirect to JSON — no controller change needed).
-* Fixes: `Attribute::fieldTypeValidations()` signature match, Explorer tree root-node render guard, asset-edit layout width (`flex-1 min-w-0`, removed the hardcoded sidebar offset), and the missing `api.dam.property.getById` api-acl mapping (the stricter core API scope middleware requires it).
 
 ## **Version 2.2.0**
 

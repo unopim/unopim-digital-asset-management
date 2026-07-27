@@ -9,6 +9,7 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CategoryExporter;
+use Webkul\DataTransfer\Helpers\Formatters\EscapeFormulaOperators;
 use Webkul\DataTransfer\Jobs\Export\File\FlatItemBuffer;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
@@ -29,13 +30,13 @@ class Exporter extends CategoryExporter
         EventServiceProvider::ASSET_ATTRIBUTE_TYPE,
     ];
 
-    protected function setFieldsAdditionalData(array $additionalData, $filePath, $options = [])
+    protected function setFieldsAdditionalData(array $additionalData, $filePath, $options = []): array
     {
         $fieldValues = [];
 
         $filters = $this->getFilters();
 
-        $withMedia = (bool) $filters['with_media'];
+        $withMedia = (bool) ($filters['with_media'] ?? false);
 
         $mediaSourceType = $filters['media_source_type'] ?? 'zip';
 
@@ -43,7 +44,7 @@ class Exporter extends CategoryExporter
             $fieldCode = $field->code;
             $fieldType = $field->type;
 
-            $fieldValues[$fieldCode] = $additionalData[$fieldCode] ?? null;
+            $fieldValues[$fieldCode] = EscapeFormulaOperators::escapeValue($additionalData[$fieldCode] ?? null);
 
             if (in_array($field->type, $this->mediaTypeFields)) {
                 $mediaValues = [];
@@ -91,7 +92,7 @@ class Exporter extends CategoryExporter
         return $fieldValues;
     }
 
-    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
+    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false): void
     {
         $disk = Directory::getAssetDisk();
 

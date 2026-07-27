@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => '자산 관리',
                     'assets'        => '자산',
                     'shares'        => '공유 링크',
                     'tags'          => '태그',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => '미리보기에 실패했습니다',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => '디지털 자산 관리',
                 'datagrid' => [
                     'file-name'      => '파일 이름',
                     'tags'           => '태그',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => '떠나기',
                 'upload-stay-page'               => '머물기',
                 'drop-zone-hint'                 => '파일 또는 폴더를 끌어다 놓아 업로드하세요',
+                'select-all'                     => '전체 선택',
+                'select-directory-to-upload'     => '업로드할 디렉터리를 선택하세요.',
+                'upload-session'                 => [
+                    'uploading'            => ':total개 파일 업로드 중…',
+                    'paused'               => '일시중지됨 — :total개 중 :done개 업로드됨',
+                    'interrupted'          => ':total개 중 :done개 업로드됨 · :interrupted개 중단됨',
+                    'failed'               => ':done개 업로드됨, :failed개 실패',
+                    'completed'            => ':total개 중 :done개 업로드됨',
+                    'create-folder-failed' => '폴더를 만들지 못했습니다',
+                ],
                 'drop-zone-no-permission'        => '여기에 업로드할 권한이 없습니다.',
                 'upload-complete'                => '업로드 완료',
                 'item-upload-complete'           => '업로드 완료',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => '사용 가능한 메타데이터가 없습니다',
                     'tags'                  => '태그',
                     'select-tags'           => '태그를 선택하거나 생성하세요',
+                    'tag-attach-success'    => '태그가 추가되었습니다.',
+                    'tag-detach-success'    => '자산에서 태그가 제거되었습니다.',
                     'directory-path'        => '디렉토리 경로',
                     'no-directory'          => '할당된 디렉토리 없음',
                     'details'               => '세부 정보',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => '표시용 파일을 찾을 수 없습니다',
                     'not-found-to-download'               => '다운로드용 파일을 찾을 수 없습니다',
                     'edit-success'                        => '파일이 성공적으로 업로드되었습니다',
+                    'no-file-name'                        => '파일 이름 없음',
                     'show-success'                        => '파일을 성공적으로 찾았습니다',
                     'update-success'                      => '파일이 성공적으로 업데이트되었습니다',
                     'not-found-to-update'                 => '파일이 존재하지 않습니다',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => '자산 관리',
             'asset'            => '자산',
             'property'         => '속성',
             'comment'          => '댓글',
@@ -686,10 +699,11 @@ return [
             '401' => '이 작업은 권한이 없습니다.',
         ],
         'configuration' => [
-            'save-btn' => '저장',
-            'title'    => '설정',
-            'saved'    => '설정이 성공적으로 저장되었습니다.',
-            'general'  => [
+            'save-btn'    => '저장',
+            'title'       => '설정',
+            'saved'       => '설정이 성공적으로 저장되었습니다.',
+            'description' => '애플리케이션의 디지털 자산 관리(DAM) 설정을 구성합니다.',
+            'general'     => [
                 'title'            => '일반 설정',
                 'description'      => '이 설정은 전체 DAM 탐색 경험을 제어합니다.',
                 'explorer-enabled' => [

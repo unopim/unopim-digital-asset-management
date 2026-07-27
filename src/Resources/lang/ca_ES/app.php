@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Gestió d\'actius',
                     'assets'        => 'Recursos',
                     'shares'        => 'Enllaços compartits',
                     'tags'          => 'Etiquetes',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'La previsualització ha fallat',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Gestió d\'actius digitals',
                 'datagrid' => [
                     'file-name'      => 'Nom del Fitxer',
                     'tags'           => 'Etiquetes',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Sortir',
                 'upload-stay-page'               => 'Quedar-se',
                 'drop-zone-hint'                 => 'Arrossegueu fitxers o carpetes per pujar',
+                'select-all'                     => 'Selecciona-ho tot',
+                'select-directory-to-upload'     => 'Selecciona un directori on pujar.',
+                'upload-session'                 => [
+                    'uploading'            => 'Pujant :total fitxer(s)…',
+                    'paused'               => 'En pausa — :done de :total pujats',
+                    'interrupted'          => ':done de :total pujats · :interrupted interromputs',
+                    'failed'               => ':done pujats, :failed fallits',
+                    'completed'            => ':done de :total pujats',
+                    'create-folder-failed' => 'No s\'ha pogut crear la carpeta',
+                ],
                 'drop-zone-no-permission'        => 'No teniu permís per pujar aquí.',
                 'upload-complete'                => 'Càrrega completa',
                 'item-upload-complete'           => 'Càrrega completa',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'No hi ha metadades disponibles',
                     'tags'                  => 'Etiquetes',
                     'select-tags'           => 'Escollir o Crear una Etiqueta',
+                    'tag-attach-success'    => 'Etiqueta afegida correctament.',
+                    'tag-detach-success'    => 'Etiqueta eliminada de l\'actiu correctament.',
                     'directory-path'        => 'Ruta del directori',
                     'no-directory'          => 'Cap directori assignat',
                     'details'               => 'Detalls',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Fitxer no trobat per a la visualització',
                     'not-found-to-download'               => 'Fitxer no trobat per a la descàrrega',
                     'edit-success'                        => 'Fitxer pujat correctament',
+                    'no-file-name'                        => 'sense nom de fitxer',
                     'show-success'                        => 'Fitxer trobat correctament',
                     'update-success'                      => 'Fitxer actualitzat correctament',
                     'not-found-to-update'                 => 'El fitxer no existeix',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Gestió d\'actius',
             'asset'            => 'Actiu',
             'property'         => 'Propietat',
             'comment'          => 'Comentari',
@@ -686,10 +699,11 @@ return [
             '401' => 'Aquesta acció no està autoritzada.',
         ],
         'configuration' => [
-            'save-btn' => 'Desa',
-            'title'    => 'Configuració',
-            'saved'    => 'Configuració desada correctament.',
-            'general'  => [
+            'save-btn'    => 'Desa',
+            'title'       => 'Configuració',
+            'saved'       => 'Configuració desada correctament.',
+            'description' => 'Configura els paràmetres de gestió d\'actius digitals (DAM) de la teva aplicació.',
+            'general'     => [
                 'title'            => 'Configuració general',
                 'description'      => 'Aquesta configuració controla l\'experiència general de navegació del DAM.',
                 'explorer-enabled' => [

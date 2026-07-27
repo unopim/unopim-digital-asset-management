@@ -1,6 +1,6 @@
-@once('v-dam-asset-card')
+@once('v-dam-explorer-asset-card')
 @push('scripts')
-<script type="text/x-template" id="v-dam-asset-card-template">
+<script type="text/x-template" id="v-dam-explorer-asset-card-template">
     <div
         class="group rounded-lg border border-gray-300 dark:border-cherry-600 bg-white dark:bg-cherry-900 overflow-hidden transition-colors cursor-pointer"
         :class="{ 'ring-2 ring-violet-500': isSelected }"
@@ -94,8 +94,8 @@
 </script>
 
 <script type="module">
-app.component('v-dam-asset-card', {
-    template: '#v-dam-asset-card-template',
+app.component('v-dam-explorer-asset-card', {
+    template: '#v-dam-explorer-asset-card-template',
     emits: ['preview', 'edit', 'delete', 'ctx', 'toggle-select'],
 
     props: {

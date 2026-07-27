@@ -38,7 +38,7 @@
                     @lang('dam::app.admin.explorer.sections.files')
                 </p>
                 <div class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
-                    <v-dam-asset-card
+                    <v-dam-explorer-asset-card
                         v-for="asset in assets"
                         :key="asset.id"
                         :asset="asset"
@@ -50,7 +50,7 @@
                         @edit="edit"
                         @delete="del"
                         @ctx="showCtx($event.event, $event.asset, 'asset')"
-                    ></v-dam-asset-card>
+                    ></v-dam-explorer-asset-card>
                 </div>
             </template>
 

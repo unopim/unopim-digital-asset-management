@@ -331,6 +331,18 @@
 
             data() {
                 return {
+                    /**
+                     * Upload progress copy is built in JS from live counters, so the strings are
+                     * handed over as translated templates and the placeholders filled client-side.
+                     */
+                    i18n: {
+                        uploading:           @js(trans('dam::app.admin.dam.index.upload-session.uploading')),
+                        paused:              @js(trans('dam::app.admin.dam.index.upload-session.paused')),
+                        interrupted:         @js(trans('dam::app.admin.dam.index.upload-session.interrupted')),
+                        failed:              @js(trans('dam::app.admin.dam.index.upload-session.failed')),
+                        completed:           @js(trans('dam::app.admin.dam.index.upload-session.completed')),
+                        createFolderFailed:  @js(trans('dam::app.admin.dam.index.upload-session.create-folder-failed')),
+                    },
                     isPrimary: false,
                     isDragOver: false,
                     dragCounter: 0,
@@ -462,7 +474,7 @@
                             session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') j.status = 'done'; });
                             this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: targetDirId, count: 0 });
                         } catch {
-                            session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') { j.status = 'error'; j.error = 'Failed to create folder'; } });
+                            session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') { j.status = 'error'; j.error = this.i18n.createFolderFailed; } });
                         }
                         this.persistState();
                     }
@@ -758,26 +770,42 @@
                 sessionFileJobCount(session) {
                     return session.jobs.filter(u => ! u.isFolder).length;
                 },
+                /**
+                 * Fill :placeholders in a translated template.
+                 */
+                transLine(template, replacements) {
+                    return Object.entries(replacements).reduce(
+                        (line, [key, value]) => line.replaceAll(`:${key}`, value),
+                        template
+                    );
+                },
                 sessionTitle(session) {
                     const total = this.sessionFileJobCount(session);
                     if (session.paused) {
-                        return `Paused — ${session.doneCount} of ${total} uploaded`;
+                        return this.transLine(this.i18n.paused, { done: session.doneCount, total });
                     }
                     if (this.sessionRemaining(session) > 0) {
                         const pct = session.minimized ? ` ${session.overall}%` : '';
-                        return `Uploading ${total} file${total !== 1 ? 's' : ''}…${pct}`;
+
+                        return this.transLine(this.i18n.uploading, { total }) + pct;
                     }
                     const interrupted = this.sessionInterruptedCount(session);
                     if (interrupted > 0) {
-                        return `${session.doneCount} of ${total} uploaded · ${interrupted} interrupted`;
+                        return this.transLine(this.i18n.interrupted, { done: session.doneCount, total, interrupted });
                     }
-                    if (session.errorCount > 0) return `${session.doneCount} uploaded, ${session.errorCount} failed`;
-                    return `${session.doneCount} of ${total} uploaded`;
+                    if (session.errorCount > 0) {
+                        return this.transLine(this.i18n.failed, { done: session.doneCount, failed: session.errorCount });
+                    }
+
+                    return this.transLine(this.i18n.completed, { done: session.doneCount, total });
                 },
                 sessionSummary(session) {
                     const total = this.sessionFileJobCount(session);
-                    if (session.errorCount > 0) return `${session.doneCount} uploaded, ${session.errorCount} failed`;
-                    return `${session.doneCount} of ${total} uploaded`;
+                    if (session.errorCount > 0) {
+                        return this.transLine(this.i18n.failed, { done: session.doneCount, failed: session.errorCount });
+                    }
+
+                    return this.transLine(this.i18n.completed, { done: session.doneCount, total });
                 },
 
                 archiveSession(session) {
