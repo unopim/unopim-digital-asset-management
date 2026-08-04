@@ -20,19 +20,20 @@ use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
+use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
+use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
     public $bindings = [
-        Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
         Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
@@ -44,6 +45,12 @@ class DAMServiceProvider extends ServiceProvider
 
     public function boot(Router $router)
     {
+        $this->app->booted(function (): void {
+            $this->app->bind(Exporter::class, class_exists(MeasurementExporter::class)
+                ? MeasurementAwareExporter::class
+                : \Webkul\DAM\Helpers\Exporters\Product\Exporter::class);
+        });
+
         $router->aliasMiddleware('dam', DAM::class);
 
         RateLimiter::for('dam-share-thumb', function ($request) {

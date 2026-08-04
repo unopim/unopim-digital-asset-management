@@ -6,12 +6,12 @@ use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\DAM\Helpers\Exporters\Product\Concerns\ExportsAssetAttributes;
 use Webkul\DAM\Repositories\AssetRepository;
-use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as BaseExporter;
 use Webkul\DataTransfer\Helpers\Sources\Export\ProductSource;
 use Webkul\DataTransfer\Jobs\Export\File\FlatItemBuffer as FileExportFileBuffer;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
+use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 
-class Exporter extends BaseExporter
+class MeasurementAwareExporter extends MeasurementExporter
 {
     use ExportsAssetAttributes;
 
