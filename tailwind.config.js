@@ -35,11 +35,6 @@ module.exports = {
                     500: '#0C8CE9',
                 },
 
-                /*
-                 * Mirrors the core admin tokens (see Admin/tailwind.config.js and its
-                 * app.css :root) so the DAM follows a re-skin of --c-primary-* instead
-                 * of hard-coding its own palette.
-                 */
                 primary: {
                     DEFAULT: 'rgb(var(--c-primary-600) / <alpha-value>)',
                     50: 'rgb(var(--c-primary-50) / <alpha-value>)',
