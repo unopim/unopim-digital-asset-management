@@ -7,7 +7,7 @@
     <div class="relative z-10 flex flex-col w-[90vw] h-[90vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
 
         <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <span class="text-lg icon-edit text-violet-600 dark:text-violet-400"></span>
+            <span class="text-lg icon-edit text-primary-600 dark:text-primary-400"></span>
             <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
                 @{{ previewData.file_name }}
             </p>

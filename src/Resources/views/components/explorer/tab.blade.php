@@ -10,7 +10,7 @@
                 type="button"
                 data-sidebar-toggle
                 class="w-8 h-8 flex items-center justify-center rounded-md transition-colors shrink-0"
-                :class="sidebarVisible ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30' : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
+                :class="sidebarVisible ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30' : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
                 title="@lang('dam::app.admin.explorer.toolbar.toggle-sidebar')"
                 @click="toggleSidebar"
             >
@@ -67,7 +67,7 @@
                 :data-bookmarked="currentDirBookmarked"
                 class="w-8 h-8 flex items-center justify-center rounded-md transition-colors cursor-pointer shrink-0"
                 :class="currentDirBookmarked
-                    ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30'
+                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30'
                     : 'text-zinc-600 dark:text-white hover:bg-gray-100 dark:hover:bg-cherry-800'"
                 :title="bookmarkTitle"
                 @click="toggleBookmarkCurrentDir"
@@ -158,20 +158,20 @@
 
         <div
             v-if="clipboard"
-            class="flex items-center gap-2 px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 rounded-lg text-violet-700 dark:text-violet-300"
+            class="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700 rounded-lg text-primary-700 dark:text-primary-300"
         >
             <span class="shrink-0">📋</span>
             <span class="flex-1 truncate">"@{{ clipboard.name }}" — @lang('dam::app.admin.explorer.clipboard.ready')</span>
             <button
                 type="button"
-                class="text-violet-400 hover:text-violet-700 dark:hover:text-violet-200 shrink-0"
+                class="text-primary-400 hover:text-primary-700 dark:hover:text-primary-200 shrink-0"
                 @click="clipboard = null"
             >@lang('dam::app.admin.explorer.clipboard.dismiss') ×</button>
         </div>
 
         <div
             v-if="showForeignSelectionOffer"
-            class="flex items-center gap-2 px-3 py-1.5 text-xs bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 rounded-lg text-violet-700 dark:text-violet-300"
+            class="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700 rounded-lg text-primary-700 dark:text-primary-300"
         >
             <span class="flex-1">@{{ "@lang('dam::app.admin.explorer.foreign-selection.notice')".replace(':count', foreignSelectionCount) }}</span>
             <button
@@ -243,7 +243,7 @@
             role="status"
             aria-live="polite"
         >
-            <div class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700">
+            <div class="flex items-center justify-between px-4 py-2.5 bg-primary-600 dark:bg-primary-700">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                     <svg class="animate-spin h-3.5 w-3.5 text-white/80 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -265,7 +265,7 @@
                 </div>
                 <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
                     <div
-                        class="h-full bg-violet-600 dark:bg-violet-500 rounded-full transition-all duration-300"
+                        class="h-full bg-primary-600 dark:bg-primary-500 rounded-full transition-all duration-300"
                         :style="{ width: operationOverlay.progress + '%' }"
                     ></div>
                 </div>
@@ -324,6 +324,7 @@ app.component('v-dam-tab', {
             ctxTarget:          null,
             sidebarVisible:     storedSidebar !== null ? storedSidebar !== 'false' : true,
             bookmarkedDirIds:   [],
+            expandedFilter:     null,
             available: {
                 id: 'dam-explorer',
                 columns: [
@@ -365,11 +366,6 @@ app.component('v-dam-tab', {
         canGoForward() { return this.navIdx < this.navHistory.length - 1; },
         dialogTitle()       { return "@lang('dam::app.admin.explorer.dialog.rename-asset.title')"; },
         dialogPlaceholder() { return "@lang('dam::app.admin.explorer.dialog.rename-asset.placeholder')"; },
-        activeFilterCount() {
-            return this.applied.filters.columns.filter(c =>
-                c.value && c.value.length > 0 && c.value.some(v => Array.isArray(v) ? v.some(Boolean) : Boolean(v))
-            ).length;
-        },
         currentDirBookmarked() {
             if (! this.currentDirId) return false;
             return this.bookmarkedDirIds.map(Number).includes(Number(this.currentDirId));
@@ -1182,11 +1178,60 @@ app.component('v-dam-tab', {
             this.page = 1;
             this.fetch();
         },
-        clearFilters() {
+        clearAllFilters() {
             this.applied.filters.columns = [];
             try { localStorage.removeItem('dam_explorer_filter_state'); } catch {}
             this.page = 1;
             this.fetch();
+        },
+        filterLabel(column) {
+            return column.filter_label ?? column.label;
+        },
+        getActiveFilterColumns() {
+            return (this.available.columns ?? []).filter(column => column.filterable);
+        },
+        isFilterExpanded(columnIndex) {
+            return this.expandedFilter === columnIndex;
+        },
+        toggleFilterEditor(columnIndex) {
+            this.expandedFilter = this.isFilterExpanded(columnIndex) ? null : columnIndex;
+        },
+        filterHasValue(column) {
+            return this.hasAnyAppliedColumnValues(column.index);
+        },
+        appliedValuesSummary(column, values) {
+            if (column.type === 'boolean') {
+                return values
+                    .map(value => column.options?.find(option => option.value == value)?.label ?? value)
+                    .join(', ');
+            }
+
+            if (column.type === 'dropdown') {
+                if (column.options?.type === 'basic') {
+                    return values
+                        .map(value => column.options.params.options.find(option => option.value == value)?.label ?? value)
+                        .join(', ');
+                }
+
+                return @json(trans('admin::app.components.datagrid.filters.values-selected')).replace(':count', values.length);
+            }
+
+            return values
+                .map(value => Array.isArray(value) ? value.filter(Boolean).join(' – ') : value)
+                .join(', ');
+        },
+        collapsedSummary(column) {
+            return this.filterHasValue(column)
+                ? this.appliedValuesSummary(column, this.getAppliedColumnValues(column.index))
+                : @json(trans('admin::app.components.datagrid.filters.no-value'));
+        },
+        appliedFilterCount() {
+            return this.applied.filters.columns.filter(c =>
+                c.value && c.value.length > 0 && c.value.some(v => Array.isArray(v) ? v.some(Boolean) : Boolean(v))
+            ).length;
+        },
+        hasAppliedFilters() {
+            return this.appliedFilterCount() > 0;
         },
 
         onSort({ sortBy, sortOrder }) { this.sortBy = sortBy; this.sortOrder = sortOrder; this.page = 1; this.fetch(); },

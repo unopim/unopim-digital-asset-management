@@ -1,5 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
-const { navigateTo, ensureAssetExists } = require('../utils/helpers');
+const { navigateTo, ensureAssetExists, openFilterDrawer, expandFilter } = require('../utils/helpers');
 
 test.describe('DAM File Name Filter — Partial Match', () => {
 
@@ -19,10 +19,11 @@ test.describe('DAM File Name Filter — Partial Match', () => {
     const baseName = fileName?.split('.')[0]?.trim();
     expect(baseName).toBeTruthy();
 
-    await adminPage.getByText('Filter', { exact: true }).first().click();
-    await adminPage.waitForTimeout(500);
+    await openFilterDrawer(adminPage);
 
-    const fileNameInput = adminPage.getByPlaceholder('File Name').first();
+    const fileNameRow = await expandFilter(adminPage, 'file_name');
+
+    const fileNameInput = fileNameRow.getByPlaceholder('File Name').first();
     await fileNameInput.waitFor({ state: 'visible', timeout: 10000 });
 
     const responsePromise = adminPage.waitForResponse(

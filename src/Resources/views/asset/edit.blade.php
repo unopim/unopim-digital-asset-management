@@ -161,7 +161,7 @@
                                     <button
                                         v-if="prevAssetId"
                                         type="button"
-                                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                         :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
@@ -173,7 +173,7 @@
                                     <button
                                         v-if="nextAssetId"
                                         type="button"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                         :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
@@ -431,7 +431,7 @@
                     tabCode:      { type: String, required: true },
                     initialCount: { type: Number, default: 0 },
                 },
-                template: `<span v-if="count > 0" class="text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300 rounded-full px-1.5 min-w-[1.25rem] text-center leading-5">@{{ count }}</span>`,
+                template: `<span v-if="count > 0" :data-tab-badge="tabCode" class="text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200 rounded-full px-1.5 min-w-[1.25rem] text-center leading-5">@{{ count }}</span>`,
                 data() {
                     return { count: this.initialCount };
                 },
@@ -461,7 +461,11 @@
                 const assetId = {{ $asset->id }};
                 const editPath = `/edit/${assetId}/`;
 
-                window.axios.interceptors.response.use(function(response) {
+                if (window.__damBadgeInterceptorId !== undefined) {
+                    window.axios.interceptors.response.eject(window.__damBadgeInterceptorId);
+                }
+
+                window.__damBadgeInterceptorId = window.axios.interceptors.response.use(function(response) {
                     const method = (response.config.method || '').toLowerCase();
                     const url    = response.config.url || '';
 
@@ -502,8 +506,8 @@
                     initialType: { type: String, default: '' },
                 },
                 template: `
-                    <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900 flex items-center justify-center shrink-0">
-                        <span :class="['text-lg text-violet-600 dark:text-violet-300', iconClass]"></span>
+                    <div class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center shrink-0">
+                        <span :class="['text-lg text-primary-600 dark:text-primary-300', iconClass]"></span>
                     </div>
                 `,
                 data() {

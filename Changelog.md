@@ -24,6 +24,14 @@ This is a big update. The main goal is to make the DAM work with the **newest ve
 
 * **Fixed directory search behaviour:** Updated the search functionality so it now searches only within the currently selected directory instead of returning results from the entire DAM.
 
+* **Comment count is correct again.** Posting a comment on an asset made the tab counter jump by more than one — it grew by however many times you had opened an asset edit page in that session. The counter now moves by exactly one on add and delete, without needing a page refresh.
+
+* **Assets filters now match the rest of UnoPim.** The filter panel on the Assets page (and in the asset picker) had kept the old layout while Tags and Shared Links moved to the new one. It now behaves the same everywhere: each filter starts collapsed with a summary of what it is set to, the **Filter** button shows how many filters are applied, and the panel has a fixed **Apply** and **Clear All** at the bottom.
+
+* **Assigning assets to a category field.** The asset field no longer empties itself when the asset lookup fails — it keeps what you had and tells you what went wrong. It also notifies the form that something changed, so the **Save changes** bar appears after you assign an asset.
+
+* **The DAM follows your UnoPim colours.** Every screen used a purple of its own. It now uses the same `primary` colour token as the rest of UnoPim, so re-skinning UnoPim re-skins the DAM with it. Nothing looks different out of the box — the default token is the exact same purple.
+
 
 ## **Version 2.2.0**
 

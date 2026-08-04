@@ -7,7 +7,7 @@
         $canUpdate = bouncer()->hasPermission('dam.configuration.update');
 
         $treeEffectiveOn = ! $settings['DAM_EXPLORER_ENABLED'] || $settings['DAM_EXPLORER_SHOW_TREE'];
-        $toggleClass = "rounded-full w-9 h-5 bg-gray-200 cursor-pointer peer-focus:ring-violet-300 after:bg-white dark:after:bg-white after:border-gray-300 dark:after:border-white peer-checked:bg-violet-700 dark:peer-checked:bg-violet-700 peer peer-checked:after:border-white peer-checked:after:ltr:translate-x-full peer-checked:after:rtl:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:ltr:left-0.5 after:rtl:right-0.5 peer-focus:outline-none after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:bg-cherry-800";
+        $toggleClass = "rounded-full w-9 h-5 bg-gray-200 cursor-pointer peer-focus:ring-primary-300 after:bg-white dark:after:bg-white after:border-gray-300 dark:after:border-white peer-checked:bg-primary-700 dark:peer-checked:bg-primary-700 peer peer-checked:after:border-white peer-checked:after:ltr:translate-x-full peer-checked:after:rtl:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:ltr:left-0.5 after:rtl:right-0.5 peer-focus:outline-none after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:bg-cherry-800";
     @endphp
 
     <x-admin::form
@@ -106,7 +106,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
                             @lang('dam::app.admin.configuration.directory.show-tree.hint')
                         </p>
-                        <p id="show-tree-locked-hint" class="text-xs text-violet-600 dark:text-violet-400 mt-1 {{ $settings['DAM_EXPLORER_ENABLED'] ? 'hidden' : '' }}">
+                        <p id="show-tree-locked-hint" class="text-xs text-primary-600 dark:text-primary-400 mt-1 {{ $settings['DAM_EXPLORER_ENABLED'] ? 'hidden' : '' }}">
                             @lang('dam::app.admin.configuration.directory.show-tree.locked-hint')
                         </p>
                     </div>

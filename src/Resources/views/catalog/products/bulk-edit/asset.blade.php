@@ -38,7 +38,7 @@
             <div class="flex items-center gap-0.5 flex-shrink-0">
                 <span
                     @click="openPicker"
-                    class="cursor-pointer text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 text-base icon-edit"
+                    class="cursor-pointer text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-base icon-edit"
                 ></span>
 
                 <span

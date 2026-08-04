@@ -11,7 +11,7 @@
                 v-if="isDragOver"
                 class="absolute inset-0 z-50 backdrop-blur-sm border-2 border-dashed rounded-lg pointer-events-none"
                 :class="canUpload
-                    ? 'bg-white/90 dark:bg-cherry-800/95 border-violet-500 dark:border-violet-400'
+                    ? 'bg-white/90 dark:bg-cherry-800/95 border-primary-500 dark:border-primary-400'
                     : 'bg-red-50/80 dark:bg-red-950/30 border-red-400 dark:border-red-500'"
             ></div>
 
@@ -20,12 +20,12 @@
                 :style="hintCardStyle"
                 class="fixed z-[10011] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 rounded-2xl px-10 py-8 shadow-lg pointer-events-none"
                 :class="canUpload
-                    ? 'bg-violet-50 dark:bg-violet-950/80 border border-violet-200 dark:border-violet-700'
+                    ? 'bg-primary-50 dark:bg-primary-900/80 border border-primary-200 dark:border-primary-700'
                     : 'bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-700'"
             >
                 <template v-if="canUpload">
-                    <i class="icon-dam-upload text-6xl text-violet-500 dark:text-violet-400 block"></i>
-                    <p class="text-violet-700 dark:text-violet-300 font-semibold text-base text-center">
+                    <i class="icon-dam-upload text-6xl text-primary-500 dark:text-primary-400 block"></i>
+                    <p class="text-primary-700 dark:text-primary-300 font-semibold text-base text-center">
                         @lang('dam::app.admin.dam.index.drop-zone-hint')
                     </p>
                 </template>
@@ -55,7 +55,7 @@
                         style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <div
-                            class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700 cursor-pointer select-none"
+                            class="flex items-center justify-between px-4 py-2.5 bg-primary-600 dark:bg-primary-700 cursor-pointer select-none"
                             @click="session.minimized = !session.minimized"
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionSummary(session) }}</span>
@@ -105,7 +105,7 @@
                         style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <div
-                            class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-violet-600 dark:bg-violet-700"
+                            class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-primary-600 dark:bg-primary-700"
                             @click="session.minimized = !session.minimized"
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionTitle(session) }}</span>
@@ -154,7 +154,7 @@
                         </div>
 
                         <div v-if="sessionRemaining(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
-                            <div class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
+                            <div class="h-full bg-primary-500 dark:bg-primary-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
                         </div>
 
                         <div
@@ -177,7 +177,7 @@
                                     <p v-else-if="job.status === 'interrupted'" class="text-xs text-amber-500 dark:text-amber-400 truncate leading-snug">@lang('dam::app.admin.explorer.upload.interrupted')</p>
                                     <p v-else-if="job.parentPath" class="text-xs text-gray-400 dark:text-gray-500 truncate leading-snug">@{{ job.parentPath }}</p>
                                     <div v-else-if="job.status === 'uploading'" class="mt-1 h-1 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
-                                        <div class="h-full bg-violet-600 dark:bg-violet-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
+                                        <div class="h-full bg-primary-600 dark:bg-primary-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
                                     </div>
                                 </div>
                                 <div class="flex-shrink-0 text-xs text-gray-400 text-right min-w-[52px]">
@@ -188,7 +188,7 @@
                                     v-if="job.status === 'error' && !job.isFolder"
                                     type="button"
                                     title="@lang('dam::app.admin.dam.upload.retry')"
-                                    class="flex-shrink-0 p-1 text-violet-500 hover:text-violet-600 dark:text-violet-400 dark:hover:text-violet-300 rounded transition-colors"
+                                    class="flex-shrink-0 p-1 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 rounded transition-colors"
                                     @click.stop="retryJob(session, job)"
                                 >
                                     <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -208,7 +208,7 @@
                             <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
                                 <div
                                     class="h-full rounded-full transition-all duration-300"
-                                    :class="session.errorCount ? 'bg-red-500 dark:bg-red-600' : 'bg-violet-600 dark:bg-violet-500'"
+                                    :class="session.errorCount ? 'bg-red-500 dark:bg-red-600' : 'bg-primary-600 dark:bg-primary-500'"
                                     :style="{ width: session.overall + '%' }"
                                 ></div>
                             </div>
@@ -1022,7 +1022,7 @@
 
                 jobStatusIcon(job) {
                     if (job.status === 'uploading' || job.status === 'creating') {
-                        return `<svg class="animate-spin h-3.5 w-3.5 text-violet-500 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                        return `<svg class="animate-spin h-3.5 w-3.5 text-primary-500 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
                     }
                     if (job.status === 'done') {
                         return `<svg class="h-3.5 w-3.5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>`;
@@ -1047,7 +1047,7 @@
                     const isAudio = ['mp3','wav','ogg','flac','aac','m4a','wma'].includes(ext);
                     const isDoc   = ['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','csv','zip','rar','7z'].includes(ext);
                     if (isImage) return `<svg class="h-5 w-5 text-blue-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>`;
-                    if (isVideo) return `<svg class="h-5 w-5 text-violet-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>`;
+                    if (isVideo) return `<svg class="h-5 w-5 text-primary-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>`;
                     if (isAudio) return `<svg class="h-5 w-5 text-pink-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>`;
                     if (isDoc)   return `<svg class="h-5 w-5 text-blue-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>`;
                     return `<svg class="h-5 w-5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>`;

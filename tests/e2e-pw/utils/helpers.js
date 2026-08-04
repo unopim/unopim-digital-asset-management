@@ -122,6 +122,38 @@ async function primeUploadDirectory(page) {
   await page.waitForTimeout(200);
 }
 
+async function dismissUploadPanel(page) {
+  const panel = page.locator('[data-dam-upload-panel]');
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const closeButton = panel.locator('button').first();
+
+    if (! (await closeButton.isVisible().catch(() => false))) {
+      return;
+    }
+
+    await closeButton.click({ force: true }).catch(() => {});
+    await page.waitForTimeout(200);
+  }
+}
+
+async function openFilterDrawer(page) {
+  await dismissUploadPanel(page);
+  await page.getByText('Filter', { exact: true }).first().click();
+  await page.locator('[data-datagrid-filter]').first().waitFor({ state: 'visible', timeout: 15000 });
+}
+
+async function expandFilter(page, columnIndex) {
+  const row = page.locator(`[data-datagrid-filter="${columnIndex}"]`);
+  await row.waitFor({ state: 'visible', timeout: 15000 });
+
+  if ((await row.locator('button[data-filter-toggle]').getAttribute('aria-expanded')) !== 'true') {
+    await row.locator('button[data-filter-toggle]').click();
+  }
+
+  return row;
+}
+
 async function ensureAssetExists(page) {
   const path = require('path');
   await navigateTo(page, 'dam');
@@ -210,6 +242,9 @@ module.exports = {
   generateUid,
   ensureAssetExists,
   ensureAssetOfTypeExists,
+  openFilterDrawer,
+  expandFilter,
+  dismissUploadPanel,
   navigateToAssetEditByName,
   closeApShell,
 };

@@ -164,7 +164,7 @@
                         <div class="flex flex-wrap gap-4 my-4 border-b-2 max-sm:hidden dark:border-gray-800 items-center">
                             @foreach ($items as $key => $item)
                                 <a href="{{ $item['url'] }}" class="self-stretch flex items-end">
-                                    <div class="{{  $item['code'] === $activeTab ? "-mb-px border-violet-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
+                                    <div class="{{  $item['code'] === $activeTab ? "-mb-px border-primary-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
                                         <span class="text-xl {{ $item['icon'] }}"></span>
                                         @lang($item['name'])
                                         @if (array_key_exists('badge', $item))

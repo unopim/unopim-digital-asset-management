@@ -54,13 +54,13 @@ test.describe('DAM Explorer UI improvements', () => {
     await expect(listBtn).toBeVisible();
 
     await gridBtn.click();
-    await expect(gridBtn).toHaveClass(/bg-violet-100/);
-    await expect(listBtn).not.toHaveClass(/bg-violet-100/);
+    await expect(gridBtn).toHaveClass(/bg-primary-100/);
+    await expect(listBtn).not.toHaveClass(/bg-primary-100/);
     expect(await adminPage.evaluate(() => localStorage.getItem('dam_picker_view'))).toBe('grid');
 
     await listBtn.click();
-    await expect(listBtn).toHaveClass(/bg-violet-100/);
-    await expect(gridBtn).not.toHaveClass(/bg-violet-100/);
+    await expect(listBtn).toHaveClass(/bg-primary-100/);
+    await expect(gridBtn).not.toHaveClass(/bg-primary-100/);
     expect(await adminPage.evaluate(() => localStorage.getItem('dam_picker_view'))).toBe('list');
   });
 
@@ -166,7 +166,7 @@ test.describe('DAM Explorer UI improvements', () => {
 
     const newRow = modal.locator('button', { hasText: name });
     await expect(newRow).toBeVisible({ timeout: 15000 });
-    await expect(newRow).toHaveClass(/ring-violet-500/);
+    await expect(newRow).toHaveClass(/ring-primary-500/);
     await expect(input).toHaveCount(0);
 
     await expect(modal.locator('button:has-text("Select Here")')).toBeEnabled();

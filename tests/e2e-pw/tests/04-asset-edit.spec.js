@@ -142,7 +142,7 @@ test.describe('DAM Asset Edit Page', () => {
   test('Header shows file type icon', async ({ adminPage }) => {
     await navigateToFirstAssetEdit(adminPage);
 
-    const fileIcon = adminPage.locator('.bg-violet-100').first();
+    const fileIcon = adminPage.locator('.bg-primary-100').first();
     await expect(fileIcon).toBeVisible({ timeout: 5000 });
   });
 

@@ -33,7 +33,7 @@
             </span>
             <span
                 class="text-sm"
-                :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
+                :class="selectedItem && selectedItem.file_name && item.id == selectedItem.id ? 'text-primary-700 dark:text-primary-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ formatFileName(item.file_name) }}</span>
         </div>
     </div>
@@ -126,7 +126,7 @@
             <span>
                 <svg
                     v-if="isSelfBusy"
-                    class="align-center inline-block animate-spin h-5 w-5 text-violet-700"
+                    class="align-center inline-block animate-spin h-5 w-5 text-primary-700"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     aria-hidden="true"
@@ -150,7 +150,7 @@
             </span>
             <span
                 class="text-sm"
-                :class="selectedItem && item.id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
+                :class="selectedItem && item.id == selectedItem.id ? 'text-primary-700 dark:text-primary-400 font-semibold' : 'text-zinc-600 dark:text-white'"
             >@{{ item?.name }}   </span>
             <v-asset-count-badge :count="item?.assets_total_count ?? null" />
         </div>
@@ -197,7 +197,7 @@
                 type="button"
                 @click.stop="loadMoreChildren"
                 :disabled="childrenLoadingMore"
-                class="flex items-center gap-1.5 ml-2 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+                class="flex items-center gap-1.5 ml-2 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50"
             >
                 <span v-if="childrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
                 <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>
@@ -596,7 +596,7 @@
                     class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
                     style="min-width: 360px; z-index: 99999;"
                 >
-                    <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-12 w-12 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
@@ -621,7 +621,7 @@
                     </span>
                     <span
                         class="text-sm text-nowrap overflow-hidden text-ellipsis"
-                        :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-violet-700 dark:text-violet-400 font-semibold' : 'text-zinc-600 dark:text-white'"
+                        :class="selectedItem && formattedItems[0].id == selectedItem.id ? 'text-primary-700 dark:text-primary-400 font-semibold' : 'text-zinc-600 dark:text-white'"
                     >@{{ formattedItems[0].name }}</span>
                     <v-asset-count-badge :count="formattedItems[0].assets_total_count ?? null" />
                 </div>
@@ -663,7 +663,7 @@
                     type="button"
                     @click.stop="loadMoreRootChildren"
                     :disabled="rootChildrenLoadingMore"
-                    class="flex items-center gap-1.5 ml-6 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline disabled:opacity-50"
+                    class="flex items-center gap-1.5 ml-6 mt-0.5 mb-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50"
                 >
                     <span v-if="rootChildrenLoadingMore" class="icon-spinner animate-spin text-sm"></span>
                     <span>@lang('dam::app.admin.dam.index.directory.load-more')</span>

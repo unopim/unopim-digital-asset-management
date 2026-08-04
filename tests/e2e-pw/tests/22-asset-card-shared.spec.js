@@ -37,13 +37,13 @@ test.describe('DAM Asset Card — Gallery view', () => {
     await expect(badge).toHaveText(/PDF/i);
   });
 
-  test('extension badge on card shows violet class for video asset', async ({ adminPage }) => {
+  test('extension badge on card shows primary class for video asset', async ({ adminPage }) => {
     await ensureAssetOfTypeExists(adminPage, VIDEO_ASSET, 'sample.mp4');
     await navigateTo(adminPage, 'dam');
     await searchInDataGrid(adminPage, 'sample.mp4');
 
     const badge = adminPage
-      .locator('.image-card span.bg-violet-600')
+      .locator('.image-card span.bg-primary-600')
       .first();
     await expect(badge).toBeVisible({ timeout: 15000 });
     await expect(badge).toHaveText(/MP4/i);

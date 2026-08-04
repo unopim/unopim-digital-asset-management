@@ -12,7 +12,7 @@
                             @{{ headerLabel }}
                         </p>
                         <span
-                            class="icon-cancel text-3xl cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 hover:rounded-md"
+                            class="icon-cancel text-3xl cursor-pointer hover:bg-primary-50 dark:hover:bg-cherry-800 hover:rounded-md"
                             @click="toggle"
                         ></span>
                     </div>
@@ -88,7 +88,7 @@
                                         class="peer hidden"
                                         v-model="showAdvanced"
                                     />
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl"></span>
                                     <span class="text-sm text-gray-600 dark:text-slate-300">
                                         @lang('dam::app.admin.dam.share.modal.advanced')
                                     </span>
@@ -106,7 +106,7 @@
                                             type="text"
                                             v-model="advancedName"
                                             :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
-                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
+                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                         />
                                     </div>
 

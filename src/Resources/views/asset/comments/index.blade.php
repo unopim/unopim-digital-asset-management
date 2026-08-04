@@ -50,7 +50,7 @@
                                 <button
                                     v-if="!openReplies[comment.id]"
                                     type="button"
-                                    class="inline-flex items-center gap-1 text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline"
+                                    class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
                                     @click="toggleReply(comment.id)">
                                     <span class="icon-reply"></span>
                                     @lang('dam::app.admin.dam.asset.comments.reply')
@@ -70,7 +70,7 @@
                     <div
                         v-else
                         class="flex flex-col px-4 py-4 justify-center gap-2 text-center items-center text-xl text-zinc-800 dark:text-slate-50 font-bold leading-normal m-auto">
-                        <svg class="text-violet-600 dark:text-violet-400" width="96" height="97" viewBox="0 0 96 97" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="text-primary-600 dark:text-primary-400" width="96" height="97" viewBox="0 0 96 97" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M50.0009 12.185C46.4387 12.1301 42.8758 12.2196 39.3209 12.453C22.5849 13.565 9.25687 27.081 8.16087 44.053C7.94898 47.4096 7.94898 50.7763 8.16087 54.133C8.56087 60.313 11.2929 66.037 14.5129 70.869C16.3809 74.249 15.1489 78.469 13.2009 82.161C11.8009 84.821 11.0969 86.149 11.6609 87.109C12.2209 88.069 13.4809 88.101 15.9969 88.161C20.9769 88.281 24.3329 86.873 26.9969 84.909C28.5049 83.793 29.2609 83.237 29.7809 83.173C30.3009 83.109 31.3289 83.533 33.3769 84.373C35.2169 85.133 37.3569 85.601 39.3169 85.733C45.0169 86.109 50.9729 86.109 56.6849 85.733C73.4169 84.621 86.7449 71.101 87.8409 54.133C88.0089 51.513 88.0449 48.821 87.9489 46.169M64.0009 8.16898L88.0009 32.169M64.0009 32.169L88.0009 8.16898M34.0009 60.169H62.0009M34.0009 40.169H48.0009" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                         <p>@lang('dam::app.admin.dam.asset.comments.no-comments')</p>
@@ -94,7 +94,7 @@
                 <textarea
                     ref="textarea"
                     v-model="commentText"
-                    class="w-full border border-gray-300 dark:border-cherry-800 bg-white dark:bg-cherry-900 rounded-lg p-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y"
+                    class="w-full border border-gray-300 dark:border-cherry-800 bg-white dark:bg-cherry-900 rounded-lg p-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
                     rows="3"
                     maxlength="1000"
                     :placeholder="placeholderLabel"
@@ -146,7 +146,7 @@
 
             <div
                 v-else
-                class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-violet-500 text-sm text-white font-semibold"
+                class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-primary-500 text-sm text-white font-semibold"
                 v-text="initial"></div>
 
             <div class="flex-1 min-w-0">
@@ -164,7 +164,7 @@
                         <button
                             v-if="canEdit"
                             type="button"
-                            class="text-violet-600 dark:text-violet-400 hover:underline"
+                            class="text-primary-600 dark:text-primary-400 hover:underline"
                             @click="startEdit">
                             @lang('dam::app.admin.dam.asset.comments.edit-btn')
                         </button>
@@ -181,7 +181,7 @@
                 <div v-if="isEditing" class="mt-2 flex flex-col gap-2">
                     <textarea
                         v-model="editText"
-                        class="w-full border border-gray-300 dark:border-cherry-800 bg-white dark:bg-cherry-900 rounded-lg p-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y"
+                        class="w-full border border-gray-300 dark:border-cherry-800 bg-white dark:bg-cherry-900 rounded-lg p-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-y"
                         rows="3"
                         maxlength="1000"
                         @keydown.meta.enter.prevent="saveEdit"

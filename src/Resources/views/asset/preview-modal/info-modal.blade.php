@@ -6,7 +6,7 @@
     <div class="absolute inset-0 bg-black/60" @click="isInfoOpen = false"></div>
     <div class="relative z-10 w-96 mx-4 rounded-xl bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10 overflow-hidden">
         <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-            <span class="icon-information text-xl text-violet-600 dark:text-violet-400"></span>
+            <span class="icon-information text-xl text-primary-600 dark:text-primary-400"></span>
             <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white">@lang('dam::app.admin.dam.asset.edit.file-info')</p>
             <button
                 type="button"

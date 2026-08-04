@@ -67,4 +67,37 @@ test.describe('DAM Asset Comments', () => {
       adminPage.locator('#app').getByText(commentText).first()
     ).toBeVisible({ timeout: 20000 });
   });
+
+  test('comment tab badge grows by exactly one after SPA tab navigation', async ({ adminPage }) => {
+    const uid = generateUid();
+    const commentText = `Badge comment ${uid}`;
+
+    await navigateToCommentsTab(adminPage);
+
+    const editUrl = adminPage.url().split('?')[0];
+
+    await adminPage.evaluate(async (url) => {
+      for (const suffix of ['?properties', '?comments', '', '?comments']) {
+        window.unopim.visit(url + suffix);
+        await new Promise(resolve => setTimeout(resolve, 2500));
+      }
+    }, editUrl);
+
+    const interceptors = await adminPage.evaluate(
+      () => window.axios.interceptors.response.handlers.filter(Boolean).length
+    );
+    expect(interceptors).toBe(1);
+
+    const badge = adminPage.locator('[data-tab-badge="comments"]').first();
+
+    const before = Number((await badge.textContent().catch(() => '0'))?.trim() || 0);
+
+    await adminPage.locator('#app textarea').first().fill(commentText);
+    await adminPage.locator('#app').getByRole('button', { name: /Post Comment/i }).first().click();
+
+    await expect(adminPage.locator('#app').getByText(commentText).first())
+      .toBeVisible({ timeout: 20000 });
+
+    await expect(badge).toHaveText(String(before + 1), { timeout: 10000 });
+  });
 });

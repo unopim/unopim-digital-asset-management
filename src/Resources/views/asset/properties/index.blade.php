@@ -54,7 +54,7 @@
                 <template #body="{ columns, records, performAction, available, selectAllRecords, setPropertySelectionMode, applied }">
                     <div
                         v-for="record in records"
-                        class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 dark:hover:bg-cherry-800"
+                        class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-primary-50 dark:hover:bg-cherry-800"
                         :style="`grid-template-columns: repeat(${gridsCount}, minmax(0, 1fr))`"
                     >
                         @if (bouncer()->hasPermission('dam.asset.property.delete'))
@@ -70,7 +70,7 @@
                                         @change="setCurrentSelectionMode"
                                     >
 
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl">
                                     </span>
                                 </label>
                             </p>
@@ -90,7 +90,7 @@
                                     <span
                                         :class="record.actions.find(action => action.index === 'edit')?.icon"
                                         title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.edit')"
-                                        class="cursor-pointer icon-edit rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer icon-edit rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     >
                                     </span>
                                 </a>
@@ -101,7 +101,7 @@
                                     <span
                                         :class="record.actions.find(action => action.index === 'delete')?.icon"
                                         title="@lang('dam::app.admin.dam.asset.properties.index.datagrid.delete')"
-                                        class="cursor-pointer icon-delete rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer icon-delete rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     >
                                     </span>
                                 </a>
@@ -255,7 +255,7 @@
                                     type="checkbox"
                                     name="is_filterable"
                                     value="1"
-                                    class="w-4 h-4 accent-violet-600"
+                                    class="w-4 h-4 accent-primary-600"
                                     :checked="!!selectedProperty.is_filterable"
                                     @change="selectedProperty.is_filterable = $event.target.checked ? 1 : 0"
                                 />

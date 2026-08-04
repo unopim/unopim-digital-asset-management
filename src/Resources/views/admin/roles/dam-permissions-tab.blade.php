@@ -40,7 +40,7 @@
                     class="sr-only peer"
                     {{ $allDirectories ? 'checked' : '' }}
                 />
-                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer"></span>
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer"></span>
                 <span class="font-semibold text-gray-800 dark:text-white text-sm">
                     @lang('dam::app.admin.permissions.all-directories')
                 </span>
@@ -55,7 +55,7 @@
                     class="sr-only peer"
                     {{ $inheritChildren ? 'checked' : '' }}
                 />
-                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-violet-700 peer-disabled:opacity-70 peer-disabled:cursor-not-allowed cursor-pointer"></span>
+                <span class="icon-checkbox-normal text-2xl peer-checked:icon-checkbox-check peer-checked:text-primary-700 peer-disabled:opacity-70 peer-disabled:cursor-not-allowed cursor-pointer"></span>
                 <span class="font-semibold text-gray-800 dark:text-white text-sm">
                     @lang('dam::app.admin.permissions.inherit-children')
                 </span>
@@ -249,7 +249,7 @@
                             var chevronIcon = node.expanded ? 'icon-chevron-down' : 'icon-chevron-right';
                             chevronHtml = '<i class="' + chevronIcon
                                 + ' text-xl rounded-md cursor-pointer transition-all'
-                                + ' hover:bg-violet-50 dark:hover:bg-cherry-800"'
+                                + ' hover:bg-primary-50 dark:hover:bg-cherry-800"'
                                 + ' data-dam-chevron="' + id + '"></i>';
                         } else {
                             chevronHtml = '<i class="text-xl" style="visibility:hidden"></i>';
@@ -264,7 +264,7 @@
                             +   '<i class="' + folderIcon + ' text-2xl cursor-pointer"></i>'
                             +   '<label class="inline-flex gap-2.5 w-max p-1.5 items-center cursor-pointer select-none group">'
                             +     '<input type="checkbox" class="hidden peer dam-perm-cb" data-id="' + id + '"' + checkedAttr + ' />'
-                            +     '<span class="icon-checkbox-normal rounded-md text-2xl cursor-pointer peer-checked:icon-checkbox-check peer-checked:text-violet-700"></span>'
+                            +     '<span class="icon-checkbox-normal rounded-md text-2xl cursor-pointer peer-checked:icon-checkbox-check peer-checked:text-primary-700"></span>'
                             +     '<div class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">'
                             +       escapeHtml(node.name)
                             +     '</div>'

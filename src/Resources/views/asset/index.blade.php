@@ -593,8 +593,8 @@
                             type="button"
                             class="px-1 py-0.5 rounded transition-colors"
                             :class="i === crumbs.length - 1
-                                ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                                : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
+                                ? 'text-primary-700 dark:text-primary-300 font-semibold cursor-default'
+                                : 'text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 hover:underline cursor-pointer'"
                             :disabled="i === crumbs.length - 1"
                             @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
                         >@{{ crumb.name }}</button>

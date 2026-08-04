@@ -795,7 +795,7 @@ class AssetController extends Controller
             ? route('admin.dam.file.cover-art', $asset->id)
             : null;
 
-        $typeColor = 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300';
+        $typeColor = 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300';
 
         $bytes = (int) ($asset->file_size ?? 0);
         $fileSize = $bytes >= 1048576

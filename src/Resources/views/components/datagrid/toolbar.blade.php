@@ -31,7 +31,7 @@
                                 v-if="massAction?.options?.length"
                             >
                                 <a
-                                    class="flex gap-1.5 justify-between whitespace-no-wrap cursor-not-allowed rounded-t px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-cherry-800"
+                                    class="flex gap-1.5 justify-between whitespace-no-wrap cursor-not-allowed rounded-t px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-cherry-800"
                                     href="javascript:void(0);"
                                 >
                                     <i
@@ -51,7 +51,7 @@
                                 <ul class="absolute ltr:left-full rtl:right-full top-0 z-10 hidden w-max min-w-[150px] border dark:border-cherry-800 rounded bg-white dark:bg-cherry-800 shadow-[0_5px_20px_rgba(0,0,0,0.15)] group-hover/item:block">
                                     <li v-for="option in massAction.options">
                                         <a
-                                            class="whitespace-no-wrap block rounded-t px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-cherry-800"
+                                            class="whitespace-no-wrap block rounded-t px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-cherry-800"
                                             href="javascript:void(0);"
                                             v-text="option.label"
                                             @click="performMassAction(massAction, option)"
@@ -63,7 +63,7 @@
 
                             <li v-else>
                                 <a
-                                    class="flex gap-1.5 whitespace-no-wrap rounded-b px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-cherry-800"
+                                    class="flex gap-1.5 whitespace-no-wrap rounded-b px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-cherry-800"
                                     href="javascript:void(0);"
                                     @click="performMassAction(massAction)"
                                 >
@@ -128,7 +128,7 @@
                     <div>
                         <div
                             class="relative inline-flex w-full max-w-max ltr:pl-3 rtl:pr-3 ltr:pr-5 rtl:pl-5 cursor-pointer select-none appearance-none items-center justify-between gap-x-1 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-1 py-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:outline-none focus:ring-2"
-                            :class="{'[&>*]:text-violet-700 [&>*]:dark:text-white': applied.filters.columns.filter(c => !['all', 'directory_id', 'directory_asset_id'].includes(c.index)).length > 0}"
+                            :class="{'[&>*]:text-primary-700 [&>*]:dark:text-white': hasAppliedFilters()}"
                         >
                             <span class="icon-filter text-2xl"></span>
 
@@ -137,8 +137,10 @@
                             </span>
 
                             <span
-                                class="icon-dot absolute top-0.5 right-1 text-2xl font-bold"
-                                v-if="applied.filters.columns.filter(c => !['all', 'directory_id', 'directory_asset_id'].includes(c.index)).length > 0"
+                                class="ltr:ml-0.5 rtl:mr-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-100 px-1.5 text-xs font-medium text-primary-700 dark:bg-cherry-800 dark:text-primary-400"
+                                data-applied-filter-count
+                                v-if="hasAppliedFilters()"
+                                v-text="appliedFilterCount()"
                             ></span>
                         </div>
 
@@ -157,12 +159,28 @@
 
                 <x-slot:content class="!p-5">
                     <x-dam::datagrid.filters />
-                        <div
-                            class="primary-button block text-center"
+                </x-slot>
+
+                <x-slot:footer class="mt-auto border-t border-gray-100 bg-white p-5 dark:border-cherry-800 dark:bg-cherry-800">
+                    <div class="flex flex-col gap-y-1">
+                        <button
+                            type="button"
+                            class="primary-button w-full justify-center text-center"
                             @click="runFilters()"
                         >
                             @lang('admin::app.components.datagrid.filters.save')
-                        </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="transparent-button justify-center self-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                            data-clear-all-filters
+                            :disabled="! hasAppliedFilters()"
+                            @click="clearAllFilters()"
+                        >
+                            @lang('admin::app.components.datagrid.filters.custom-filters.clear-all')
+                        </button>
+                    </div>
                 </x-slot>
             </x-admin::drawer>
 
@@ -213,7 +231,7 @@
                 <div class="flex items-center gap-1">
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
                         @click="changePage('first')"
                         title="@lang('admin::app.components.datagrid.toolbar.pagination.first-page')"
@@ -224,7 +242,7 @@
 
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         :class="{ 'opacity-40 pointer-events-none': available.meta.current_page <= 1 }"
                         @click="changePage('previous')"
                         title="@lang('admin::app.components.datagrid.toolbar.pagination.previous-page')"
@@ -235,7 +253,7 @@
 
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
                         @click="changePage('next')"
                         title="@lang('admin::app.components.datagrid.toolbar.pagination.next-page')"
@@ -246,7 +264,7 @@
 
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         :class="{ 'opacity-40 pointer-events-none': available.meta.current_page >= available.meta.last_page }"
                         @click="changePage('last')"
                         title="@lang('admin::app.components.datagrid.toolbar.pagination.last-page')"

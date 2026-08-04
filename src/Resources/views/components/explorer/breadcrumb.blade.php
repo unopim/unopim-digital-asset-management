@@ -48,10 +48,10 @@
                     type="button"
                     class="px-1 py-0.5 rounded transition-colors max-w-[80px] sm:max-w-[120px] truncate shrink-0"
                     :class="i === breadcrumbs.length - 1
-                        ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
+                        ? 'text-primary-700 dark:text-primary-300 font-semibold cursor-default'
                         : crumbDropTarget === crumb.id
-                            ? 'text-violet-700 dark:text-violet-300 cursor-pointer bg-violet-100 dark:bg-violet-900/40 ring-1 ring-violet-400'
-                            : 'text-gray-500 dark:text-gray-300 hover:text-violet-700 hover:underline cursor-pointer'"
+                            ? 'text-primary-700 dark:text-primary-300 cursor-pointer bg-primary-100 dark:bg-primary-900/40 ring-1 ring-primary-400'
+                            : 'text-gray-500 dark:text-gray-300 hover:text-primary-700 hover:underline cursor-pointer'"
                     @click="i < breadcrumbs.length - 1 ? $emit('navigate', crumb) : null"
                     @contextmenu.prevent.stop="showCrumbCtx($event, crumb)"
                     @dragover.prevent="onDragOver($event, crumb)"

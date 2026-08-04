@@ -140,7 +140,7 @@
                         @if ($prevUrl)
                             <a
                                 href="{{ $prevUrl }}"
-                                class="dam-share-nav absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                class="dam-share-nav absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                 title="@lang('dam::app.admin.dam.asset.edit.previous')"
                                 aria-label="@lang('dam::app.admin.dam.asset.edit.previous')"
                             >
@@ -151,7 +151,7 @@
                         @if ($nextUrl)
                             <a
                                 href="{{ $nextUrl }}"
-                                class="dam-share-nav absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                class="dam-share-nav absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                 title="@lang('dam::app.admin.dam.asset.edit.next')"
                                 aria-label="@lang('dam::app.admin.dam.asset.edit.next')"
                             >

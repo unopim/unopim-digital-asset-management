@@ -14,11 +14,11 @@
                 v-for="bm in bookmarks"
                 :key="bm.id"
                 class="group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors"
-                :class="activeId === bm.directory_id ? 'bg-violet-100 dark:bg-cherry-800 text-violet-700 dark:text-violet-400' : 'hover:bg-gray-100 dark:hover:bg-cherry-800 text-zinc-700 dark:text-white'"
+                :class="activeId === bm.directory_id ? 'bg-primary-100 dark:bg-cherry-800 text-primary-700 dark:text-primary-400' : 'hover:bg-gray-100 dark:hover:bg-cherry-800 text-zinc-700 dark:text-white'"
                 :data-bookmark-id="bm.id"
                 @click="navigate(bm)"
             >
-                <i class="icon-star text-lg text-violet-400 shrink-0"></i>
+                <i class="icon-star text-lg text-primary-400 shrink-0"></i>
                 <span class="text-sm flex-1 truncate">@{{ bm.name }}</span>
                 <span
                     class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-base leading-none px-1 rounded transition-colors shrink-0"
@@ -35,10 +35,10 @@
 
         <div
             v-if="dragOver"
-            class="absolute inset-0 rounded-lg border-2 border-dashed border-violet-400 bg-violet-50/80 dark:bg-violet-900/40 flex flex-col items-center justify-center gap-2 pointer-events-none z-10"
+            class="absolute inset-0 rounded-lg border-2 border-dashed border-primary-400 bg-primary-50/80 dark:bg-primary-900/40 flex flex-col items-center justify-center gap-2 pointer-events-none z-10"
         >
-            <i class="icon-star text-3xl text-violet-400 dark:text-violet-500"></i>
-            <span class="text-xs font-semibold text-violet-600 dark:text-violet-300 text-center px-2">
+            <i class="icon-star text-3xl text-primary-400 dark:text-primary-500"></i>
+            <span class="text-xs font-semibold text-primary-600 dark:text-primary-300 text-center px-2">
                 @lang('dam::app.admin.explorer.bookmarks.drag-hint')
             </span>
         </div>

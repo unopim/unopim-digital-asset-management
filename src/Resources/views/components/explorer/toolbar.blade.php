@@ -17,8 +17,8 @@
                     <span
                         class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
                         :class="{
-                            'peer-checked:icon-checkbox-check peer-checked:text-violet-700': selection.mode === 'all',
-                            'peer-checked:icon-checkbox-partial peer-checked:text-violet-700': selection.mode === 'partial',
+                            'peer-checked:icon-checkbox-check peer-checked:text-primary-700': selection.mode === 'all',
+                            'peer-checked:icon-checkbox-partial peer-checked:text-primary-700': selection.mode === 'partial',
                         }"
                     ></span>
                 </label>
@@ -29,7 +29,7 @@
                         <x-slot:toggle>
                             <button
                                 type="button"
-                                class="flex items-center gap-x-1.5 rounded-md border border-violet-300 bg-violet-50 dark:bg-violet-900/30 dark:border-violet-700 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition"
+                                class="flex items-center gap-x-1.5 rounded-md border border-primary-300 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-700 px-3 py-1.5 text-sm font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition"
                             >
                                 @lang('dam::app.admin.explorer.mass-actions.select-action')
                                 <span class="icon-chevron-down text-2xl"></span>
@@ -113,7 +113,7 @@
                         <div>
                             <div
                                 class="relative inline-flex w-full max-w-max ltr:pl-3 rtl:pr-3 ltr:pr-5 rtl:pl-5 cursor-pointer select-none appearance-none items-center justify-between gap-x-1 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-1 py-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:outline-none focus:ring-2"
-                                :class="{'[&>*]:text-violet-700 [&>*]:dark:text-white': activeFilterCount > 0}"
+                                :class="{'[&>*]:text-primary-700 [&>*]:dark:text-white': hasAppliedFilters()}"
                             >
                                 <span class="icon-filter text-2xl"></span>
 
@@ -122,8 +122,10 @@
                                 </span>
 
                                 <span
-                                    class="icon-dot absolute top-0.5 right-1 text-2xl font-bold"
-                                    v-if="activeFilterCount > 0"
+                                    class="ltr:ml-0.5 rtl:mr-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-100 px-1.5 text-xs font-medium text-primary-700 dark:bg-cherry-800 dark:text-primary-400"
+                                    data-applied-filter-count
+                                    v-if="hasAppliedFilters()"
+                                    v-text="appliedFilterCount()"
                                 ></span>
                             </div>
                         </div>
@@ -139,14 +141,29 @@
 
                     <x-slot:content class="!p-5">
                         <x-dam::datagrid.filters />
-
-                        <div
-                            class="primary-button block text-center mt-4"
-                            @click="runFilters()"
-                        >
-                            @lang('admin::app.components.datagrid.filters.save')
-                        </div>
                     </x-slot:content>
+
+                    <x-slot:footer class="mt-auto border-t border-gray-100 bg-white p-5 dark:border-cherry-800 dark:bg-cherry-800">
+                        <div class="flex flex-col gap-y-1">
+                            <button
+                                type="button"
+                                class="primary-button w-full justify-center text-center"
+                                @click="runFilters()"
+                            >
+                                @lang('admin::app.components.datagrid.filters.save')
+                            </button>
+
+                            <button
+                                type="button"
+                                class="transparent-button justify-center self-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                data-clear-all-filters
+                                :disabled="! hasAppliedFilters()"
+                                @click="clearAllFilters()"
+                            >
+                                @lang('admin::app.components.datagrid.filters.custom-filters.clear-all')
+                            </button>
+                        </div>
+                    </x-slot:footer>
                 </x-admin::drawer>
 
                 <v-dam-explorer-pager

@@ -17,8 +17,8 @@
                     <span
                         class="cursor-pointer transition-colors"
                         :class="i === breadcrumbs.length - 1
-                            ? 'text-violet-700 dark:text-violet-400 font-semibold'
-                            : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400'"
+                            ? 'text-primary-700 dark:text-primary-400 font-semibold'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400'"
                         @click="navigateBreadcrumb(crumb)"
                         v-text="crumb.name"
                     ></span>
@@ -89,6 +89,8 @@
                 return {
                     isLoading: false,
                     searchDebounceTimer: null,
+                    expandedFilter: null,
+                    hiddenFilterIndices: ['all', 'directory_id', 'directory_asset_id'],
 
                     breadcrumbs: [],
 
@@ -405,6 +407,76 @@
                 },
 
                 runFilters() {
+                    this.applied.pagination.page = 1;
+
+                    this.get();
+                },
+
+                filterLabel(column) {
+                    return column.filter_label ?? column.label;
+                },
+
+                getActiveFilterColumns() {
+                    return (this.available.columns ?? []).filter(column => column.filterable);
+                },
+
+                isFilterExpanded(columnIndex) {
+                    return this.expandedFilter === columnIndex;
+                },
+
+                toggleFilterEditor(columnIndex) {
+                    this.expandedFilter = this.isFilterExpanded(columnIndex) ? null : columnIndex;
+                },
+
+                filterHasValue(column) {
+                    return this.hasAnyAppliedColumnValues(column.index);
+                },
+
+                appliedValuesSummary(column, values) {
+                    if (column.type === 'boolean') {
+                        return values
+                            .map(value => column.options?.find(option => option.value == value)?.label ?? value)
+                            .join(', ');
+                    }
+
+                    if (column.type === 'dropdown') {
+                        if (column.options?.type === 'basic') {
+                            return values
+                                .map(value => column.options.params.options.find(option => option.value == value)?.label ?? value)
+                                .join(', ');
+                        }
+
+                        return @json(trans('admin::app.components.datagrid.filters.values-selected')).replace(':count', values.length);
+                    }
+
+                    return values
+                        .map(value => Array.isArray(value) ? value.filter(Boolean).join(' – ') : value)
+                        .join(', ');
+                },
+
+                collapsedSummary(column) {
+                    return this.filterHasValue(column)
+                        ? this.appliedValuesSummary(column, this.getAppliedColumnValues(column.index))
+                        : @json(trans('admin::app.components.datagrid.filters.no-value'));
+                },
+
+                appliedFilterCount() {
+                    return this.applied.filters.columns.filter(
+                        column => ! this.hiddenFilterIndices.includes(column.index) && (column.value?.length ?? 0) > 0
+                    ).length;
+                },
+
+                hasAppliedFilters() {
+                    return this.appliedFilterCount() > 0;
+                },
+
+                clearAllFilters() {
+                    this.applied.filters.columns = this.applied.filters.columns.filter(
+                        column => this.hiddenFilterIndices.includes(column.index)
+                    );
+
+                    this.applied.pagination.page = 1;
+
                     this.get();
                 },
 

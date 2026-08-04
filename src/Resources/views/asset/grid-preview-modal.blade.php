@@ -11,7 +11,7 @@
             v-if="isLoading"
             class="fixed inset-0 z-[10010] flex items-center justify-center bg-white dark:bg-gray-900"
         >
-            <svg class="animate-spin h-10 w-10 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-10 w-10 text-primary-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -45,7 +45,7 @@
                         previewPath:           '',
                         placeholderSvg:        '',
                         coverArtUrl:           null,
-                        typeColor:             'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+                        typeColor:             'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300',
                         fileSize:              '',
                         downloadUrl:           '',
                         downloadCompressedUrl: '',
@@ -128,7 +128,7 @@
                                 previewPath:           payload.previewPath || '',
                                 placeholderSvg:        payload.placeholderSvg || '',
                                 coverArtUrl:           payload.coverArtUrl || null,
-                                typeColor:             payload.typeColor || 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+                                typeColor:             payload.typeColor || 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300',
                                 fileSize:              payload.fileSize || '',
                                 downloadUrl:           payload.downloadUrl || '',
                                 downloadCompressedUrl: payload.downloadCompressedUrl || '',

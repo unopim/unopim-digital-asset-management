@@ -34,7 +34,7 @@
                     class="flex flex-col items-center gap-4 bg-white dark:bg-cherry-800 rounded-xl px-12 py-8 shadow-2xl border border-gray-200 dark:border-cherry-600 w-96 max-w-[90vw] relative"
                     style="min-width: 360px; z-index: 99999;"
                 >
-                    <svg class="animate-spin h-12 w-12 text-violet-600 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-12 w-12 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
@@ -97,6 +97,8 @@
                     actionStatusLabel: '',
                     treeBusy: false,
                     searchDebounceTimer: null,
+                    expandedFilter: null,
+                    hiddenFilterIndices: ['all', 'directory_id', 'directory_asset_id'],
 
                     available: {
                         id: null,
@@ -439,6 +441,76 @@
                 },
 
                 runFilters() {
+                    this.applied.pagination.page = 1;
+
+                    this.get();
+                },
+
+                filterLabel(column) {
+                    return column.filter_label ?? column.label;
+                },
+
+                getActiveFilterColumns() {
+                    return (this.available.columns ?? []).filter(column => column.filterable);
+                },
+
+                isFilterExpanded(columnIndex) {
+                    return this.expandedFilter === columnIndex;
+                },
+
+                toggleFilterEditor(columnIndex) {
+                    this.expandedFilter = this.isFilterExpanded(columnIndex) ? null : columnIndex;
+                },
+
+                filterHasValue(column) {
+                    return this.hasAnyAppliedColumnValues(column.index);
+                },
+
+                appliedValuesSummary(column, values) {
+                    if (column.type === 'boolean') {
+                        return values
+                            .map(value => column.options?.find(option => option.value == value)?.label ?? value)
+                            .join(', ');
+                    }
+
+                    if (column.type === 'dropdown') {
+                        if (column.options?.type === 'basic') {
+                            return values
+                                .map(value => column.options.params.options.find(option => option.value == value)?.label ?? value)
+                                .join(', ');
+                        }
+
+                        return @json(trans('admin::app.components.datagrid.filters.values-selected')).replace(':count', values.length);
+                    }
+
+                    return values
+                        .map(value => Array.isArray(value) ? value.filter(Boolean).join(' – ') : value)
+                        .join(', ');
+                },
+
+                collapsedSummary(column) {
+                    return this.filterHasValue(column)
+                        ? this.appliedValuesSummary(column, this.getAppliedColumnValues(column.index))
+                        : @json(trans('admin::app.components.datagrid.filters.no-value'));
+                },
+
+                appliedFilterCount() {
+                    return this.applied.filters.columns.filter(
+                        column => ! this.hiddenFilterIndices.includes(column.index) && (column.value?.length ?? 0) > 0
+                    ).length;
+                },
+
+                hasAppliedFilters() {
+                    return this.appliedFilterCount() > 0;
+                },
+
+                clearAllFilters() {
+                    this.applied.filters.columns = this.applied.filters.columns.filter(
+                        column => this.hiddenFilterIndices.includes(column.index)
+                    );
+
+                    this.applied.pagination.page = 1;
+
                     this.get();
                 },
 

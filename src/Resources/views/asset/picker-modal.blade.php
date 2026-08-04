@@ -58,8 +58,8 @@
                                             <span
                                                 class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
                                                 :class="[
-                                                    meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-violet-700 ' : (
-                                                    meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-violet-700' : ''
+                                                    meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-primary-700 ' : (
+                                                    meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-primary-700' : ''
                                                     ),
                                                 ]"
                                             >
@@ -114,7 +114,7 @@
                                                 <div class="absolute inset-0 flex items-center justify-center bg-black/60 dark:bg-cherry-800/70 transition-opacity opacity-0 group-hover:opacity-100 pointer-events-none">
                                                     <button
                                                         type="button"
-                                                        class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors pointer-events-auto"
+                                                        class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-primary-600 transition-colors pointer-events-auto"
                                                         aria-label="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
                                                         @click.stop.prevent="openPreview(record[meta.primary_column])"
                                                     ></button>
@@ -131,7 +131,7 @@
                                                     @change="setCurrentSelectionMode"
                                                 >
 
-                                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
+                                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl">
                                                 </span>
 
                                                 <h2 class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>

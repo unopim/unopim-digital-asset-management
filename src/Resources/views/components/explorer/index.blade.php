@@ -24,13 +24,13 @@
                     tab.id === activeTabId
                         ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
                         : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800 dark:text-white',
-                    tabDragHover === tab.id ? 'ring-2 ring-inset ring-violet-400' : ''
+                    tabDragHover === tab.id ? 'ring-2 ring-inset ring-primary-400' : ''
                 ]"
                 @click="setActive(tab.id)"
                 @dragover.prevent="onTabDragOver($event, tab.id)"
                 @dragleave="onTabDragLeave($event, tab.id)"
             >
-                <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-violet-500' : 'text-gray-400'"></i>
+                <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-primary-500' : 'text-gray-400'"></i>
                 <span class="truncate flex-1 text-sm">@{{ tab.label }}</span>
                 <span
                     v-if="tabs.length > 1"

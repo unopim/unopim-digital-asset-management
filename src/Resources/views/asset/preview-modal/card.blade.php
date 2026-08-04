@@ -5,11 +5,11 @@
             <span v-if="i > 0" class="text-gray-400 dark:text-gray-500">/</span>
             <a
                 :href="'{{ route('admin.dam.assets.index') }}?directory_id=' + crumb.id"
-                class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline"
+                class="px-1 py-0.5 rounded text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 hover:underline"
             >@{{ crumb.name }}</a>
         </template>
         <span v-if="displayDirectoryBreadcrumb.length > 0" class="text-gray-400 dark:text-gray-500">/</span>
-        <span class="px-1 py-0.5 rounded text-violet-700 dark:text-violet-300 font-semibold truncate max-w-xs">@{{ previewData.file_name }}</span>
+        <span class="px-1 py-0.5 rounded text-primary-700 dark:text-primary-300 font-semibold truncate max-w-xs">@{{ previewData.file_name }}</span>
     </nav>
 
     <div class="flex items-center gap-1 shrink-0">
@@ -17,7 +17,7 @@
     <div class="relative" @mouseenter="infoHover = true" @mouseleave="infoHover = false">
         <button
             type="button"
-            class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-50 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-50 hover:bg-primary-50 dark:hover:bg-cherry-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             @click="isInfoOpen = true"
         >
             <span class="text-lg icon-information"></span>
@@ -39,7 +39,7 @@
     <button
         v-if="previewData.file_type === 'image'"
         type="button"
-        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-primary-50 dark:hover:bg-cherry-800 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
         title="{{ trans('dam::app.admin.dam.asset.edit.preview-modal.card.edit-image') }}"
         @click="isEditOpen = true"
     >
@@ -48,7 +48,7 @@
 
     <button
         type="button"
-        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-violet-50 dark:hover:bg-cherry-800 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+        class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-primary-50 dark:hover:bg-cherry-800 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
         title="{{ trans('dam::app.admin.dam.asset.edit.tab.preview') }}"
         @click="openPreview"
     >
@@ -96,7 +96,7 @@
             <a
                 v-if="previewData.downloadUrl"
                 :href="previewData.downloadUrl"
-                class="mt-2 inline-block text-violet-600 dark:text-violet-300 hover:underline text-sm"
+                class="mt-2 inline-block text-primary-600 dark:text-primary-300 hover:underline text-sm"
             >@lang('dam::app.admin.dam.asset.edit.button.download')</a>
         </div>
     </template>

@@ -4,8 +4,8 @@
     <div
         class="relative flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-center cursor-pointer transition-colors select-none min-w-0"
         :class="isDropTarget
-            ? 'bg-violet-200 dark:bg-violet-900/60 ring-2 ring-inset ring-violet-400'
-            : 'hover:bg-violet-100 dark:hover:bg-violet-800/50'"
+            ? 'bg-primary-200 dark:bg-primary-900/60 ring-2 ring-inset ring-primary-400'
+            : 'hover:bg-primary-100 dark:hover:bg-primary-800/50'"
         draggable="true"
         @mouseenter="hovered = true"
         @mouseleave="hovered = false"
@@ -19,7 +19,7 @@
     >
         <button
             type="button"
-            class="dam-ctx-trigger absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-cherry-900/80 hover:bg-white dark:hover:bg-cherry-900 hover:text-violet-700 dark:hover:text-violet-400 shadow-sm transition-opacity"
+            class="dam-ctx-trigger absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-cherry-900/80 hover:bg-white dark:hover:bg-cherry-900 hover:text-primary-700 dark:hover:text-primary-400 shadow-sm transition-opacity"
             :class="(hovered || anySelected) ? 'opacity-100' : 'opacity-0'"
             :title="'@lang('dam::app.admin.explorer.list.header.actions')'"
             @click.stop="$emit('ctx', { event: $event, dir })"
@@ -44,10 +44,10 @@
                     :checked="isSelected"
                     @change="$emit('toggle-select')"
                 >
-                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl bg-white/80 dark:bg-cherry-900/80"></span>
+                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 rounded-md text-2xl bg-white/80 dark:bg-cherry-900/80"></span>
             </label>
         </div>
-        <i class="icon-dam-folder text-6xl text-violet-400 dark:text-violet-500 shrink-0 leading-none"></i>
+        <i class="icon-dam-folder text-6xl text-primary-400 dark:text-primary-500 shrink-0 leading-none"></i>
         <div class="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 break-all w-full leading-tight" :title="dir.name">@{{ dir.name }}</div>
     </div>
 </script>
