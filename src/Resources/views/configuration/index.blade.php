@@ -5,28 +5,29 @@
 
     @php
         $canUpdate = bouncer()->hasPermission('dam.configuration.update');
-        // Tree is always rendered when the explorer is off, so the toggle is effectively on.
+
         $treeEffectiveOn = ! $settings['DAM_EXPLORER_ENABLED'] || $settings['DAM_EXPLORER_SHOW_TREE'];
-        $toggleClass = "rounded-full w-9 h-5 bg-gray-200 cursor-pointer peer-focus:ring-violet-300 after:bg-white dark:after:bg-white after:border-gray-300 dark:after:border-white peer-checked:bg-violet-700 dark:peer-checked:bg-violet-700 peer peer-checked:after:border-white peer-checked:after:ltr:translate-x-full peer-checked:after:rtl:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:ltr:left-0.5 after:rtl:right-0.5 peer-focus:outline-none after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:bg-cherry-800";
+        $toggleClass = "rounded-full w-9 h-5 bg-gray-200 cursor-pointer peer-focus:ring-primary-300 after:bg-white dark:after:bg-white after:border-gray-300 dark:after:border-white peer-checked:bg-primary-700 dark:peer-checked:bg-primary-700 peer peer-checked:after:border-white peer-checked:after:ltr:translate-x-full peer-checked:after:rtl:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:ltr:left-0.5 after:rtl:right-0.5 peer-focus:outline-none after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:bg-cherry-800";
     @endphp
 
-    <form method="POST" action="{{ route('admin.dam.configuration.update') }}">
-        @csrf
+    <x-admin::form
+        method="POST"
+        :action="route('admin.dam.configuration.update')"
+        ajax
+    >
+        <x-admin::layouts.page-header
+            :title="trans('dam::app.admin.configuration.title')"
+            :description="trans('dam::app.admin.configuration.description')"
+        >
+            @if ($canUpdate)
+                <x-slot:actions>
+                    <button type="submit" class="primary-button">
+                        @lang('dam::app.admin.configuration.save-btn')
+                    </button>
+                </x-slot:actions>
+            @endif
+        </x-admin::layouts.page-header>
 
-        <div class="bg-white dark:bg-cherry-800 -mx-4 px-4 pb-2.5">
-            <div class="flex gap-4 justify-between items-center max-sm:flex-wrap">
-                <p class="text-xl font-bold dark:text-white text-gray-800">
-                    @lang('dam::app.admin.configuration.title')
-                </p>
-                @if ($canUpdate)
-                <button type="submit" class="primary-button">
-                    @lang('dam::app.admin.configuration.save-btn')
-                </button>
-                @endif
-            </div>
-        </div>
-
-        {{-- Section label (left) + settings card (right), like the Magic AI settings page. --}}
         <div class="grid grid-cols-[1fr_2fr] gap-10 mt-6 max-xl:grid-cols-1 {{ $canUpdate ? '' : 'opacity-60 pointer-events-none select-none' }}">
 
             <div class="grid gap-2.5 content-start">
@@ -63,7 +64,6 @@
                     </div>
                 </div>
 
-                {{-- Show Bookmark Panel — depends on Explore View --}}
                 <div id="bookmarks-row" class="flex items-center justify-between gap-4 px-5 py-4 {{ $settings['DAM_EXPLORER_ENABLED'] ? '' : 'hidden' }}">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-gray-800 dark:text-white">
@@ -106,7 +106,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
                             @lang('dam::app.admin.configuration.directory.show-tree.hint')
                         </p>
-                        <p id="show-tree-locked-hint" class="text-xs text-violet-600 dark:text-violet-400 mt-1 {{ $settings['DAM_EXPLORER_ENABLED'] ? 'hidden' : '' }}">
+                        <p id="show-tree-locked-hint" class="text-xs text-primary-600 dark:text-primary-400 mt-1 {{ $settings['DAM_EXPLORER_ENABLED'] ? 'hidden' : '' }}">
                             @lang('dam::app.admin.configuration.directory.show-tree.locked-hint')
                         </p>
                     </div>
@@ -126,7 +126,6 @@
                     </div>
                 </div>
 
-                {{-- Show Assets in Directory Tree — depends on Show Directory Tree --}}
                 <div id="tree-show-assets-row" class="flex items-center justify-between gap-4 px-5 py-4 {{ $treeEffectiveOn ? '' : 'hidden' }}">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-gray-800 dark:text-white">
@@ -152,10 +151,8 @@
             </div>
         </div>
 
-    </form>
+    </x-admin::form>
 
-    {{-- Pushed to the scripts stack (outside the Vue #app, which strips inline scripts) and
-         invoked from the parents' native onchange, which survives Vue's compile. --}}
     @push('scripts')
     <script>
         window.damConfigSync = function (source) {
@@ -171,7 +168,6 @@
 
             if (! explorer || ! showTree) return;
 
-            // Enabling a parent switches its dependent child on by default.
             if (source === 'explorer' && explorer.checked && bookmarks) bookmarks.checked = true;
             if (source === 'tree'     && showTree.checked && showAssets) showAssets.checked = true;
 
@@ -186,8 +182,7 @@
             if (bookmarksRow) bookmarksRow.classList.toggle('hidden', ! explorerOn);
 
             if (! explorerOn) {
-                // Tree is always shown when the explorer is off: force it on + read-only.
-                // A disabled checkbox is not submitted, so the hidden input carries the value.
+
                 showTree.checked  = true;
                 showTree.disabled = true;
                 if (showTreeHidden) showTreeHidden.value = '1';

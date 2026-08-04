@@ -6,7 +6,6 @@
     {{ $slot }}
 </v-gallery-table>
 
-
 @pushOnce('scripts')
     <script
         type="text/x-template"
@@ -34,13 +33,13 @@
                         <span
                             class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
                             :class="{
-                                'peer-checked:icon-checkbox-check peer-checked:text-violet-700': $parent.applied.massActions.meta.mode === 'all',
-                                'peer-checked:icon-checkbox-partial peer-checked:text-violet-700': $parent.applied.massActions.meta.mode === 'partial',
+                                'peer-checked:icon-checkbox-check peer-checked:text-primary-700': $parent.applied.massActions.meta.mode === 'all',
+                                'peer-checked:icon-checkbox-partial peer-checked:text-primary-700': $parent.applied.massActions.meta.mode === 'partial',
                             }"
                         ></span>
 
                         <span class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white">
-                            @lang("Select All")
+                            @lang('dam::app.admin.dam.index.select-all')
                         </span>
                     </label>
                 </div>
@@ -84,7 +83,7 @@
                                         @change="$parent.setCurrentSelectionMode"
                                     >
 
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-2xl shrink-0"></span>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 rounded-md text-2xl shrink-0"></span>
                                 </label>
 
                                 <h2
@@ -157,7 +156,7 @@
                 },
 
                 editImage(recordId) {
-                    window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId);
+                    this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', recordId));
                 },
 
                 previewImage(recordId) {

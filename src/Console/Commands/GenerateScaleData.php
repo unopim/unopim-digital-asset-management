@@ -570,9 +570,6 @@ class GenerateScaleData extends Command
         $this->newLine();
     }
 
-    /**
-     * Reset a PostgreSQL sequence after explicit-ID bulk inserts.
-     */
     private function resetSequence(string $table): void
     {
         if (DB::getDriverName() !== 'pgsql') {

@@ -72,7 +72,6 @@ it('decorates each result with the top-down ancestor name chain', function () {
     $b = Directory::factory()->create(['name' => 'B', 'parent_id' => $a->id]);
     $c = Directory::factory()->create(['name' => 'C-target', 'parent_id' => $b->id]);
 
-    // Refresh nested-set columns after factory inserts.
     $root->refresh();
     $a->refresh();
     $b->refresh();

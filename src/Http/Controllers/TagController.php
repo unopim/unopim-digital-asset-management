@@ -4,7 +4,6 @@ namespace Webkul\DAM\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\DataGrids\Tag\TagDataGrid;
 use Webkul\DAM\Http\Requests\TagRequest;
@@ -13,16 +12,10 @@ use Webkul\DAM\Repositories\AssetTagRepository;
 
 class TagController extends Controller
 {
-    /** Create a new instance. */
     public function __construct(
         protected AssetTagRepository $tagRepository,
     ) {}
 
-    /**
-     * Show the tag listing page or its datagrid JSON feed.
-     *
-     * @return JsonResponse|View
-     */
     public function index()
     {
         if (request()->ajax()) {
@@ -32,9 +25,6 @@ class TagController extends Controller
         return view('dam::tag.index');
     }
 
-    /**
-     * Create a new tag.
-     */
     public function store(TagRequest $request): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.tags.create')) {
@@ -50,9 +40,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Rename an existing tag.
-     */
     public function update(TagRequest $request, int $id): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.tags.update')) {
@@ -73,9 +60,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Delete a single tag.
-     */
     public function destroy(int $id): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.tags.delete')) {
@@ -96,9 +80,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Delete many tags at once via the datagrid mass action.
-     */
     public function massDestroy(Request $request): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.tags.delete')) {
@@ -118,9 +99,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Return a searchable, paginated tag list for the assign-tags autocomplete.
-     */
     public function list(Request $request): JsonResponse
     {
         $search = trim((string) $request->input('query', ''));
@@ -145,9 +123,6 @@ class TagController extends Controller
         ]);
     }
 
-    /**
-     * Build an unauthorized JSON response.
-     */
     protected function unauthorized(): JsonResponse
     {
         return response()->json([
@@ -156,9 +131,6 @@ class TagController extends Controller
         ], 403);
     }
 
-    /**
-     * Build a not-found JSON response.
-     */
     protected function notFound(): JsonResponse
     {
         return response()->json([

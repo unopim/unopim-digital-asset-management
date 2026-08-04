@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Manajemen Aset',
                     'assets'        => 'Aset',
                     'shares'        => 'Tautan Berbagi',
                     'tags'          => 'Tag',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Pratinjau gagal',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Manajemen Aset Digital',
                 'datagrid' => [
                     'file-name'      => 'Nama File',
                     'tags'           => 'Tag',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Tinggalkan',
                 'upload-stay-page'               => 'Tetap',
                 'drop-zone-hint'                 => 'Seret file atau folder untuk mengunggah',
+                'select-all'                     => 'Pilih Semua',
+                'select-directory-to-upload'     => 'Pilih direktori tujuan unggahan.',
+                'upload-session'                 => [
+                    'uploading'            => 'Mengunggah :total berkas…',
+                    'paused'               => 'Dijeda — :done dari :total terunggah',
+                    'interrupted'          => ':done dari :total terunggah · :interrupted terhenti',
+                    'failed'               => ':done terunggah, :failed gagal',
+                    'completed'            => ':done dari :total terunggah',
+                    'create-folder-failed' => 'Gagal membuat folder',
+                ],
                 'drop-zone-no-permission'        => 'Anda tidak memiliki izin untuk mengunggah di sini.',
                 'upload-complete'                => 'Unggahan selesai',
                 'item-upload-complete'           => 'Upload selesai',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Tidak ada metadata yang tersedia',
                     'tags'                  => 'Tag',
                     'select-tags'           => 'Pilih atau Buat Tag',
+                    'tag-attach-success'    => 'Tag berhasil ditambahkan.',
+                    'tag-detach-success'    => 'Tag berhasil dihapus dari aset.',
                     'directory-path'        => 'Jalur Direktori',
                     'no-directory'          => 'Tidak ada direktori yang ditetapkan',
                     'details'               => 'Detail',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'File tidak ditemukan untuk ditampilkan',
                     'not-found-to-download'               => 'File tidak ditemukan untuk diunduh',
                     'edit-success'                        => 'File Berhasil Diedit',
+                    'no-file-name'                        => 'tanpa nama berkas',
                     'show-success'                        => 'File Berhasil Ditemukan',
                     'update-success'                      => 'File Berhasil Diperbarui',
                     'not-found-to-update'                 => 'File Tidak Ada',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Manajemen Aset',
             'asset'            => 'Aset',
             'property'         => 'Properti',
             'comment'          => 'Komentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Aksi ini tidak sah.',
         ],
         'configuration' => [
-            'save-btn' => 'Simpan',
-            'title'    => 'Konfigurasi DAM',
-            'saved'    => 'Konfigurasi berhasil disimpan.',
-            'general'  => [
+            'save-btn'    => 'Simpan',
+            'title'       => 'Konfigurasi',
+            'saved'       => 'Konfigurasi berhasil disimpan.',
+            'description' => 'Konfigurasikan pengaturan Manajemen Aset Digital (DAM) untuk aplikasi Anda.',
+            'general'     => [
                 'title'            => 'Pengaturan Umum',
                 'description'      => 'Pengaturan ini mengontrol keseluruhan pengalaman penjelajahan DAM.',
                 'explorer-enabled' => [

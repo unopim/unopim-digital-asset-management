@@ -35,7 +35,7 @@ window._damVideoPlayer = {
         videoSpeedMenuStyle() {
             const r = this._videoSpeedBtnRect;
             if (!r) return {};
-            // 6 items × ~32px + 8px padding ≈ 200px menu height
+
             const menuH = 208;
             const top   = r.top - menuH - 8;
             return {

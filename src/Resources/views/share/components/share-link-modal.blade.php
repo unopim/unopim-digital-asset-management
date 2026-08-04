@@ -1,7 +1,4 @@
-{{--
-    Share-link modal. Triggered via:
-        this.$emitter.emit('open-share-modal', { targetType: 'asset'|'directory', targetId: <id> })
---}}
+
 <script
     type="text/x-template"
     id="v-share-link-modal-template"
@@ -15,7 +12,7 @@
                             @{{ headerLabel }}
                         </p>
                         <span
-                            class="icon-cancel text-3xl cursor-pointer hover:bg-violet-50 dark:hover:bg-cherry-800 hover:rounded-md"
+                            class="icon-cancel text-3xl cursor-pointer hover:bg-primary-50 dark:hover:bg-cherry-800 hover:rounded-md"
                             @click="toggle"
                         ></span>
                     </div>
@@ -91,7 +88,7 @@
                                         class="peer hidden"
                                         v-model="showAdvanced"
                                     />
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl"></span>
                                     <span class="text-sm text-gray-600 dark:text-slate-300">
                                         @lang('dam::app.admin.dam.share.modal.advanced')
                                     </span>
@@ -109,7 +106,7 @@
                                             type="text"
                                             v-model="advancedName"
                                             :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
-                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
+                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                         />
                                     </div>
 
@@ -200,7 +197,7 @@
                 currentShare: null,
                 showAdvanced: false,
                 advancedName: '',
-                // Use '' (empty string) as the no-expiry sentinel so track-by="value" works
+
                 expiryOptions: [
                     { value: '',  label: @js(trans('dam::app.admin.dam.share.modal.no-expiry')) },
                     { value: 1,   label: @js(trans('dam::app.admin.dam.share.modal.expiry-1d')) },
@@ -220,7 +217,7 @@
             },
         },
         mounted() {
-            this.expiryOption = this.expiryOptions[0]; // no expiry default
+            this.expiryOption = this.expiryOptions[0];
 
             this.openHandler = ({ targetType, targetId } = {}) => {
                 if (!targetType || !targetId) return;
@@ -267,7 +264,7 @@
             loadShares() {
                 if (!this.targetType || !this.targetId) return;
                 this.isLoading = true;
-                const url = `{{ route('admin.dam.shares.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
+                const url = `{{ route('admin.dam.shared-links.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
                     .replace('__type', this.targetType)
                     .replace('__id', this.targetId);
 
@@ -303,7 +300,7 @@
                     name: this.showAdvanced ? (this.advancedName?.trim() || null) : null,
                 };
 
-                this.$axios.post(`{{ route('admin.dam.shares.store') }}`, payload)
+                this.$axios.post(`{{ route('admin.dam.shared-links.store') }}`, payload)
                     .then(({ data }) => {
                         if (data?.share) {
                             this.currentShare = data.share;
@@ -380,12 +377,12 @@
             revoke(share) {
                 if (this.isRevoking) return;
                 this.isRevoking = true;
-                const url = `{{ route('admin.dam.shares.revoke', ':id') }}`.replace(':id', share.id);
+                const url = `{{ route('admin.dam.shared-links.revoke', ':id') }}`.replace(':id', share.id);
 
                 this.$axios.patch(url)
                     .then(({ data }) => {
                         if (data?.success) {
-                            // Keep currentShare so reauthorize is available; reload to get fresh status.
+
                             this.loadShares();
                             this.$emitter.emit('add-flash', {
                                 type: 'success',

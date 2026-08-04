@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Assetbeheer',
                     'assets'        => 'Assets',
                     'shares'        => 'Gedeelde links',
                     'tags'          => 'Tags',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Voorbeeld mislukt',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digitaal assetbeheer',
                 'datagrid' => [
                     'file-name'      => 'Bestandsnaam',
                     'tags'           => 'Tags',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Verlaat',
                 'upload-stay-page'               => 'Blijf',
                 'drop-zone-hint'                 => 'Sleep bestanden of mappen om te uploaden',
+                'select-all'                     => 'Alles selecteren',
+                'select-directory-to-upload'     => 'Selecteer een map om naar te uploaden.',
+                'upload-session'                 => [
+                    'uploading'            => ':total bestand(en) uploaden…',
+                    'paused'               => 'Gepauzeerd — :done van :total geüpload',
+                    'interrupted'          => ':done van :total geüpload · :interrupted onderbroken',
+                    'failed'               => ':done geüpload, :failed mislukt',
+                    'completed'            => ':done van :total geüpload',
+                    'create-folder-failed' => 'Map kon niet worden aangemaakt',
+                ],
                 'drop-zone-no-permission'        => 'U heeft geen toestemming om hier te uploaden.',
                 'upload-complete'                => 'Upload voltooid',
                 'item-upload-complete'           => 'Upload voltooid',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Geen metadata beschikbaar',
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Kies of Maak een Tag',
+                    'tag-attach-success'    => 'Tag toegevoegd.',
+                    'tag-detach-success'    => 'Tag verwijderd van asset.',
                     'directory-path'        => 'Mappad',
                     'no-directory'          => 'Geen map toegewezen',
                     'details'               => 'Details',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Bestand niet gevonden voor weergave',
                     'not-found-to-download'               => 'Bestand niet gevonden voor download',
                     'edit-success'                        => 'Bestand succesvol geüpload',
+                    'no-file-name'                        => 'geen bestandsnaam',
                     'show-success'                        => 'Bestand succesvol gevonden',
                     'update-success'                      => 'Bestand succesvol bijgewerkt',
                     'not-found-to-update'                 => 'Bestand bestaat niet',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Assetbeheer',
             'asset'            => 'Asset',
             'property'         => 'Eigenschap',
             'comment'          => 'Opmerking',
@@ -686,10 +699,11 @@ return [
             '401' => 'Deze actie is niet toegestaan.',
         ],
         'configuration' => [
-            'save-btn' => 'Opslaan',
-            'title'    => 'DAM-configuratie',
-            'saved'    => 'Configuratie succesvol opgeslagen.',
-            'general'  => [
+            'save-btn'    => 'Opslaan',
+            'title'       => 'Configuratie',
+            'saved'       => 'Configuratie succesvol opgeslagen.',
+            'description' => 'Configureer de instellingen voor digitaal assetbeheer (DAM) voor je applicatie.',
+            'general'     => [
                 'title'            => 'Algemene instellingen',
                 'description'      => 'Deze instellingen bepalen de algehele DAM-browse-ervaring.',
                 'explorer-enabled' => [

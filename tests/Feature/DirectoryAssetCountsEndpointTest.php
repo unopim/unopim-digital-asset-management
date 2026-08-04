@@ -7,10 +7,6 @@ beforeEach(function () {
     $this->loginAsAdmin();
 });
 
-/**
- * root → parent → {leafA (2 assets), leafB (0)}; parent has 1 direct asset.
- * Built with create() so the nested-set trait assigns _lft/_rgt.
- */
 function seedCountsFixture(): array
 {
     $root = Directory::create(['name' => 'CntRoot', 'parent_id' => null]);
@@ -23,10 +19,6 @@ function seedCountsFixture(): array
 
     return [$root, $parent, $leafA, $leafB];
 }
-
-// ---------------------------------------------------------------------------
-// asset-counts endpoint
-// ---------------------------------------------------------------------------
 
 it('returns subtree asset counts for the requested directory ids', function () {
     [$root, $parent, $leafA, $leafB] = seedCountsFixture();
@@ -61,13 +53,6 @@ it('ignores non-existent directory ids', function () {
     expect($response->json("data.{$parent->id}"))->toBe(3);
     expect($response->json('data.999999'))->toBeNull();
 });
-
-// The ACL-scoped counting itself (custom role only counting granted subtrees)
-// is covered at the repository layer in DirectoryAssetCountRollupTest.
-
-// ---------------------------------------------------------------------------
-// children pagination
-// ---------------------------------------------------------------------------
 
 it('paginates children and reports has_more', function () {
     $parent = Directory::factory()->create();

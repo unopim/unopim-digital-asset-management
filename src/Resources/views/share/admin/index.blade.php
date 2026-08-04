@@ -6,15 +6,10 @@
     {!! view_render_event('unopim.dam.shares.list.before') !!}
 
     <v-dam-shares-page>
-        <div class="flex justify-between items-center">
-            <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                @lang('dam::app.admin.dam.share.index.title')
-            </p>
-        </div>
-
-        <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-            @lang('dam::app.admin.dam.share.index.description')
-        </p>
+        <x-admin::layouts.page-header
+            :title="trans('dam::app.admin.dam.share.index.title')"
+            :description="trans('dam::app.admin.dam.share.index.description')"
+        />
 
         <x-admin::shimmer.datagrid />
     </v-dam-shares-page>
@@ -24,17 +19,12 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-shares-page-template">
             <div>
-                <div class="flex justify-between items-center">
-                    <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                        @lang('dam::app.admin.dam.share.index.title')
-                    </p>
-                </div>
+                <x-admin::layouts.page-header
+                    :title="trans('dam::app.admin.dam.share.index.title')"
+                    :description="trans('dam::app.admin.dam.share.index.description')"
+                />
 
-                <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-                    @lang('dam::app.admin.dam.share.index.description')
-                </p>
-
-                <x-admin::datagrid src="{{ route('admin.dam.shares.index') }}" ref="datagrid">
+                <x-admin::datagrid src="{{ route('admin.dam.shared-links.index') }}" ref="datagrid">
                     <template #header="{ columns, actions, applied, sortPage, isLoading }">
                         <template v-if="isLoading">
                             <x-admin::shimmer.datagrid.table.head />
@@ -42,7 +32,7 @@
 
                         <template v-else>
                             <div
-                                class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900 font-semibold items-center"
+                                class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-primary-50 dark:bg-cherry-900 font-semibold items-center"
                                 :style="`grid-template-columns: repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(160px, 1fr)`"
                             >
                                 <p
@@ -77,7 +67,7 @@
                         <div
                             v-for="record in records"
                             :key="record.id"
-                            class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
+                            class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-primary-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
                             :style="`grid-template-columns: repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(160px, 1fr)`"
                         >
                             <p class="truncate">@{{ record.share_type }}</p>
@@ -98,7 +88,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'edit')?.icon"
                                         :title="record.actions.find(a => a.index === 'edit')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
 
@@ -106,7 +96,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'copy_link')?.icon"
                                         :title="record.actions.find(a => a.index === 'copy_link')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
 
@@ -117,7 +107,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'revoke')?.icon"
                                         :title="record.actions.find(a => a.index === 'revoke')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
 
@@ -128,7 +118,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'delete')?.icon"
                                         :title="record.actions.find(a => a.index === 'delete')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
                             </div>
@@ -210,7 +200,7 @@
                                         class="peer hidden"
                                         v-model="showAdvanced"
                                     />
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl"></span>
                                     <span class="text-sm text-gray-600 dark:text-slate-300">
                                         @lang('dam::app.admin.dam.share.modal.advanced')
                                     </span>
@@ -228,7 +218,7 @@
                                             type="text"
                                             v-model="advancedName"
                                             :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
-                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
+                                            class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                         />
                                     </div>
 
@@ -406,7 +396,7 @@
                     loadShares() {
                         if (!this.targetType || !this.targetId) return;
                         this.isLoading = true;
-                        const url = `{{ route('admin.dam.shares.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
+                        const url = `{{ route('admin.dam.shared-links.active_for_target', ['type' => '__type', 'targetId' => '__id']) }}`
                             .replace('__type', this.targetType)
                             .replace('__id', this.targetId);
 
@@ -445,7 +435,7 @@
                             name: this.showAdvanced ? (this.advancedName?.trim() || null) : null,
                         };
 
-                        this.$axios.post(`{{ route('admin.dam.shares.store') }}`, payload)
+                        this.$axios.post(`{{ route('admin.dam.shared-links.store') }}`, payload)
                             .then(({ data }) => {
                                 if (data?.share) {
                                     this.currentShare = data.share;
@@ -523,7 +513,7 @@
                     revokeFromModal(share) {
                         if (this.isRevoking) return;
                         this.isRevoking = true;
-                        const url = `{{ route('admin.dam.shares.revoke', ':id') }}`.replace(':id', share.id);
+                        const url = `{{ route('admin.dam.shared-links.revoke', ':id') }}`.replace(':id', share.id);
 
                         this.$axios.patch(url)
                             .then(({ data }) => {

@@ -1,11 +1,4 @@
-/**
- * Permissions & Access Control + Authentication.
- *
- * Verifies the Passport guard on the DAM API: authenticated requests pass,
- * anonymous and bad-token requests are rejected, and the token can be reused
- * and refreshed. Directory-scoped (403) permission checks live alongside the
- * resource specs that own each route.
- */
+
 
 const { test, expect, env } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -16,7 +9,7 @@ const assetHelper = require('../helpers/assetHelper');
 test.describe('Authentication & access control', () => {
   test('authorized user can reach a protected endpoint', async ({ api }) => {
     const res = await assetHelper.list(api);
-    // 200 for a full-access user; never an auth failure for a valid token.
+
     expect(res.status).not.toBe(STATUS.UNAUTHORIZED);
     expect([STATUS.OK, STATUS.FORBIDDEN]).toContain(res.status);
   });
@@ -47,7 +40,7 @@ test.describe('Authentication & access control', () => {
 });
 
 test.describe('Token lifecycle (OAuth2 password grant)', () => {
-  // Skips cleanly when running with a pre-supplied API_TOKEN (no client creds).
+
   test.skip(() => !!env.apiToken, 'password-grant lifecycle is not exercised with a fixed API_TOKEN');
 
   test('mints a token and it authenticates the DAM API', async ({ request }) => {

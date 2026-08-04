@@ -24,23 +24,20 @@ test.describe('DAM Page Navigation & Rendering', () => {
 
   test('DAM page shows "+ New" button', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    // The old "Upload" button is now a "+ New" actions dropdown.
+
     await expect(adminPage.getByRole('button', { name: /New/ }).first()).toBeVisible();
   });
 
   test('DAM page shows asset grid with results', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    // Wait for the datagrid to load
+
     await adminPage.waitForLoadState('domcontentloaded');
     await expect(adminPage.getByText(/Results/)).toBeVisible({ timeout: 30000 });
   });
 
   test('DAM sidebar link is visible', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    // Sidebar entry's accessible name is "<icon-glyph> DAM" because the
-    // menu icon font character contributes to text content. Anchoring on
-    // "DAM" at the end of the name isolates it from the sibling
-    // "DAM Directory Permissions" sub-link.
+
     await expect(
       adminPage.getByRole('link', { name: /DAM$/ })
     ).toBeVisible();

@@ -4,16 +4,12 @@ namespace Webkul\DAM\Repositories;
 
 use Illuminate\Support\Facades\DB;
 
-/** Reads/writes the dam_directory_role pivot directly for role directory grants. */
 class DirectoryRolePermissionRepository
 {
     protected string $table = 'dam_directory_role';
 
     protected string $settingsTable = 'dam_role_settings';
 
-    /**
-     * All granted directory ids for the given role (explicit + auto-granted).
-     */
     public function getAllGrantedIds(int $roleId): array
     {
         return DB::table($this->table)
@@ -24,9 +20,6 @@ class DirectoryRolePermissionRepository
             ->all();
     }
 
-    /**
-     * Admin-selected (explicit) directory ids for the given role.
-     */
     public function getDirectoryIdsForRole(int $roleId): array
     {
         $json = DB::table($this->settingsTable)
@@ -44,9 +37,6 @@ class DirectoryRolePermissionRepository
             : [];
     }
 
-    /**
-     * Auto-grant a single directory to a role when the owning admin creates it.
-     */
     public function addDirectoryToRole(int $roleId, int $directoryId): void
     {
         $exists = DB::table($this->table)
@@ -68,9 +58,6 @@ class DirectoryRolePermissionRepository
         ]);
     }
 
-    /**
-     * Sync admin-selected (explicit) grants for a role, preserving auto-grants.
-     */
     public function syncForRole(int $roleId, array $directoryIds): void
     {
         $newSubmitted = array_values(array_unique(array_map('intval', $directoryIds)));

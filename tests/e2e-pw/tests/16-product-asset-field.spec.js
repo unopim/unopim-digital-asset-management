@@ -8,7 +8,7 @@ test.describe('Product asset field thumbnail', () => {
 
     adminPage.on('response', (response) => {
       const url = response.url();
-      if (url.includes('/asset_picker/get_assets')) {
+      if (url.includes('/dam/picker/get')) {
         fetchUrls.push({ url, status: response.status(), body: null, response });
       }
     });

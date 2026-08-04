@@ -1,25 +1,45 @@
 @props(['returnDirectoryId' => null])
+@php
+    $darkModePreference = request()->cookie('dark_mode', 'auto');
+@endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="ltr" class="{{ (request()->cookie('dark_mode') ?? 0) ? 'dark' : '' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ in_array(app()->getLocale(), ['ar_AE']) ? 'rtl' : 'ltr' }}" class="{{ $darkModePreference === 'dark' || $darkModePreference === '1' ? 'dark' : '' }}">
     <head>
-        
+
         {!! view_render_event('unopim.admin.layout.head.before') !!}
         {!! view_render_event('unopim.admin.layout.head') !!}
-        
+
         <title>{{ $title ?? '' }}</title>
 
         <meta charset="UTF-8">
-        
+
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="base-url" content="{{ url()->to('/') }}">
+        <meta name="admin-url" content="{{ config('app.admin_url') }}">
         <meta name="currency-code" content="{{ core()->getBaseCurrencyCode() }}">
         <meta http-equiv="content-language" content="{{ app()->getLocale() }}">
+        <script>
+            (() => {
+                const getCookie = (name) => {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+
+                    return parts.length === 2 ? parts.pop().split(';').shift() : null;
+                };
+
+                const preference = getCookie('dark_mode') || 'auto';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const shouldUseDark = preference === 'dark' || preference === '1' || (preference === 'auto' && prefersDark);
+
+                document.documentElement.classList.toggle('dark', shouldUseDark);
+            })();
+        </script>
 
         @stack('meta')
-        
+
         @unoPimVite(['src/Resources/assets/css/app.css', 'src/Resources/assets/js/app.js'], 'admin')
-        
+
         <link
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
             rel="stylesheet"
@@ -34,8 +54,6 @@
             href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
             rel="stylesheet"
         />
-
-        <!-- <link rel="preload" as="image" href="{{ url('cache/logo/pim.png') }}"> -->
 
         @if ($favicon = core()->getConfigData('general.design.admin_logo.favicon'))
             <link
@@ -77,16 +95,14 @@
             <x-admin::layouts.header />
 
             <div
-                class="flex gap-4 flex-1 min-h-0 overflow-hidden group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
+                class="flex flex-1 min-h-0 overflow-hidden group/container {{ (request()->cookie('sidebar_collapsed') ?? 0) ? 'sidebar-collapsed' : 'sidebar-not-collapsed' }}"
                 ref="appLayout"
             >
                 <x-admin::layouts.sidebar />
-                
-                                
-                <div class="flex-1 max-w-full overflow-y-auto overflow-x-hidden px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 ltr:pl-[286px] rtl:pr-[286px] max-lg:!px-4 transition-all duration-300 group-[.sidebar-collapsed]/container:ltr:pl-[85px] group-[.sidebar-collapsed]/container:rtl:pr-[85px]">
+
+                <div class="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 pt-3 pb-6 bg-transparent dark:bg-cherry-800 max-lg:!px-4 transition-all duration-300">
                     {!! view_render_event('unopim.admin.layouts.tabs.before') !!}
 
-                    
                     <div class="flex flex-wrap justify-between gap-2 items-center">
                         <div class="flex min-w-0">
 
@@ -120,14 +136,7 @@
                     <v-asset-lock-zone>
                     <div class="tabs">
                         @php
-                            
-                            /**
-                             *   Each item should be an associative array containing the following keys:
-                             * - url: The URL for the tab.
-                             * - code: A unique code identifier for the tab.
-                             * - name: The translation key for the tab's label.
-                             * - icon: The icon class for the tab's icon.
-                             */
+
                             $defaultTabs = [
                                 [
                                     'url'    => '?',
@@ -149,13 +158,13 @@
                             $queryString = rtrim($queryString, '=');
 
                             $activeTab = collect($items)->firstWhere('code', $queryString)['code'] ?? $items[0]['code'];
-                            
+
                         @endphp
 
                         <div class="flex flex-wrap gap-4 my-4 border-b-2 max-sm:hidden dark:border-gray-800 items-center">
                             @foreach ($items as $key => $item)
                                 <a href="{{ $item['url'] }}" class="self-stretch flex items-end">
-                                    <div class="{{  $item['code'] === $activeTab ? "-mb-px border-violet-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
+                                    <div class="{{  $item['code'] === $activeTab ? "-mb-px border-primary-700  border-b-2 transition" : '' }} pb-3.5 px-2.5 text-base  font-medium text-gray-600 dark:text-gray-300 cursor-pointer flex items-center gap-2 justify-center">
                                         <span class="text-xl {{ $item['icon'] }}"></span>
                                         @lang($item['name'])
                                         @if (array_key_exists('badge', $item))
@@ -176,25 +185,25 @@
 
                     @if ($activeTab === 'history')
                         {!! view_render_event('unopim.settings.channels.list.before') !!}
-                        
+
                         <x-admin::history src="{{ route('admin.history.index',[$entityName, request()->id]) }}" >
                         </x-admin::history>
-                        
+
                         {!! view_render_event('unopim.settings.channels.list.after') !!}
 
-                    @elseif ($activeTab === 'preview')    
+                    @elseif ($activeTab === 'preview')
                         {!! view_render_event('unopim.settings.slot.content.before') !!}
-                        
+
                         {{ $slot }}
-                        
+
                         {!! view_render_event('unopim.settings.slot.content.after') !!}
-                    
-                    @elseif ($activeTab === 'properties')    
+
+                    @elseif ($activeTab === 'properties')
                         {{$properties}}
-                    
-                    @elseif ($activeTab === 'comments')    
+
+                    @elseif ($activeTab === 'comments')
                         {{$comments}}
-                    
+
                     @elseif ($activeTab === 'linked-resources')
                         {{$linked_resources}}
 
@@ -284,7 +293,6 @@
 
         {!! view_render_event('unopim.admin.layout.vue-app-mount.before') !!}
 
-     
         {!! view_render_event('bagisto.admin.layout.vue-app-mount.after') !!}
     </body>
 </html>

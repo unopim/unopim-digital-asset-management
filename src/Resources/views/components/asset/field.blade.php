@@ -48,10 +48,10 @@
                 </draggable>
 
                 <label
-                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-violet-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-violet-500 dark:hover:border-violet-400 hover:shadow-md"
+                    class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-primary-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md"
                     @click="openPicker"
                 >
-                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-violet-600 transition-colors"></span>
+                    <span class="icon-dam-folder text-3xl text-gray-400 group-hover:text-primary-600 transition-colors"></span>
                     <p class="mt-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
                         @lang('dam::app.admin.components.asset.field.add-asset')
                     </p>
@@ -63,7 +63,7 @@
     </script>
 
     <script type="text/x-template" id="v-asset-field-item-template">
-        <div class="group relative flex flex-col rounded-lg border border-gray-200 dark:border-cherry-800 bg-white dark:bg-cherry-900 overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-violet-300 dark:hover:border-violet-700">
+        <div class="group relative flex flex-col rounded-lg border border-gray-200 dark:border-cherry-800 bg-white dark:bg-cherry-900 overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-700">
             <div class="relative w-full">
                 <img
                     :src="asset.url"
@@ -162,6 +162,19 @@
                     let index = this.assets.indexOf(image);
 
                     this.assets.splice(index, 1);
+
+                    this.signalChange();
+                },
+
+                signalChange() {
+                    this.$nextTick(() => {
+                        if (this.$el && this.$el.dispatchEvent) {
+                            this.$el.dispatchEvent(new CustomEvent('unsaved-changes:touch', {
+                                bubbles: true,
+                                detail: { name: this.name },
+                            }));
+                        }
+                    });
                 },
 
                 openPicker() {
@@ -173,15 +186,15 @@
                 async onAssign(ids) {
                     const prevAssets = this.assets;
 
-                    this.assets = [];
+                    let keptAssets = [];
 
                     let selectedIds = [];
 
                     ids.forEach(id => {
-                        let existing = prevAssets.filter(asset => asset.id === id);
+                        let existing = prevAssets.find(asset => asset.id === id);
 
-                        if (existing.length === 1) {
-                            this.assets.push(existing[0]);
+                        if (existing) {
+                            keptAssets.push(existing);
                         } else {
                             selectedIds.push(id);
                         }
@@ -189,10 +202,16 @@
 
                     const fetched = selectedIds.length ? await this.fetchAssets(selectedIds) : [];
 
+                    if (! fetched) {
+                        return;
+                    }
+
                     this.assets = [
-                        ...this.assets,
-                        ...(fetched || [])
+                        ...keptAssets,
+                        ...fetched
                     ];
+
+                    this.signalChange();
                 },
 
                 fetchAssets(assetIds, initialize = false) {
@@ -213,6 +232,11 @@
                             console.error(error);
 
                             this.isLoading = false;
+
+                            this.$emitter.emit('add-flash', {
+                                type: 'error',
+                                message: @js(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
+                            });
                         });
                 },
 

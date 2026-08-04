@@ -12,9 +12,6 @@ use Webkul\DAM\Models\DamConfiguration;
 
 class ConfigurationController extends Controller
 {
-    /**
-     * Show the DAM configuration settings page.
-     */
     public function index(): View
     {
         if (! bouncer()->hasPermission('dam.configuration.index')) {
@@ -31,9 +28,6 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    /**
-     * Persist the submitted DAM configuration values and clear caches.
-     */
     public function update(Request $request): RedirectResponse
     {
         if (! bouncer()->hasPermission('dam.configuration.update')) {

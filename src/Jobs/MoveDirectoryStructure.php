@@ -81,9 +81,6 @@ class MoveDirectoryStructure implements ShouldQueue
         }
     }
 
-    /**
-     * Rebuild nested-set bounds for every descendant after re-parenting.
-     */
     private function rebuildDescendantNodes(ModelDirectory $root): void
     {
         $queue = [];
@@ -103,9 +100,6 @@ class MoveDirectoryStructure implements ShouldQueue
         }
     }
 
-    /**
-     * Bulk-replace the storage path prefix for every asset in the subtree.
-     */
     private function batchReplaceAssetPaths(ModelDirectory $directory, string $oldPrefix, string $newPrefix): void
     {
         if ($oldPrefix === $newPrefix) {
@@ -133,9 +127,6 @@ class MoveDirectoryStructure implements ShouldQueue
             ]);
     }
 
-    /**
-     * Move every S3 object from the old prefix to the new prefix.
-     */
     private function moveS3Prefix(string $disk, string $oldPrefix, string $newPrefix): void
     {
         foreach (Storage::disk($disk)->allFiles($oldPrefix) as $file) {

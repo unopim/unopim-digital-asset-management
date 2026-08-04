@@ -27,7 +27,6 @@ it('injects the asset bulk-edit cell and shared picker modal into the bulk edit 
     $family = damBulkMakeFamilyWithAttribute($assetAttribute);
     $product = Product::factory()->create(['attribute_family_id' => $family->id]);
 
-    // Populate the bulk-edit session with the asset attribute selected.
     $this->postJson(route('admin.catalog.products.bulkedit.filters'), [
         'indices' => [$product->id],
         'filter'  => [
@@ -41,7 +40,6 @@ it('injects the asset bulk-edit cell and shared picker modal into the bulk edit 
         ->assertOk()
         ->getContent();
 
-    // Admin dispatcher maps the `asset` type to the DAM-provided cell component.
     expect($content)->toContain("case 'asset': return 'v-spreadsheet-asset';");
 
     expect($content)->toContain('v-spreadsheet-asset-template');

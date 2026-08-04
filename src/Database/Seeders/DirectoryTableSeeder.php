@@ -45,9 +45,6 @@ class DirectoryTableSeeder extends Seeder
         }
     }
 
-    /**
-     * Grant the seeded Root directory to every existing custom role. Idempotent.
-     */
     protected function backfillRootGrants(): void
     {
         if (! Schema::hasTable('dam_directory_role')) {

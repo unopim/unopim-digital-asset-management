@@ -1,10 +1,4 @@
-/**
- * Asset Management — create (upload), read (show/edit), update and delete,
- * with positive, negative and edge-case coverage and data-persistence checks.
- *
- * A shared parent directory is provisioned once per file; each test uploads its
- * own asset so cases stay isolated and order-independent.
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -28,7 +22,6 @@ test.afterAll(async () => {
   await support?.dispose();
 });
 
-/** Upload a fresh asset and return its id (precondition for read/update/delete). */
 async function seedAsset(api) {
   const res = await assetHelper.uploadOrThrow(api, { filePath: testData.files.image, directoryId });
   return res.id;
@@ -42,7 +35,6 @@ test.describe('Asset — create (upload)', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.files?.[0]?.id).toBeTruthy();
 
-    // Data persistence: the freshly uploaded asset is retrievable.
     const show = await assetHelper.get(api, res.body.files[0].id);
     expect(show.status).toBe(STATUS.OK);
     expect(show.body.data.asset.id).toBe(res.body.files[0].id);

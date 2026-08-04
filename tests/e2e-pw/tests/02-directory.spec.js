@@ -1,19 +1,8 @@
 const { test, expect } = require('../utils/fixtures');
 const { navigateTo, generateUid } = require('../utils/helpers');
 
-/**
- * Scope menu-item lookups to the tree's right-click context menu. Several labels
- * (Add Directory, Upload Files) also live in the "+ New" toolbar dropdown, which
- * stays mounted in the DOM — matching by text alone is ambiguous.
- */
 const treeMenu = (page) => page.locator('.dam-tree-context-menu');
 
-/**
- * Helper: Right-click a directory in the tree to show context menu.
- * The contextmenu listener lives on the inner `.flex.cursor-pointer` row inside
- * `.tree-container-details`, NOT on the wrapper itself. Targeting the wrapper
- * (or dispatching contextmenu on it) silently does nothing.
- */
 async function rightClickDirectory(page, dirName) {
   const wrapper = dirName === 'Root'
     ? page.locator('.tree-container').first()
@@ -33,16 +22,10 @@ async function rightClickDirectory(page, dirName) {
     { timeout: 15000 }
   ).catch(() => {});
   await row.click({ button: 'right', force: true });
-  // Wait for the menu to actually render before the caller clicks an item.
+
   await treeMenu(page).first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 }
 
-/**
- * Helper: Create a directory under Root via context menu.
- * Reloads the page after save so Vue re-mounts the tree with the new node's
- * contextmenu listeners attached — without this, right-clicking the new
- * directory silently does nothing.
- */
 async function createDirectory(page, name) {
   await rightClickDirectory(page, 'Root');
   await treeMenu(page).getByText('Add Directory').click({ force: true });
@@ -50,7 +33,6 @@ async function createDirectory(page, name) {
   await nameInput.waitFor({ state: 'visible', timeout: 10000 });
   await nameInput.fill(name);
 
-  // Capture the store response to confirm the API call succeeded before navigating.
   const storeResponse = page.waitForResponse(
     (res) => /\/admin\/dam\/directory\/store/.test(res.url()) && res.request().method() === 'POST',
     { timeout: 15000 }
@@ -61,8 +43,6 @@ async function createDirectory(page, name) {
   await page.waitForTimeout(500);
   await navigateTo(page, 'dam');
 
-  // The directory tree fetches its list via AJAX on mount. Wait for that response
-  // before asserting the new directory is visible.
   await page.waitForResponse(
     (res) => /\/admin\/dam\/directory$/.test(res.url()) && res.request().method() === 'GET',
     { timeout: 20000 }
@@ -71,10 +51,6 @@ async function createDirectory(page, name) {
   await page.locator('#app').getByText(name).first().waitFor({ state: 'visible', timeout: 20000 });
 }
 
-/**
- * Helper: Delete a directory via context menu.
- * Silently succeeds if directory is not found.
- */
 async function deleteDirectory(page, name) {
   try {
     await rightClickDirectory(page, name);
@@ -85,7 +61,7 @@ async function deleteDirectory(page, name) {
     await confirmBtn.click();
     await page.waitForTimeout(2000);
   } catch {
-    // Directory not found — that's fine
+
   }
 }
 
@@ -142,10 +118,8 @@ test.describe('DAM Directory Management', () => {
     await navigateTo(adminPage, 'dam');
     await createDirectory(adminPage, dirName);
 
-    // Verify the directory appears in the tree
     await expect(adminPage.locator('#app').getByText(dirName).first()).toBeVisible({ timeout: 10000 });
 
-    // Cleanup
     await deleteDirectory(adminPage, dirName);
   });
 
@@ -157,26 +131,22 @@ test.describe('DAM Directory Management', () => {
     await navigateTo(adminPage, 'dam');
     await createDirectory(adminPage, dirName);
 
-    // Right-click the created directory and rename
     await rightClickDirectory(adminPage, dirName);
     await treeMenu(adminPage).getByText('Rename', { exact: true }).click({ force: true });
 
-    // Fill in new name in the rename modal — wait for modal to mount first.
     const nameInput = adminPage.getByPlaceholder('Name').first();
     await nameInput.waitFor({ state: 'visible', timeout: 10000 });
     await nameInput.fill(newName);
     await adminPage.getByRole('button', { name: /Save/i }).click();
     await adminPage.waitForTimeout(2000);
 
-    // Verify renamed directory
     await expect(adminPage.locator('#app').getByText(newName).first()).toBeVisible({ timeout: 10000 });
 
-    // Cleanup
     await deleteDirectory(adminPage, newName);
   });
 
   test('Delete Directory via context menu', async ({ adminPage }) => {
-    test.setTimeout(120000); // Extra time for create + async delete + verify
+    test.setTimeout(120000);
     const uid = generateUid();
     const dirName = `del_dir_${uid}`;
 
@@ -184,7 +154,6 @@ test.describe('DAM Directory Management', () => {
     await createDirectory(adminPage, dirName);
     await expect(adminPage.locator('#app').getByText(dirName).first()).toBeVisible({ timeout: 10000 });
 
-    // Delete it
     await rightClickDirectory(adminPage, dirName);
     await treeMenu(adminPage).getByText('Delete', { exact: true }).click({ force: true });
     await adminPage.waitForTimeout(500);
@@ -192,7 +161,6 @@ test.describe('DAM Directory Management', () => {
     await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
     await confirmBtn.click();
 
-    // Directory deletion may be async (job-based). Wait for success indicator.
     await adminPage.waitForTimeout(3000);
   });
 
@@ -213,41 +181,37 @@ test.describe('DAM Directory Management', () => {
   test('Download Zip from context menu triggers download', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
 
-    // Find a subdirectory with assets (e.g. Accessories or first tree-container-details)
     const subDir = adminPage.locator('.tree-container-details').first();
     const isVisible = await subDir.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isVisible) {
-      // If no subdirectories, right-click Root
+
       await rightClickDirectory(adminPage, 'Root');
     } else {
       await subDir.click({ button: 'right', force: true });
       await adminPage.waitForTimeout(500);
     }
 
-    // Click Download Zip
     const downloadZip = treeMenu(adminPage).getByText('Download Zip');
     await expect(downloadZip).toBeVisible({ timeout: 5000 });
 
-    // Use evaluate to native-click: avoids Playwright's post-click navigation wait,
-    // which times out when the click triggers a file download rather than navigation.
     const downloadPromise = adminPage.waitForEvent('download', { timeout: 10000 }).catch(() => null);
     await downloadZip.evaluate((el) => el.click());
     const download = await downloadPromise;
     if (download) {
-      // Download started successfully
+
       expect(download.suggestedFilename()).toMatch(/\.zip$/i);
     }
-    // If no download event (e.g. empty directory), just verify no error toast
+
   });
 
   test('Click directory updates the asset grid header', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
-    // Click on Root directory
+
     const root = adminPage.locator('.tree-container > div.flex').filter({ hasText: 'Root' }).first();
     await root.click({ force: true });
     await adminPage.waitForTimeout(500);
-    // The grid header should show "Root"
+
     await expect(adminPage.locator('#app').getByText('Root').first()).toBeVisible();
   });
 });

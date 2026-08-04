@@ -31,9 +31,6 @@ class DirectoryController
         protected DirectoryRolePermissionRepository $permissionRepository,
     ) {}
 
-    /**
-     * Get the directory tree.
-     */
     public function index(Request $request): JsonResponse
     {
         $directories = $request->boolean('with_assets')
@@ -45,9 +42,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Substring search across ACL-visible directories.
-     */
     public function search(DirectorySearchRequest $request): JsonResponse
     {
         $q = $request->validated('q');
@@ -77,9 +71,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Lazy-load one page of immediate children of a directory.
-     */
     public function childrenDirectory(int $id, Request $request): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
@@ -105,9 +96,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Lazy asset-count badges for the viewable directory ids.
-     */
     public function assetCounts(Request $request): JsonResponse
     {
         $ids = collect($request->input('ids', []))
@@ -134,9 +122,6 @@ class DirectoryController
         return new JsonResponse(['data' => (object) $counts]);
     }
 
-    /**
-     * Return the ancestor chain from root to the given directory, root-first.
-     */
     public function directoryPath(int $id): JsonResponse
     {
         if (! $this->permissionService->canView($id)) {
@@ -152,9 +137,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Get the directory assets.
-     */
     public function directoryAssets(int $id): JsonResponse
     {
         if (! config('dam.tree.show_assets')) {
@@ -184,7 +166,6 @@ class DirectoryController
         ]);
     }
 
-    /** Create a new directory. */
     public function store(DirectoryRequest $request)
     {
         $parentDirectoryId = $request->input('parent_id', 1);
@@ -214,9 +195,6 @@ class DirectoryController
         }
     }
 
-    /**
-     * Grant the new directory to the creator's role for custom-permission admins.
-     */
     private function autoGrantToCreator(int $directoryId): void
     {
         $admin = auth()->guard('admin')->user();
@@ -239,9 +217,6 @@ class DirectoryController
         $this->permissionService->flush();
     }
 
-    /**
-     * Update a directory.
-     */
     public function update(DirectoryRequest $request): JsonResponse
     {
         $id = $request->input('id');
@@ -281,9 +256,6 @@ class DirectoryController
         }
     }
 
-    /**
-     * Delete the directory.
-     */
     public function destroy(int $id): JsonResponse
     {
         if (! $this->permissionService->canAccess($id)) {
@@ -324,9 +296,6 @@ class DirectoryController
         }
     }
 
-    /**
-     * Mass delete multiple directories.
-     */
     public function massDestroy(MassDestroyRequest $massDestroyRequest): JsonResponse
     {
         abort_unless(
@@ -358,9 +327,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Copy the directory.
-     */
     public function copy(Request $request): JsonResponse
     {
 
@@ -370,9 +336,6 @@ class DirectoryController
         ]);
     }
 
-    /**
-     * Copy the directory structure.
-     */
     public function copyStructure(Request $request): JsonResponse
     {
         $request->validate(
@@ -416,9 +379,6 @@ class DirectoryController
         }
     }
 
-    /**
-     * Move the directory from one location to another.
-     */
     public function moved(Request $request): JsonResponse
     {
         $request->validate([
@@ -452,7 +412,6 @@ class DirectoryController
         }
     }
 
-    /** Download the directory subtree as a zip archive. */
     public function downloadArchive(int $id)
     {
         if (! $this->permissionService->canAccess($id)) {
@@ -481,9 +440,6 @@ class DirectoryController
         );
     }
 
-    /**
-     * Return ancestor paths for multiple directory IDs in one request.
-     */
     public function ancestorPaths(Request $request): JsonResponse
     {
         $request->validate([
@@ -504,9 +460,6 @@ class DirectoryController
         return new JsonResponse(['data' => $nodes->values()]);
     }
 
-    /**
-     * Return all viewable descendant IDs for the given directory.
-     */
     public function descendants(int $id): JsonResponse
     {
         $node = $this->directoryRepository->find($id);
@@ -522,9 +475,6 @@ class DirectoryController
         return new JsonResponse(['data' => $ids]);
     }
 
-    /**
-     * Create an empty directory structure under the given parent directory.
-     */
     public function createStructure(Request $request): JsonResponse
     {
         abort_unless(

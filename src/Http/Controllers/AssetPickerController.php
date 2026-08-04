@@ -13,7 +13,6 @@ class AssetPickerController extends Controller
 {
     public function __construct(protected AssetRepository $assetRepository) {}
 
-    /** Asset picker datagrid. */
     public function index()
     {
         if (request()->ajax()) {
@@ -21,9 +20,6 @@ class AssetPickerController extends Controller
         }
     }
 
-    /**
-     * Fetch assets by their ids.
-     */
     public function fetchAssets(): JsonResponse
     {
         $assetIds = request()->get('assetIds') ?? '';
@@ -47,9 +43,6 @@ class AssetPickerController extends Controller
         return response()->json($response);
     }
 
-    /**
-     * Format the asset object.
-     */
     protected function formatAsset(Asset $asset): array
     {
         $assetId = $asset->id;

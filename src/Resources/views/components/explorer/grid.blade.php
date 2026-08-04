@@ -1,7 +1,7 @@
 @once('v-dam-explorer-grid')
 @push('scripts')
 <script type="text/x-template" id="v-dam-explorer-grid-template">
-    {{-- Outer div catches drops on empty space (directory actions live in the "+ New" toolbar button) --}}
+
     <div class="pr-4 min-h-72" @dragover.prevent @drop.prevent="onSpaceDrop($event)">
         <div v-if="isLoading" class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4 animate-pulse">
             <div v-for="n in 10" :key="n" class="aspect-square bg-gray-100 dark:bg-cherry-800 rounded-lg"></div>
@@ -38,7 +38,7 @@
                     @lang('dam::app.admin.explorer.sections.files')
                 </p>
                 <div class="grid grid-cols-1 min-[380px]:grid-cols-2 md:!grid-cols-3 xl:!grid-cols-4 2xl:!grid-cols-5 gap-4">
-                    <v-dam-asset-card
+                    <v-dam-explorer-asset-card
                         v-for="asset in assets"
                         :key="asset.id"
                         :asset="asset"
@@ -50,7 +50,7 @@
                         @edit="edit"
                         @delete="del"
                         @ctx="showCtx($event.event, $event.asset, 'asset')"
-                    ></v-dam-asset-card>
+                    ></v-dam-explorer-asset-card>
                 </div>
             </template>
 
@@ -118,7 +118,7 @@ app.component('v-dam-explorer-grid', {
                 tabId: this.tabId,
             }));
             this._draggingId = d.id;
-            // opacity handled by v-dam-explorer-folder-card
+
         },
         onDragEnd() {
             this._draggingId = null;
@@ -137,7 +137,7 @@ app.component('v-dam-explorer-grid', {
             this._springTimer = { dirId: dir.id, id: timerId };
         },
         onFolderDragLeave(e, dir) {
-            // card already filters child dragleaves — any emission here means truly left
+
             if (this.dropTargetId === dir.id) {
                 this.dropTargetId = null;
                 clearTimeout(this._springTimer?.id);
@@ -178,7 +178,7 @@ app.component('v-dam-explorer-grid', {
             this.showCtx(e, { id: this.currentDirId, can_access: this.canAccessCurrentDir }, 'space');
         },
         preview(id)  { this.$emitter.emit('dam-open-preview', id); },
-        edit(id)     { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id); },
+        edit(id)     { this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id)); },
         del(asset) {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
@@ -195,7 +195,7 @@ app.component('v-dam-explorer-grid', {
             let payload;
             try { payload = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
             if (! payload?.type) return;
-            // Item already lives in this directory — drop is a no-op
+
             if (payload.type === 'dam-folder' && this.directories.some(d => d.id === payload.id)) return;
             if (payload.type === 'dam-asset'  && this.assets.some(a => a.id === payload.id)) return;
             this.$emit('internal-drop', { payload, targetDir: { id: this.currentDirId } });

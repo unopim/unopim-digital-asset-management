@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Add a (role_id, directory_id) index to cover the role-scoped permission lookup.
-     */
     public function up(): void
     {
         Schema::table('dam_directory_role', function (Blueprint $table) {

@@ -17,14 +17,8 @@ class CopyDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /** Create a new instance. */
     public function __construct(protected int $directoryId, protected int $userId) {}
 
-    /**
-     * Replicate the directory structure into a new copy.
-     *
-     * @return void
-     */
     public function handle()
     {
         if (! $this->checkedUser($this->userId)) {
@@ -56,9 +50,6 @@ class CopyDirectoryStructure implements ShouldQueue
         }
     }
 
-    /**
-     * Copy a directory tree iteratively using BFS.
-     */
     public function copyDirectoryAndChildren(ModelDirectory $root, ModelDirectory $newRoot, DirectoryRepository $directoryRepository): void
     {
         $queue = [[$root, $newRoot]];

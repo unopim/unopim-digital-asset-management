@@ -31,8 +31,8 @@
 
             <div
                 v-for="dir in directories" :key="`d-${dir.id}`"
-                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
-                :class="{ 'ring-2 ring-inset ring-violet-400': dropTargetId === dir.id }"
+                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center cursor-pointer hover:bg-primary-100 dark:hover:bg-primary-800/50 transition-colors"
+                :class="{ 'ring-2 ring-inset ring-primary-400': dropTargetId === dir.id }"
                 :data-dir-id="dir.id"
                 draggable="true"
                 @click="$emit('navigate', dir)"
@@ -52,12 +52,12 @@
                             :checked="isSelectedById(dir.id, 'directory')"
                             @change="$emit('toggle-select', dir.id, 'directory')"
                         >
-                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl cursor-pointer"></span>
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 rounded-md text-xl cursor-pointer"></span>
                     </label>
                 </div>
-                <i class="icon-dam-folder text-lg text-violet-400"></i>
+                <i class="icon-dam-folder text-lg text-primary-400"></i>
                 <div class="min-w-0">
-                    <span class="font-medium text-violet-700 dark:text-violet-300 truncate block">@{{ dir.name }}</span>
+                    <span class="font-medium text-primary-700 dark:text-primary-300 truncate block">@{{ dir.name }}</span>
                     <span class="sm:!hidden text-xs text-gray-400 truncate block">
                         @lang('dam::app.admin.explorer.sections.folder') · @{{ "@lang('dam::app.admin.explorer.list.items-count')".replace(':count', dir.assets_count + dir.children_count) }}
                     </span>
@@ -67,7 +67,7 @@
                 <span class="hidden lg:!block text-gray-400 text-xs">@{{ fmtDate(dir.updated_at) }}</span>
                 <div class="flex gap-2 items-center justify-end [grid-column-end:-1]">
                     @if (bouncer()->hasPermission('dam.directory.rename'))
-                    <button v-if="dir.can_access !== false" type="button" class="icon-dam-rename text-gray-400 hover:text-violet-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
+                    <button v-if="dir.can_access !== false" type="button" class="icon-dam-rename text-gray-400 hover:text-primary-600 text-base" @click.stop="renameDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.rename')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.directory.destroy'))
                     <button v-if="dir.can_access !== false" type="button" class="icon-dam-delete text-gray-400 hover:text-red-500 text-base" @click.stop="delDir(dir)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
@@ -76,7 +76,7 @@
                     <button
                         type="button"
                         class="icon-star text-base transition-colors"
-                        :class="isBookmarked(dir) ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400 hover:text-violet-600'"
+                        :class="isBookmarked(dir) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 hover:text-primary-600'"
                         :data-bookmark-dir="dir.id"
                         :data-bookmarked="isBookmarked(dir)"
                         @click.stop="$emit('bookmark', dir)"
@@ -85,7 +85,7 @@
                     @endif
                     <button
                         type="button"
-                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-violet-600"
+                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-primary-600"
                         @click.stop="showCtx($event, dir, 'directory')"
                         title="@lang('dam::app.admin.explorer.list.header.actions')"
                     >
@@ -100,7 +100,7 @@
 
             <div
                 v-for="asset in assets" :key="`a-${asset.id}`"
-                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-violet-100 dark:hover:bg-violet-800/50 transition-colors"
+                class="grid gap-x-2 grid-cols-[28px_28px_1fr_100px] sm:grid-cols-[28px_28px_1fr_110px_100px] md:grid-cols-[28px_28px_1fr_110px_80px_100px] lg:grid-cols-[28px_28px_1fr_110px_80px_110px_100px] px-4 py-2.5 text-sm border-b border-gray-100 dark:border-cherry-800 items-center hover:bg-primary-100 dark:hover:bg-primary-800/50 transition-colors"
                 draggable="true"
                 @contextmenu.prevent.stop="showCtx($event, asset, 'asset')"
                 @dragstart="onAssetDragStart($event, asset)"
@@ -115,7 +115,7 @@
                             :checked="isSelectedById(asset.id, 'asset')"
                             @change="$emit('toggle-select', asset.id, 'asset')"
                         >
-                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 rounded-md text-xl cursor-pointer"></span>
+                        <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 rounded-md text-xl cursor-pointer"></span>
                     </label>
                 </div>
                 <i class="text-lg" :class="icon(asset.file_type)"></i>
@@ -128,17 +128,17 @@
                 <span class="hidden lg:!block text-gray-400 text-xs">@{{ fmtDate(asset.updated_at) }}</span>
                 <div class="flex gap-2 items-center justify-end [grid-column-end:-1]">
                     @if (bouncer()->hasPermission('dam.asset.view'))
-                    <button type="button" class="icon-dam-preview text-gray-400 hover:text-violet-600 text-base" @click="preview(asset.id)" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"></button>
+                    <button type="button" class="icon-dam-preview text-gray-400 hover:text-primary-600 text-base" @click="preview(asset.id)" title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.asset.edit'))
-                    <button type="button" class="icon-edit text-gray-400 hover:text-violet-600 text-base" @click="edit(asset.id)" title="@lang('dam::app.admin.dam.index.directory.actions.edit')"></button>
+                    <button type="button" class="icon-edit text-gray-400 hover:text-primary-600 text-base" @click="edit(asset.id)" title="@lang('dam::app.admin.dam.index.directory.actions.edit')"></button>
                     @endif
                     @if (bouncer()->hasPermission('dam.asset.destroy'))
                     <button type="button" class="icon-delete text-gray-400 hover:text-red-500 text-base" @click="del(asset)" title="@lang('dam::app.admin.dam.index.directory.actions.delete')"></button>
                     @endif
                     <button
                         type="button"
-                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-violet-600"
+                        class="dam-ctx-trigger flex items-center justify-center text-gray-400 hover:text-primary-600"
                         @click.stop="showCtx($event, asset, 'asset')"
                         title="@lang('dam::app.admin.explorer.list.header.actions')"
                     >
@@ -206,8 +206,8 @@ app.component('v-dam-explorer-list', {
         icon(type) { return { image: 'icon-dam-image', video: 'icon-dam-video', audio: 'icon-dam-audio', document: 'icon-dam-doc' }[type] ?? 'icon-dam-image'; },
         badge(type, ext) {
             if ((ext||'').toLowerCase() === 'pdf')    return 'bg-red-100 text-red-700';
-            if (type === 'video' || type === 'audio') return 'bg-violet-100 text-violet-700';
-            if (type === 'image')                     return 'bg-violet-100 text-violet-700';
+            if (type === 'video' || type === 'audio') return 'bg-primary-100 text-primary-700';
+            if (type === 'image')                     return 'bg-primary-100 text-primary-700';
             if (type === 'spreadsheet')               return 'bg-green-100 text-green-700';
             return 'bg-gray-100 text-gray-600';
         },
@@ -244,7 +244,7 @@ app.component('v-dam-explorer-list', {
             this.showCtx(e, { id: this.currentDirId, can_access: this.canAccessCurrentDir }, 'space');
         },
         preview(id) { this.$emitter.emit('dam-open-preview', id); },
-        edit(id)    { window.location.href = `{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id); },
+        edit(id)    { this.$navigate(`{{ route('admin.dam.assets.edit', ':id') }}`.replace(':id', id)); },
         del(asset) {
             this.$emitter.emit('open-delete-modal', {
                 agree: () => {
@@ -284,8 +284,7 @@ app.component('v-dam-explorer-list', {
             setTimeout(() => ghost.remove(), 0);
             return ghost;
         },
-        // Keep the drag image inside the viewport, anchored under the cursor.
-        // Rendering it off-screen makes Chrome capture a clipped snapshot.
+
         _anchorDragGhost(ghost, e, anchorX, anchorY) {
             ghost.style.left = `${Math.min(Math.max(0, e.clientX - anchorX), window.innerWidth - ghost.offsetWidth)}px`;
             ghost.style.top = `${Math.min(Math.max(0, e.clientY - anchorY), window.innerHeight - ghost.offsetHeight)}px`;

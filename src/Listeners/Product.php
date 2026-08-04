@@ -7,17 +7,11 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 class Product
 {
-    /**
-     * Create a new listener instance.
-     *
-     * @return void
-     */
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
-    /** After product update or create. */
     public function afterCreateOrupdate($product)
     {
         $productValues = $product->values;

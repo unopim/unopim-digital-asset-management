@@ -49,35 +49,26 @@ class Directory extends Model implements DirectoryContract
             ->where('share_type', Share::TYPE_DIRECTORY);
     }
 
-    /** Check if this directory can be deleted. */
     public function isDeletable()
     {
         return ! in_array($this->id, self::NON_DELETABLE_DRECTORIES);
     }
 
-    /** Check if this directory can be copied. */
     public function isCopyable()
     {
         return ! in_array($this->id, self::NON_DELETABLE_DRECTORIES);
     }
 
-    /**
-     * Create a new factory instance for the model.
-     */
     protected static function newFactory(): Factory
     {
         return DirectoryFactory::new();
     }
 
-    /** Override the default Eloquent query builder. */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
     }
 
-    /**
-     * Generate the path for the directory.
-     */
     public function generatePath(): string
     {
         $path = [];
@@ -89,9 +80,6 @@ class Directory extends Model implements DirectoryContract
         return implode('/', $path);
     }
 
-    /**
-     * Detect the assets disk.
-     */
     public static function getAssetDisk(): string
     {
         $disk = config('filesystems.default');
@@ -103,9 +91,6 @@ class Directory extends Model implements DirectoryContract
         return self::ASSETS_DISK_PRIVATE;
     }
 
-    /**
-     * Check if the configured disk is private.
-     */
     public function privateSupport(string $path, string $disk): bool
     {
         try {
@@ -117,9 +102,6 @@ class Directory extends Model implements DirectoryContract
         }
     }
 
-    /**
-     * Check if the configured disk is s3.
-     */
     public function awsSupport(string $path, string $disk): bool
     {
         $uniqueFileName = uniqid('writetest_').'.txt';
@@ -136,9 +118,6 @@ class Directory extends Model implements DirectoryContract
         }
     }
 
-    /**
-     * Check if the directory is writable.
-     */
     public function isWritable(string $path): bool
     {
         $disk = self::getAssetDisk();
@@ -150,9 +129,6 @@ class Directory extends Model implements DirectoryContract
         return $this->privateSupport($path, $disk);
     }
 
-    /**
-     * Return a name unique within the given parent directory.
-     */
     public static function uniqueName(string $name, int $parentId): string
     {
         if (! static::where('name', $name)->where('parent_id', $parentId)->exists()) {

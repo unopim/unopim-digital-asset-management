@@ -15,7 +15,7 @@
                         <div class="table-responsive grid w-full box-shadow rounded bg-white dark:bg-cherry-900 overflow-x-auto">
                             <div v-if="loading">
                                 <x-admin::table class="w-full text-base text-gray-800 dark:text-gray-200">
-                                    <x-admin::table.thead class="border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900">
+                                    <x-admin::table.thead class="border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-primary-50 dark:bg-cherry-900">
                                         <x-admin::table.thead.tr>
                                             <x-admin::table.th class="py-2">@lang('dam::app.admin.dam.asset.edit.name')</x-admin::table.th>
                                             <x-admin::table.th class="py-2">@lang('dam::app.admin.dam.asset.edit.value')</x-admin::table.th>
@@ -34,7 +34,7 @@
                             </div>
 
                             <x-admin::table v-else class="w-full text-base text-gray-800 dark:text-gray-200">
-                                <x-admin::table.thead class="border-b text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900">
+                                <x-admin::table.thead class="border-b text-gray-600 dark:text-gray-300 bg-primary-50 dark:bg-cherry-900">
                                     <x-admin::table.thead.tr>
                                         <x-admin::table.th class="py-2">@lang('dam::app.admin.dam.asset.edit.name')</x-admin::table.th>
                                         <x-admin::table.th class="py-2">@lang('dam::app.admin.dam.asset.edit.value')</x-admin::table.th>
@@ -42,13 +42,13 @@
                                 </x-admin::table.thead>
 
                                 <template v-for="(value, name) in metadata">
-                                    <x-admin::table.thead.tr class="hover:bg-violet-50 dark:hover:bg-cherry-800 transition" ::key="name">
+                                    <x-admin::table.thead.tr class="hover:bg-primary-50 dark:hover:bg-cherry-800 transition" ::key="name">
                                         <x-admin::table.td class="text-gray-800 dark:text-white">@{{ name }}</x-admin::table.td>
                                         <x-admin::table.td class="text-gray-700 dark:text-white">
                                             <template v-if="isObjectOrArrayChange(value)">
                                                 <x-admin::table class="w-full">
                                                     <template v-for="(v, k) in value">
-                                                        <x-admin::table.thead.tr class="hover:bg-violet-50 dark:hover:bg-cherry-800" ::key="k">
+                                                        <x-admin::table.thead.tr class="hover:bg-primary-50 dark:hover:bg-cherry-800" ::key="k">
                                                             <x-admin::table.td class="p-2 text-gray-800 dark:text-white">@{{ k }}</x-admin::table.td>
                                                             <x-admin::table.td class="p-2 text-gray-800 dark:text-white">
                                                                 <span v-if="isObjectOrArrayChange(v)">[object]</span>

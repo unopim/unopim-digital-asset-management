@@ -8,9 +8,6 @@ use Webkul\DAM\Models\Directory as ModelDirectory;
 
 trait Directory
 {
-    /**
-     * Sets a unique directory name for copying. If the original name already exists.
-     */
     protected function setDirectoryNameForCopy(string $originalName, int $parentId): string
     {
         $name = $originalName;
@@ -22,9 +19,6 @@ trait Directory
         return $name;
     }
 
-    /**
-     * Replaces ordinal copies in a string with incremented numbers.
-     */
     protected function replaceAndIncrementOrdinalCopies(string $string): string
     {
         $counts = [];

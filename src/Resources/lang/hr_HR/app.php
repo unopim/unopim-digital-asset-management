@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Upravljanje resursima',
                     'assets'        => 'Resursi',
                     'shares'        => 'Dijeljene veze',
                     'tags'          => 'Oznake',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Pregled nije uspio',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Upravljanje digitalnim resursima',
                 'datagrid' => [
                     'file-name'      => 'Naziv datoteke',
                     'tags'           => 'Oznake',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Napusti',
                 'upload-stay-page'               => 'Ostani',
                 'drop-zone-hint'                 => 'Povucite datoteke ili mape za prijenos',
+                'select-all'                     => 'Odaberi sve',
+                'select-directory-to-upload'     => 'Odaberite direktorij za prijenos.',
+                'upload-session'                 => [
+                    'uploading'            => 'Prijenos :total datoteke…',
+                    'paused'               => 'Pauzirano — :done od :total preneseno',
+                    'interrupted'          => ':done od :total preneseno · :interrupted prekinuto',
+                    'failed'               => ':done preneseno, :failed neuspjelo',
+                    'completed'            => ':done od :total preneseno',
+                    'create-folder-failed' => 'Mapu nije moguće stvoriti',
+                ],
                 'drop-zone-no-permission'        => 'Nemate dopuštenje za učitavanje ovdje.',
                 'upload-complete'                => 'Prijenos završen',
                 'item-upload-complete'           => 'Prijenos dovršen',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Nema dostupnih metapodataka',
                     'tags'                  => 'Oznake',
                     'select-tags'           => 'Odaberite ili stvorite oznaku',
+                    'tag-attach-success'    => 'Oznaka je uspješno dodana.',
+                    'tag-detach-success'    => 'Oznaka je uspješno uklonjena s resursa.',
                     'directory-path'        => 'Putanja direktorija',
                     'no-directory'          => 'Nije dodijeljen direktorij',
                     'details'               => 'Detalji',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Datoteka nije pronađena za prikaz',
                     'not-found-to-download'               => 'Datoteka nije pronađena za preuzimanje',
                     'edit-success'                        => 'Datoteka je uspješno prenesena',
+                    'no-file-name'                        => 'bez naziva datoteke',
                     'show-success'                        => 'Datoteka je uspješno pronađena',
                     'update-success'                      => 'Datoteka je uspješno ažurirana',
                     'not-found-to-update'                 => 'Datoteka ne postoji',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Upravljanje resursima',
             'asset'            => 'Resurs',
             'property'         => 'Svojstvo',
             'comment'          => 'Komentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Ova radnja nije ovlaštena.',
         ],
         'configuration' => [
-            'save-btn' => 'Spremi',
-            'title'    => 'DAM Konfiguracija',
-            'saved'    => 'Konfiguracija uspješno spremljena.',
-            'general'  => [
+            'save-btn'    => 'Spremi',
+            'title'       => 'Konfiguracija',
+            'saved'       => 'Konfiguracija uspješno spremljena.',
+            'description' => 'Konfigurirajte postavke upravljanja digitalnim resursima (DAM) za svoju aplikaciju.',
+            'general'     => [
                 'title'            => 'Opće postavke',
                 'description'      => 'Ove postavke upravljaju cjelokupnim iskustvom pregledavanja DAM-a.',
                 'explorer-enabled' => [

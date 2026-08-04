@@ -18,14 +18,10 @@ class MassMoveController extends Controller
 {
     use ActionRequestTrait, AssetAccessControl;
 
-    /** Create a new instance. */
     public function __construct(
         protected DirectoryPermissionService $permissionService
     ) {}
 
-    /**
-     * Validate access and queue a job to move the selected assets and directories.
-     */
     public function move(Request $request): JsonResponse
     {
         $request->validate([

@@ -102,10 +102,6 @@ it('returns 404 when deleting a non-existent comment via api', function () {
         ->assertStatus(404);
 });
 
-// ---------------------------------------------------------------------------
-// Helper — custom-role user granted only to a specific directory
-// ---------------------------------------------------------------------------
-
 function makeCommentCustomHeaders(Directory $grantedDir): array
 {
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
@@ -121,10 +117,6 @@ function makeCommentCustomHeaders(Directory $grantedDir): array
 
     return $headers;
 }
-
-// ---------------------------------------------------------------------------
-// Directory-permission gate tests (Task 5)
-// ---------------------------------------------------------------------------
 
 it('returns 403 when fetching a comment for an asset in a denied directory', function () {
     $denied = Directory::factory()->create();

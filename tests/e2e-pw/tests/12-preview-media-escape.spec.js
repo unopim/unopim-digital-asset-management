@@ -4,7 +4,6 @@ const { ensureAssetExists, ensureAssetOfTypeExists, navigateTo, searchInDataGrid
 
 const ASSETS = path.resolve(__dirname, '../assets');
 
-// Navigate to the edit page of the first asset whose filename contains `ext`.
 async function navigateToFirstAssetWithExt(page, ext) {
   await navigateTo(page, 'dam');
   await searchInDataGrid(page, ext);
@@ -40,8 +39,6 @@ async function openEditorModal(page) {
     .waitFor({ state: 'visible', timeout: 10000 });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
 
   test.beforeEach(async ({ adminPage }) => {
@@ -50,10 +47,6 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
     await ensureAssetOfTypeExists(adminPage, `${ASSETS}/sample.wav`, '.wav');
     await ensureAssetOfTypeExists(adminPage, `${ASSETS}/sample.pdf`, '.pdf');
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Video player — inline
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Video player', () => {
 
@@ -79,18 +72,13 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
 
     test('1× speed button is active by default', async ({ adminPage }) => {
       await navigateToFirstAssetWithExt(adminPage, '.mp4');
-      // Speed selector is a dropdown toggle that always shows the current speed.
-      // At 1× default, the toggle button text contains "1×".
+
       const speedToggle = adminPage.locator('button').filter({ hasText: /1×/ }).first();
       await speedToggle.waitFor({ state: 'visible', timeout: 10000 });
       await expect(speedToggle).toContainText('1×');
     });
 
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Audio player — inline
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Audio player', () => {
 
@@ -126,10 +114,6 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
 
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PDF / fallback — inline
-  // ═══════════════════════════════════════════════════════════════════════════
-
   test.describe('PDF / fallback asset', () => {
 
     test('PDF renders an iframe or fallback content inline', async ({ adminPage }) => {
@@ -143,10 +127,6 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
     });
 
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Escape key priority
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Escape key priority', () => {
 
@@ -178,10 +158,6 @@ test.describe('DAM Asset Preview — Inline Media & Escape Key', () => {
     });
 
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // State reset on re-open (editor modal)
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Editor modal state', () => {
 

@@ -25,7 +25,7 @@
         </video>
 
         <div v-if="videoIsBuffering" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-12 h-12 rounded-full border-4 border-white/20 border-t-violet-400 animate-spin"></div>
+            <div class="w-12 h-12 rounded-full border-4 border-white/20 border-t-primary-400 animate-spin"></div>
         </div>
 
         <div
@@ -74,7 +74,7 @@
                         :style="{ width: videoBuffered + '%' }"
                     ></div>
                     <div
-                        class="absolute inset-y-0 left-0 bg-violet-400"
+                        class="absolute inset-y-0 left-0 bg-primary-400"
                         :style="{ width: (videoDuration ? (videoCurrentTime / videoDuration) * 100 : 0) + '%' }"
                     ></div>
                 </div>
@@ -86,12 +86,11 @@
             </div>
         </div>
 
-        <!-- Controls row — always white (over dark gradient) -->
         <div class="flex items-center gap-2 px-4 pb-3 text-white">
 
             <button
                 type="button"
-                class="flex items-center justify-center w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow transition-colors shrink-0"
+                class="flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow transition-colors shrink-0"
                 @click="videoTogglePlay"
             >
                 <svg v-if="videoIsPlaying" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -161,7 +160,7 @@
                             <button
                                 type="button"
                                 class="w-full flex items-center justify-between gap-4 px-4 py-2 text-xs font-semibold transition-colors"
-                                :class="videoSpeed === rate ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                :class="videoSpeed === rate ? 'bg-primary-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
                                 @click="setVideoSpeed(rate); videoSpeedOpen = false"
                             >
                                 <span>@{{ rate }}×</span>
@@ -177,7 +176,7 @@
             <button
                 type="button"
                 class="dam-ctrl-desktop items-center justify-center w-7 h-7 rounded transition-colors shrink-0"
-                :class="videoIsLooping ? 'bg-violet-600 text-white' : 'opacity-70 hover:opacity-100 hover:bg-white/10'"
+                :class="videoIsLooping ? 'bg-primary-600 text-white' : 'opacity-70 hover:opacity-100 hover:bg-white/10'"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.loop')"
                 @click="videoToggleLoop"
             >
@@ -208,7 +207,7 @@
                 </button>
                 <input
                     type="range"
-                    class="w-20 h-1 accent-violet-400 cursor-pointer opacity-80 hover:opacity-100"
+                    class="w-20 h-1 accent-primary-400 cursor-pointer opacity-80 hover:opacity-100"
                     min="0" max="1" step="0.01"
                     :value="videoIsMuted ? 0 : videoVolume"
                     @input="videoOnVolume"

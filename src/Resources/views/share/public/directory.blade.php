@@ -86,7 +86,7 @@
                             };
                             $extension  = strtolower(pathinfo($asset->file_name, PATHINFO_EXTENSION));
                             $badgeColor = match (true) {
-                                in_array($asset->file_type, ['video', 'audio']) => 'bg-violet-600',
+                                in_array($asset->file_type, ['video', 'audio']) => 'bg-primary-600',
                                 $extension === 'pdf'                            => 'bg-red-600',
                                 $asset->file_type === 'image'                   => 'bg-gray-500',
                                 default                                         => 'bg-gray-600',
@@ -94,12 +94,11 @@
                         @endphp
                         <a
                             href="{{ $viewUrl }}"
-                            class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-violet-400 dark:hover:border-violet-500 transition dam-card-new"
+                            class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-primary-400 dark:hover:border-primary-500 transition dam-card-new"
                             style="animation-delay: {{ $loop->index * 20 }}ms"
                         >
                             <div class="dam-card-img">
 
-                                {{-- Shimmer skeleton shown while thumbnail loads --}}
                                 <div class="dam-shimmer absolute inset-0 z-0 flex items-center justify-center">
                                     <img
                                         src="{{ $placeholderSvg }}"
@@ -137,10 +136,9 @@
                     @endforeach
                 </div>
 
-                {{-- Infinite-scroll sentinel + spinner --}}
                 @if ($assets->hasMorePages())
                     <div id="dam-scroll-sentinel" class="flex justify-center items-center py-10" aria-hidden="true">
-                        <svg class="animate-spin w-8 h-8 text-violet-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg class="animate-spin w-8 h-8 text-primary-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="#8A2BE2" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -162,7 +160,7 @@
 
     @push('scripts')
     <script>
-    /* Strip dam-card-new after each SSR card animates in, before Vue re-renders on load */
+
     (function () {
         var g = document.getElementById('dam-asset-grid');
         if (g) {
@@ -175,7 +173,6 @@
         }
     })();
 
-    /* Scroll-to-top button — injected outside Vue's #app so Vue re-render can't detach it */
     (function () {
         var btn = document.createElement('button');
         btn.setAttribute('aria-label', 'Scroll to top');
@@ -200,11 +197,6 @@
         const ENDPOINT   = '{{ route('dam.share.list_assets', $share->token) }}';
         const startPage  = {{ $assets->currentPage() }};
 
-        /*
-         * Vue (app.js module) registers its load handler after this inline script
-         * (deferred modules execute after regular scripts). Our load handler fires
-         * first, so we use setTimeout(0) to run after Vue's synchronous app.mount().
-         */
         window.addEventListener('load', function () {
         setTimeout(function () {
         const grid      = document.getElementById('dam-asset-grid');
@@ -217,7 +209,7 @@
         let exhausted   = false;
 
         function badgeColor(fileType, ext) {
-            if (fileType === 'video' || fileType === 'audio') return 'bg-violet-600';
+            if (fileType === 'video' || fileType === 'audio') return 'bg-primary-600';
             if (ext === 'pdf') return 'bg-red-600';
             if (fileType === 'image') return 'bg-gray-500';
             return 'bg-gray-600';
@@ -240,7 +232,7 @@
                 : '';
             const safeName = esc(asset.file_name);
 
-            return `<a href="${esc(asset.view_url)}" class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-violet-400 dark:hover:border-violet-500 transition">
+            return `<a href="${esc(asset.view_url)}" class="group bg-white dark:bg-cherry-900 rounded-lg border border-gray-200 dark:border-cherry-800 overflow-hidden hover:border-primary-400 dark:hover:border-primary-500 transition">
                 <div class="dam-card-img">
                     <div class="dam-shimmer absolute inset-0 z-0 flex items-center justify-center">
                         <img src="${esc(asset.placeholder_svg)}" alt="" aria-hidden="true"

@@ -11,7 +11,7 @@
                 v-if="isDragOver"
                 class="absolute inset-0 z-50 backdrop-blur-sm border-2 border-dashed rounded-lg pointer-events-none"
                 :class="canUpload
-                    ? 'bg-white/90 dark:bg-cherry-800/95 border-violet-500 dark:border-violet-400'
+                    ? 'bg-white/90 dark:bg-cherry-800/95 border-primary-500 dark:border-primary-400'
                     : 'bg-red-50/80 dark:bg-red-950/30 border-red-400 dark:border-red-500'"
             ></div>
 
@@ -20,12 +20,12 @@
                 :style="hintCardStyle"
                 class="fixed z-[10011] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 rounded-2xl px-10 py-8 shadow-lg pointer-events-none"
                 :class="canUpload
-                    ? 'bg-violet-50 dark:bg-violet-950/80 border border-violet-200 dark:border-violet-700'
+                    ? 'bg-primary-50 dark:bg-primary-900/80 border border-primary-200 dark:border-primary-700'
                     : 'bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-700'"
             >
                 <template v-if="canUpload">
-                    <i class="icon-dam-upload text-6xl text-violet-500 dark:text-violet-400 block"></i>
-                    <p class="text-violet-700 dark:text-violet-300 font-semibold text-base text-center">
+                    <i class="icon-dam-upload text-6xl text-primary-500 dark:text-primary-400 block"></i>
+                    <p class="text-primary-700 dark:text-primary-300 font-semibold text-base text-center">
                         @lang('dam::app.admin.dam.index.drop-zone-hint')
                     </p>
                 </template>
@@ -55,7 +55,7 @@
                         style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <div
-                            class="flex items-center justify-between px-4 py-2.5 bg-violet-600 dark:bg-violet-700 cursor-pointer select-none"
+                            class="flex items-center justify-between px-4 py-2.5 bg-primary-600 dark:bg-primary-700 cursor-pointer select-none"
                             @click="session.minimized = !session.minimized"
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionSummary(session) }}</span>
@@ -105,7 +105,7 @@
                         style="width:360px; max-width:calc(100vw - 2rem); flex-shrink:0; pointer-events:auto;"
                     >
                         <div
-                            class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-violet-600 dark:bg-violet-700"
+                            class="flex items-center justify-between px-4 py-2.5 cursor-pointer select-none bg-primary-600 dark:bg-primary-700"
                             @click="session.minimized = !session.minimized"
                         >
                             <span class="text-sm font-semibold text-white truncate">@{{ sessionTitle(session) }}</span>
@@ -154,7 +154,7 @@
                         </div>
 
                         <div v-if="sessionRemaining(session) > 0 && session.minimized" class="h-1 bg-gray-100 dark:bg-cherry-700">
-                            <div class="h-full bg-violet-500 dark:bg-violet-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
+                            <div class="h-full bg-primary-500 dark:bg-primary-400 transition-all duration-300" :style="{ width: session.overall + '%' }"></div>
                         </div>
 
                         <div
@@ -177,7 +177,7 @@
                                     <p v-else-if="job.status === 'interrupted'" class="text-xs text-amber-500 dark:text-amber-400 truncate leading-snug">@lang('dam::app.admin.explorer.upload.interrupted')</p>
                                     <p v-else-if="job.parentPath" class="text-xs text-gray-400 dark:text-gray-500 truncate leading-snug">@{{ job.parentPath }}</p>
                                     <div v-else-if="job.status === 'uploading'" class="mt-1 h-1 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
-                                        <div class="h-full bg-violet-600 dark:bg-violet-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
+                                        <div class="h-full bg-primary-600 dark:bg-primary-500 transition-all duration-300 rounded-full" :style="{ width: job.progress + '%' }"></div>
                                     </div>
                                 </div>
                                 <div class="flex-shrink-0 text-xs text-gray-400 text-right min-w-[52px]">
@@ -188,7 +188,7 @@
                                     v-if="job.status === 'error' && !job.isFolder"
                                     type="button"
                                     title="@lang('dam::app.admin.dam.upload.retry')"
-                                    class="flex-shrink-0 p-1 text-violet-500 hover:text-violet-600 dark:text-violet-400 dark:hover:text-violet-300 rounded transition-colors"
+                                    class="flex-shrink-0 p-1 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 rounded transition-colors"
                                     @click.stop="retryJob(session, job)"
                                 >
                                     <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -208,7 +208,7 @@
                             <div class="h-1.5 bg-gray-200 dark:bg-cherry-600 rounded-full overflow-hidden">
                                 <div
                                     class="h-full rounded-full transition-all duration-300"
-                                    :class="session.errorCount ? 'bg-red-500 dark:bg-red-600' : 'bg-violet-600 dark:bg-violet-500'"
+                                    :class="session.errorCount ? 'bg-red-500 dark:bg-red-600' : 'bg-primary-600 dark:bg-primary-500'"
                                     :style="{ width: session.overall + '%' }"
                                 ></div>
                             </div>
@@ -240,7 +240,6 @@
         };
 
         let damPrimaryManager = null;
-
 
         const damFileBag = new Map();
 
@@ -332,12 +331,24 @@
 
             data() {
                 return {
+                    /**
+                     * Upload progress copy is built in JS from live counters, so the strings are
+                     * handed over as translated templates and the placeholders filled client-side.
+                     */
+                    i18n: {
+                        uploading:           @js(trans('dam::app.admin.dam.index.upload-session.uploading')),
+                        paused:              @js(trans('dam::app.admin.dam.index.upload-session.paused')),
+                        interrupted:         @js(trans('dam::app.admin.dam.index.upload-session.interrupted')),
+                        failed:              @js(trans('dam::app.admin.dam.index.upload-session.failed')),
+                        completed:           @js(trans('dam::app.admin.dam.index.upload-session.completed')),
+                        createFolderFailed:  @js(trans('dam::app.admin.dam.index.upload-session.create-folder-failed')),
+                    },
                     isPrimary: false,
                     isDragOver: false,
                     dragCounter: 0,
                     hintCardStyle: {},
-                    activeSessions: [],    
-                    sessions: [],          
+                    activeSessions: [],
+                    sessions: [],
                     nextSessionId: 1,
                     nextJobId: 1,
                     rowHeight: DAM_ROW_H,
@@ -416,7 +427,6 @@
                     this.activeSessions.push(session);
                     session = this.activeSessions[this.activeSessions.length - 1];
 
-                    // Folder "creating" jobs (visual) for the directory structure.
                     for (const dirPath of [...folderPaths].sort()) {
                         const segs       = dirPath.split('/');
                         const name       = segs[segs.length - 1];
@@ -424,7 +434,6 @@
                         session.jobs.push(this.makeJob({ name, parentPath, relativePath: dirPath, fileSize: 0, isFolder: true, status: 'creating' }));
                     }
 
-                    // File jobs (queued). Bytes held non-reactively in damFileBag.
                     for (const item of items) {
                         const rel        = item.relativePath || item.file.name;
                         const segs       = rel.split('/');
@@ -440,7 +449,6 @@
                     }
                     session.queuedCount = items.length;
 
-                    // Stash bytes for resume when the batch fits a safe quota.
                     session.resumable = await this.canStashBatch(session.bytesTotal);
                     if (session.resumable) {
                         for (const job of session.jobs) {
@@ -455,11 +463,8 @@
                     }
                     this.persistState();
 
-                    // Register the background upload session so it can be
-                    // paused / cancelled / retried and survive a reload.
                     await this.startTracker(session);
 
-                    // Phase 1: create the directory structure (idempotent).
                     if (folderPaths.length) {
                         try {
                             const res = await this.$axios.post("{{ route('admin.dam.directory.create_structure') }}", {
@@ -469,12 +474,11 @@
                             session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') j.status = 'done'; });
                             this.$emitter.emit('dam:folder-drop-uploaded', { directoryId: targetDirId, count: 0 });
                         } catch {
-                            session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') { j.status = 'error'; j.error = 'Failed to create folder'; } });
+                            session.jobs.forEach(j => { if (j.isFolder && j.status === 'creating') { j.status = 'error'; j.error = this.i18n.createFolderFailed; } });
                         }
                         this.persistState();
                     }
 
-                    // Phase 2: upload files through the concurrency pool.
                     await this.runWorkers(session);
 
                     await this.finishSession(session);
@@ -505,9 +509,6 @@
                     return this.$axios.post(url).catch(() => {});
                 },
 
-                // Called once the worker pool drains normally. A session that is
-                // paused or cancelled is left untouched (its handler owns it); one
-                // that finished with errors stays active so the user can Retry.
                 async finishSession(session) {
                     if (session.cancelled || session.paused) return;
 
@@ -524,9 +525,6 @@
                     this.persistState();
                 },
 
-                // Pause: stop feeding the pool and abort any in-flight transfers
-                // (they are re-queued). Active count falls to zero so the grid
-                // unlocks and existing assets can be browsed mid-upload.
                 pauseSession(session) {
                     session.paused = true;
                     session.jobs.forEach((j) => {
@@ -544,8 +542,6 @@
                     await this.finishSession(session);
                 },
 
-                // Retry: re-queue transfer-failed files (their bytes are retained)
-                // and ask the server to re-run any failed background finalisation.
                 async retrySession(session) {
                     let requeued = 0;
                     for (const job of session.jobs) {
@@ -565,8 +561,6 @@
                     await this.finishSession(session);
                 },
 
-                // Retry a single failed file. Its bytes were retained (see
-                // afterJob), so we just re-queue it and spin the worker pool.
                 async retryJob(session, job) {
                     if (job.isFolder || job.status !== 'error' || ! damFileBag.has(job.id)) return;
                     job.status = 'queued';
@@ -605,7 +599,7 @@
                     const queue = session.jobs.filter(j => ! j.isFolder && j.status === 'queued');
                     let cursor = 0;
                     const next = () => {
-                        // Pause / cancel stops the pool from starting new transfers.
+
                         if (session.paused || session.cancelled) return Promise.resolve();
                         if (cursor >= queue.length) return Promise.resolve();
                         const job = queue[cursor++];
@@ -662,9 +656,7 @@
                             job.status = 'done';
                             job.progress = 100;
                             if (folder) this.announceGrantedDirectories(res.data.granted_directory_ids);
-                            // Track the ids of the assets this session created so
-                            // consumers (e.g. the product edit asset picker) can
-                            // auto-select freshly uploaded assets once it finishes.
+
                             if (! session.uploadedAssetIds) session.uploadedAssetIds = [];
                             (res.data.files || []).forEach(f => {
                                 if (f && f.id != null) session.uploadedAssetIds.push(f.id);
@@ -672,8 +664,7 @@
                         }
                     } catch (error) {
                         job._abort = null;
-                        // A pause/cancel abort is not a real failure: re-queue on
-                        // pause, drop silently on cancel. Everything else is an error.
+
                         const aborted = this.$axios.isCancel?.(error)
                             || error?.code === 'ERR_CANCELED'
                             || error?.name === 'CanceledError'
@@ -696,8 +687,7 @@
                 },
 
                 afterJob(session, job) {
-                    // Keep the bytes of a failed transfer so Retry can re-send it;
-                    // only successful jobs release their buffered file.
+
                     if (job.status === 'done') {
                         damFileBag.delete(job.id);
                         if (DAM_RESUME_ENABLED) damUploadStore.del(job.id);
@@ -706,12 +696,8 @@
                     this.scheduleAggregate(session);
                     this.persistState();
 
-                    // No mid-upload grid re-render: finalisation runs in the
-                    // background and the grid refreshes once, when the session
-                    // completes — so a bulk upload never disturbs existing assets.
                 },
 
-                // ── Progress counters (O(1) per tick instead of array re-scan) ──
                 bumpCounters(session, job) {
                     if (job.status === 'done')  { session.doneCount++;  session.bytesDone += job.fileSize || 0; }
                     if (job.status === 'error') { session.errorCount++; }
@@ -769,47 +755,57 @@
                 sessionActiveCount(session) {
                     return session.jobs.filter(u => u.status === 'uploading' || u.status === 'creating').length;
                 },
-                // Files still to settle (queued or in-flight). Unlike the active
-                // count this only decreases, so control buttons keyed off it don't
-                // flicker between batches or when a paused job is re-queued.
+
                 sessionRemaining(session) {
                     return session.jobs.filter(u => ! u.isFolder && (u.status === 'queued' || u.status === 'uploading')).length;
                 },
-                // Files left interrupted by a page reload whose bytes could not be
-                // restored (large batches aren't stashed). They can't be resumed —
-                // the user must re-add them — but the session can still be cancelled.
+
                 sessionInterruptedCount(session) {
                     return session.jobs.filter(u => ! u.isFolder && u.status === 'interrupted').length;
                 },
-                // Anything not yet finished successfully/failed: drives whether the
-                // Cancel control is offered (so a reload-interrupted session isn't
-                // stuck with no controls but the close button).
+
                 sessionOutstanding(session) {
                     return this.sessionRemaining(session) + this.sessionInterruptedCount(session);
                 },
                 sessionFileJobCount(session) {
                     return session.jobs.filter(u => ! u.isFolder).length;
                 },
+                /**
+                 * Fill :placeholders in a translated template.
+                 */
+                transLine(template, replacements) {
+                    return Object.entries(replacements).reduce(
+                        (line, [key, value]) => line.replaceAll(`:${key}`, value),
+                        template
+                    );
+                },
                 sessionTitle(session) {
                     const total = this.sessionFileJobCount(session);
                     if (session.paused) {
-                        return `Paused — ${session.doneCount} of ${total} uploaded`;
+                        return this.transLine(this.i18n.paused, { done: session.doneCount, total });
                     }
                     if (this.sessionRemaining(session) > 0) {
                         const pct = session.minimized ? ` ${session.overall}%` : '';
-                        return `Uploading ${total} file${total !== 1 ? 's' : ''}…${pct}`;
+
+                        return this.transLine(this.i18n.uploading, { total }) + pct;
                     }
                     const interrupted = this.sessionInterruptedCount(session);
                     if (interrupted > 0) {
-                        return `${session.doneCount} of ${total} uploaded · ${interrupted} interrupted`;
+                        return this.transLine(this.i18n.interrupted, { done: session.doneCount, total, interrupted });
                     }
-                    if (session.errorCount > 0) return `${session.doneCount} uploaded, ${session.errorCount} failed`;
-                    return `${session.doneCount} of ${total} uploaded`;
+                    if (session.errorCount > 0) {
+                        return this.transLine(this.i18n.failed, { done: session.doneCount, failed: session.errorCount });
+                    }
+
+                    return this.transLine(this.i18n.completed, { done: session.doneCount, total });
                 },
                 sessionSummary(session) {
                     const total = this.sessionFileJobCount(session);
-                    if (session.errorCount > 0) return `${session.doneCount} uploaded, ${session.errorCount} failed`;
-                    return `${session.doneCount} of ${total} uploaded`;
+                    if (session.errorCount > 0) {
+                        return this.transLine(this.i18n.failed, { done: session.doneCount, failed: session.errorCount });
+                    }
+
+                    return this.transLine(this.i18n.completed, { done: session.doneCount, total });
                 },
 
                 archiveSession(session) {
@@ -894,8 +890,7 @@
                         s.cancelled = false;
                         s.paused = false;
                         s.jobs.forEach(j => {
-                            // Unfinished jobs are provisionally interrupted; resumeSessions()
-                            // promotes any whose bytes survive in IndexedDB back to queued.
+
                             if (j.status === 'uploading' || j.status === 'queued' || j.status === 'creating') {
                                 j.status = 'interrupted';
                             }
@@ -1027,7 +1022,7 @@
 
                 jobStatusIcon(job) {
                     if (job.status === 'uploading' || job.status === 'creating') {
-                        return `<svg class="animate-spin h-3.5 w-3.5 text-violet-500 dark:text-violet-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                        return `<svg class="animate-spin h-3.5 w-3.5 text-primary-500 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
                     }
                     if (job.status === 'done') {
                         return `<svg class="h-3.5 w-3.5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>`;
@@ -1052,7 +1047,7 @@
                     const isAudio = ['mp3','wav','ogg','flac','aac','m4a','wma'].includes(ext);
                     const isDoc   = ['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','csv','zip','rar','7z'].includes(ext);
                     if (isImage) return `<svg class="h-5 w-5 text-blue-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>`;
-                    if (isVideo) return `<svg class="h-5 w-5 text-violet-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>`;
+                    if (isVideo) return `<svg class="h-5 w-5 text-primary-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>`;
                     if (isAudio) return `<svg class="h-5 w-5 text-pink-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>`;
                     if (isDoc)   return `<svg class="h-5 w-5 text-blue-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>`;
                     return `<svg class="h-5 w-5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>`;

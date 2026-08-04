@@ -19,9 +19,7 @@
                     <div class="{{ config('dam.explorer.enabled') ? 'flex gap-2.5 max-xl:flex-wrap items-start min-w-0' : 'flex gap-2.5 mt-3.5 max-lg:flex-wrap min-w-0' }}">
                         @php
                             $showTree      = !config('dam.explorer.enabled') || config('dam.explorer.show_tree');
-                            // Bookmarks are an Explorer-only feature (navigation runs through the
-                            // explorer), so never show the box when the Explorer is disabled — even
-                            // if the bookmarks flag itself is still on.
+
                             $showBookmarks = config('dam.explorer.enabled') && config('dam.explorer.bookmarks_enabled');
                             $showSidebar   = $showTree || $showBookmarks;
                         @endphp
@@ -85,8 +83,6 @@
                         </div>
                         @endif
 
-                        {{-- Hidden tree mount: keeps Vue component (and its modal listeners) alive
-                             when explorer is enabled but show_tree is off. Modals teleport to body. --}}
                         @if (config('dam.explorer.enabled') && !$showTree && bouncer()->hasPermission('dam.directory.index'))
                         <div class="hidden" aria-hidden="true">
                             <x-dam::tree.damdirectories :visible="false" />
@@ -127,19 +123,11 @@
                 },
 
                 mounted() {
-                    // Open the tree at the requested directory if landed here
-                    // from a breadcrumb link on the asset edit page. Fired
-                    // immediately — the tree component queues the request if
-                    // its directories haven't finished loading yet, and the
-                    // silent flag suppresses a flash if the directory turns
-                    // out to be missing (e.g. it was deleted while we were
-                    // away on the edit page).
+
                     let dirId = null;
 
-                    // 1. Asset-edit breadcrumb return (highest priority).
                     try { dirId = sessionStorage.getItem('dam_return_dir'); sessionStorage.removeItem('dam_return_dir'); } catch {}
 
-                    // 2. URL param — format is filters[directory_id][]=X (datagrid convention).
                     if (! dirId) {
                         try {
                             const urlDirId = new URLSearchParams(window.location.search).get('filters[directory_id][]');
@@ -147,9 +135,6 @@
                         } catch {}
                     }
 
-                    // 3. localStorage — the datagrid persists applied filters under key
-                    //    'datagrids' as an array of {src, applied} objects. Find the DAM
-                    //    assets datagrid entry and read its directory_id column filter.
                     if (! dirId) {
                         try {
                             const datagrids = JSON.parse(localStorage.getItem('datagrids') || '[]');
@@ -164,9 +149,6 @@
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
 
-                    // Below lg the sidebar is an off-canvas drawer: the toggle button
-                    // opens/closes it. At lg+ the same button collapses the static
-                    // sidebar (the persisted desktop behavior).
                     this.$emitter.on('dam:toggle-sidebar', () => {
                         if (this.isDesktop()) {
                             this.showSidebar = !this.showSidebar;
@@ -177,8 +159,6 @@
                         }
                     });
 
-                    // Close the mobile drawer on Escape, on navigating into a folder,
-                    // and whenever the viewport grows back to desktop.
                     this._onSidebarKeydown = (e) => { if (e.key === 'Escape') this.drawerOpen = false; };
                     window.addEventListener('keydown', this._onSidebarKeydown);
 
@@ -205,7 +185,7 @@
     <x-dam::asset.drop-upload />
 
     @pushOnce('scripts')
-        {{-- v-dam-upload: upload button + datagrid (drag-drop delegated to v-dam-drop-upload) --}}
+
         <script
             type="text/x-template"
             id="v-dam-upload-template"
@@ -221,7 +201,7 @@
                         <v-dam-breadcrumb></v-dam-breadcrumb>
                         @if (bouncer()->hasPermission('dam.asset.upload') && bouncer()->hasPermission('dam.directory.index'))
                             <div class="flex items-center gap-2" v-if="canUploadHere">
-                                {{-- Hidden inputs driven by the "+ New" menu --}}
+
                                 <input type="file"
                                     multiple="multiple"
                                     name="files[]"
@@ -312,10 +292,7 @@
                             :class="{ 'pointer-events-none': isUploading || isFolderUploading || dropActiveCount > 0 || treeBusy }"
                             :aria-busy="isUploading || isFolderUploading || dropActiveCount > 0 || treeBusy"
                         >
-                            <!-- Semi-transparent overlay while uploading / tree loading.
-                                 Uses a child absolute element so the parent stays at z:auto
-                                 (no stacking context), keeping the filter drawer's fixed
-                                 elements in the root stacking context above the sticky navbar. -->
+
                             <div
                                 v-if="isUploading || isFolderUploading || treeBusy"
                                 class="absolute inset-0 bg-white/60 dark:bg-cherry-900/60 z-[1] rounded-lg"
@@ -513,7 +490,6 @@
                     const targetDirId = this.currentDirectory?.id;
                     if (! targetDirId) { e.target.value = ''; return; }
 
-                    // Each path level becomes a folder to create; files become upload jobs.
                     const folderPaths = new Set();
                     files.forEach(f => {
                         const rel  = f.webkitRelativePath || f.name;
@@ -534,7 +510,7 @@
                 createDirectory() {
                     const id = this.currentDirectory?.id;
                     if (! id) return;
-                    // The directory tree component owns the create/rename modal.
+
                     this.$emitter.emit('dam:open-create-dir', { item: { id } });
                 },
 
@@ -617,8 +593,8 @@
                             type="button"
                             class="px-1 py-0.5 rounded transition-colors"
                             :class="i === crumbs.length - 1
-                                ? 'text-violet-700 dark:text-violet-300 font-semibold cursor-default'
-                                : 'text-gray-600 dark:text-gray-300 hover:text-violet-700 dark:hover:text-violet-400 hover:underline cursor-pointer'"
+                                ? 'text-primary-700 dark:text-primary-300 font-semibold cursor-default'
+                                : 'text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 hover:underline cursor-pointer'"
                             :disabled="i === crumbs.length - 1"
                             @click="i === crumbs.length - 1 ? null : navigateTo(crumb)"
                         >@{{ crumb.name }}</button>
@@ -655,13 +631,11 @@
 
     @include('dam::asset.grid-preview-modal')
 
-    {{-- Share-link modal singleton; opened via the `open-share-modal` emitter event --}}
     @pushOnce('scripts')
         @include('dam::share.components.share-link-modal')
     @endPushOnce
 
     <v-share-link-modal></v-share-link-modal>
 
-    {{-- Shared "Assign Tags" mass-action modal — used by both the legacy datagrid and the explorer --}}
     <x-dam::tag.assign-modal />
 </x-admin::layouts>

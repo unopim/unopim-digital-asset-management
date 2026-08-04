@@ -1,14 +1,4 @@
-/**
- * Tags — attach a tag to an asset, fetch a tag by id, and detach a tag.
- * DAM tags are asset-scoped (no standalone tag CRUD / no list-by-asset), so the
- * "Create / List / Delete Tag" requirements map onto these real endpoints.
- *
- * Contract (from TagController):
- *   - attach (POST /tags) → 201; duplicate → 404 (success:false)
- *   - detach (DELETE /tags) → 201; not-attached → 404 (success:false)
- *   - fetch (GET /tags/{tagId}) → 200; unknown id → 404
- *   - attach/detach validate { tag (max:100), asset_id (exists) } → 422
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -83,9 +73,6 @@ test.describe('Tag — fetch by id', () => {
     expect(res.body.success).toBe(false);
   });
 
-  // The attach response carries the asset (not the new tag id), so the tag id
-  // isn't reliably discoverable from the API alone. Provide TAG_ID to exercise
-  // the positive fetch against a known tag.
   test('fetches a tag by id → 200', async ({ api }) => {
     const id = process.env.TAG_ID;
     test.skip(!id, 'set TAG_ID to a known tag id to run the positive fetch');

@@ -1,7 +1,6 @@
 const { test, expect } = require('../utils/fixtures');
 const { navigateTo } = require('../utils/helpers');
 
-// Performance thresholds (ms)
 const FIRST_PAGE_LOAD_MS = 8_000;
 const SEARCH_RESPONSE_MS = 5_000;
 const TREE_RENDER_MS     = 10_000;
@@ -46,7 +45,6 @@ test.describe('DAM Scale Validation (large dataset)', () => {
 
     await expect(adminPage.getByText('Root').first()).toBeVisible({ timeout: TREE_RENDER_MS });
 
-    // Try to click the first expand arrow / toggle in the tree
     const expandArrow = adminPage.locator('.tree-container-details').first()
       .locator('[class*="arrow"], [class*="toggle"], svg').first();
 
@@ -108,8 +106,7 @@ test.describe('DAM Scale Validation (large dataset)', () => {
       .or(adminPage.locator('[class*="next-page"], [aria-label*="next" i]').first());
 
     const isVisible = await nextBtn.isVisible({ timeout: 5_000 }).catch(() => false);
-    // pointer-events-none is applied when the button is in a disabled/last-page state.
-    // isVisible() returns true regardless, so we check the class explicitly.
+
     const isDisabled = isVisible && await nextBtn.evaluate(
       el => el.classList.contains('pointer-events-none') || el.hasAttribute('disabled')
     ).catch(() => true);

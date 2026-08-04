@@ -336,7 +336,7 @@ window._damImageViewer = {
                 const res = await window.axios.post(url, { color });
                 this.bgPreviewDataUrl = res.data.dataUrl;
             } catch (_) {
-                // silent — original image stays visible
+
             } finally {
                 this.bgPreviewLoading = false;
             }
@@ -450,7 +450,7 @@ window._damImageViewer = {
                 this.editTool   = null;
                 const url = new URL(window.location.href);
                 url.searchParams.set('_img', Date.now());
-                window.location.replace(url.toString());
+                this.$navigate(url.toString());
             } catch (e) {
                 this.editError = e?.response?.data?.message || '{{ trans('dam::app.admin.dam.asset.edit.image-editor.error-operation') }}';
             } finally {

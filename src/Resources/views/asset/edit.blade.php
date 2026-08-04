@@ -35,7 +35,6 @@
         </v-delete-asset>
     </x-slot>
 
-
     @php
         $items = [
             [
@@ -133,7 +132,7 @@
 
     <x-slot:navButtons>
         <v-share-asset-button :asset-id="{{ $asset->id }}"></v-share-asset-button>
-        {{-- Modal lives in the always-rendered tab strip so it survives tab switches --}}
+
         <v-share-link-modal></v-share-link-modal>
     </x-slot:navButtons>
 
@@ -150,6 +149,7 @@
                 :action="route('admin.dam.assets.update', $asset->id)"
                 enctype="multipart/form-data"
                 method="PUT"
+                ajax
             >
                 <div class="flex gap-2.5 mt-3.5 flex-wrap">
                     <div class="flex gap-2.5 mt-3.5 w-full flex-wrap">
@@ -161,7 +161,7 @@
                                     <button
                                         v-if="prevAssetId"
                                         type="button"
-                                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                         :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.previous') }}"
@@ -173,7 +173,7 @@
                                     <button
                                         v-if="nextAssetId"
                                         type="button"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-violet-50 hover:text-violet-700 hover:border-violet-500 dark:hover:bg-violet-800 dark:hover:text-violet-200 dark:hover:border-violet-500 transition"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 flex w-9 h-9 items-center justify-center rounded-full bg-white dark:bg-gray-600 border-2 border-gray-300 dark:border-gray-500 shadow text-gray-700 dark:text-gray-100 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-500 dark:hover:bg-primary-800 dark:hover:text-primary-200 dark:hover:border-primary-500 transition"
                                         :class="{ 'pointer-events-none': isNavigating }"
                                         title="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
                                         aria-label="{{ trans('dam::app.admin.dam.asset.edit.next') }}"
@@ -431,7 +431,7 @@
                     tabCode:      { type: String, required: true },
                     initialCount: { type: Number, default: 0 },
                 },
-                template: `<span v-if="count > 0" class="text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300 rounded-full px-1.5 min-w-[1.25rem] text-center leading-5">@{{ count }}</span>`,
+                template: `<span v-if="count > 0" :data-tab-badge="tabCode" class="text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200 rounded-full px-1.5 min-w-[1.25rem] text-center leading-5">@{{ count }}</span>`,
                 data() {
                     return { count: this.initialCount };
                 },
@@ -461,7 +461,11 @@
                 const assetId = {{ $asset->id }};
                 const editPath = `/edit/${assetId}/`;
 
-                window.axios.interceptors.response.use(function(response) {
+                if (window.__damBadgeInterceptorId !== undefined) {
+                    window.axios.interceptors.response.eject(window.__damBadgeInterceptorId);
+                }
+
+                window.__damBadgeInterceptorId = window.axios.interceptors.response.use(function(response) {
                     const method = (response.config.method || '').toLowerCase();
                     const url    = response.config.url || '';
 
@@ -502,8 +506,8 @@
                     initialType: { type: String, default: '' },
                 },
                 template: `
-                    <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900 flex items-center justify-center shrink-0">
-                        <span :class="['text-lg text-violet-600 dark:text-violet-300', iconClass]"></span>
+                    <div class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center shrink-0">
+                        <span :class="['text-lg text-primary-600 dark:text-primary-300', iconClass]"></span>
                     </div>
                 `,
                 data() {
@@ -651,7 +655,7 @@
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.width')
                                     </x-admin::form.control-group.label>
-    
+
                                     <x-admin::form.control-group.control
                                         type="text"
                                         name="width"
@@ -661,15 +665,15 @@
                                         :label="trans('dam::app.admin.dam.asset.edit.custom-download.width')"
                                         :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.width-placeholder')"
                                     />
-    
+
                                     <x-admin::form.control-group.error control-name="width" />
                                 </x-admin::form.control-group>
-    
+
                                 <x-admin::form.control-group>
                                     <x-admin::form.control-group.label class="required">
                                         @lang('dam::app.admin.dam.asset.edit.custom-download.height')
                                     </x-admin::form.control-group.label>
-    
+
                                     <x-admin::form.control-group.control
                                         type="text"
                                         name="height"
@@ -679,7 +683,7 @@
                                         :label="trans('dam::app.admin.dam.asset.edit.custom-download.height')"
                                         :placeholder="trans('dam::app.admin.dam.asset.edit.custom-download.height-placeholder')"
                                     />
-    
+
                                     <x-admin::form.control-group.error control-name="height" />
                                 </x-admin::form.control-group>
                             </div>
@@ -1034,7 +1038,7 @@
                                 });
 
                                 resetForm();
-                                location.reload();
+                                this.$navigate(window.location.href);
                             })
                             .catch(error => {
                                 if (error.response.status == 422) {
@@ -1057,7 +1061,7 @@
         <script
             type="text/x-template"
             id="v-reupload-asset-template"
-        >      
+        >
             @if (bouncer()->hasPermission('dam.asset.re_upload'))
                 <input type="file"
                     name="file"
@@ -1165,18 +1169,18 @@
                             },
                             signal: this.abortController.signal,
                         }).then((response) => {
-                            // Server-level errors (e.g. post_max_size exceeded) return 200 with an
-                            // HTML body instead of JSON. Detect by checking the data type.
+
                             if (typeof response.data !== 'object' || response.data === null) {
                                 this.$emitter.emit('add-flash', { type: 'error', message: reUploadFileTooLargeMsg });
                                 return;
                             }
-                            location.reload();
                             this.$emitter.emit('uploaded-assets', response.data.file);
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
                                 message: response.data.message
                             });
+
+                            this.$navigate(window.location.href);
 
                         }).catch((error) => {
                             if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED') {
@@ -1237,7 +1241,6 @@
             @endif
         </script>
 
-        <!-- **** Share button — opens the shared modal singleton (renders in the tab row's navButtons slot) **** -->
         <script type="text/x-template" id="v-share-asset-button-template">
             @if (bouncer()->hasPermission('dam.asset.share'))
             <button
@@ -1326,7 +1329,7 @@
                                             message: response.data.message
                                         });
 
-                                        window.location.assign("{{ route('admin.dam.assets.index') }}");
+                                        this.$navigate("{{ route('admin.dam.assets.index') }}");
                                     })
                                     .catch((error) => {
                                         this.$emitter.emit('add-flash', {

@@ -1,19 +1,4 @@
-{{--
-    Reusable zoomable image viewer.
 
-    Usage:
-        <v-zoomable-image
-            src="/path/to/image.jpg"
-            alt="filename"
-            container-class="max-h-[70vh]"
-        ></v-zoomable-image>
-
-    Behaviours:
-      - Mouse wheel zooms (clamped to 10%–1000%)
-      - Click-drag pans when zoomed in
-      - Toolbar overlay: rotate L/R, zoom -/+, fit, 1:1, reset
-      - Double-click toggles 1:1 / fit
---}}
 <script type="text/x-template" id="v-zoomable-image-template">
     <div
         class="flex flex-col w-full h-full overflow-hidden select-none bg-gray-50 dark:bg-cherry-800 rounded"
@@ -34,7 +19,6 @@
             />
         </div>
 
-        <!-- Toolbar row (sits below the image, not overlaying it) -->
         <div class="flex items-center justify-center gap-1 px-3 py-2 border-t border-gray-200 dark:border-cherry-700 bg-white dark:bg-cherry-900 text-gray-700 dark:text-gray-200 text-xs">
             <button
                 type="button"

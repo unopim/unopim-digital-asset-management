@@ -41,13 +41,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: unopim/unopim
-          ref: 5b74a5ede24862d5f60fae1a7521de99e86cddfa
+          ref: 3fc23bf8d30ac9b7ed2a18936b28e64a6d255e92
           path: unopim
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_pgsql, tokenizer, zip
           ini-values: error_reporting=E_ALL
           tools: composer:v2
@@ -189,13 +189,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: unopim/unopim
-          ref: 5b74a5ede24862d5f60fae1a7521de99e86cddfa
+          ref: 3fc23bf8d30ac9b7ed2a18936b28e64a6d255e92
           path: unopim
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           extensions: curl, fileinfo, gd, intl, mbstring, openssl, pdo, pdo_pgsql, tokenizer, zip
           ini-values: error_reporting=E_ALL
           tools: composer:v2

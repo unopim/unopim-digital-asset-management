@@ -6,11 +6,6 @@
     {!! view_render_event('unopim.dam.tags.list.before') !!}
 
     <v-dam-tags-page>
-        <div class="flex justify-between items-center">
-            <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                @lang('dam::app.admin.dam.tag.index.title')
-            </p>
-        </div>
 
         <x-admin::shimmer.datagrid />
     </v-dam-tags-page>
@@ -20,23 +15,18 @@
     @pushOnce('scripts')
         <script type="text/x-template" id="v-dam-tags-page-template">
             <div>
-                <div class="flex justify-between items-center gap-4 flex-wrap">
-                    <div>
-                        <p class="text-xl text-gray-800 dark:text-slate-50 font-bold">
-                            @lang('dam::app.admin.dam.tag.index.title')
-                        </p>
-
-                        <p class="text-sm text-zinc-600 dark:text-slate-300 mt-2">
-                            @lang('dam::app.admin.dam.tag.index.description')
-                        </p>
-                    </div>
-
+                <x-admin::layouts.page-header
+                    :title="trans('dam::app.admin.dam.tag.index.title')"
+                    :description="trans('dam::app.admin.dam.tag.index.description')"
+                >
                     @if (bouncer()->hasPermission('dam.tags.create'))
-                        <button type="button" class="primary-button" @click="openCreate">
-                            @lang('dam::app.admin.dam.tag.index.create')
-                        </button>
+                        <x-slot:actions>
+                            <button type="button" class="primary-button" @click="openCreate">
+                                @lang('dam::app.admin.dam.tag.index.create')
+                            </button>
+                        </x-slot:actions>
                     @endif
-                </div>
+                </x-admin::layouts.page-header>
 
                 <x-admin::datagrid src="{{ route('admin.dam.tags.index') }}" ref="datagrid">
                     <template #header="{ columns, actions, applied, sortPage, selectAllRecords, available, isLoading }">
@@ -46,7 +36,7 @@
 
                         <template v-else>
                             <div
-                                class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-violet-50 dark:bg-cherry-900 font-semibold items-center"
+                                class="row grid gap-2.5 min-h-[47px] px-4 py-2.5 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 bg-primary-50 dark:bg-cherry-900 font-semibold items-center"
                                 :style="`grid-template-columns: 60px repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(120px, 1fr)`"
                             >
                                 <p v-if="available.massActions.length" class="flex items-center">
@@ -60,8 +50,8 @@
                                         <span
                                             class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
                                             :class="{
-                                                'peer-checked:icon-checkbox-check peer-checked:text-violet-700': applied.massActions.meta.mode === 'all',
-                                                'peer-checked:icon-checkbox-partial peer-checked:text-violet-700': applied.massActions.meta.mode === 'partial',
+                                                'peer-checked:icon-checkbox-check peer-checked:text-primary-700': applied.massActions.meta.mode === 'all',
+                                                'peer-checked:icon-checkbox-partial peer-checked:text-primary-700': applied.massActions.meta.mode === 'partial',
                                             }"
                                         ></span>
                                     </label>
@@ -100,7 +90,7 @@
                         <div
                             v-for="record in records"
                             :key="record.id"
-                            class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-violet-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
+                            class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-cherry-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-primary-50 hover:bg-opacity-30 dark:hover:bg-cherry-800"
                             :style="`grid-template-columns: 60px repeat(${columns.filter(c => c.visible !== false).length}, minmax(80px, 1fr)) minmax(120px, 1fr)`"
                         >
                             <p v-if="available.massActions.length" @click.stop>
@@ -111,7 +101,7 @@
                                         :value="record.id"
                                         v-model="applied.massActions.indices"
                                     >
-                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl"></span>
+                                    <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl"></span>
                                 </label>
                             </p>
                             <p v-else></p>
@@ -128,7 +118,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'edit')?.icon"
                                         :title="record.actions.find(a => a.index === 'edit')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
 
@@ -139,7 +129,7 @@
                                     <span
                                         :class="record.actions.find(a => a.index === 'delete')?.icon"
                                         :title="record.actions.find(a => a.index === 'delete')?.title"
-                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-violet-100 dark:hover:bg-gray-800 max-sm:place-self-center"
+                                        class="cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-primary-100 dark:hover:bg-gray-800 max-sm:place-self-center"
                                     ></span>
                                 </a>
                             </div>
@@ -164,7 +154,7 @@
                                 type="text"
                                 v-model="form.name"
                                 :placeholder="@js(trans('dam::app.admin.dam.tag.modal.name-placeholder'))"
-                                class="w-full rounded-md border bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400"
+                                class="w-full rounded-md border bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                 :class="error ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-cherry-700'"
                                 @keyup.enter="saveTag"
                                 @input="error = ''"

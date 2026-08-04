@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'アセット管理',
                     'assets'        => 'アセット',
                     'shares'        => '共有リンク',
                     'tags'          => 'タグ',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'プレビューに失敗しました',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'デジタルアセット管理',
                 'datagrid' => [
                     'file-name'      => 'ファイル名',
                     'tags'           => 'タグ',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => '離れる',
                 'upload-stay-page'               => '留まる',
                 'drop-zone-hint'                 => 'ファイルまたはフォルダをドロップしてアップロード',
+                'select-all'                     => 'すべて選択',
+                'select-directory-to-upload'     => 'アップロード先のディレクトリを選択してください。',
+                'upload-session'                 => [
+                    'uploading'            => ':total 件のファイルをアップロード中…',
+                    'paused'               => '一時停止 — :total 件中 :done 件アップロード済み',
+                    'interrupted'          => ':total 件中 :done 件アップロード済み · :interrupted 件中断',
+                    'failed'               => ':done 件アップロード済み、:failed 件失敗',
+                    'completed'            => ':total 件中 :done 件アップロード済み',
+                    'create-folder-failed' => 'フォルダーを作成できませんでした',
+                ],
                 'drop-zone-no-permission'        => 'ここにアップロードする権限がありません。',
                 'upload-complete'                => 'アップロード完了',
                 'item-upload-complete'           => 'アップロード完了',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'メタデータは利用できません',
                     'tags'                  => 'タグ',
                     'select-tags'           => 'タグを選択または作成',
+                    'tag-attach-success'    => 'タグを追加しました。',
+                    'tag-detach-success'    => 'アセットからタグを削除しました。',
                     'directory-path'        => 'ディレクトリパス',
                     'no-directory'          => 'ディレクトリが割り当てられていません',
                     'details'               => '詳細',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => '表示用のファイルが見つかりません',
                     'not-found-to-download'               => 'ダウンロード用のファイルが見つかりません',
                     'edit-success'                        => 'ファイルが正常にアップロードされました',
+                    'no-file-name'                        => 'ファイル名なし',
                     'show-success'                        => 'ファイルが正常に見つかりました',
                     'update-success'                      => 'ファイルが正常に更新されました',
                     'not-found-to-update'                 => 'ファイルは存在しません',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'アセット管理',
             'asset'            => 'アセット',
             'property'         => 'プロパティ',
             'comment'          => 'コメント',
@@ -686,10 +699,11 @@ return [
             '401' => 'この操作は認証されていません。',
         ],
         'configuration' => [
-            'save-btn' => '保存',
-            'title'    => 'DAM 設定',
-            'saved'    => '設定を保存しました。',
-            'general'  => [
+            'save-btn'    => '保存',
+            'title'       => '設定',
+            'saved'       => '設定を保存しました。',
+            'description' => 'アプリケーションのデジタルアセット管理 (DAM) 設定を構成します。',
+            'general'     => [
                 'title'            => '一般設定',
                 'description'      => 'これらの設定は DAM の全体的な閲覧体験を制御します。',
                 'explorer-enabled' => [

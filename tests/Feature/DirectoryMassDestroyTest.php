@@ -41,7 +41,7 @@ it('skips root directory (id=1) in mass destroy', function () {
     ]);
 
     $response->assertOk();
-    // Only the normal directory gets a job; root is skipped via isDeletable()
+
     Bus::assertDispatchedTimes(DeleteDirectory::class, 1);
 });
 

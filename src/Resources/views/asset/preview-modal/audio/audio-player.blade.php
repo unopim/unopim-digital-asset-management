@@ -75,7 +75,7 @@
                 <span class="audio-ring-2"></span>
             </div>
 
-            <div class="relative z-10 h-28 w-28 rounded-full bg-violet-50 dark:bg-gray-800 ring-2 ring-violet-200 dark:ring-violet-900 shadow-lg flex items-center justify-center overflow-hidden" :class="audioIsPlaying ? 'audio-disc-spinning' : ''">
+            <div class="relative z-10 h-28 w-28 rounded-full bg-primary-50 dark:bg-gray-800 ring-2 ring-primary-200 dark:ring-primary-900 shadow-lg flex items-center justify-center overflow-hidden" :class="audioIsPlaying ? 'audio-disc-spinning' : ''">
                 <img
                     :src="previewData.coverArtUrl || previewData.placeholderSvg"
                     :alt="previewData.file_name"
@@ -89,7 +89,6 @@
 
     <p class="text-sm font-medium mt-6 text-gray-700 dark:text-gray-300 truncate w-full max-w-xl text-center">@{{ previewData.file_name }}</p>
 
-    <!-- Hidden native audio element driven by Vue -->
     <audio
         ref="audioEl"
         class="hidden"
@@ -118,13 +117,13 @@
 
             <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 <div
-                    class="absolute inset-y-0 left-0 bg-violet-500"
+                    class="absolute inset-y-0 left-0 bg-primary-500"
                     :style="{ width: (audioDuration ? (audioCurrentTime / audioDuration) * 100 : 0) + '%' }"
                 ></div>
             </div>
 
             <div
-                class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-violet-600 shadow pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
+                class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary-600 shadow pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"
                 :style="{ left: (audioDuration ? (audioCurrentTime / audioDuration) * 100 : 0) + '%' }"
             ></div>
         </div>
@@ -139,7 +138,7 @@
             <div class="flex items-center gap-1.5 mr-auto">
                 <button
                     type="button"
-                    class="shrink-0 text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                    class="shrink-0 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.mute')"
                     @click="audioToggleMute"
                 >
@@ -158,7 +157,7 @@
                 <div class="dam-ctrl-desktop">
                     <input
                         type="range"
-                        class="w-20 h-1 accent-violet-400 cursor-pointer"
+                        class="w-20 h-1 accent-primary-400 cursor-pointer"
                         min="0"
                         max="1"
                         step="0.01"
@@ -170,7 +169,7 @@
 
             <button
                 type="button"
-                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.back-10s')"
                 @click="audioSkip(-10)"
             >
@@ -182,7 +181,7 @@
 
             <button
                 type="button"
-                class="flex items-center justify-center w-10 h-10 rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-md transition-colors shrink-0"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-md transition-colors shrink-0"
                 @click="audioTogglePlay"
             >
                 <svg v-if="audioIsPlaying" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -195,7 +194,7 @@
 
             <button
                 type="button"
-                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 transition-colors shrink-0"
+                class="dam-ctrl-desktop items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors shrink-0"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.forward-10s')"
                 @click="audioSkip(10)"
             >
@@ -234,7 +233,7 @@
                             <button
                                 type="button"
                                 class="w-full flex items-center justify-between gap-4 px-4 py-2 text-xs font-semibold transition-colors"
-                                :class="audioSpeed === rate ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                :class="audioSpeed === rate ? 'bg-primary-600 text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
                                 @click="setAudioSpeed(rate); audioSpeedOpen = false"
                             >
                                 <span>@{{ rate }}×</span>
@@ -250,7 +249,7 @@
             <button
                 type="button"
                 class="flex items-center justify-center w-7 h-7 rounded transition-colors shrink-0 ml-auto"
-                :class="audioIsLooping ? 'bg-violet-600 text-white' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+                :class="audioIsLooping ? 'bg-primary-600 text-white' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
                 title="@lang('dam::app.admin.dam.asset.edit.preview-modal.video-player.loop')"
                 @click="audioToggleLoop"
             >

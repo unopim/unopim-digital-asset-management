@@ -15,10 +15,8 @@ use Webkul\DAM\Support\DamTables;
 
 class DamUpdater
 {
-    /** Tables whose row counts we assert never shrink across an update. */
     public const TRACKED = ['dam_assets', 'dam_directories', 'dam_tags'];
 
-    /** @return array<string,int> */
     public function countRows(): array
     {
         $counts = [];
@@ -29,10 +27,6 @@ class DamUpdater
         return $counts;
     }
 
-    /**
-     * @param  array<string,int>  $before
-     * @return array{ok:bool, before:array<string,int>, after:array<string,int>, dropped:array<string>}
-     */
     public function verify(array $before): array
     {
         $after = $this->countRows();
@@ -47,7 +41,6 @@ class DamUpdater
         return ['ok' => $dropped === [], 'before' => $before, 'after' => $after, 'dropped' => $dropped];
     }
 
-    /** Create a fresh, collision-free backup directory (retries on an existing name). */
     public function backupDir(string $timestamp): string
     {
         $base = storage_path('dam-backups/'.$timestamp);
@@ -63,7 +56,6 @@ class DamUpdater
         return $dir;
     }
 
-    /** Tables that currently exist — a new-in-release table isn't dumped until it has been migrated. */
     private function existingTables(): array
     {
         $tables = array_filter(DamTables::ALL, fn ($t) => Schema::hasTable($t));
@@ -77,10 +69,6 @@ class DamUpdater
         return array_values($tables);
     }
 
-    /**
-     * Restoring DAM schema without the ledger would leave Laravel believing the
-     * reverted migrations had already run, permanently wedging dam:update.
-     */
     private function migrationsTable(): string
     {
         $migrations = config('database.migrations', 'migrations');
@@ -92,10 +80,6 @@ class DamUpdater
         return (string) $migrations;
     }
 
-    /**
-     * @param  array<string>|null  $tables  Defaults to every DAM table.
-     * @return array<int,string> argv for the DB dump (mysqldump / pg_dump).
-     */
     public function buildDumpCommand(string $sqlPath, ?array $tables = null): array
     {
         $tables ??= DamTables::ALL;
@@ -114,7 +98,7 @@ class DamUpdater
         $driver = $conn['driver'] ?? 'mysql';
 
         if ($driver === 'pgsql') {
-            // -c/--if-exists so the dump DROPs existing objects first, making restore idempotent.
+
             return array_merge(
                 ['pg_dump', '-c', '--if-exists', '-h', (string) $conn['host'], '-p', (string) $conn['port'],
                     '-U', (string) $conn['username'], '-d', (string) $conn['database'], '-f', $sqlPath],
@@ -122,7 +106,6 @@ class DamUpdater
             );
         }
 
-        // mysqldump emits DROP TABLE IF EXISTS before each CREATE by default → idempotent restore.
         return array_merge(
             ['mysqldump', '-h'.$conn['host'], '-P'.$conn['port'], '-u'.$conn['username'], $conn['database']],
             $tables,
@@ -130,7 +113,6 @@ class DamUpdater
         );
     }
 
-    /** @param  array<string>  $values */
     private function flag(string $flag, array $values): array
     {
         $out = [];
@@ -142,17 +124,16 @@ class DamUpdater
         return $out;
     }
 
-    /** Tar the asset files; null when the disk is remote (s3) or there is nothing to archive yet. */
     public function archiveAssetFiles(string $backupDir): ?string
     {
         $disk = Directory::getAssetDisk();
 
         if ($disk === Directory::ASSETS_DISK_AWS) {
-            return null; // remote disk — DB backup still covers metadata; files live in S3
+            return null;
         }
 
         if (! Storage::disk($disk)->exists(Directory::ASSETS_DIRECTORY)) {
-            return null; // fresh install, no uploaded assets yet
+            return null;
         }
 
         $root = Storage::disk($disk)->path('');
@@ -166,7 +147,6 @@ class DamUpdater
         return $tgz;
     }
 
-    /** @return array{dir:string, sql:string, files:?string} */
     public function backup(string $timestamp): array
     {
         $dir = $this->backupDir($timestamp);
@@ -188,7 +168,7 @@ class DamUpdater
     public function publish(): void
     {
         Artisan::call('vendor:publish', ['--tag' => 'dam-config', '--force' => true]);
-        Artisan::call('vendor:publish', ['--tag' => 'dam-defaults']); // no --force: never overwrite assets
+        Artisan::call('vendor:publish', ['--tag' => 'dam-defaults']);
         Artisan::call('db:seed', ['--class' => DirectoryTableSeeder::class, '--force' => true]);
     }
 
@@ -197,7 +177,6 @@ class DamUpdater
         Artisan::call('optimize:clear');
     }
 
-    /** Password passed via env so it never appears in the process argv. */
     private function dbEnv(): array
     {
         $conn = config('database.connections.'.config('database.default'));
@@ -207,7 +186,6 @@ class DamUpdater
         return $driver === 'pgsql' ? ['PGPASSWORD' => $pass] : ['MYSQL_PWD' => $pass];
     }
 
-    /** @return array<int,string> newest first */
     public function listBackups(): array
     {
         $base = storage_path('dam-backups');
@@ -225,7 +203,7 @@ class DamUpdater
 
     public function restore(string $timestamp): void
     {
-        // Guard against path traversal — timestamps are word chars and dashes only.
+
         if (! preg_match('/^[\w-]+$/', $timestamp)) {
             throw new \RuntimeException("Invalid backup name: {$timestamp}");
         }
@@ -241,12 +219,12 @@ class DamUpdater
             $driver = $conn['driver'] ?? 'mysql';
 
             if ($driver === 'pgsql') {
-                // ON_ERROR_STOP=1 so a failed statement aborts with a non-zero exit.
+
                 $cmd = ['psql', '-v', 'ON_ERROR_STOP=1', '-h', (string) $conn['host'], '-p', (string) $conn['port'],
                     '-U', (string) $conn['username'], '-d', (string) $conn['database'], '-f', $sql];
                 $r = Process::env($this->dbEnv())->timeout(0)->run($cmd);
             } else {
-                // Stream the dump into mysql's stdin — no shell, no interpolation.
+
                 $cmd = ['mysql', '-h'.$conn['host'], '-P'.$conn['port'], '-u'.$conn['username'], $conn['database']];
                 $r = Process::env($this->dbEnv())->timeout(0)->input(fopen($sql, 'r'))->run($cmd);
             }

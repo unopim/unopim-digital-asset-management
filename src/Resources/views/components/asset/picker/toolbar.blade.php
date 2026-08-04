@@ -25,17 +25,17 @@
 
                 <div class="ltr:pl-2.5 rtl:pr-2.5">
                     <p class="text-sm font-light text-gray-800 dark:text-white">
-                        <!-- Need to manage this translation. -->
+
                         @{{ "@lang('admin::app.components.datagrid.toolbar.results')".replace(':total', available.meta.total) }}
                     </p>
                 </div>
 
                 <div
-                    class="ltr:pl-2.5 rtl:pr-2.5" 
+                    class="ltr:pl-2.5 rtl:pr-2.5"
                     v-if="applied.massActions.indices.length"
                 >
                     <p class="text-sm font-light text-gray-800 dark:text-white">
-                        <!-- Need to manage this translation. -->
+
                         @{{ "@lang('admin::app.components.datagrid.toolbar.length-of')".replace(':length', applied.massActions.indices.length) }}
 
                         @{{ "@lang('admin::app.components.datagrid.toolbar.selected')".replace(':total', available.meta.total) }}
@@ -50,7 +50,7 @@
                     <div>
                         <div
                             class="relative inline-flex w-full max-w-max ltr:pl-3 rtl:pr-3 ltr:pr-5 rtl:pl-5 cursor-pointer select-none appearance-none items-center justify-between gap-x-1 rounded-md border dark:border-cherry-800 bg-white dark:bg-cherry-900 px-1 py-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:border-gray-400 dark:hover:border-gray-400 focus:outline-none focus:ring-2"
-                            :class="{'[&>*]:text-violet-700 [&>*]:dark:text-white': applied.filters.columns.filter(c => !['all', 'directory_id', 'directory_asset_id'].includes(c.index)).length > 0}"
+                            :class="{'[&>*]:text-primary-700 [&>*]:dark:text-white': hasAppliedFilters()}"
                         >
                             <span class="icon-filter text-2xl"></span>
 
@@ -59,8 +59,10 @@
                             </span>
 
                             <span
-                                class="icon-dot absolute top-0.5 right-1 text-2xl font-bold"
-                                v-if="applied.filters.columns.filter(c => !['all', 'directory_id', 'directory_asset_id'].includes(c.index)).length > 0"
+                                class="ltr:ml-0.5 rtl:mr-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-100 px-1.5 text-xs font-medium text-primary-700 dark:bg-cherry-800 dark:text-primary-400"
+                                data-applied-filter-count
+                                v-if="hasAppliedFilters()"
+                                v-text="appliedFilterCount()"
                             ></span>
                         </div>
 
@@ -79,12 +81,28 @@
 
                 <x-slot:content class="!p-5">
                     <x-dam::datagrid.filters />
-                        <div
-                            class="primary-button block text-center"
+                </x-slot>
+
+                <x-slot:footer class="mt-auto border-t border-gray-100 bg-white p-5 dark:border-cherry-800 dark:bg-cherry-800">
+                    <div class="flex flex-col gap-y-1">
+                        <button
+                            type="button"
+                            class="primary-button w-full justify-center text-center"
                             @click="runFilters()"
                         >
                             @lang('admin::app.components.datagrid.filters.save')
-                        </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="transparent-button justify-center self-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                            data-clear-all-filters
+                            :disabled="! hasAppliedFilters()"
+                            @click="clearAllFilters()"
+                        >
+                            @lang('admin::app.components.datagrid.filters.custom-filters.clear-all')
+                        </button>
+                    </div>
                 </x-slot>
             </x-admin::drawer>
 
@@ -131,7 +149,7 @@
                 <div class="flex items-center gap-1">
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         @click="changePage('previous')"
                     >
                         <span class="icon-chevron-left text-2xl"></span>
@@ -139,7 +157,7 @@
 
                     <button
                         type="button"
-                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-violet-100 dark:hover:bg-gray-800 active:border-gray-300"
+                        class="inline-flex w-full max-w-max cursor-pointer appearance-none items-center justify-between gap-x-1 rounded-md border border-transparent p-1.5 text-center text-gray-600 dark:text-gray-300 transition-all marker:shadow hover:bg-primary-100 dark:hover:bg-gray-800 active:border-gray-300"
                         @click="changePage('next')"
                     >
                         <span class="icon-chevron-right text-2xl"></span>

@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 use Webkul\DAM\Models\Directory;
 
-/**
- * Build a 3-level directory chain: root → parent → child.
- * Uses Directory::create() so the nested-set trait assigns _lft/_rgt.
- *
- * @return array{root: Directory, parent: Directory, child: Directory}
- */
 function seedAncestorFixture(): array
 {
     $root = Directory::create(['name' => 'AncRoot',   'parent_id' => null]);
@@ -23,10 +17,6 @@ beforeEach(function () {
     $this->loginAsAdmin();
 });
 
-// ---------------------------------------------------------------------------
-// Authentication guard
-// ---------------------------------------------------------------------------
-
 it('rejects unauthenticated requests to POST /directory/paths', function () {
     auth('admin')->logout();
 
@@ -34,10 +24,6 @@ it('rejects unauthenticated requests to POST /directory/paths', function () {
 
     expect(in_array($response->status(), [302, 401, 403], true))->toBeTrue();
 });
-
-// ---------------------------------------------------------------------------
-// Valid IDs — ancestor chain
-// ---------------------------------------------------------------------------
 
 it('returns root, parent, and child when given the child id', function () {
     ['root' => $root, 'parent' => $parent, 'child' => $child] = seedAncestorFixture();
@@ -67,7 +53,6 @@ it('returns nodes ordered root-first (ascending _lft)', function () {
 
     $ids = collect($response->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
 
-    // Root must come before parent, parent before child (lft ordering).
     expect(array_search($root->id, $ids, true))->toBeLessThan(array_search($parent->id, $ids, true));
     expect(array_search($parent->id, $ids, true))->toBeLessThan(array_search($child->id, $ids, true));
 });
@@ -103,14 +88,9 @@ it('deduplicates ancestor chains when multiple ids share ancestors', function ()
 
     $ids = collect($response->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->all();
 
-    // Root and parent must appear only once even though both children share them.
     expect(count(array_keys($ids, $root->id, true)))->toBe(1);
     expect(count(array_keys($ids, $parent->id, true)))->toBe(1);
 });
-
-// ---------------------------------------------------------------------------
-// Edge cases
-// ---------------------------------------------------------------------------
 
 it('returns an empty data array when ids is an empty array', function () {
     $response = $this->postJson(route('admin.dam.directory.paths'), [
@@ -129,10 +109,6 @@ it('returns an empty data array when all ids are non-existent', function () {
     $response->assertOk();
     $response->assertJsonCount(0, 'data');
 });
-
-// ---------------------------------------------------------------------------
-// Validation
-// ---------------------------------------------------------------------------
 
 it('returns 422 when the ids key is missing', function () {
     $response = $this->postJson(route('admin.dam.directory.paths'), []);

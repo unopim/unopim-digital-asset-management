@@ -17,7 +17,7 @@
 @layer components {
     [class^="icon-dam-"],
     [class*=" icon-dam-"] {
-        /* use !important to prevent issues with browser extensions that change fonts */
+
         font-family: "UnoPim-DAM" !important;
         speak: never;
         font-style: normal;
@@ -26,7 +26,6 @@
         text-transform: none;
         line-height: 1;
 
-        /* Better Font Rendering =========== */
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
@@ -179,7 +178,6 @@
         @apply bg-slate-400;
     }
 
-    /* status */
     .status-enable {
         @apply text-green-600;
     }

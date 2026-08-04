@@ -117,6 +117,11 @@ return [
         'route' => 'admin.api.dam.property.update',
         'sort'  => 2,
     ], [
+        'key'   => 'api.dam.property.getById',
+        'name'  => 'dam::app.admin.dam.index.directory.actions.get-by-id',
+        'route' => 'admin.api.dam.property.get',
+        'sort'  => 4,
+    ], [
         'key'   => 'api.dam.property.delete',
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.api.dam.property.delete',

@@ -5,7 +5,7 @@ return [
         'key'   => 'dam',
         'name'  => 'dam::app.admin.acl.menu',
         'route' => 'admin.dam.index',
-        'sort'  => 11,
+        'sort'  => 10,
     ], [
         'key'   => 'dam.asset',
         'name'  => 'dam::app.admin.acl.asset',
@@ -69,7 +69,7 @@ return [
     ], [
         'key'   => 'dam.asset.share',
         'name'  => 'dam::app.admin.acl.share',
-        'route' => 'admin.dam.shares.store',
+        'route' => 'admin.dam.shared-links.store',
         'sort'  => 11,
     ],
 
@@ -181,7 +181,7 @@ return [
     ], [
         'key'   => 'dam.directory.share',
         'name'  => 'dam::app.admin.acl.share',
-        'route' => 'admin.dam.shares.store',
+        'route' => 'admin.dam.shared-links.store',
         'sort'  => 7,
     ], [
         'key'   => 'dam.asset_assign',
@@ -196,22 +196,22 @@ return [
     ], [
         'key'   => 'dam.shares',
         'name'  => 'dam::app.admin.acl.shares',
-        'route' => 'admin.dam.shares.index',
+        'route' => 'admin.dam.shared-links.index',
         'sort'  => 5,
     ], [
         'key'   => 'dam.shares.index',
         'name'  => 'dam::app.admin.acl.view',
-        'route' => 'admin.dam.shares.index',
+        'route' => 'admin.dam.shared-links.index',
         'sort'  => 1,
     ], [
         'key'   => 'dam.shares.revoke',
         'name'  => 'dam::app.admin.acl.revoke',
-        'route' => 'admin.dam.shares.revoke',
+        'route' => 'admin.dam.shared-links.revoke',
         'sort'  => 2,
     ], [
         'key'   => 'dam.shares.delete',
         'name'  => 'dam::app.admin.acl.delete',
-        'route' => 'admin.dam.shares.destroy',
+        'route' => 'admin.dam.shared-links.destroy',
         'sort'  => 3,
     ], [
         'key'   => 'dam.tags',

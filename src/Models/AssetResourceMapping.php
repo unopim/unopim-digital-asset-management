@@ -16,7 +16,6 @@ class AssetResourceMapping extends Model implements AssetResourceMappingContract
 
     protected $historyTags = ['asset'];
 
-    /** Columns excluded from history generation. */
     protected $auditExclude = [
         'id',
     ];
@@ -46,9 +45,6 @@ class AssetResourceMapping extends Model implements AssetResourceMappingContract
         return $this->belongsTo(CategoryProxy::class, 'category_id');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getPrimaryModelIdForHistory(): int
     {
         return $this->dam_asset_id;

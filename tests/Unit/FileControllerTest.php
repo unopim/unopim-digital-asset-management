@@ -9,11 +9,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Models\Directory;
 
-// ─── Local disk: fix(dam) — getFileResponse() now uses response()->file() ─────
-//
-// Before: Storage::get() + response($file, 200)->header('Content-Type', $mime)
-// After:  Storage::path() + response()->file($absolutePath) → BinaryFileResponse
-
 it('getFileResponse on local disk returns BinaryFileResponse for cached thumbnail', function () {
     config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
     Storage::fake(Directory::ASSETS_DISK_PRIVATE);
@@ -74,16 +69,12 @@ it('getFileResponse on local disk returns BinaryFileResponse for PDF preview via
     $fakePdf = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
     Storage::disk(Directory::ASSETS_DISK_PRIVATE)->put($path, file_get_contents($fakePdf->getRealPath()));
 
-    // No pre-cached preview → preview() falls through to supported-media branch
     request()->merge(['path' => $path, 'size' => '800']);
 
     $response = (new FileController)->preview();
 
-    // BinaryFileResponse because local disk uses response()->file()
     expect($response)->toBeInstanceOf(BinaryFileResponse::class);
 });
-
-// ─── AWS disk: redirect behaviour (unchanged code, important regression guard) ─
 
 it('getFileResponse on AWS public disk redirects to direct S3 URL', function () {
     config(['filesystems.default' => 's3']);
@@ -132,8 +123,6 @@ it('getFileResponse on AWS private disk redirects to signed S3 URL', function ()
     expect($response)->toBeInstanceOf(RedirectResponse::class);
     expect($response->getTargetUrl())->toBe($signedUrl);
 });
-
-// ─── Auth guard ───────────────────────────────────────────────────────────────
 
 it('thumbnail aborts with 403 when user is not authenticated', function () {
     Auth::shouldReceive('check')->andReturn(false);

@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'संपत्ति प्रबंधन',
                     'assets'        => 'संपत्तियाँ',
                     'shares'        => 'साझा लिंक',
                     'tags'          => 'टैग्स',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'पूर्वावलोकन विफल',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'डिजिटल संपत्ति प्रबंधन',
                 'datagrid' => [
                     'file-name'      => 'फाइल का नाम',
                     'tags'           => 'टैग',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'छोड़ें',
                 'upload-stay-page'               => 'रुकें',
                 'drop-zone-hint'                 => 'फ़ाइलें या फ़ोल्डर अपलोड करने के लिए खींचें',
+                'select-all'                     => 'सभी चुनें',
+                'select-directory-to-upload'     => 'अपलोड करने के लिए एक निर्देशिका चुनें।',
+                'upload-session'                 => [
+                    'uploading'            => ':total फ़ाइल अपलोड हो रही हैं…',
+                    'paused'               => 'रोका गया — :total में से :done अपलोड',
+                    'interrupted'          => ':total में से :done अपलोड · :interrupted बाधित',
+                    'failed'               => ':done अपलोड, :failed विफल',
+                    'completed'            => ':total में से :done अपलोड',
+                    'create-folder-failed' => 'फ़ोल्डर नहीं बनाया जा सका',
+                ],
                 'drop-zone-no-permission'        => 'आपके पास यहाँ अपलोड करने की अनुमति नहीं है।',
                 'upload-complete'                => 'अपलोड पूर्ण',
                 'item-upload-complete'           => 'अपलोड पूर्ण',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'कोई मेटाडेटा उपलब्ध नहीं है',
                     'tags'                  => 'टैग',
                     'select-tags'           => 'टैग चुनें या बनाएं',
+                    'tag-attach-success'    => 'टैग सफलतापूर्वक जोड़ा गया।',
+                    'tag-detach-success'    => 'टैग संपत्ति से सफलतापूर्वक हटाया गया।',
                     'directory-path'        => 'निर्देशिका पथ',
                     'no-directory'          => 'कोई निर्देशिका नहीं सौंपी गई',
                     'details'               => 'विवरण',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'प्रदर्शन के लिए फ़ाइल नहीं मिली',
                     'not-found-to-download'               => 'डाउनलोड के लिए फ़ाइल नहीं मिली',
                     'edit-success'                        => 'फाइल सफलतापूर्वक अपलोड की गई',
+                    'no-file-name'                        => 'कोई फ़ाइल नाम नहीं',
                     'show-success'                        => 'फाइल सफलतापूर्वक पाई गई',
                     'update-success'                      => 'फाइल सफलतापूर्वक अपडेट की गई',
                     'not-found-to-update'                 => 'फाइल मौजूद नहीं है',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'संपत्ति प्रबंधन',
             'asset'            => 'संपत्ति',
             'property'         => 'गुण',
             'comment'          => 'टिप्पणी',
@@ -686,10 +699,11 @@ return [
             '401' => 'यह क्रिया अस्वीकृत है।',
         ],
         'configuration' => [
-            'save-btn' => 'सहेजें',
-            'title'    => 'DAM कॉन्फ़िगरेशन',
-            'saved'    => 'कॉन्फ़िगरेशन सफलतापूर्वक सहेजी गई।',
-            'general'  => [
+            'save-btn'    => 'सहेजें',
+            'title'       => 'कॉन्फ़िगरेशन',
+            'saved'       => 'कॉन्फ़िगरेशन सफलतापूर्वक सहेजी गई।',
+            'description' => 'अपने एप्लिकेशन के लिए डिजिटल संपत्ति प्रबंधन (DAM) सेटिंग्स कॉन्फ़िगर करें।',
+            'general'     => [
                 'title'            => 'सामान्य सेटिंग्स',
                 'description'      => 'ये सेटिंग्स DAM के समग्र ब्राउज़िंग अनुभव को नियंत्रित करती हैं।',
                 'explorer-enabled' => [

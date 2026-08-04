@@ -1,8 +1,6 @@
 const { test, expect } = require('../utils/fixtures');
 const { ensureAssetExists, navigateToAssetEditByName } = require('../utils/helpers');
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
-
 async function openInfoModal(page) {
   const btn = page.locator('button').filter({ has: page.locator('.icon-information') }).first();
   await btn.waitFor({ state: 'visible', timeout: 20000 });
@@ -11,17 +9,11 @@ async function openInfoModal(page) {
     .waitFor({ state: 'visible', timeout: 20000 });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 test.describe('DAM Asset Preview — Inline & Info Modal', () => {
 
   test.beforeEach(async ({ adminPage }) => {
     await ensureAssetExists(adminPage);
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Inline preview
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Inline preview', () => {
 
@@ -50,10 +42,6 @@ test.describe('DAM Asset Preview — Inline & Info Modal', () => {
 
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Info modal — open / close
-  // ═══════════════════════════════════════════════════════════════════════════
-
   test.describe('Info modal — open / close', () => {
 
     test('Info button opens info modal', async ({ adminPage }) => {
@@ -70,7 +58,7 @@ test.describe('DAM Asset Preview — Inline & Info Modal', () => {
     test('Close button dismisses info modal', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      // Close button is the only button inside the info modal header
+
       const closeBtn = adminPage.locator('.fixed.inset-0.z-\\[10010\\] button.rounded-full').first();
       await closeBtn.click();
       await adminPage.waitForTimeout(400);
@@ -99,10 +87,6 @@ test.describe('DAM Asset Preview — Inline & Info Modal', () => {
 
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Info modal — content
-  // ═══════════════════════════════════════════════════════════════════════════
-
   test.describe('Info modal — content', () => {
 
     test('Info modal shows extension badge', async ({ adminPage }) => {
@@ -124,7 +108,7 @@ test.describe('DAM Asset Preview — Inline & Info Modal', () => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
       const modal = adminPage.locator('.fixed.inset-0.z-\\[10010\\]').first();
-      // At least one detail row visible in the body section
+
       await expect(modal.locator('.flex.items-center.justify-between.py-3').first()).toBeVisible({ timeout: 5000 });
     });
 

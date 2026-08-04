@@ -7,7 +7,7 @@
     <div class="relative z-10 flex flex-col w-[90vw] h-[90vh] max-w-6xl rounded-xl overflow-hidden bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/10">
 
         <div class="flex items-center gap-3 px-5 py-3 shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <span class="text-lg icon-edit text-violet-600 dark:text-violet-400"></span>
+            <span class="text-lg icon-edit text-primary-600 dark:text-primary-400"></span>
             <p class="flex-1 text-sm font-semibold text-gray-800 dark:text-white truncate">
                 @{{ previewData.file_name }}
             </p>
@@ -63,7 +63,7 @@
                         height: cropImgH + 'px',
                     }"
                 >
-                    <!-- crop box with box-shadow dark mask outside -->
+
                     <div
                         class="absolute border-2 border-white/90 pointer-events-auto"
                         :style="{
@@ -131,7 +131,6 @@
                             <span class="text-xs text-red-600 dark:text-red-400">@{{ bgPlatformError }}</span>
                         </div>
 
-                        <!-- Platform + model: hidden when color sub-tab is in Normal mode -->
                         <template v-if="bgSubTab !== 'color' || bgColorMode === 'ai'">
 
                         <div>

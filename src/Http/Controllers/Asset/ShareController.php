@@ -19,7 +19,6 @@ class ShareController extends Controller
         protected DirectoryPermissionService $permissionService,
     ) {}
 
-    /** Listing of all shares for the management page. */
     public function index()
     {
         if (request()->ajax()) {
@@ -29,9 +28,6 @@ class ShareController extends Controller
         return view('dam::share.admin.index');
     }
 
-    /**
-     * Create a new share for an asset or directory.
-     */
     public function store(StoreShareRequest $request): JsonResponse
     {
         $type = $request->input('share_type');
@@ -85,9 +81,6 @@ class ShareController extends Controller
         ]);
     }
 
-    /**
-     * Update an existing share's name and expiry.
-     */
     public function update(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
@@ -128,10 +121,6 @@ class ShareController extends Controller
         ]);
     }
 
-    /**
-     * Reauthorize a previously revoked share — clears revoked_at so the same
-     * token/URL becomes active again without generating a new link.
-     */
     public function reauthorize(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
@@ -158,9 +147,6 @@ class ShareController extends Controller
         ]);
     }
 
-    /**
-     * Revoke a share (soft — sets revoked_at).
-     */
     public function revoke(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
@@ -186,9 +172,6 @@ class ShareController extends Controller
         ]);
     }
 
-    /**
-     * Permanently delete a share record.
-     */
     public function destroy(int $id): JsonResponse
     {
         $share = $this->shareRepository->find($id);
@@ -214,9 +197,6 @@ class ShareController extends Controller
         ]);
     }
 
-    /**
-     * Return the most recent share for a given target, used by the share modal.
-     */
     public function activeForTarget(string $type, int $targetId): JsonResponse
     {
         if (! in_array($type, [Share::TYPE_ASSET, Share::TYPE_DIRECTORY], true)) {
@@ -234,9 +214,6 @@ class ShareController extends Controller
             }
         }
 
-        // Return the most recent share for the target (any status: active, revoked,
-        // expired) so the modal can offer reauthorize on a revoked share rather
-        // than forcing the user to create a brand-new link.
         $shares = Share::query()
             ->where('share_type', $type)
             ->where('target_id', $targetId)
@@ -266,8 +243,8 @@ class ShareController extends Controller
             'download_count'  => $share->download_count,
             'status'          => $share->statusLabel(),
             'created_at'      => $share->created_at?->toIso8601String(),
-            'update_url'      => route('admin.dam.shares.update', $share->id),
-            'reauthorize_url' => route('admin.dam.shares.reauthorize', $share->id),
+            'update_url'      => route('admin.dam.shared-links.update', $share->id),
+            'reauthorize_url' => route('admin.dam.shared-links.reauthorize', $share->id),
         ];
     }
 

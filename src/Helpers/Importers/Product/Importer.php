@@ -42,9 +42,6 @@ class Importer extends ProductImporter
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareAttributeValues(array $rowData, array &$attributeValues): void
     {
         $familyAttributes = $this->getProductTypeFamilyAttributes($rowData['type'], $rowData[self::ATTRIBUTE_FAMILY_CODE]);
@@ -55,7 +52,6 @@ class Importer extends ProductImporter
                 continue;
             }
 
-            /** Since Price column is added like this price (USD) the below function formats and returns the actual attributeCode from the columnName. */
             [$attributeCode, $currencyCode] = $this->getAttributeCodeAndCurrency($attributeCode);
 
             $attribute = $familyAttributes->where('code', $attributeCode)->first();

@@ -15,7 +15,11 @@
 @pushOnce('scripts')
     <script type="text/x-template" id="v-dam-asset-picker-template">
         <div>
-            <x-dam::modal ref="assetPickerModal">
+            <x-admin::modal
+                ref="assetPickerModal"
+                type="full"
+                :prevent-submit="true"
+            >
                 <x-slot:header>
                     <div class="flex gap-x-2.5">
                         <span class="text-gray-800 dark:text-white font-semibold">
@@ -54,14 +58,14 @@
                                             <span
                                                 class="icon-checkbox-normal cursor-pointer rounded-md text-2xl"
                                                 :class="[
-                                                    meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-violet-700 ' : (
-                                                    meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-violet-700' : ''
+                                                    meta.mode === 'all' ? 'peer-checked:icon-checkbox-check peer-checked:text-primary-700 ' : (
+                                                    meta.mode === 'partial' ? 'peer-checked:icon-checkbox-partial peer-checked:text-primary-700' : ''
                                                     ),
                                                 ]"
                                             >
                                             </span>
                                         </label>
-                                        <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">@lang("Select All")</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white">@lang('dam::app.admin.dam.index.select-all')</span>
                                     </div>
 
                                     <div class="flex items-center gap-2 ml-auto">
@@ -110,7 +114,7 @@
                                                 <div class="absolute inset-0 flex items-center justify-center bg-black/60 dark:bg-cherry-800/70 transition-opacity opacity-0 group-hover:opacity-100 pointer-events-none">
                                                     <button
                                                         type="button"
-                                                        class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors pointer-events-auto"
+                                                        class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-primary-600 transition-colors pointer-events-auto"
                                                         aria-label="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
                                                         @click.stop.prevent="openPreview(record[meta.primary_column])"
                                                     ></button>
@@ -127,7 +131,7 @@
                                                     @change="setCurrentSelectionMode"
                                                 >
 
-                                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-violet-700 cursor-pointer rounded-md text-2xl">
+                                                <span class="icon-checkbox-normal peer-checked:icon-checkbox-check peer-checked:text-primary-700 cursor-pointer rounded-md text-2xl">
                                                 </span>
 
                                                 <h2 class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-white overflow-hidden" v-text="record.file_name"></h2>
@@ -144,7 +148,7 @@
                     </div>
                     </v-dam-drop-upload>
                 </x-slot>
-            </x-dam::modal>
+            </x-admin::modal>
         </div>
     </script>
 
@@ -219,7 +223,7 @@
 
                     const dirId = this.pickerCurrentDirectory?.id;
                     if (! dirId) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: 'Select a directory to upload into.' });
+                        this.$emitter.emit('add-flash', { type: 'warning', message: @js(trans('dam::app.admin.dam.index.select-directory-to-upload')) });
                         e.target.value = '';
                         return;
                     }

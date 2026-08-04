@@ -22,7 +22,7 @@
             ></div>
             <svg
                 v-else
-                class="animate-spin h-4 w-4 text-violet-600 absolute ltr:right-3 rtl:left-3 top-3 pointer-events-none"
+                class="animate-spin h-4 w-4 text-primary-600 absolute ltr:right-3 rtl:left-3 top-3 pointer-events-none"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -71,7 +71,7 @@
                 v-if="isLoadingMore"
                 class="px-3 py-2 text-xs text-center text-zinc-500 dark:text-slate-400"
             >
-                <svg class="inline-block animate-spin h-4 w-4 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="inline-block animate-spin h-4 w-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>

@@ -18,12 +18,8 @@ class AssetDataGrid extends DataGrid
 
     protected $customFilterColumns = [];
 
-    /** Maps normalized prop index suffix → original DB name. */
     protected array $propNameMap = [];
 
-    /**
-     * {@inheritDoc}
-     */
     protected $itemsPerPage = 50;
 
     public function __construct(
@@ -94,7 +90,7 @@ class AssetDataGrid extends DataGrid
             'closure'    => function ($row) {
                 $fileName = $row->file_name;
 
-                return $fileName ? AssetHelper::getDisplayFileName($fileName) : trans('no file name');
+                return $fileName ? AssetHelper::getDisplayFileName($fileName) : trans('dam::app.admin.dam.asset.datagrid.no-file-name');
             },
         ]);
 

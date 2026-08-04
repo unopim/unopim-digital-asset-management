@@ -1,6 +1,5 @@
 const { test, expect } = require('../utils/fixtures');
 
-
 test.describe('Product asset bulk edit', () => {
   test('asset attribute renders the asset cell and opens the DAM picker modal', async ({ adminPage }) => {
     let assetAttribute = null;
@@ -47,7 +46,6 @@ test.describe('Product asset bulk edit', () => {
 
     await adminPage.getByRole('link', { name: 'Bulk Edit' }).click();
 
-
     const attributeSelect = adminPage.locator('.multiselect')
       .filter({ has: adminPage.locator('input[name="filtered_attributes"]') })
       .first();
@@ -67,14 +65,11 @@ test.describe('Product asset bulk edit', () => {
       adminPage.getByRole('columnheader', { name: new RegExp(escapeRegExp(assetAttribute.name), 'i') })
     ).toBeVisible({ timeout: 30000 });
 
-
     const editIcon = adminPage.locator('tbody .icon-edit').first();
     await expect(editIcon).toBeVisible({ timeout: 30000 });
     await editIcon.click();
 
-
     await expect(adminPage.getByText('Assign Assets').first()).toBeVisible({ timeout: 30000 });
-
 
     const previewButton = adminPage.locator('.icon-dam-preview').first();
     const hasAsset = await previewButton

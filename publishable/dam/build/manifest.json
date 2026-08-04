@@ -1,15 +1,8 @@
 {
   "src/Resources/assets/css/app.css": {
-    "file": "assets/app-DHtYaImF.css",
-    "name": "app",
-    "names": [
-      "app.css"
-    ],
+    "file": "assets/app-78afGAOw.css",
     "src": "src/Resources/assets/css/app.css",
-    "isEntry": true,
-    "assets": [
-      "assets/UnoPim-DAM-DzGW7QOn.woff"
-    ]
+    "isEntry": true
   },
   "src/Resources/assets/fonts/UnoPim-DAM.woff": {
     "file": "assets/UnoPim-DAM-DzGW7QOn.woff",
@@ -76,7 +69,7 @@
     "src": "src/Resources/assets/images/preview/video.svg"
   },
   "src/Resources/assets/js/app.js": {
-    "file": "assets/app-BvRk9kiK.js",
+    "file": "assets/app-l0sNRNKZ.js",
     "name": "app",
     "src": "src/Resources/assets/js/app.js",
     "isEntry": true

@@ -1,26 +1,18 @@
 const { test, expect } = require('../utils/fixtures');
 const { ensureAssetExists, navigateToAssetEditByName } = require('../utils/helpers');
 
-// Navigate to floral.jpg and wait for the inline zoomable image viewer to mount.
-// The viewer (v-zoomable-image) is rendered inline on the edit page — no modal to open.
 async function openImageViewer(page) {
   await navigateToAssetEditByName(page, 'floral.jpg');
-  // Wait for the image area of the inline viewer to be visible.
+
   await page.locator('.flex-1.min-h-0.overflow-hidden.flex.items-center.justify-center img').first()
     .waitFor({ state: 'visible', timeout: 20000 });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 test.describe('DAM Asset Preview Modal', () => {
 
   test.beforeEach(async ({ adminPage }) => {
     await ensureAssetExists(adminPage);
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Image viewer — toolbar buttons
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Image viewer', () => {
 
@@ -39,7 +31,7 @@ test.describe('DAM Asset Preview Modal', () => {
 
     test('Toolbar visible (bottom pill with buttons)', async ({ adminPage }) => {
       await openImageViewer(adminPage);
-      // Toolbar sits below the image in the zoomable-image component.
+
       const toolbar = adminPage.locator('.px-3.py-2.border-t').first();
       await expect(toolbar).toBeVisible({ timeout: 5000 });
     });
@@ -155,11 +147,6 @@ test.describe('DAM Asset Preview Modal', () => {
     });
 
   });
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Image viewer — keyboard shortcuts
-  // v-zoomable-image has no keyboard event handlers — all shortcut tests skipped.
-  // ═══════════════════════════════════════════════════════════════════════════
 
   test.describe('Image viewer — keyboard shortcuts', () => {
 

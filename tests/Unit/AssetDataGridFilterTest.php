@@ -27,8 +27,6 @@ it('file_name filter SQL does not include extra exact-match clause from fall-thr
 
     $bindings = $qb->getBindings();
 
-    // Correct: only one binding per filter value ('%copybook%')
-    // Buggy: three bindings per value ('%copybook%', 'copybook', 'copybook') due to fall-through
     $filterBindings = array_filter($bindings, fn ($b) => str_contains((string) $b, 'copybook'));
 
     expect(count($filterBindings))->toBe(1);

@@ -5,7 +5,7 @@
         <button
             type="button"
             class="flex items-center px-2.5 py-2 transition-colors"
-            :class="modelValue === 'grid' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
+            :class="modelValue === 'grid' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
             data-view="grid"
             title="@lang('dam::app.admin.explorer.view.grid')"
             @click="$emit('update:modelValue', 'grid')"
@@ -15,7 +15,7 @@
         <button
             type="button"
             class="flex items-center px-2.5 py-2 border-l border-gray-200 dark:border-cherry-700 transition-colors"
-            :class="modelValue === 'list' ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
+            :class="modelValue === 'list' ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-white' : 'text-gray-500 dark:text-white hover:bg-gray-50 dark:hover:bg-cherry-800'"
             data-view="list"
             title="@lang('dam::app.admin.explorer.view.list')"
             @click="$emit('update:modelValue', 'list')"

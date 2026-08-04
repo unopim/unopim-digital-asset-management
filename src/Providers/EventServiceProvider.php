@@ -34,7 +34,6 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    /** Load events. */
     public function boot()
     {
         Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {

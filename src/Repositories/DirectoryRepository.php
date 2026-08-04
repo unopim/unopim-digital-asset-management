@@ -11,7 +11,6 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 
 class DirectoryRepository extends Repository
 {
-    /** Default number of children loaded per tree level. */
     public const DEFAULT_TREE_PAGE_SIZE = 100;
 
     protected $copyDirectory;
@@ -164,7 +163,6 @@ class DirectoryRepository extends Repository
         }
     }
 
-    /** Specify directory tree. */
     public function getDirectoryTree($id = null)
     {
         $service = app(DirectoryPermissionService::class);
@@ -196,7 +194,6 @@ class DirectoryRepository extends Repository
             ->toTree();
     }
 
-    /** Lazy-load entry point for the main DAM directory tree (roots + direct children). */
     public function getDirectoryTreeOnly()
     {
         $service = app(DirectoryPermissionService::class);
@@ -220,9 +217,6 @@ class DirectoryRepository extends Repository
         return $roots;
     }
 
-    /**
-     * Returns one paginated page of immediate (depth-1) children, each stamped with has_children.
-     */
     public function getShallowChildren(int $parentId, ?DirectoryPermissionService $service = null, int $offset = 0, int $limit = self::DEFAULT_TREE_PAGE_SIZE): array
     {
         $service ??= app(DirectoryPermissionService::class);
@@ -256,9 +250,6 @@ class DirectoryRepository extends Repository
         ];
     }
 
-    /**
-     * Returns the ancestor chain from root down to directory $id (inclusive), root-first.
-     */
     public function getAncestorPath(int $id): Collection
     {
         $target = $this->model->select('id', '_lft', '_rgt', 'parent_id', 'name')->find($id);
@@ -281,9 +272,6 @@ class DirectoryRepository extends Repository
             });
     }
 
-    /**
-     * Recursive asset count for each of the given directory IDs in one query.
-     */
     public function getSubtreeAssetCounts(array $ids, ?array $allowedDescendantIds = null): array
     {
         $ids = array_values(array_unique(array_filter($ids, fn ($id) => $id > 0)));
@@ -325,7 +313,6 @@ class DirectoryRepository extends Repository
             ->all();
     }
 
-    /** Full directory tree without ACL filtering (used by the permission manager UI). */
     public function getFullDirectoryTreeOnly()
     {
         $rollup = $this->getAssetCountsRollup();
@@ -336,9 +323,6 @@ class DirectoryRepository extends Repository
             ->toTree();
     }
 
-    /**
-     * Returns all unique ancestor nodes (inclusive) for the given directory IDs.
-     */
     public function getAncestorPathsForIds(array $ids): Collection
     {
         $ids = array_values(array_unique(array_filter($ids, fn ($id) => (int) $id > 0)));
@@ -380,9 +364,6 @@ class DirectoryRepository extends Repository
             });
     }
 
-    /**
-     * Returns all descendant IDs for a directory using the nested-set columns.
-     */
     public function getDescendantIds(int $id): array
     {
         $node = $this->model->where('id', $id)->first(['_lft', '_rgt']);
@@ -399,9 +380,6 @@ class DirectoryRepository extends Repository
             ->all();
     }
 
-    /**
-     * Recursive asset-count rollup per directory using the nested-set columns.
-     */
     public function getAssetCountsRollup(?array $allowedDirectoryIds = null): array
     {
         $prefix = DB::getTablePrefix();
@@ -440,7 +418,6 @@ class DirectoryRepository extends Repository
             ->all();
     }
 
-    /** Substring directory search filtered by ACL visibility. */
     public function search(string $query, int $limit = 20, int $offset = 0)
     {
         $builder = $this->buildSearchQuery($query);
@@ -459,9 +436,6 @@ class DirectoryRepository extends Repository
         return $this->attachAncestorPaths($matches);
     }
 
-    /**
-     * Total ACL-filtered match count for a directory search query.
-     */
     public function searchCount(string $query): int
     {
         $builder = $this->buildSearchQuery($query);
@@ -489,7 +463,6 @@ class DirectoryRepository extends Repository
         return $builder;
     }
 
-    /** Attach path_names + path_ids to a collection of directory results in one query. */
     protected function attachAncestorPaths($directories)
     {
         if ($directories->isEmpty()) {
@@ -520,9 +493,6 @@ class DirectoryRepository extends Repository
         })->values();
     }
 
-    /**
-     * Check if a directory is writable in the file system.
-     */
     public function isDirectoryWritable(Directory $directory, string $actionType = 'create', bool $hasParent = true): bool
     {
         $directoryPath = sprintf('%s/%s', Directory::ASSETS_DIRECTORY, $hasParent ? $directory->generatePath() : '');

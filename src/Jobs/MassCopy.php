@@ -22,7 +22,6 @@ class MassCopy implements ShouldQueue
 
     public int $timeout = 3600;
 
-    /** Do not retry — this job is not idempotent (a retry would duplicate copies). */
     public int $tries = 1;
 
     public function retryUntil(): \DateTime
@@ -34,7 +33,6 @@ class MassCopy implements ShouldQueue
 
     private const ASSET_CHUNK_SIZE = 500;
 
-    /** Per-directory name cache. */
     private array $usedNames = [];
 
     private int $progressTotal = 0;
@@ -184,9 +182,6 @@ class MassCopy implements ShouldQueue
         }
     }
 
-    /**
-     * Iterative BFS copy of a directory tree.
-     */
     private function deepCopy(Directory $source, Directory $newParent, string $newParentStoragePath, int $initialDepth): void
     {
         $disk = Directory::getAssetDisk();
@@ -277,9 +272,6 @@ class MassCopy implements ShouldQueue
         }
     }
 
-    /**
-     * Resolve a unique asset name within a directory.
-     */
     private function resolveUniqueName(string $base, string $ext, int $dirId): string
     {
         if (! isset($this->usedNames[$dirId])) {

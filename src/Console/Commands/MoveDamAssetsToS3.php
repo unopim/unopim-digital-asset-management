@@ -23,7 +23,6 @@ class MoveDamAssetsToS3 extends Command
         $this->authCheck();
     }
 
-    /** To Check user Authenticity. */
     public function authCheck()
     {
         $email = $this->ask('Enter your Email');
@@ -55,7 +54,6 @@ class MoveDamAssetsToS3 extends Command
         }
     }
 
-    /** Move Assets to s3 from private disk. */
     public function moveAssetsTos3(bool $delete, bool $migrateNew)
     {
         $offset = 0;
@@ -104,7 +102,6 @@ class MoveDamAssetsToS3 extends Command
         $this->info('Done Moving DAM Assets.');
     }
 
-    /** Migrate all Assets to s3. */
     public function migrateAll(string $filePath, bool $delete, $asset, array &$logs)
     {
         if (Storage::disk('private')->exists($filePath)) {
@@ -125,7 +122,6 @@ class MoveDamAssetsToS3 extends Command
         $this->migrateCoverArt($asset, $delete, $logs, false);
     }
 
-    /** Migrate only new Assets to s3. */
     public function migrateNew(string $filePath, bool $delete, $asset, array &$logs)
     {
         if (Storage::disk('private')->exists($filePath)) {
@@ -149,9 +145,6 @@ class MoveDamAssetsToS3 extends Command
         $this->migrateCoverArt($asset, $delete, $logs, true);
     }
 
-    /**
-     * Move embedded audio cover art from private to S3 alongside the asset.
-     */
     protected function migrateCoverArt($asset, bool $delete, array &$logs, bool $skipIfExists): void
     {
         $coverPath = $this->extractCoverArtPath($asset);
@@ -180,9 +173,6 @@ class MoveDamAssetsToS3 extends Command
         $logs[] = "Moved cover art for asset ID {$asset->id} to s3";
     }
 
-    /**
-     * Pull meta_data->cover_art_path off a raw DB row, decoding JSON if needed.
-     */
     protected function extractCoverArtPath($asset): ?string
     {
         $meta = $asset->meta_data ?? null;

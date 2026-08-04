@@ -14,9 +14,6 @@ class AssetProperty implements HistoryPresenterInterface
         'language' => 'Property Language',
     ];
 
-    /**
-     * Format asset property values for history display.
-     */
     public static function representValueForHistory(mixed $oldValues, mixed $newValues, string $fieldName): array
     {
         if ($fieldName == 'language') {

@@ -2,11 +2,9 @@
 
 namespace Webkul\DAM\Helpers\Exporters\Product;
 
-use Illuminate\Support\Facades\Storage;
 use Webkul\Attribute\Repositories\AttributeRepository;
-use Webkul\Attribute\Rules\AttributeTypes;
 use Webkul\Core\Repositories\ChannelRepository;
-use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Helpers\Exporters\Product\Concerns\ExportsAssetAttributes;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as BaseExporter;
 use Webkul\DataTransfer\Helpers\Sources\Export\ProductSource;
@@ -15,11 +13,8 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Exporter extends BaseExporter
 {
-    /**
-     * Create a new instance.
-     *
-     * @return void
-     */
+    use ExportsAssetAttributes;
+
     public function __construct(
         JobTrackBatchRepository $exportBatchRepository,
         FileExportFileBuffer $exportFileBuffer,
@@ -35,114 +30,5 @@ class Exporter extends BaseExporter
             $attributeRepository,
             $productSource
         );
-    }
-
-    /** {@inheritDoc} */
-    protected function setAttributesValues(array $values, mixed $filePath)
-    {
-        $attributeValues = [];
-        $filters = $this->getFilters();
-        $withMedia = (bool) $filters['with_media'];
-        $mediaSourceType = $filters['media_source_type'] ?? 'zip';
-
-        foreach ($this->attributes as $key => $attribute) {
-            $attributeCode = $attribute->code;
-
-            if ($attributeCode == 'sku') {
-                continue;
-            }
-
-            $attributeType = $attribute->type;
-
-            $attributeValues[$attributeCode] = $values[$attributeCode] ?? null;
-
-            if ($attributeType == AttributeTypes::PRICE_ATTRIBUTE_TYPE) {
-                $priceData = ! empty($attributeValues[$attributeCode]) ? $attributeValues[$attributeCode] : [];
-
-                foreach ($this->currencies as $value) {
-                    $attributeValues[$attributeCode.' ('.$value.')'] = $priceData[$value] ?? null;
-                }
-
-                unset($attributeValues[$attributeCode]);
-            }
-
-            if (in_array($attributeType, [AttributeTypes::FILE_ATTRIBUTE_TYPE, AttributeTypes::IMAGE_ATTRIBUTE_TYPE, 'asset'])) {
-                $isAssetField = false;
-                $mediaValues = [];
-
-                $exitingFilePaths = $values[$attributeCode] ?? [];
-
-                if ($attributeType === 'asset' && $this->assetRepository && is_string($exitingFilePaths)) {
-                    $assets = str_contains($exitingFilePaths, ',') ? explode(',', $exitingFilePaths) : [$exitingFilePaths];
-
-                    $exitingFilePaths = $this->assetRepository->findWhereIn('id', $assets)->pluck('path')->toArray();
-
-                    $attributeValues[$attributeCode] = implode(', ', $exitingFilePaths);
-
-                    $isAssetField = true;
-                }
-
-                if ($withMedia) {
-                    $exitingFilePaths = ! is_array($exitingFilePaths) ? [$exitingFilePaths] : $exitingFilePaths;
-
-                    foreach ($exitingFilePaths as $exitingFilePath) {
-                        if ($mediaSourceType == 'url') {
-                            $mediaValues[] = $this->makePublicUrlMedia($exitingFilePath, $isAssetField);
-
-                            continue;
-                        }
-
-                        $newfilePath = $filePath->getTemporaryPath().'/'.$exitingFilePath;
-
-                        $this->copyMedia($exitingFilePath, $newfilePath, $isAssetField);
-                    }
-
-                    $attributeValues[$attributeCode] = empty($mediaValues) ? $attributeValues[$attributeCode] : implode(', ', $mediaValues);
-                }
-            }
-
-            if (isset($attributeValues[$attributeCode]) && is_array($attributeValues[$attributeCode])) {
-                $attributeValues[$attributeCode] = implode(', ', $attributeValues[$attributeCode]);
-            }
-        }
-
-        return $attributeValues;
-    }
-
-    /**
-     * Generates a public URL for a given file path.
-     */
-    public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
-    {
-        if ($isAssetField) {
-            return route('admin.dam.file.fetch', ['path' => $filePath]);
-        }
-
-        return Storage::url($filePath);
-    }
-
-    /** Copy media file from a source path to a destination path. */
-    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
-    {
-        $disk = Directory::getAssetDisk();
-
-        if ($isAssetField && Storage::disk($disk)->exists($sourcePath)) {
-            $stream = Storage::disk($disk)->readStream($sourcePath);
-
-            if ($stream === false) {
-                throw new \RuntimeException("Unable to read stream: {$sourcePath}");
-            }
-
-            if ($disk === Directory::ASSETS_DISK_AWS) {
-                Storage::writeStream($destinationPath, $stream);
-            } else {
-
-                Storage::disk('public')->writeStream($sourcePath, $stream);
-            }
-
-            return;
-        }
-
-        parent::copyMedia($sourcePath, $destinationPath);
     }
 }

@@ -1,21 +1,4 @@
-/**
- * Asset listing — list, search, filter, pagination and sorting.
- *
- * IMPORTANT — query-param convention:
- * The list endpoint extends UnoPim's AdminApi `ApiDataSource`, whose exact
- * filter/sort/pagination query-param keys are defined in the AdminApi package
- * (not in this repo). `constants/queryParams.js` encodes the assumed bracketed
- * convention. To avoid false failures when that convention differs across
- * AdminApi versions, these specs:
- *   1. always assert the params are ACCEPTED and the response is well-formed
- *      (200 + array of items matching the normalised asset schema), and
- *   2. assert the stronger EFFECT (page changed, page size honoured, filtered
- *      subset) only when the server's own response confirms it honoured the
- *      request — otherwise the effect check self-skips with a clear annotation.
- * This keeps the suite green on a working server while still exercising every
- * documented param combination. If you confirm your AdminApi param format,
- * tighten the gated assertions accordingly.
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');
@@ -33,7 +16,6 @@ test.beforeAll(async () => {
   const folder = await folderHelper.createFolderOrThrow(support.client, { name: testData.folderName('asset-list') });
   directoryId = folder.id;
 
-  // Seed a few assets so list/filter/sort have something to act on.
   await assetHelper.upload(support.client, { filePath: testData.files.image, directoryId }).catch(() => {});
   await assetHelper.upload(support.client, { filePath: testData.files.pdf, directoryId }).catch(() => {});
   await assetHelper.upload(support.client, { filePath: testData.files.video, directoryId }).catch(() => {});
@@ -44,17 +26,14 @@ test.afterAll(async () => {
   await support?.dispose();
 });
 
-/** The normalised list-item shape returned by AssetDataSource::normalizeAsset. */
 const ASSET_KEYS = ['id', 'file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'preview_path'];
 
-/** Pull the records array out of a paginated or flat response body. */
 function rows(body) {
   if (Array.isArray(body)) return body;
   if (Array.isArray(body?.data)) return body.data;
   return [];
 }
 
-/** Locate a pagination meta block wherever the paginator places it. */
 function meta(body) {
   return body?.meta || body?.pagination || (body?.current_page != null ? body : null);
 }
@@ -79,9 +58,6 @@ test.describe('Asset — list & pagination', () => {
     const m = meta(res.body);
     const perPage = m ? Number(m.per_page ?? m.perPage ?? m.limit) : NaN;
 
-    // Only assert the effect when the server demonstrably used the page size we
-    // asked for. A different per_page means our assumed param format was not
-    // honoured (see constants/queryParams.js) — annotate rather than false-fail.
     if (perPage === 5) {
       expect(rows(res.body).length).toBeLessThanOrEqual(5);
     } else {
@@ -120,8 +96,7 @@ test.describe('Asset — sorting', () => {
     if (ids.length > 1) {
       const desc = [...ids].sort((a, b) => b - a);
       const asc = [...ids].sort((a, b) => a - b);
-      // The set must be ordered somehow; assert desc only when not already asc
-      // (i.e. when the server demonstrably applied a non-default order).
+
       if (JSON.stringify(ids) !== JSON.stringify(asc)) {
         expect(ids).toEqual(desc);
       } else {
@@ -148,7 +123,7 @@ test.describe('Asset — filtering & search', () => {
     const hasNonImage = typed.some((r) => r.file_type !== 'image');
 
     if (allImages) {
-      // Filter clearly applied → assert it strictly.
+
       for (const r of typed) expect(r.file_type).toBe('image');
     } else if (hasNonImage) {
       testInfo.annotations.push({ type: 'skip-effect', description: 'file_type filter not applied with assumed param format; see constants/queryParams.js' });

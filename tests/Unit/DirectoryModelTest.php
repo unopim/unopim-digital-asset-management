@@ -110,8 +110,6 @@ it('has the correct NON_DELETABLE_DRECTORIES constant', function () {
     expect(Directory::NON_DELETABLE_DRECTORIES)->toBe([1]);
 });
 
-// ── generatePath ──────────────────────────────────────────────────────────
-
 it('returns directory name as path for a root-level directory', function () {
     $dir = Directory::create(['name' => 'Media']);
 
@@ -122,7 +120,6 @@ it('returns slash-joined ancestor names for a nested directory', function () {
     $root = Directory::create(['name' => 'Assets']);
     $child = Directory::create(['name' => 'Images', 'parent_id' => $root->id]);
 
-    // Rebuild tree so NodeTrait _lft/_rgt are accurate
     Directory::fixTree();
 
     $child->refresh();
@@ -142,23 +139,19 @@ it('returns full path for a three-level directory hierarchy', function () {
     expect($leaf->generatePath())->toBe('Root/Sub/Deep');
 });
 
-// ── privateSupport ────────────────────────────────────────────────────────
-
 it('returns true for a writable local disk path', function () {
     Storage::fake('private');
 
     $dir = new Directory;
-    // Fake disk base dir is writable; empty string resolves to its root
+
     expect($dir->privateSupport('', 'private'))->toBeTrue();
 });
 
 it('returns false when the disk throws an exception', function () {
     $dir = new Directory;
-    // Non-configured disk name → Storage::disk() will throw
+
     expect($dir->privateSupport('any/path', 'disk_that_does_not_exist_xyz'))->toBeFalse();
 });
-
-// ── DirectoryRepository: tree asset-load behavior ────────────────────────
 
 it('getDirectoryTreeOnly returns directories without assets relation loaded', function () {
     $dir = Directory::factory()->create();

@@ -7,12 +7,6 @@ use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Models\Directory;
 
-/*
- * Regression guards for the stored-XSS fix: uploaded active content
- * (HTML/SVG/scripts) must be rejected on upload and, when served, must never
- * render inline in the application's own origin.
- */
-
 it('rejects HTML and other executable/markup uploads by extension', function (string $extension) {
     expect(AssetHelper::isForbiddenFile($extension, null, "evil.{$extension}", null))->toBeTrue();
 })->with(['html', 'htm', 'xhtml', 'shtml', 'hta', 'php', 'phtml', 'phar']);
@@ -75,7 +69,6 @@ it('fetchFile serves a genuine image inline (no forced download)', function () {
 
     $response = (new FileController)->fetchFile($path);
 
-    // A genuine image is served inline: no forced-download Content-Disposition.
     expect($response->headers->get('Content-Disposition'))->toBeNull();
     expect($response->headers->get('X-Content-Type-Options'))->toBe('nosniff');
 });

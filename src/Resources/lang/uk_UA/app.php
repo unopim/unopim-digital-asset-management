@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Управління активами',
                     'assets'        => 'Активи',
                     'shares'        => 'Спільні посилання',
                     'tags'          => 'Теги',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Помилка попереднього перегляду',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Управління цифровими активами',
                 'datagrid' => [
                     'file-name'      => 'Назва файлу',
                     'tags'           => 'Теги',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Вийти',
                 'upload-stay-page'               => 'Залишитися',
                 'drop-zone-hint'                 => 'Перетягніть файли або папки для завантаження',
+                'select-all'                     => 'Вибрати все',
+                'select-directory-to-upload'     => 'Виберіть каталог для завантаження.',
+                'upload-session'                 => [
+                    'uploading'            => 'Завантаження :total файл(ів)…',
+                    'paused'               => 'Призупинено — завантажено :done з :total',
+                    'interrupted'          => 'завантажено :done з :total · :interrupted перервано',
+                    'failed'               => 'завантажено :done, :failed з помилкою',
+                    'completed'            => 'завантажено :done з :total',
+                    'create-folder-failed' => 'Не вдалося створити теку',
+                ],
                 'drop-zone-no-permission'        => 'У вас немає дозволу на завантаження тут.',
                 'upload-complete'                => 'Завантаження завершено',
                 'item-upload-complete'           => 'Завантаження завершено',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Немає доступних метаданих',
                     'tags'                  => 'Теги',
                     'select-tags'           => 'Оберіть або створіть тег',
+                    'tag-attach-success'    => 'Тег успішно додано.',
+                    'tag-detach-success'    => 'Тег успішно вилучено з активу.',
                     'directory-path'        => 'Шлях до каталогу',
                     'no-directory'          => 'Каталог не призначено',
                     'details'               => 'Деталі',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Файл для відображення не знайдено',
                     'not-found-to-download'               => 'Файл для завантаження не знайдено',
                     'edit-success'                        => 'Файл успішно завантажено',
+                    'no-file-name'                        => 'без імені файлу',
                     'show-success'                        => 'Файл успішно знайдено',
                     'update-success'                      => 'Файл успішно оновлено',
                     'not-found-to-update'                 => 'Файл не існує',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Управління активами',
             'asset'            => 'Актив',
             'property'         => 'Властивість',
             'comment'          => 'Коментар',
@@ -686,10 +699,11 @@ return [
             '401' => 'Ця дія не авторизована.',
         ],
         'configuration' => [
-            'save-btn' => 'Зберегти',
-            'title'    => 'Конфігурація DAM',
-            'saved'    => 'Конфігурацію успішно збережено.',
-            'general'  => [
+            'save-btn'    => 'Зберегти',
+            'title'       => 'Конфігурація',
+            'saved'       => 'Конфігурацію успішно збережено.',
+            'description' => 'Налаштуйте параметри управління цифровими активами (DAM) для вашого застосунку.',
+            'general'     => [
                 'title'            => 'Загальні налаштування',
                 'description'      => 'Ці налаштування керують загальним досвідом перегляду в DAM.',
                 'explorer-enabled' => [

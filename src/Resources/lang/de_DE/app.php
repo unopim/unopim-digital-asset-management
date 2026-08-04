@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Medienverwaltung',
                     'assets'        => 'Medienobjekte',
                     'shares'        => 'Freigegebene Links',
                     'tags'          => 'Tags',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Vorschau fehlgeschlagen',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digitale Medienverwaltung',
                 'datagrid' => [
                     'file-name'      => 'Dateiname',
                     'tags'           => 'Tags',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Verlassen',
                 'upload-stay-page'               => 'Bleiben',
                 'drop-zone-hint'                 => 'Dateien oder Ordner zum Hochladen ziehen',
+                'select-all'                     => 'Alle auswählen',
+                'select-directory-to-upload'     => 'Wählen Sie ein Verzeichnis für den Upload aus.',
+                'upload-session'                 => [
+                    'uploading'            => 'Lade :total Datei(en) hoch…',
+                    'paused'               => 'Pausiert — :done von :total hochgeladen',
+                    'interrupted'          => ':done von :total hochgeladen · :interrupted unterbrochen',
+                    'failed'               => ':done hochgeladen, :failed fehlgeschlagen',
+                    'completed'            => ':done von :total hochgeladen',
+                    'create-folder-failed' => 'Ordner konnte nicht erstellt werden',
+                ],
                 'drop-zone-no-permission'        => 'Sie haben keine Berechtigung, hier hochzuladen.',
                 'upload-complete'                => 'Upload abgeschlossen',
                 'item-upload-complete'           => 'Upload abgeschlossen',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Keine Metadaten verfügbar',
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Tag wählen oder erstellen',
+                    'tag-attach-success'    => 'Tag erfolgreich hinzugefügt.',
+                    'tag-detach-success'    => 'Tag erfolgreich vom Medienobjekt entfernt.',
                     'directory-path'        => 'Verzeichnispfad',
                     'no-directory'          => 'Kein Verzeichnis zugewiesen',
                     'details'               => 'Details',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Datei zur Anzeige nicht gefunden',
                     'not-found-to-download'               => 'Datei zum Herunterladen nicht gefunden',
                     'edit-success'                        => 'Datei erfolgreich hochgeladen',
+                    'no-file-name'                        => 'kein Dateiname',
                     'show-success'                        => 'Datei erfolgreich gefunden',
                     'update-success'                      => 'Datei erfolgreich aktualisiert',
                     'not-found-to-update'                 => 'Datei existiert nicht',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Medienverwaltung',
             'asset'            => 'Asset',
             'property'         => 'Eigenschaft',
             'comment'          => 'Kommentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Diese Aktion ist nicht autorisiert.',
         ],
         'configuration' => [
-            'save-btn' => 'Speichern',
-            'title'    => 'DAM-Konfiguration',
-            'saved'    => 'Konfiguration erfolgreich gespeichert.',
-            'general'  => [
+            'save-btn'    => 'Speichern',
+            'title'       => 'Konfiguration',
+            'saved'       => 'Konfiguration erfolgreich gespeichert.',
+            'description' => 'Konfigurieren Sie die Einstellungen der digitalen Medienverwaltung (DAM) für Ihre Anwendung.',
+            'general'     => [
                 'title'            => 'Allgemeine Einstellungen',
                 'description'      => 'Diese Einstellungen steuern das gesamte DAM-Browsing-Erlebnis.',
                 'explorer-enabled' => [

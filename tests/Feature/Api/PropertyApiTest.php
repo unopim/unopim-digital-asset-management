@@ -121,10 +121,6 @@ it('returns 404 when deleting a non-existent property via api', function () {
         ->assertStatus(404);
 });
 
-// ---------------------------------------------------------------------------
-// Helper — custom-role user granted only to a specific directory
-// ---------------------------------------------------------------------------
-
 function makePropCustomHeaders(Directory $grantedDir): array
 {
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => []]);
@@ -140,10 +136,6 @@ function makePropCustomHeaders(Directory $grantedDir): array
 
     return $headers;
 }
-
-// ---------------------------------------------------------------------------
-// Directory-permission gate tests (Task 7)
-// ---------------------------------------------------------------------------
 
 it('returns 403 when adding a property to an asset in a denied directory', function () {
     $denied = Directory::factory()->create();

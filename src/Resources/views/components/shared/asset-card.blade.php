@@ -42,7 +42,7 @@
                 @if (bouncer()->hasPermission('dam.asset.view'))
                 <button
                     type="button"
-                    class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors"
+                    class="icon-dam-preview text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-primary-600 transition-colors"
                     title="@lang('dam::app.admin.dam.asset.edit.preview-modal.card.preview')"
                     @click.stop="$emit('preview')"
                 ></button>
@@ -51,7 +51,7 @@
                 @if (bouncer()->hasPermission('dam.asset.edit'))
                 <button
                     type="button"
-                    class="icon-edit text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-violet-600 transition-colors"
+                    class="icon-edit text-xl sm:text-2xl p-1.5 rounded-md cursor-pointer text-white hover:bg-primary-600 transition-colors"
                     title="@lang('dam::app.admin.dam.index.directory.actions.edit')"
                     @click.stop="$emit('edit')"
                 ></button>
@@ -103,7 +103,7 @@ app.component('v-dam-asset-card', {
         badgeClass() {
             const ext = (this.asset.extension || '').toLowerCase();
             if (ext === 'pdf') return 'bg-red-600';
-            if (this.asset.file_type === 'video' || this.asset.file_type === 'audio') return 'bg-violet-600';
+            if (this.asset.file_type === 'video' || this.asset.file_type === 'audio') return 'bg-primary-600';
             return 'bg-gray-600';
         },
     },

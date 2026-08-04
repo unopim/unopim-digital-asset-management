@@ -10,7 +10,7 @@ return [
     ],
     [
         'key'   => 'dam.assets',
-        // Distinct URL so this item is not a prefix-match of the sibling DAM routes.
+
         'name'  => 'dam::app.admin.components.layouts.sidebar.assets',
         'route' => 'admin.dam.assets.index',
         'sort'  => 1,
@@ -26,7 +26,7 @@ return [
     [
         'key'   => 'dam.shares',
         'name'  => 'dam::app.admin.components.layouts.sidebar.shares',
-        'route' => 'admin.dam.shares.index',
+        'route' => 'admin.dam.shared-links.index',
         'sort'  => 3,
         'icon'  => '',
     ],

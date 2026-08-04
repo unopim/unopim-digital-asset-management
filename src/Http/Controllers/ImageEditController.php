@@ -6,7 +6,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Direction;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\AvifEncoder;
+use Intervention\Image\Encoders\BmpEncoder;
+use Intervention\Image\Encoders\GifEncoder;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\TiffEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Laravel\Ai\Files\Image as AiImage;
@@ -22,9 +30,6 @@ class ImageEditController
 {
     use AssetAccessControl;
 
-    /**
-     * Crop and/or resize an asset image and persist the result.
-     */
     public function resize(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -91,9 +96,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
-    /**
-     * Apply brightness, contrast, sharpen, and blur adjustments to an asset image.
-     */
     public function adjust(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -134,9 +136,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-adjusted')]);
     }
 
-    /**
-     * Apply greyscale and/or invert filters to an asset image.
-     */
     public function filters(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -161,7 +160,7 @@ class ImageEditController
         }
 
         if ($validated['greyscale'] ?? false) {
-            $image->greyscale();
+            $image->grayscale();
         }
         if ($validated['invert'] ?? false) {
             $image->invert();
@@ -173,9 +172,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
     }
 
-    /**
-     * Rotate and/or flip an asset image and persist the result.
-     */
     public function transform(Request $request, int $id): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -201,10 +197,10 @@ class ImageEditController
             $image->rotate(-$rotation);
         }
         if (! empty($validated['flip_h'])) {
-            $image->flop();
+            $image->flip(Direction::HORIZONTAL);
         }
         if (! empty($validated['flip_v'])) {
-            $image->flip();
+            $image->flip(Direction::VERTICAL);
         }
 
         Storage::disk($disk)->put($asset->path, $this->encode($image, $asset->extension));
@@ -213,7 +209,6 @@ class ImageEditController
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-transformed')]);
     }
 
-    /** Read an asset's image for editing; returns null when missing or undecodable. */
     private function readAssetImage(Asset $asset, string $disk)
     {
         try {
@@ -221,7 +216,7 @@ class ImageEditController
 
             return $contents === null
                 ? null
-                : (new ImageManager(new Driver))->read($contents);
+                : (new ImageManager(new Driver))->decode($contents);
         } catch (\Throwable $e) {
             Log::warning('DAM image-edit read failed: '.$e->getMessage(), ['asset' => $asset->id]);
 
@@ -417,9 +412,6 @@ class ImageEditController
         }
     }
 
-    /**
-     * Parse #RRGGBB into [r, g, b] integers.
-     */
     private function parseHexColor(string $hex): array
     {
         $hex = ltrim($hex, '#');
@@ -431,9 +423,6 @@ class ImageEditController
         ];
     }
 
-    /**
-     * Average the 4 corner pixels to estimate the background color.
-     */
     private function sampleCornerBackground($gd, int $w, int $h): array
     {
         $sumR = $sumG = $sumB = 0;
@@ -447,9 +436,6 @@ class ImageEditController
         return [(int) round($sumR / 4), (int) round($sumG / 4), (int) round($sumB / 4)];
     }
 
-    /**
-     * Scanline flood fill from edge-matched seeds.
-     */
     private function floodFillBackground($gd, int $w, int $h, int $bgR, int $bgG, int $bgB, int $fillColor, int $tolerance): void
     {
         $tolSq = $tolerance * $tolerance;
@@ -587,7 +573,7 @@ class ImageEditController
         $allTemps = array_merge([$assetTemp], $extraTempFiles);
 
         $manager = new ImageManager(new Driver);
-        $original = $manager->read(file_get_contents($assetTemp));
+        $original = $manager->decode(file_get_contents($assetTemp));
         $origW = $original->width();
         $origH = $original->height();
         $ratio = $origW > 0 && $origH > 0 ? $origW / $origH : 1.0;
@@ -616,7 +602,7 @@ class ImageEditController
         }
 
         $resultData = base64_decode($response->images[0]->image);
-        $resultImage = $manager->read($resultData);
+        $resultImage = $manager->decode($resultData);
 
         if ($resultImage->width() !== $origW || $resultImage->height() !== $origH) {
             $resultImage->cover($origW, $origH);
@@ -714,14 +700,14 @@ class ImageEditController
     private function encode(Image $image, string $extension): string
     {
         return match (strtolower($extension)) {
-            'png'                 => $image->toPng(),
-            'webp'                => $image->toWebp(),
-            'gif'                 => $image->toGif(),
-            'bmp'                 => $image->toBmp(),
-            'tiff', 'tif'         => $image->toTiff(),
-            'avif'                => $image->toAvif(),
-            'jpg', 'jpeg', 'jfif' => $image->toJpeg(),
-            default               => $image->toJpeg(),
+            'png'                 => $image->encode(new PngEncoder),
+            'webp'                => $image->encode(new WebpEncoder),
+            'gif'                 => $image->encode(new GifEncoder),
+            'bmp'                 => $image->encode(new BmpEncoder),
+            'tiff', 'tif'         => $image->encode(new TiffEncoder),
+            'avif'                => $image->encode(new AvifEncoder),
+            'jpg', 'jpeg', 'jfif' => $image->encode(new JpegEncoder),
+            default               => $image->encode(new JpegEncoder),
         };
     }
 }

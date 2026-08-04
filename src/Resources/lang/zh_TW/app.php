@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => '資產管理',
                     'assets'        => '資產',
                     'shares'        => '共享連結',
                     'tags'          => '標籤',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => '預覽失敗',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => '數位資產管理',
                 'datagrid' => [
                     'file-name'      => '檔案名稱',
                     'tags'           => '標籤',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => '離開',
                 'upload-stay-page'               => '留下',
                 'drop-zone-hint'                 => '拖曳檔案或資料夾以上傳',
+                'select-all'                     => '全選',
+                'select-directory-to-upload'     => '請選擇要上傳的目錄。',
+                'upload-session'                 => [
+                    'uploading'            => '正在上傳 :total 個檔案…',
+                    'paused'               => '已暫停 — 已上傳 :done / :total',
+                    'interrupted'          => '已上傳 :done / :total · :interrupted 個中斷',
+                    'failed'               => '已上傳 :done 個，:failed 個失敗',
+                    'completed'            => '已上傳 :done / :total',
+                    'create-folder-failed' => '無法建立資料夾',
+                ],
                 'drop-zone-no-permission'        => '您沒有在此處上傳的權限。',
                 'upload-complete'                => '上傳完成',
                 'item-upload-complete'           => '上傳完成',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => '沒有可用的中繼資料',
                     'tags'                  => '標籤',
                     'select-tags'           => '選擇或建立標籤',
+                    'tag-attach-success'    => '標籤新增成功。',
+                    'tag-detach-success'    => '已從資產移除標籤。',
                     'directory-path'        => '目錄路徑',
                     'no-directory'          => '未分配目錄',
                     'details'               => '詳情',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => '找不到用於顯示的檔案',
                     'not-found-to-download'               => '找不到用於下載的檔案',
                     'edit-success'                        => '檔案上傳成功',
+                    'no-file-name'                        => '無檔案名稱',
                     'show-success'                        => '檔案尋找成功',
                     'update-success'                      => '檔案更新成功',
                     'not-found-to-update'                 => '檔案不存在',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => '資產管理',
             'asset'            => '資產',
             'property'         => '屬性',
             'comment'          => '留言',
@@ -686,10 +699,11 @@ return [
             '401' => '此操作未經授權。',
         ],
         'configuration' => [
-            'save-btn' => '儲存',
-            'title'    => 'DAM 設定',
-            'saved'    => '設定已成功儲存。',
-            'general'  => [
+            'save-btn'    => '儲存',
+            'title'       => '設定',
+            'saved'       => '設定已成功儲存。',
+            'description' => '設定應用程式的數位資產管理 (DAM) 設定。',
+            'general'     => [
                 'title'            => '一般設定',
                 'description'      => '這些設定控制 DAM 的整體瀏覽體驗。',
                 'explorer-enabled' => [

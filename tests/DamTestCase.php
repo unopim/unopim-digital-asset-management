@@ -4,6 +4,7 @@ namespace Webkul\DAM\Tests;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 use Webkul\AdminApi\Tests\Traits\ApiHelperTrait;
 use Webkul\User\Tests\Concerns\UserAssertions;
@@ -14,35 +15,21 @@ class DamTestCase extends TestCase
         UserAssertions::getFullTableName insteadof ApiHelperTrait;
     }
 
-    /**
-     * Give every DAM test a clean runtime-config baseline.
-     *
-     * The `DAM` middleware re-applies rows from `dam_configuration` onto the
-     * config repository on every request, which would otherwise override a
-     * test's own `config()->set(...)` (e.g. `dam.tree.show_assets`). Any rows a
-     * developer toggled through the UI on a shared dev DB would then silently
-     * break config-dependent tests. Clearing the table here runs inside the
-     * DatabaseTransactions wrapper, so it is rolled back and the real
-     * configuration is left untouched.
-     */
+    protected const TEST_ROOT_URL = 'http://localhost';
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['app.url' => self::TEST_ROOT_URL]);
+
+        URL::forceRootUrl(self::TEST_ROOT_URL);
 
         if (Schema::hasTable('dam_configuration')) {
             DB::table('dam_configuration')->delete();
         }
     }
 
-    /**
-     * Clear every asset-owning DAM table so a test can assert absolute row counts.
-     *
-     * Tests that verify a seeder produced exactly N rows are otherwise skewed by
-     * whatever a developer already created on a shared dev database. Like the
-     * `dam_configuration` reset above this runs inside the DatabaseTransactions
-     * wrapper, so it is rolled back and real data is left untouched. Foreign key
-     * checks are suspended because `dam_directories.parent_id` is self-referencing.
-     */
     protected function damResetAssetTables(): void
     {
         $tables = [

@@ -2,14 +2,6 @@ const { test, expect } = require('../utils/fixtures');
 
 const CUSTOM_ROLE_NAME = 'DAM E2E Custom Role';
 
-/**
- * Resolve the seeded role's id via the datagrid JSON endpoint.
- * global-setup.js creates a role named CUSTOM_ROLE_NAME with
- * permission_type=custom. The roles index page renders rows via async
- * datagrid AJAX, so we hit the same endpoint directly to avoid racing
- * the grid render — and to skip locator selectors that drift with admin
- * theme updates.
- */
 async function resolveCustomRoleId(page) {
   const resp = await page.request.get('/admin/settings/roles', {
     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
@@ -75,12 +67,8 @@ test.describe('Role Edit — DAM Directory Permissions Tab', () => {
   test('tab hides when permission_type is switched to "all"', async ({ adminPage }) => {
     await gotoCustomRoleEdit(adminPage);
 
-    // Confirm tab is currently visible for the custom-permission baseline.
     await expect(adminPage.locator('#dam-directory-permissions-tab')).toBeVisible({ timeout: 10000 });
 
-    // Flip permission_type to "all" via the select control. The control is a
-    // shared admin Vue component; clicking the visible "Custom" label opens
-    // the dropdown then the "All" option commits.
     const permissionSelect = adminPage.locator('#permission_type').first();
     await permissionSelect.click({ force: true });
     await adminPage.getByText('All', { exact: true }).first().click({ force: true });

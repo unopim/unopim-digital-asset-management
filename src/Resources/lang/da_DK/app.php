@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Aktivstyring',
                     'assets'        => 'Aktiver',
                     'shares'        => 'Delte links',
                     'tags'          => 'Tags',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Forhåndsvisning mislykkedes',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Digital aktivstyring',
                 'datagrid' => [
                     'file-name'      => 'Filnavn',
                     'tags'           => 'Tags',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Forlad',
                 'upload-stay-page'               => 'Bliv',
                 'drop-zone-hint'                 => 'Træk filer eller mapper for at uploade',
+                'select-all'                     => 'Vælg alle',
+                'select-directory-to-upload'     => 'Vælg en mappe at uploade til.',
+                'upload-session'                 => [
+                    'uploading'            => 'Uploader :total fil(er)…',
+                    'paused'               => 'Sat på pause — :done af :total uploadet',
+                    'interrupted'          => ':done af :total uploadet · :interrupted afbrudt',
+                    'failed'               => ':done uploadet, :failed mislykkedes',
+                    'completed'            => ':done af :total uploadet',
+                    'create-folder-failed' => 'Kunne ikke oprette mappen',
+                ],
                 'drop-zone-no-permission'        => 'Du har ikke tilladelse til at uploade her.',
                 'upload-complete'                => 'Upload fuldført',
                 'item-upload-complete'           => 'Upload fuldført',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Ingen metadata tilgængelig',
                     'tags'                  => 'Tags',
                     'select-tags'           => 'Vælg eller opret et tag',
+                    'tag-attach-success'    => 'Tag tilføjet.',
+                    'tag-detach-success'    => 'Tag fjernet fra aktivet.',
                     'directory-path'        => 'Mappesti',
                     'no-directory'          => 'Ingen mappe tildelt',
                     'details'               => 'Detaljer',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Filen blev ikke fundet til visning',
                     'not-found-to-download'               => 'Filen blev ikke fundet til download',
                     'edit-success'                        => 'Fil uploadet',
+                    'no-file-name'                        => 'intet filnavn',
                     'show-success'                        => 'Fil fundet',
                     'update-success'                      => 'Fil opdateret',
                     'not-found-to-update'                 => 'Filen findes ikke',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Aktivstyring',
             'asset'            => 'Aktiv',
             'property'         => 'Egenskab',
             'comment'          => 'Kommentar',
@@ -686,10 +699,11 @@ return [
             '401' => 'Denne handling er ikke autoriseret.',
         ],
         'configuration' => [
-            'save-btn' => 'Gem',
-            'title'    => 'DAM Konfiguration',
-            'saved'    => 'Konfiguration gemt.',
-            'general'  => [
+            'save-btn'    => 'Gem',
+            'title'       => 'Konfiguration',
+            'saved'       => 'Konfiguration gemt.',
+            'description' => 'Konfigurer indstillingerne for digital aktivstyring (DAM) i din applikation.',
+            'general'     => [
                 'title'            => 'Generelle indstillinger',
                 'description'      => 'Disse indstillinger styrer den overordnede DAM-browsingoplevelse.',
                 'explorer-enabled' => [

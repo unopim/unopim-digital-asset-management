@@ -12,21 +12,12 @@ const path = require('path');
 const PDF_ASSET   = path.resolve(__dirname, '../assets/sample.pdf');
 const VIDEO_ASSET = path.resolve(__dirname, '../assets/sample.mp4');
 
-/**
- * Navigate to DAM with explorer mode active.
- * Returns false if explorer is not enabled (DAM_EXPLORER_ENABLED=false),
- * so callers can skip explorer-specific assertions.
- */
 async function navigateToExplorer(page) {
   await navigateTo(page, 'dam');
-  // Explorer renders a tab bar; datagrid does not.
+
   const tabBar = page.locator('.flex.items-end.gap-0').first();
   return tabBar.isVisible({ timeout: 5000 }).catch(() => false);
 }
-
-// ---------------------------------------------------------------------------
-// Gallery-mode tests (DAM_EXPLORER_ENABLED=false, default)
-// ---------------------------------------------------------------------------
 
 test.describe('DAM Asset Card — Gallery view', () => {
 
@@ -39,7 +30,6 @@ test.describe('DAM Asset Card — Gallery view', () => {
     await navigateTo(adminPage, 'dam');
     await searchInDataGrid(adminPage, 'sample.pdf');
 
-    // The badge is a <span> inside .image-card with class bg-red-600
     const badge = adminPage
       .locator('.image-card span.bg-red-600')
       .first();
@@ -47,13 +37,13 @@ test.describe('DAM Asset Card — Gallery view', () => {
     await expect(badge).toHaveText(/PDF/i);
   });
 
-  test('extension badge on card shows violet class for video asset', async ({ adminPage }) => {
+  test('extension badge on card shows primary class for video asset', async ({ adminPage }) => {
     await ensureAssetOfTypeExists(adminPage, VIDEO_ASSET, 'sample.mp4');
     await navigateTo(adminPage, 'dam');
     await searchInDataGrid(adminPage, 'sample.mp4');
 
     const badge = adminPage
-      .locator('.image-card span.bg-violet-600')
+      .locator('.image-card span.bg-primary-600')
       .first();
     await expect(badge).toBeVisible({ timeout: 15000 });
     await expect(badge).toHaveText(/MP4/i);
@@ -64,7 +54,6 @@ test.describe('DAM Asset Card — Gallery view', () => {
     await navigateTo(adminPage, 'dam');
     await searchInDataGrid(adminPage, 'sample.mp4');
 
-    // The play icon is a span with icon-play class inside the card
     const playIcon = adminPage
       .locator('.image-card .icon-play')
       .first();
@@ -80,7 +69,6 @@ test.describe('DAM Asset Card — Gallery view', () => {
     await navigateTo(adminPage, 'dam');
     await searchInDataGrid(adminPage, 'sample.mp3');
 
-    // Guard: skip if the audio asset card never appeared (upload blocked in this env)
     const cardVisible = await adminPage
       .locator('.image-card')
       .first()
@@ -91,7 +79,6 @@ test.describe('DAM Asset Card — Gallery view', () => {
       return;
     }
 
-    // Audio uses icon-information class (not icon-play)
     const audioIcon = adminPage
       .locator('.image-card .icon-information')
       .first();
@@ -101,10 +88,8 @@ test.describe('DAM Asset Card — Gallery view', () => {
   test('empty state renders when selected directory has no assets', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
 
-    // Search a string that matches nothing so the grid shows empty state.
     await searchInDataGrid(adminPage, 'zzzzzz_no_match_ever_xyzxyz');
 
-    // Empty state: the no-records SVG image must be visible
     const emptyImg = adminPage
       .locator('img[src*="no-records-found"]')
       .first();
@@ -114,20 +99,15 @@ test.describe('DAM Asset Card — Gallery view', () => {
   test('gallery card does NOT have draggable attribute', async ({ adminPage }) => {
     await navigateTo(adminPage, 'dam');
 
-    // Wait for at least one card
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
 
     const card = adminPage.locator('.image-card').first();
-    // draggable should be "false" or absent — NOT "true"
+
     const draggable = await card.getAttribute('draggable');
     expect(draggable).not.toBe('true');
   });
 
 });
-
-// ---------------------------------------------------------------------------
-// Explorer-mode tests (require DAM_EXPLORER_ENABLED=true)
-// ---------------------------------------------------------------------------
 
 test.describe('DAM Asset Card — Explorer view', () => {
 
@@ -142,7 +122,6 @@ test.describe('DAM Asset Card — Explorer view', () => {
       return;
     }
 
-    // Wait for at least one asset card in explorer grid
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
 
     const card = adminPage.locator('.image-card').first();
@@ -159,16 +138,13 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
     await closeApShell(adminPage);
 
-    // Click the three-dot (⋮) actions button on the first asset card.
     const assetCard = adminPage.locator('.image-card').first().locator('..');
     await assetCard.hover();
     await assetCard.locator('.dam-ctx-trigger').first().click();
 
-    // Actions menu should appear with min-w-[185px] fixed div
     const ctxMenu = adminPage.locator('div.fixed.min-w-\\[185px\\]').first();
     await expect(ctxMenu).toBeVisible({ timeout: 5000 });
 
-    // Dismiss
     await adminPage.mouse.click(10, 10);
   });
 
@@ -179,7 +155,6 @@ test.describe('DAM Asset Card — Explorer view', () => {
       return;
     }
 
-    // Directories render with icon-dam-folder
     const folderIcon = adminPage.locator('.icon-dam-folder').first();
     const hasFolders = await folderIcon.isVisible({ timeout: 5000 }).catch(() => false);
     if (!hasFolders) {
@@ -187,7 +162,6 @@ test.describe('DAM Asset Card — Explorer view', () => {
       return;
     }
 
-    // The folder icon's parent is the folder-card root, which holds the ⋮ button.
     const folderCard = folderIcon.locator('..').first();
     await folderCard.hover();
     await folderCard.locator('.dam-ctx-trigger').first().click();
@@ -208,8 +182,6 @@ test.describe('DAM Asset Card — Explorer view', () => {
     await adminPage.locator('.image-card').first().waitFor({ state: 'visible', timeout: 20000 });
     await closeApShell(adminPage);
 
-    // Open the actions menu from the LAST asset card (closest to the bottom),
-    // exercising the menu's viewport-repositioning safety net.
     const { height } = adminPage.viewportSize();
     const assetCard = adminPage.locator('.image-card').last().locator('..');
     await assetCard.scrollIntoViewIfNeeded();
@@ -219,9 +191,8 @@ test.describe('DAM Asset Card — Explorer view', () => {
     const ctxMenu = adminPage.locator('div.fixed.min-w-\\[185px\\]').first();
     await expect(ctxMenu).toBeVisible({ timeout: 5000 });
 
-    // Menu must not overflow bottom of viewport
     const box = await ctxMenu.boundingBox();
-    expect(box.y + box.height).toBeLessThanOrEqual(height + 2); // 2px tolerance
+    expect(box.y + box.height).toBeLessThanOrEqual(height + 2);
 
     await adminPage.mouse.click(10, 10);
   });

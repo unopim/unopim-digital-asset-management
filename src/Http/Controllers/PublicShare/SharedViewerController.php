@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\AvifEncoder;
+use Intervention\Image\Encoders\BmpEncoder;
+use Intervention\Image\Encoders\GifEncoder;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\TiffEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Helpers\AssetHelper;
@@ -27,7 +34,6 @@ class SharedViewerController extends Controller
         protected ShareRepository $shareRepository,
     ) {}
 
-    /** Public landing page for a share token. */
     public function show(string $token)
     {
         $share = $this->shareRepository->findByToken($token);
@@ -69,9 +75,6 @@ class SharedViewerController extends Controller
         ]);
     }
 
-    /**
-     * JSON endpoint for infinite-scroll pages 2+.
-     */
     public function listAssets(string $token): JsonResponse
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -118,7 +121,6 @@ class SharedViewerController extends Controller
         ]);
     }
 
-    /** Download the asset referenced by an asset-share token. */
     public function download(Request $request, string $token)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -139,7 +141,6 @@ class SharedViewerController extends Controller
         );
     }
 
-    /** Detail view for a single asset that lives inside a shared directory. */
     public function assetView(string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -182,7 +183,6 @@ class SharedViewerController extends Controller
         ]);
     }
 
-    /** Download an asset that lives inside a shared directory. */
     public function assetDownload(Request $request, string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -203,7 +203,6 @@ class SharedViewerController extends Controller
         );
     }
 
-    /** Serve a 300px thumbnail for an asset reachable through this share. */
     public function thumbnail(string $token, int $assetId)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -241,7 +240,7 @@ class SharedViewerController extends Controller
             try {
                 $mimeType = Storage::disk($disk)->mimeType($path);
                 $image = (new ImageManager(new Driver))
-                    ->read(Storage::disk($disk)->get($path))
+                    ->decode(Storage::disk($disk)->get($path))
                     ->scale(width: 300);
                 $imageData = $this->encodeImageByExtension($image, $path);
                 Storage::disk($disk)->put($thumbnailPath, $imageData);
@@ -263,7 +262,6 @@ class SharedViewerController extends Controller
         return $this->placeholderResponse($asset);
     }
 
-    /** Download all assets in a shared directory (and subdirectories) as a ZIP. */
     public function downloadZip(string $token)
     {
         $share = $this->shareRepository->findActiveByToken($token);
@@ -291,11 +289,6 @@ class SharedViewerController extends Controller
         );
     }
 
-    /**
-     * Stream a file. For S3, redirect to a short-lived presigned URL; for the
-     * local/private disk, response()->file() handles range requests so video
-     * scrubbing in the public viewer works.
-     */
     protected function streamAsset(Asset $asset, string $disposition, ?callable $onSuccess = null)
     {
         $disk = Directory::getAssetDisk();
@@ -314,11 +307,6 @@ class SharedViewerController extends Controller
             ? strtolower($disposition)
             : 'attachment';
 
-        /**
-         * Never serve non-media content inline: a stored HTML/SVG/text file must
-         * not be able to execute script in the application's origin when opened
-         * through a public share link.
-         */
         if (! AssetHelper::isInlineSafeMime($mimeType)) {
             $disposition = 'attachment';
         }
@@ -351,9 +339,6 @@ class SharedViewerController extends Controller
         ], AssetHelper::assetResponseHeaders()));
     }
 
-    /**
-     * Resolve the effective storage path for a shared asset.
-     */
     protected function resolveEffectiveAssetPath(Asset $asset, string $disk): ?string
     {
         if (Storage::disk($disk)->exists($asset->path)) {
@@ -377,18 +362,12 @@ class SharedViewerController extends Controller
         return Storage::disk($disk)->exists($derived) ? $derived : null;
     }
 
-    /**
-     * Range query for all assets in a directory's subtree.
-     */
     protected function subtreeAssetQuery(Directory $directory): Builder
     {
         return Asset::query()
             ->whereHas('directories', fn ($q) => $q->whereBetween('_lft', [$directory->_lft, $directory->_rgt]));
     }
 
-    /**
-     * Look up an asset that lives within the share's directory tree.
-     */
     protected function resolveDirectoryAsset(Share $share, int $assetId): ?Asset
     {
         $directory = $share->directory;
@@ -477,14 +456,14 @@ class SharedViewerController extends Controller
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         return match ($extension) {
-            'png'                 => $image->toPng(),
-            'webp'                => $image->toWebp(),
-            'gif'                 => $image->toGif(),
-            'bmp'                 => $image->toBmp(),
-            'tiff', 'tif'         => $image->toTiff(),
-            'avif'                => $image->toAvif(),
-            'jpg', 'jpeg', 'jfif' => $image->toJpeg(),
-            default               => $image->toJpeg(),
+            'png'                 => $image->encode(new PngEncoder),
+            'webp'                => $image->encode(new WebpEncoder),
+            'gif'                 => $image->encode(new GifEncoder),
+            'bmp'                 => $image->encode(new BmpEncoder),
+            'tiff', 'tif'         => $image->encode(new TiffEncoder),
+            'avif'                => $image->encode(new AvifEncoder),
+            'jpg', 'jpeg', 'jfif' => $image->encode(new JpegEncoder),
+            default               => $image->encode(new JpegEncoder),
         };
     }
 
@@ -500,7 +479,6 @@ class SharedViewerController extends Controller
         ], 410);
     }
 
-    /** Treat expired and not-found uniformly to avoid leaking token existence. */
     protected function renderExpiredOrNotFound(string $token)
     {
         $share = $this->shareRepository->findByToken($token);

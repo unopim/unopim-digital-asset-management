@@ -1,15 +1,11 @@
 @include('dam::components.explorer.context-menu')
 
-{{-- Ensure v-dam-drop-upload is registered before v-dam-tab mounts --}}
 <x-dam::asset.drop-upload />
 
 <v-dam-explorer
     :acl-bypass="{{ dam_acl_bypass() ? 'true' : 'false' }}"
     :accessible-ids='@json(dam_accessible_dir_ids())'
 ></v-dam-explorer>
-
-
-{{-- v-dam-bookmarks is defined in bookmarks.blade.php — included below via asset/index.blade.php --}}
 
 @once('v-dam-explorer')
 @push('scripts')
@@ -28,13 +24,13 @@
                     tab.id === activeTabId
                         ? 'bg-white dark:bg-cherry-900 border-gray-200 dark:border-cherry-700 text-gray-800 dark:text-white font-semibold z-10 -mb-px'
                         : 'bg-transparent border-transparent text-gray-500 hover:bg-white/60 dark:hover:bg-cherry-800 dark:text-white',
-                    tabDragHover === tab.id ? 'ring-2 ring-inset ring-violet-400' : ''
+                    tabDragHover === tab.id ? 'ring-2 ring-inset ring-primary-400' : ''
                 ]"
                 @click="setActive(tab.id)"
                 @dragover.prevent="onTabDragOver($event, tab.id)"
                 @dragleave="onTabDragLeave($event, tab.id)"
             >
-                <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-violet-500' : 'text-gray-400'"></i>
+                <i class="icon-dam-folder text-base shrink-0" :class="tab.id === activeTabId ? 'text-primary-500' : 'text-gray-400'"></i>
                 <span class="truncate flex-1 text-sm">@{{ tab.label }}</span>
                 <span
                     v-if="tabs.length > 1"
@@ -53,10 +49,6 @@
             >+</button>
         </div>
 
-        {{-- Tab content panes — all mounted, only active is shown --}}
-        {{-- NOTE: v-dam-tab is used directly (not x-dam::explorer.tab) because --}}
-        {{-- this is inside a <script type="text/x-template"> — Blade cannot resolve --}}
-        {{-- Blade component props that reference Vue runtime variables (tab.id etc.). --}}
         <template v-for="tab in tabs" :key="tab.id">
             <div v-show="tab.id === activeTabId" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <v-dam-tab
@@ -90,8 +82,7 @@ app.component('v-dam-explorer', {
     },
 
     mounted() {
-        // Read the return-directory set by the asset edit page (stored in
-        // sessionStorage to avoid polluting the URL). Consumed once and cleared.
+
         let dirId = null;
         try { dirId = sessionStorage.getItem('dam_return_dir'); } catch {}
         this.restore(dirId ? Number(dirId) : null);
@@ -158,8 +149,7 @@ app.component('v-dam-explorer', {
 
     methods: {
         uid() {
-            // Call randomUUID as a method so `this` stays bound to `crypto`
-            // (a detached call throws "Illegal invocation" in secure contexts).
+
             return (typeof crypto !== 'undefined' && crypto.randomUUID)
                 ? crypto.randomUUID()
                 : Math.random().toString(36).slice(2);
@@ -290,10 +280,6 @@ app.component('v-dam-explorer', {
 @endonce
 
 @include('dam::components.explorer.tab')
-
-{{-- NOTE: v-dam-tab is intentionally included via @include (not <x-dam::explorer.tab>) --}}
-{{-- because the USAGE of <v-dam-tab> inside the Vue x-template above passes Vue runtime --}}
-{{-- variables (tab.id, tab.directoryId) which Blade cannot resolve at render time. --}}
 
 @include('dam::components.explorer.toolbar')
 

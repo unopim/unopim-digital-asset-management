@@ -9,16 +9,12 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CategoryExporter;
+use Webkul\DataTransfer\Helpers\Formatters\EscapeFormulaOperators;
 use Webkul\DataTransfer\Jobs\Export\File\FlatItemBuffer;
 use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Exporter extends CategoryExporter
 {
-    /**
-     * Create a new instance.
-     *
-     * @return void
-     */
     public function __construct(
         JobTrackBatchRepository $exportBatchRepository,
         FlatItemBuffer $exportFileBuffer,
@@ -34,14 +30,13 @@ class Exporter extends CategoryExporter
         EventServiceProvider::ASSET_ATTRIBUTE_TYPE,
     ];
 
-    /** Sets category field values for a product. If an category field is not present in the given values array. */
-    protected function setFieldsAdditionalData(array $additionalData, $filePath, $options = [])
+    protected function setFieldsAdditionalData(array $additionalData, $filePath, $options = []): array
     {
         $fieldValues = [];
 
         $filters = $this->getFilters();
 
-        $withMedia = (bool) $filters['with_media'];
+        $withMedia = (bool) ($filters['with_media'] ?? false);
 
         $mediaSourceType = $filters['media_source_type'] ?? 'zip';
 
@@ -49,7 +44,7 @@ class Exporter extends CategoryExporter
             $fieldCode = $field->code;
             $fieldType = $field->type;
 
-            $fieldValues[$fieldCode] = $additionalData[$fieldCode] ?? null;
+            $fieldValues[$fieldCode] = EscapeFormulaOperators::escapeValue($additionalData[$fieldCode] ?? null);
 
             if (in_array($field->type, $this->mediaTypeFields)) {
                 $mediaValues = [];
@@ -97,8 +92,7 @@ class Exporter extends CategoryExporter
         return $fieldValues;
     }
 
-    /** Copy media file from a source path to a destination path. */
-    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false)
+    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false): void
     {
         $disk = Directory::getAssetDisk();
 
@@ -122,9 +116,6 @@ class Exporter extends CategoryExporter
         parent::copyMedia($sourcePath, $destinationPath);
     }
 
-    /**
-     * Generates a public URL for a given file path.
-     */
     public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
     {
         if ($isAssetField) {

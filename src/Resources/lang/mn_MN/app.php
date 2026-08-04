@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Хэрэглэгдэхүүний удирдлага',
                     'assets'        => 'Хэрэглэгдэхүүнүүд',
                     'shares'        => 'Хуваалцсан холбоосууд',
                     'tags'          => 'Тагууд',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Урьдчилан харахад амжилтгүй болсон',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Дижитал хэрэглэгдэхүүний удирдлага',
                 'datagrid' => [
                     'file-name'      => 'Файлын нэр',
                     'tags'           => 'Таг',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Гарах',
                 'upload-stay-page'               => 'Үлдэх',
                 'drop-zone-hint'                 => 'Байршуулах файл эсвэл хавтасыг чирнэ үү',
+                'select-all'                     => 'Бүгдийг сонгох',
+                'select-directory-to-upload'     => 'Байршуулах лавлахаа сонгоно уу.',
+                'upload-session'                 => [
+                    'uploading'            => ':total файл байршуулж байна…',
+                    'paused'               => 'Түр зогссон — :total-с :done байршуулсан',
+                    'interrupted'          => ':total-с :done байршуулсан · :interrupted тасалдсан',
+                    'failed'               => ':done байршуулсан, :failed амжилтгүй',
+                    'completed'            => ':total-с :done байршуулсан',
+                    'create-folder-failed' => 'Хавтас үүсгэж чадсангүй',
+                ],
                 'drop-zone-no-permission'        => 'Энд файл байршуулах эрх байхгүй байна.',
                 'upload-complete'                => 'Байршуулалт дууслаа',
                 'item-upload-complete'           => 'Байршуулалт дууссан',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Мета өгөгдөл байхгүй байна',
                     'tags'                  => 'Таг',
                     'select-tags'           => 'Таг Сонгох эсвэл Үүсгэх',
+                    'tag-attach-success'    => 'Шошго амжилттай нэмэгдлээ.',
+                    'tag-detach-success'    => 'Шошгыг хэрэглэгдэхүүнээс амжилттай хаслаа.',
                     'directory-path'        => 'Хавтасны зам',
                     'no-directory'          => 'Хавтас оноогдоогүй',
                     'details'               => 'Дэлгэрэнгүй',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Харуулах файл олдсонгүй',
                     'not-found-to-download'               => 'Татах файл олдсонгүй',
                     'edit-success'                        => 'Файл амжилттай шинэчлэгдлээ',
+                    'no-file-name'                        => 'файлын нэргүй',
                     'show-success'                        => 'Файл амжилттай олдлоо',
                     'update-success'                      => 'Файл амжилттай шинэчлэгдлээ',
                     'not-found-to-update'                 => 'Файл байхгүй',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Хэрэглэгдэхүүний удирдлага',
             'asset'            => 'Хэрэглэгдэхүүн',
             'property'         => 'Шинж Чанар',
             'comment'          => 'Сэтгэгдэл',
@@ -686,10 +699,11 @@ return [
             '401' => 'Энэ үйлдэлд эрхгүй.',
         ],
         'configuration' => [
-            'save-btn' => 'Хадгалах',
-            'title'    => 'DAM Тохиргоо',
-            'saved'    => 'Тохиргоо амжилттай хадгалагдлаа.',
-            'general'  => [
+            'save-btn'    => 'Хадгалах',
+            'title'       => 'Тохиргоо',
+            'saved'       => 'Тохиргоо амжилттай хадгалагдлаа.',
+            'description' => 'Аппликейшнийхаа дижитал хэрэглэгдэхүүний удирдлагын (DAM) тохиргоог хийнэ үү.',
+            'general'     => [
                 'title'            => 'Ерөнхий тохиргоо',
                 'description'      => 'Эдгээр тохиргоо нь DAM-ийн ерөнхий үзэх туршлагыг удирдана.',
                 'explorer-enabled' => [

@@ -24,16 +24,12 @@ class CopyDirectory implements ShouldQueue
 
     public int $timeout = 3600;
 
-    /** Create a new instance. */
     public function __construct(
         protected int $sourceId,
         protected int $targetId,
         protected int $userId
     ) {}
 
-    /**
-     * Copy the source directory and its contents into the target directory.
-     */
     public function handle(): void
     {
         if (! $this->checkedUser($this->userId)) {
@@ -63,9 +59,6 @@ class CopyDirectory implements ShouldQueue
         }
     }
 
-    /**
-     * Recursively copy a directory, its assets, and child directories.
-     */
     private function deepCopyDirectory(Directory $source, Directory $newParent, int $depth): void
     {
         if ($depth > self::MAX_DEPTH) {
@@ -124,9 +117,6 @@ class CopyDirectory implements ShouldQueue
         }
     }
 
-    /**
-     * Resolve a unique file name against an in-memory name set.
-     */
     private function uniqueAssetNameFromSet(string $fileName, array $existingNames): string
     {
         if (! isset($existingNames[$fileName])) {

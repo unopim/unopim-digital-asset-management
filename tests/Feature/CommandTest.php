@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Webkul\User\Models\Admin;
 
-// Helper to mock user input
 function mockCommandInput($command, array $inputs)
 {
     $command->expectsQuestion('Enter your Email', $inputs['email']);
@@ -15,7 +14,7 @@ function mockCommandInput($command, array $inputs)
 }
 
 beforeEach(function () {
-    // Prevent actual storage and DB calls
+
     Storage::fake('private');
     Storage::fake('s3');
     DB::shouldReceive('table')->andReturnSelf();
@@ -45,7 +44,6 @@ it('moves all assets to s3 when valid credentials are provided', function () {
     $admin = Admin::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('secret')]);
     Hash::shouldReceive('check')->andReturn(true);
 
-    // Simulate files exist in private disk
     Storage::disk('private')->put('foo/bar1.jpg', 'content1');
     Storage::disk('private')->put('foo/bar2.jpg', 'content2');
 
@@ -88,7 +86,7 @@ it('skips assets already on s3 when migrateNew is yes', function () {
 
     Storage::disk('private')->put('foo/bar1.jpg', 'content1');
     Storage::disk('private')->put('foo/bar2.jpg', 'content2');
-    Storage::disk('s3')->put('foo/bar1.jpg', 'content1'); // already exists
+    Storage::disk('s3')->put('foo/bar1.jpg', 'content1');
 
     $this->artisan('unopim:dam:move-asset-to-s3')
         ->expectsQuestion('Enter your Email', 'user@example.com')
@@ -106,7 +104,6 @@ it('logs missing file paths and continues', function () {
     $admin = Admin::factory()->create(['email' => 'user@example.com', 'password' => bcrypt('secret')]);
     Hash::shouldReceive('check')->andReturn(true);
 
-    // Remove one file from private disk
     Storage::disk('private')->put('foo/bar1.jpg', 'content1');
 
     $this->artisan('unopim:dam:move-asset-to-s3')

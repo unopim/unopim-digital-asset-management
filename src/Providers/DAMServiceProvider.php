@@ -20,19 +20,20 @@ use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
+use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
+use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
 
 class DAMServiceProvider extends ServiceProvider
 {
     public $bindings = [
-        Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
         Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
@@ -42,13 +43,16 @@ class DAMServiceProvider extends ServiceProvider
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
     ];
 
-    /** {@inheritDoc} */
     public function boot(Router $router)
     {
+        $this->app->booted(function (): void {
+            $this->app->bind(Exporter::class, class_exists(MeasurementExporter::class)
+                ? MeasurementAwareExporter::class
+                : \Webkul\DAM\Helpers\Exporters\Product\Exporter::class);
+        });
+
         $router->aliasMiddleware('dam', DAM::class);
 
-        // Named rate limiters for public share routes — separate buckets per IP per route type
-        // so 200 thumbnail requests don't exhaust the bucket used by view/download routes.
         RateLimiter::for('dam-share-thumb', function ($request) {
             return Limit::perMinute(1200)->by('thumb|'.$request->ip());
         });
@@ -128,7 +132,6 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-config');
     }
 
-    /** {@inheritDoc} */
     public function register()
     {
         $helpers = __DIR__.'/../Http/helpers.php';

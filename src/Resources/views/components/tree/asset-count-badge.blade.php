@@ -1,7 +1,4 @@
-{{-- Registers the v-asset-count-badge Vue component once per page.
-     Usage in Vue templates: <v-asset-count-badge :count="item.assets_total_count ?? null" />
-     `count` is null until the lazy asset-count fetch resolves; the badge stays
-     hidden in the meantime so the tree structure can paint immediately. --}}
+
 @pushOnce('scripts')
     <script type="text/x-template" id="v-asset-count-badge-template">
         <span

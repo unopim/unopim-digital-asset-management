@@ -29,7 +29,6 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
         'sort_order'    => 'integer',
     ];
 
-    /** Columns excluded from history generation. */
     protected $auditExclude = [
         'id',
         'dam_asset_id',
@@ -40,17 +39,11 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
         return $this->belongsTo(Asset::class, 'dam_asset_id');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getPrimaryModelIdForHistory(): int
     {
         return $this->dam_asset_id;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function getPresenters(): array
     {
         return [
@@ -61,9 +54,6 @@ class AssetProperty extends Model implements AssetPropertyContract, HistoryAudit
         ];
     }
 
-    /**
-     * Create a new factory instance for the model.
-     */
     protected static function newFactory(): Factory
     {
         return PropertyFactory::new();

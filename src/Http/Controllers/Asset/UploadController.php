@@ -10,17 +10,12 @@ use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\DirectoryPermissionService;
 
-/** Session controls for the background asset uploader. */
 class UploadController extends Controller
 {
-    /** Create a new instance. */
     public function __construct(
         protected DirectoryPermissionService $permissionService,
     ) {}
 
-    /**
-     * Start or re-attach to an upload session.
-     */
     public function startSession(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -51,9 +46,6 @@ class UploadController extends Controller
         return new JsonResponse(['success' => true, 'tracker' => $this->present($tracker)], 201);
     }
 
-    /**
-     * Return live progress for the polling panel.
-     */
     public function stats(string $uuid): JsonResponse
     {
         $tracker = $this->findTracker($uuid);
@@ -65,9 +57,6 @@ class UploadController extends Controller
         return new JsonResponse(['success' => true, 'tracker' => $this->present($tracker)]);
     }
 
-    /**
-     * Pause the session so queued jobs abort and leave their batch pending.
-     */
     public function pause(string $uuid): JsonResponse
     {
         $tracker = $this->authorizedTracker($uuid);
@@ -87,9 +76,6 @@ class UploadController extends Controller
         ]);
     }
 
-    /**
-     * Resume a paused session and re-dispatch every batch still pending.
-     */
     public function resume(string $uuid): JsonResponse
     {
         $tracker = $this->authorizedTracker($uuid);
@@ -111,9 +97,6 @@ class UploadController extends Controller
         ]);
     }
 
-    /**
-     * Cancel the session, keeping uploaded assets and abandoning pending work.
-     */
     public function cancel(string $uuid): JsonResponse
     {
         $tracker = $this->authorizedTracker($uuid);
@@ -140,9 +123,6 @@ class UploadController extends Controller
         ]);
     }
 
-    /**
-     * Retry only the failed batches, leaving successful assets untouched.
-     */
     public function retry(string $uuid): JsonResponse
     {
         $tracker = $this->authorizedTracker($uuid);
@@ -179,9 +159,6 @@ class UploadController extends Controller
         ]);
     }
 
-    /**
-     * Reconcile totals and complete the session once no batches remain open.
-     */
     public function complete(string $uuid): JsonResponse
     {
         $tracker = $this->authorizedTracker($uuid);
@@ -210,9 +187,6 @@ class UploadController extends Controller
         return new JsonResponse(['success' => true, 'tracker' => $this->present($tracker->refresh())]);
     }
 
-    /**
-     * Re-dispatch a fresh finalisation job for every batch in the given states.
-     */
     protected function redispatch(UploadTracker $tracker, array $states): void
     {
         $tracker->batches()
@@ -222,11 +196,6 @@ class UploadController extends Controller
             ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id));
     }
 
-    /**
-     * Resolve a tracker and enforce that the current admin owns it.
-     *
-     * @return UploadTracker|JsonResponse
-     */
     protected function authorizedTracker(string $uuid)
     {
         $tracker = $this->findTracker($uuid);
@@ -244,17 +213,11 @@ class UploadController extends Controller
         return $tracker;
     }
 
-    /**
-     * Find an upload tracker by its uuid.
-     */
     protected function findTracker(string $uuid): ?UploadTracker
     {
         return UploadTracker::where('uuid', $uuid)->first();
     }
 
-    /**
-     * Build the tracker payload returned to the client.
-     */
     protected function present(UploadTracker $tracker): array
     {
         return [
@@ -266,9 +229,6 @@ class UploadController extends Controller
         ];
     }
 
-    /**
-     * Build a 403 unauthorized JSON response.
-     */
     protected function unauthorized(): JsonResponse
     {
         return new JsonResponse([

@@ -15,22 +15,17 @@ use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\MetadataExtractionService;
 
-/** Finalises a freshly-uploaded asset in the background. */
 class ProcessAssetUpload implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
 
-    /** Create a new instance. */
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
     ) {}
 
-    /**
-     * Finalise the asset: metadata, cover art and thumbnail generation.
-     */
     public function handle(MetadataExtractionService $metadataService): void
     {
         $batch = $this->batchId ? UploadBatch::find($this->batchId) : null;
@@ -75,9 +70,6 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
-    /**
-     * Extract metadata from the stored asset file.
-     */
     protected function extractMetadata(MetadataExtractionService $service, Asset $asset, string $disk): array
     {
         if ($disk === Directory::ASSETS_DISK_AWS) {
@@ -98,9 +90,6 @@ class ProcessAssetUpload implements ShouldQueue
         );
     }
 
-    /**
-     * Persist embedded cover art for audio assets onto meta_data.
-     */
     protected function attachAudioCoverArt(MetadataExtractionService $service, Asset $asset, array $metaData, string $disk): void
     {
         if (! str_starts_with((string) $asset->mime_type, 'audio/')) {
@@ -135,9 +124,6 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
-    /**
-     * Queue a thumbnail generation job for PDF/video assets.
-     */
     protected function dispatchThumbnailJob(Asset $asset): void
     {
         if ($asset->file_type === 'video') {
@@ -151,9 +137,6 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
-    /**
-     * Record the batch outcome and update tracker counters.
-     */
     protected function settleBatch(?UploadBatch $batch, ?UploadTracker $tracker, bool $failed, ?string $error = null): void
     {
         if (! $batch) {
@@ -175,9 +158,6 @@ class ProcessAssetUpload implements ShouldQueue
         $this->finalizeTrackerIfDone($tracker->id);
     }
 
-    /**
-     * Mark the tracker completed once all files have settled.
-     */
     protected function finalizeTrackerIfDone(int $trackerId): void
     {
         $tracker = UploadTracker::find($trackerId);

@@ -2,7 +2,6 @@
 
 namespace Webkul\DAM\Services;
 
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -10,7 +9,6 @@ use Webkul\DAM\Helpers\AssetHelper;
 
 class MetadataExtractionService
 {
-    /** Keys to strip from exiftool output before returning. */
     private array $strippedExiftoolKeys = [
         'ExifToolVersion'     => true,
         'SourceFile'          => true,
@@ -20,12 +18,8 @@ class MetadataExtractionService
         'FileInodeChangeDate' => true,
     ];
 
-    /** Create a new instance. */
     public function __construct() {}
 
-    /**
-     * Extract metadata from a file, dispatching by detected media type.
-     */
     public function extractMetadata(string $path, string $disk = 'local', ?string $localPath = null, bool $isPartial = false, ?string $originalFileName = null): array
     {
         if (empty($path) && empty($localPath)) {
@@ -77,9 +71,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Run exiftool against a local temp path and read the first JSON record.
-     */
     private function runExiftool(string $tempPath, string $context, ?string $originalFileName = null): array
     {
         if (! $this->exiftoolExists()) {
@@ -126,9 +117,6 @@ class MetadataExtractionService
         return $data;
     }
 
-    /**
-     * Extract metadata for video/audio files using exiftool.
-     */
     protected function extractMediaMetadata(string $tempPath, ?string $originalFileName = null): array
     {
         $data = $this->runExiftool($tempPath, 'media', $originalFileName);
@@ -136,9 +124,6 @@ class MetadataExtractionService
         return $data ? array_merge($this->handleArrayMetadata($data), ['exif' => $data]) : [];
     }
 
-    /**
-     * Extract metadata for files that are not image/video/audio via exiftool.
-     */
     protected function extractDocumentMetadata(string $tempPath, ?string $originalFileName = null): array
     {
         $data = $this->runExiftool($tempPath, 'generic', $originalFileName);
@@ -146,17 +131,11 @@ class MetadataExtractionService
         return $data ? array_merge($this->handleArrayMetadata($data), ['exif' => $data]) : [];
     }
 
-    /**
-     * Determine whether the given data represents an error response.
-     */
     protected function isErrorResponse($data): bool
     {
         return is_array($data) && isset($data['success']) && $data['success'] === false;
     }
 
-    /**
-     * Optimized array metadata handler.
-     */
     protected function handleArrayMetadata(array $metadata): array
     {
         $result = [];
@@ -180,9 +159,6 @@ class MetadataExtractionService
         return $result;
     }
 
-    /**
-     * Optimized EXIF metadata extraction.
-     */
     public function getExifMetadata(string $path, string $disk = 'local', ?string $localPath = null, bool $isPartial = false): array
     {
         try {
@@ -192,7 +168,7 @@ class MetadataExtractionService
                 return $this->errorResponse("File not found: $path");
             }
 
-            $image = (new ImageManager(new Driver))->read($tempPath);
+            $image = (new ImageManager(new Driver))->decode($tempPath);
             $exif = $image->exif();
 
             if ($exif && ! is_array($exif)) {
@@ -215,9 +191,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Optimized full metadata extraction.
-     */
     public function extractFullMetadata(string $path, string $disk = 'local', ?string $localPath = null, bool $isPartial = false, ?string $originalFileName = null): array
     {
         try {
@@ -245,9 +218,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Expand exiftool group-prefixed keys to their alternative casings.
-     */
     private function expandExifGroupAliases(array $data): array
     {
         $exifGroups = ['IFD0', 'ExifIFD', 'GPS', 'InteropIFD', 'IPTC', 'XMP', 'Composite'];
@@ -277,9 +247,6 @@ class MetadataExtractionService
 
     private $s3Disk = null;
 
-    /**
-     * Get temporary file path with optimized storage handling.
-     */
     public function getFileTempPath(string $path, string $disk, bool $isPartial = false): ?string
     {
         if ($disk !== 's3') {
@@ -347,9 +314,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Check whether the exiftool binary is available on this system (cached per request).
-     */
     public function exiftoolExists(): bool
     {
         static $exists = null;
@@ -363,9 +327,6 @@ class MetadataExtractionService
         return $exists = ($code === 0 && ! empty($out));
     }
 
-    /**
-     * Extract the embedded cover-art image from a local audio file.
-     */
     public function extractCoverArtData(string $localPath): ?string
     {
         if (! $this->exiftoolExists() || ! file_exists($localPath)) {
@@ -393,9 +354,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Persist cover-art binary data to the asset disk and return the storage-relative path.
-     */
     public function storeCoverArt(string $imageData, int $assetId, string $disk): ?string
     {
         if (empty($imageData)) {
@@ -427,9 +385,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Cleanup temporary files.
-     */
     protected function cleanupTempFile(?string $tempPath, string $disk): void
     {
         if ($disk === 's3' && $tempPath && file_exists($tempPath)) {
@@ -437,9 +392,6 @@ class MetadataExtractionService
         }
     }
 
-    /**
-     * Standard error response format.
-     */
     protected function errorResponse(string $message): array
     {
         return ['success' => false, 'message' => $message];

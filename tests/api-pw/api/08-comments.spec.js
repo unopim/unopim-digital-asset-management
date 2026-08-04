@@ -1,11 +1,4 @@
-/**
- * Asset comments — create, fetch, update and delete a comment on an asset,
- * with negative and edge-case coverage. Comments are a collaboration surface
- * keyed by `dam_asset_id`.
- *
- * Contract: create → 201 returning `{ comment }`; get/update/delete → 200 with
- * `{ success: true }`; missing fields → 422.
- */
+
 
 const { test, expect } = require('../fixtures/fixtures');
 const { STATUS } = require('../constants/statusCodes');

@@ -13,8 +13,6 @@ beforeEach(function () {
 it('bypasses filtering when no admin is authenticated (API/CLI/anon)', function () {
     $this->service->flush();
 
-    // No admin guard ⇒ bypass: filter is a no-op so API/CLI/anonymous code paths
-    // (which never go through the admin web guard) are unaffected.
     expect($this->service->bypass())->toBeTrue();
 });
 
@@ -85,7 +83,6 @@ it('exposes ancestors of granted directories as viewable but not accessible', fu
     $this->actingAs($admin, 'admin');
     $this->service->flush();
 
-    // Build Root → AudioVideo → Audio (deep grant on the leaf only)
     $root = Directory::create(['name' => 'AclTestRoot', 'parent_id' => null]);
     $av = Directory::create(['name' => 'AudioVideo', 'parent_id' => $root->id]);
     $audio = Directory::create(['name' => 'Audio', 'parent_id' => $av->id]);
@@ -100,18 +97,15 @@ it('exposes ancestors of granted directories as viewable but not accessible', fu
 
     $viewable = $this->service->viewableIds();
 
-    // Tree visibility: leaf + ancestors
     expect($viewable)->toContain($audio->id);
     expect($viewable)->toContain($av->id);
     expect($viewable)->toContain($root->id);
-    // Sibling under root is NOT visible
+
     expect($viewable)->not->toContain($other->id);
 
-    // canView is permissive (tree)
     expect($this->service->canView($av->id))->toBeTrue();
     expect($this->service->canView($audio->id))->toBeTrue();
 
-    // canAccess is strict (only directly granted)
     expect($this->service->canAccess($audio->id))->toBeTrue();
     expect($this->service->canAccess($av->id))->toBeFalse();
     expect($this->service->canAccess($root->id))->toBeFalse();

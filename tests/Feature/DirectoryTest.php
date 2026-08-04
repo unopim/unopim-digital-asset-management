@@ -263,8 +263,6 @@ it('should respond successfully to legacy directory copy endpoint', function () 
         ->assertJson(['message' => trans('dam::app.admin.dam.index.directory.copy-success'), 'data' => null]);
 });
 
-// ── Lazy assets endpoint (tree) ──────────────────────────────────────────
-
 it('directory.index without with_assets does NOT eager-load assets', function () {
     $directory = Directory::factory()->create();
     $asset = Asset::factory()->create();
@@ -277,7 +275,6 @@ it('directory.index without with_assets does NOT eager-load assets', function ()
 
     $found = collect($payload)->firstWhere('id', $directory->id);
 
-    // assets key absent OR present-but-empty are both acceptable for opt-in skip.
     if ($found !== null && array_key_exists('assets', $found)) {
         expect($found['assets'])->toBeEmpty();
     } else {

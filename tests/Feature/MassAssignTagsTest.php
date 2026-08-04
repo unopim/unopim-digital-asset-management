@@ -6,9 +6,6 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
 
-/**
- * Create an asset and attach it to the given directory.
- */
 function assetInDirectory(Directory $directory): Asset
 {
     $asset = Asset::factory()->create();
@@ -233,8 +230,6 @@ it('tags a folder of many assets in a bounded number of queries (set-based, not 
     $queryCount = count(DB::getQueryLog());
     DB::disableQueryLog();
 
-    // The folder path must be set-based: a small, constant number of queries regardless of
-    // the 40 assets. A per-asset implementation would run dozens of extra queries.
     expect($queryCount)->toBeLessThan(20);
 
     expect(DB::table('dam_asset_tag')

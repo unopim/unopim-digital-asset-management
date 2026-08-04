@@ -5,7 +5,7 @@ return [
         'components' => [
             'layouts' => [
                 'sidebar' => [
-                    'dam'           => 'DAM',
+                    'dam'           => 'Zarządzanie zasobami',
                     'assets'        => 'Zasoby',
                     'shares'        => 'Udostępnione łącza',
                     'tags'          => 'Tagi',
@@ -37,7 +37,7 @@ return [
                 'preview-failed' => 'Podgląd nie powiódł się',
             ],
             'index' => [
-                'title'    => 'DAM',
+                'title'    => 'Zarządzanie zasobami cyfrowymi',
                 'datagrid' => [
                     'file-name'      => 'Nazwa pliku',
                     'tags'           => 'Tagi',
@@ -148,6 +148,16 @@ return [
                 'upload-leave-page'              => 'Wyjdź',
                 'upload-stay-page'               => 'Zostań',
                 'drop-zone-hint'                 => 'Przeciągnij pliki lub foldery, aby przesłać',
+                'select-all'                     => 'Zaznacz wszystko',
+                'select-directory-to-upload'     => 'Wybierz katalog docelowy przesyłania.',
+                'upload-session'                 => [
+                    'uploading'            => 'Przesyłanie :total plik(ów)…',
+                    'paused'               => 'Wstrzymano — przesłano :done z :total',
+                    'interrupted'          => 'przesłano :done z :total · :interrupted przerwanych',
+                    'failed'               => 'przesłano :done, :failed nieudanych',
+                    'completed'            => 'przesłano :done z :total',
+                    'create-folder-failed' => 'Nie udało się utworzyć folderu',
+                ],
                 'drop-zone-no-permission'        => 'Nie masz uprawnień do przesyłania tutaj.',
                 'upload-complete'                => 'Przesyłanie zakończone',
                 'item-upload-complete'           => 'Przesyłanie zakończone',
@@ -238,6 +248,8 @@ return [
                     'no-metadata-available' => 'Brak dostępnych metadanych',
                     'tags'                  => 'Tagi',
                     'select-tags'           => 'Wybierz lub utwórz tag',
+                    'tag-attach-success'    => 'Tag został dodany.',
+                    'tag-detach-success'    => 'Tag został usunięty z zasobu.',
                     'directory-path'        => 'Ścieżka katalogu',
                     'no-directory'          => 'Nie przypisano katalogu',
                     'details'               => 'Szczegóły',
@@ -450,6 +462,7 @@ return [
                     'not-found-to-show'                   => 'Plik do wyświetlenia nie został znaleziony',
                     'not-found-to-download'               => 'Plik do pobrania nie został znaleziony',
                     'edit-success'                        => 'Plik został pomyślnie przesłany',
+                    'no-file-name'                        => 'brak nazwy pliku',
                     'show-success'                        => 'Plik został pomyślnie znaleziony',
                     'update-success'                      => 'Plik został pomyślnie zaktualizowany',
                     'not-found-to-update'                 => 'Plik nie istnieje',
@@ -615,7 +628,7 @@ return [
             ],
         ],
         'acl' => [
-            'menu'             => 'DAM',
+            'menu'             => 'Zarządzanie zasobami',
             'asset'            => 'Zasób',
             'property'         => 'Właściwość',
             'comment'          => 'Komentarz',
@@ -686,10 +699,11 @@ return [
             '401' => 'Ta akcja jest nieautoryzowana.',
         ],
         'configuration' => [
-            'save-btn' => 'Zapisz',
-            'title'    => 'Konfiguracja DAM',
-            'saved'    => 'Konfiguracja została pomyślnie zapisana.',
-            'general'  => [
+            'save-btn'    => 'Zapisz',
+            'title'       => 'Konfiguracja',
+            'saved'       => 'Konfiguracja została pomyślnie zapisana.',
+            'description' => 'Skonfiguruj ustawienia zarządzania zasobami cyfrowymi (DAM) dla swojej aplikacji.',
+            'general'     => [
                 'title'            => 'Ustawienia ogólne',
                 'description'      => 'Te ustawienia kontrolują ogólne środowisko przeglądania DAM.',
                 'explorer-enabled' => [
