@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done dari :total terunggah',
                     'create-folder-failed' => 'Gagal membuat folder',
                 ],
-                'drop-zone-no-permission'        => 'Anda tidak memiliki izin untuk mengunggah di sini.',
-                'upload-complete'                => 'Unggahan selesai',
-                'item-upload-complete'           => 'Upload selesai',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Anda tidak memiliki izin untuk mengunggah di sini.',
+                'upload-complete'         => 'Unggahan selesai',
+                'item-upload-complete'    => 'Upload selesai',
+                'copy'                    => [
                     'directory' => 'Menyalin direktori ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Tautan berbagi yang Anda buka tidak ada. Mungkin salah ketik atau sudah dihapus.',
             'download-zip'          => 'Unduh semua sebagai ZIP',
             'per-page'              => 'Per halaman',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

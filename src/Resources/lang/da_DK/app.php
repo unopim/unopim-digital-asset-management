@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done af :total uploadet',
                     'create-folder-failed' => 'Kunne ikke oprette mappen',
                 ],
-                'drop-zone-no-permission'        => 'Du har ikke tilladelse til at uploade her.',
-                'upload-complete'                => 'Upload fuldført',
-                'item-upload-complete'           => 'Upload fuldført',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Du har ikke tilladelse til at uploade her.',
+                'upload-complete'         => 'Upload fuldført',
+                'item-upload-complete'    => 'Upload fuldført',
+                'copy'                    => [
                     'directory' => 'Kopierer mappen ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Det delingslink, du åbnede, eksisterer ikke. Det kan være tastet forkert eller fjernet.',
             'download-zip'          => 'Download alle som ZIP',
             'per-page'              => 'Per side',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

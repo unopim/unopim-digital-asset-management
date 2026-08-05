@@ -158,10 +158,10 @@ return [
                     'completed'            => '已上傳 :done / :total',
                     'create-folder-failed' => '無法建立資料夾',
                 ],
-                'drop-zone-no-permission'        => '您沒有在此處上傳的權限。',
-                'upload-complete'                => '上傳完成',
-                'item-upload-complete'           => '上傳完成',
-                'copy'                           => [
+                'drop-zone-no-permission' => '您沒有在此處上傳的權限。',
+                'upload-complete'         => '上傳完成',
+                'item-upload-complete'    => '上傳完成',
+                'copy'                    => [
                     'directory' => '正在複製目錄 ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => '您開啟的共享連結不存在，可能已輸入錯誤或已被移除。',
             'download-zip'          => '下載全部為 ZIP',
             'per-page'              => '每頁',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

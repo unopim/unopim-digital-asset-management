@@ -158,10 +158,10 @@ return [
                     'completed'            => 'تم رفع :done من :total',
                     'create-folder-failed' => 'تعذّر إنشاء المجلد',
                 ],
-                'drop-zone-no-permission'        => 'ليس لديك إذن للتحميل هنا.',
-                'upload-complete'                => 'اكتمل الرفع',
-                'item-upload-complete'           => 'اكتمل الرفع',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'ليس لديك إذن للتحميل هنا.',
+                'upload-complete'         => 'اكتمل الرفع',
+                'item-upload-complete'    => 'اكتمل الرفع',
+                'copy'                    => [
                     'directory' => 'جاري نسخ المجلد ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'رابط المشاركة الذي فتحته غير موجود. ربما تم كتابته بشكل خاطئ أو تمت إزالته.',
             'download-zip'          => 'تنزيل الكل كملف ZIP',
             'per-page'              => 'لكل صفحة',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

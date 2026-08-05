@@ -7,8 +7,8 @@ use Webkul\Attribute\Repositories\AttributeOptionRepository;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
+use Webkul\DAM\Helpers\Importers\Concerns\ResolvesAssetPaths;
 use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Importers\FieldProcessor;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer as ProductImporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\SKUStorage;
@@ -17,6 +17,8 @@ use Webkul\Product\Repositories\ProductRepository;
 
 class Importer extends ProductImporter
 {
+    use ResolvesAssetPaths;
+
     public function __construct(
         protected JobTrackBatchRepository $importBatchRepository,
         protected AttributeFamilyRepository $attributeFamilyRepository,
@@ -27,7 +29,6 @@ class Importer extends ProductImporter
         protected SKUStorage $skuStorage,
         protected ChannelRepository $channelRepository,
         protected FieldProcessor $fieldProcessor,
-        protected AssetRepository $assetRepository
     ) {
         parent::__construct(
             $importBatchRepository,
@@ -65,23 +66,10 @@ class Importer extends ProductImporter
             }
 
             if ($attribute->type === Asset::ASSET_ATTRIBUTE_TYPE) {
-                if (! empty($value)) {
-                    $values = explode(',', $value);
+                $assets = $this->resolveAssetIds((string) $value);
 
-                    $assets = [];
-                    foreach ($values as $value) {
-                        $asset = $this->assetRepository->findWhereIn('path', [trim($value)])->first();
-
-                        if ($asset) {
-                            $assets[] = $asset->id;
-                        }
-                    }
-
-                    if ($assets) {
-                        $value = implode(',', $assets);
-
-                        $attribute->setProductValue($value, $attributeValues, $rowData['channel'] ?? null, $rowData['locale'] ?? null);
-                    }
+                if ($assets !== []) {
+                    $attribute->setProductValue(implode(',', $assets), $attributeValues, $rowData['channel'] ?? null, $rowData['locale'] ?? null);
                 }
 
                 continue;

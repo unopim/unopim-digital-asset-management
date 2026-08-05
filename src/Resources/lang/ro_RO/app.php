@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done din :total încărcate',
                     'create-folder-failed' => 'Nu s-a putut crea folderul',
                 ],
-                'drop-zone-no-permission'        => 'Nu aveți permisiunea de a încărca aici.',
-                'upload-complete'                => 'Încărcare completă',
-                'item-upload-complete'           => 'Încărcare completă',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Nu aveți permisiunea de a încărca aici.',
+                'upload-complete'         => 'Încărcare completă',
+                'item-upload-complete'    => 'Încărcare completă',
+                'copy'                    => [
                     'directory' => 'Se copiază directorul ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Linkul de partajare pe care l-ați deschis nu există. Este posibil să fi fost tastat greșit sau eliminat.',
             'download-zip'          => 'Descarcă tot ca ZIP',
             'per-page'              => 'Per pagină',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

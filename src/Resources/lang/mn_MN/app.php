@@ -158,10 +158,10 @@ return [
                     'completed'            => ':total-с :done байршуулсан',
                     'create-folder-failed' => 'Хавтас үүсгэж чадсангүй',
                 ],
-                'drop-zone-no-permission'        => 'Энд файл байршуулах эрх байхгүй байна.',
-                'upload-complete'                => 'Байршуулалт дууслаа',
-                'item-upload-complete'           => 'Байршуулалт дууссан',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Энд файл байршуулах эрх байхгүй байна.',
+                'upload-complete'         => 'Байршуулалт дууслаа',
+                'item-upload-complete'    => 'Байршуулалт дууссан',
+                'copy'                    => [
                     'directory' => 'Лавлах ":name"-ыг хуулж байна…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Таны нээсэн хуваалцах холбоос байхгүй байна. Буруу бичсэн эсвэл устгагдсан байж болзошгүй.',
             'download-zip'          => 'Бүгдийг ZIP болгон татаж авах',
             'per-page'              => 'Хуудас бүр',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

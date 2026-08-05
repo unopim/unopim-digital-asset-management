@@ -158,10 +158,10 @@ return [
                     'completed'            => 'đã tải lên :done trên :total',
                     'create-folder-failed' => 'Không thể tạo thư mục',
                 ],
-                'drop-zone-no-permission'        => 'Bạn không có quyền tải lên tại đây.',
-                'upload-complete'                => 'Tải lên hoàn tất',
-                'item-upload-complete'           => 'Tải lên hoàn tất',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Bạn không có quyền tải lên tại đây.',
+                'upload-complete'         => 'Tải lên hoàn tất',
+                'item-upload-complete'    => 'Tải lên hoàn tất',
+                'copy'                    => [
                     'directory' => 'Đang sao chép thư mục ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Liên kết chia sẻ bạn mở không tồn tại. Có thể đã nhập sai hoặc đã bị xóa.',
             'download-zip'          => 'Tải tất cả dưới dạng ZIP',
             'per-page'              => 'Mỗi trang',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

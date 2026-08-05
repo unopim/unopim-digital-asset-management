@@ -158,10 +158,10 @@ return [
                     'completed'            => ':total개 중 :done개 업로드됨',
                     'create-folder-failed' => '폴더를 만들지 못했습니다',
                 ],
-                'drop-zone-no-permission'        => '여기에 업로드할 권한이 없습니다.',
-                'upload-complete'                => '업로드 완료',
-                'item-upload-complete'           => '업로드 완료',
-                'copy'                           => [
+                'drop-zone-no-permission' => '여기에 업로드할 권한이 없습니다.',
+                'upload-complete'         => '업로드 완료',
+                'item-upload-complete'    => '업로드 완료',
+                'copy'                    => [
                     'directory' => '디렉터리 ":name" 복사 중…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => '열려는 공유 링크가 존재하지 않습니다. 잘못 입력되었거나 삭제되었을 수 있습니다.',
             'download-zip'          => '모두 ZIP으로 다운로드',
             'per-page'              => '페이지당',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];
