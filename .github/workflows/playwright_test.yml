@@ -219,6 +219,14 @@ jobs:
           # Without this the battery-passport spec shells out to a docker
           # container that only exists on the upstream compose stack.
           PASSPORT_E2E_LOCAL: '1'
+          # ensure-family-state.js refuses to build an admin session without a
+          # password, so the attribute-family and passport specs threw before
+          # their first assertion on a repo with no ADMIN_PASSWORD secret. The
+          # fallback matches the credentials the installer seeds above. It is
+          # deliberately scoped to FAMILY_ADMIN_PASSWORD rather than
+          # ADMIN_PASSWORD so the API credential bootstrap keeps skipping, the
+          # same way it does on the upstream workflow.
+          FAMILY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'admin123' }}
         run: |
           cd unopim/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
