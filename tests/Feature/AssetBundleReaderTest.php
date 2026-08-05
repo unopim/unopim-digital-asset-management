@@ -69,6 +69,31 @@ it('returns the archive data file and recreates the asset tree', function () {
         ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
 });
 
+it('stores a file type the assets table accepts', function () {
+    ($this->bundle)([
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
+        'assets/Root/Docs/rates.xlsx'    => 'sheet-bytes',
+        'assets/Root/Clips/promo.mp4'    => 'clip-bytes',
+    ]);
+
+    (new AssetBundleReader)->prepare(($this->bundle)([
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
+        'assets/Root/Docs/rates.xlsx'    => 'sheet-bytes',
+        'assets/Root/Clips/promo.mp4'    => 'clip-bytes',
+    ], 42));
+
+    expect(Asset::pluck('file_type', 'file_name')->all())->toBe([
+        'hero.jpg'   => 'image',
+        'spec.pdf'   => 'document',
+        'rates.xlsx' => 'document',
+        'promo.mp4'  => 'video',
+    ]);
+});
+
 it('queues metadata extraction for each ingested asset', function () {
     ($this->bundle)([
         'products.csv'                   => "sku\nsku-1",

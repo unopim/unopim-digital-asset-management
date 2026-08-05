@@ -22,6 +22,9 @@ class AssetBundleReader
 
     protected const DATA_FILE_EXTENSIONS = ['csv', 'xlsx', 'xls'];
 
+    /** The only values `dam_assets.file_type` accepts. */
+    protected const STORED_FILE_TYPES = ['image', 'video', 'audio', 'document'];
+
     /**
      * Extract the archive, ingest its assets, and return the data file's path on the
      * private disk, ready to be handed to a CSV or Excel source.
@@ -161,11 +164,13 @@ class AssetBundleReader
 
         $extension = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
 
+        $mimeType = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($sourceFile);
+
         $asset = Asset::create([
             'file_name' => basename($entry),
-            'file_type' => AssetHelper::getFileTypeUsingExtension($extension),
+            'file_type' => $this->fileTypeFor($extension, $mimeType),
             'file_size' => (int) filesize($sourceFile),
-            'mime_type' => (string) (new \finfo(FILEINFO_MIME_TYPE))->file($sourceFile),
+            'mime_type' => $mimeType,
             'extension' => $extension,
             'path'      => $entry,
         ]);
@@ -175,6 +180,28 @@ class AssetBundleReader
         ProcessAssetUpload::dispatch($asset->id);
 
         return $asset->id;
+    }
+
+    /**
+     * The stored type has to come from the column's own set. The DAM's extension map
+     * also answers with the icon buckets `file` and `sheet`, which the column rejects,
+     * so anything outside the set falls back to the mime type and finally to document.
+     */
+    protected function fileTypeFor(string $extension, string $mimeType): string
+    {
+        $type = AssetHelper::getFileTypeUsingExtension($extension);
+
+        if (in_array($type, self::STORED_FILE_TYPES, true)) {
+            return $type;
+        }
+
+        foreach (self::STORED_FILE_TYPES as $candidate) {
+            if (str_contains($mimeType, $candidate)) {
+                return $candidate;
+            }
+        }
+
+        return 'document';
     }
 
     /**

@@ -17,6 +17,21 @@ use Webkul\Product\Type\AbstractType;
 uses(DatabaseTransactions::class);
 
 /*
+ * Rendering the lock needs core to forward it with the attribute control event, which
+ * older cores do not. The package degrades to an unlocked field there, so the render
+ * expectations report as skipped rather than failing; the enforcement below is pure
+ * DAM and holds on every core.
+ */
+function damCoreForwardsLockState(): bool
+{
+    $productControlView = dirname(__DIR__, 3)
+        .'/Admin/src/Resources/views/components/products/dynamic-attribute-fields.blade.php';
+
+    return is_file($productControlView)
+        && str_contains(file_get_contents($productControlView), "'isLocked' => \$isLocked");
+}
+
+/*
  * An asset attribute placed at the common level belongs to the configurable. Its
  * variants render it locked, read it through the ancestor chain, and must never
  * store a copy of it — a stored copy wins the merge and the parent would stop
@@ -173,7 +188,10 @@ describe('a common asset attribute on a variant', function () {
 
         expect($content)->toContain('asset-values="'.implode(',', $fixture['assetIds']).'"')
             ->and($content)->toContain(':readonly="true"');
-    });
+    })->skip(
+        fn (): bool => ! damCoreForwardsLockState(),
+        'This core does not forward the lock state to attribute control events.'
+    );
 
     it('leaves the parent its own control unlocked', function () {
         $this->loginAsAdmin();
@@ -301,7 +319,10 @@ describe('the parent staying the source of truth', function () {
 
         expect($content)->toContain('asset-values=""')
             ->and($content)->toContain(':readonly="true"');
-    });
+    })->skip(
+        fn (): bool => ! damCoreForwardsLockState(),
+        'This core does not forward the lock state to attribute control events.'
+    );
 });
 
 describe('attributes the variant owns', function () {
