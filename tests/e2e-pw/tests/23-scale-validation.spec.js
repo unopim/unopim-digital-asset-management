@@ -61,8 +61,7 @@ test.describe('DAM Scale Validation (large dataset)', () => {
     await navigateTo(adminPage, 'dam');
     await adminPage.waitForLoadState('domcontentloaded');
 
-    const searchInput = adminPage.locator('input[name="search"]:visible').first()
-      .or(adminPage.getByPlaceholder('Search').first());
+    const searchInput = adminPage.locator('input[name="search"]:visible').first();
 
     await searchInput.waitFor({ state: 'visible', timeout: 10_000 });
 

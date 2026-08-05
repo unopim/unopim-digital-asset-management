@@ -4,6 +4,8 @@ const { test, expect } = require('../utils/fixtures');
 
 const CUSTOM_ROLE_NAME = 'DAM E2E Custom Role';
 
+const CHILD_DIRECTORY_NAME = 'DAM E2E Permission Dir';
+
 async function resolveCustomRoleId(page) {
   const resp = await page.request.get('/admin/settings/roles', {
     headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
@@ -81,6 +83,72 @@ async function resolveRootDirectoryId(page) {
   return root.id;
 }
 
+async function resolveCsrfToken(page) {
+  const html = await page.request.get('/admin/settings/roles/create').then((r) => r.text());
+  const match = html.match(/name="_token"\s+value="([^"]+)"/);
+  if (!match) throw new Error('Could not resolve a CSRF token');
+  return match[1];
+}
+
+async function ensureChildDirectoryId(page, rootId) {
+  const resp = await page.request.get(
+    `/admin/dam/directory/children-directory/${rootId}?limit=200`,
+    { headers: { Accept: 'application/json' } }
+  );
+
+  if (resp.ok()) {
+    const json = await resp.json();
+    const rows = (json && json.data) || [];
+
+    const seeded = rows.find((d) => d.name === CHILD_DIRECTORY_NAME);
+    if (seeded) return seeded.id;
+
+    const leaf = rows.find((d) => !d.has_children);
+    if (leaf) return leaf.id;
+
+    if (rows.length > 0) return rows[0].id;
+  }
+
+  const token = await resolveCsrfToken(page);
+
+  const created = await page.request.post('/admin/dam/directory/store', {
+    form: {
+      _token:    token,
+      name:      CHILD_DIRECTORY_NAME,
+      parent_id: String(rootId),
+    },
+  });
+
+  if (!created.ok()) {
+    throw new Error(`directory store returned ${created.status()}`);
+  }
+
+  const body = await created.json();
+  const id = body && body.data && body.data.id;
+  if (!id) throw new Error('Could not resolve the created directory id');
+
+  return id;
+}
+
+async function isNodeExpanded(page, id) {
+  return (await page.locator(`.v-tree-item[data-id="${id}"].active`).count()) > 0;
+}
+
+async function expandTreeNode(page, id) {
+  const item = page.locator(`.v-tree-item[data-id="${id}"]`);
+  await item.waitFor({ state: 'attached', timeout: 10000 });
+
+  if (await isNodeExpanded(page, id)) return;
+
+  const chevron = page.locator(`[data-dam-chevron="${id}"]`);
+  await chevron.waitFor({ state: 'visible', timeout: 10000 });
+  await chevron.click({ force: true });
+
+  await expect(page.locator(`.v-tree-item[data-id="${id}"].active`)).toHaveCount(1, {
+    timeout: 10000,
+  });
+}
+
 test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
 
   test('checked directory is pre-selected on page load', async ({ adminPage }) => {
@@ -112,6 +180,8 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
 
   test('clicking a chevron expands the node and reveals children', async ({ adminPage }) => {
     const rootId = await resolveRootDirectoryId(adminPage);
+    const childId = await ensureChildDirectoryId(adminPage, rootId);
+
     await gotoCustomRoleEdit(adminPage);
     await waitForTreeReady(adminPage);
 
@@ -119,32 +189,26 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
     await rootItem.waitFor({ state: 'attached', timeout: 10000 });
 
     const chevron = adminPage.locator(`[data-dam-chevron="${rootId}"]`);
-    const chevronVisible = await chevron
-      .evaluate((el) => el.style.visibility !== 'hidden')
-      .catch(() => false);
+    await chevron.waitFor({ state: 'visible', timeout: 10000 });
 
-    if (!chevronVisible) {
+    const childItem = adminPage.locator(`.v-tree-item[data-id="${childId}"]`);
 
-      test.skip();
-      return;
+    if (await isNodeExpanded(adminPage, rootId)) {
+      await chevron.click({ force: true });
+      await expect(
+        adminPage.locator(`.v-tree-item[data-id="${rootId}"].active`)
+      ).toHaveCount(0, { timeout: 10000 });
     }
 
-    const childrenResponse = adminPage.waitForResponse(
-      (res) =>
-        /\/admin\/dam\/directory\/children-directory\/\d+/.test(res.url()) &&
-        res.request().method() === 'GET',
-      { timeout: 15000 }
-    ).catch(() => null);
+    await expect(childItem).toBeHidden({ timeout: 10000 });
 
     await chevron.click({ force: true });
-    await childrenResponse;
-
-    const parentItem = adminPage.locator(`.v-tree-item[data-id="${rootId}"]`);
-    await expect(parentItem).toHaveClass(/active/, { timeout: 10000 });
 
     await expect(
-      parentItem.locator(':scope > .v-tree-item').first()
-    ).toBeAttached({ timeout: 10000 });
+      adminPage.locator(`.v-tree-item[data-id="${rootId}"].active`)
+    ).toHaveCount(1, { timeout: 10000 });
+
+    await expect(childItem).toBeVisible({ timeout: 10000 });
   });
 
   test('checking and unchecking a directory checkbox toggles its checked state', async ({ adminPage }) => {
@@ -176,12 +240,14 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
   test('checked directory remains checked after saving the role', async ({ adminPage }) => {
     const roleId = await resolveCustomRoleId(adminPage);
     const rootId = await resolveRootDirectoryId(adminPage);
+    const targetId = await ensureChildDirectoryId(adminPage, rootId);
 
     await gotoCustomRoleEdit(adminPage);
     await waitForTreeReady(adminPage);
 
     const rootCb = () => adminPage.locator(`input.dam-perm-cb[data-id="${rootId}"]`);
-    const rootLabel = () => adminPage.locator(`label:has(input.dam-perm-cb[data-id="${rootId}"])`);
+    const targetCb = () => adminPage.locator(`input.dam-perm-cb[data-id="${targetId}"]`);
+    const targetLabel = () => adminPage.locator(`label:has(input.dam-perm-cb[data-id="${targetId}"])`);
 
     const saveViaBar = async () => {
       const save = adminPage.getByRole('button', { name: /save/i }).first();
@@ -197,21 +263,23 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
       ]).catch(() => {});
     };
 
-    await rootCb().waitFor({ state: 'attached', timeout: 10000 });
+    await expandTreeNode(adminPage, rootId);
+    await targetCb().waitFor({ state: 'attached', timeout: 10000 });
 
-    if (await rootCb().isChecked()) {
-      await rootLabel().click();
-      await expect(rootCb()).not.toBeChecked();
+    if (await targetCb().isChecked()) {
+      await targetLabel().click();
+      await expect(targetCb()).not.toBeChecked();
       await saveViaBar();
 
       await gotoCustomRoleEdit(adminPage);
       await waitForTreeReady(adminPage);
-      await rootCb().waitFor({ state: 'attached', timeout: 10000 });
+      await expandTreeNode(adminPage, rootId);
+      await targetCb().waitFor({ state: 'attached', timeout: 10000 });
     }
 
-    await expect(rootCb()).not.toBeChecked();
-    await rootLabel().click();
-    await expect(rootCb()).toBeChecked();
+    await expect(targetCb()).not.toBeChecked();
+    await targetLabel().click();
+    await expect(targetCb()).toBeChecked();
     await saveViaBar();
 
     await adminPage.goto(`/admin/settings/roles/edit/${roleId}`, {
@@ -220,7 +288,9 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
     });
     await adminPage.waitForURL(/\/admin\/settings\/roles\/edit\/\d+/, { timeout: 15000 });
     await waitForTreeReady(adminPage);
-    await rootCb().waitFor({ state: 'attached', timeout: 10000 });
+    await expandTreeNode(adminPage, rootId);
+    await targetCb().waitFor({ state: 'attached', timeout: 10000 });
+    await expect(targetCb()).toBeChecked();
     await expect(rootCb()).toBeChecked();
   });
 

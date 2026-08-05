@@ -1,6 +1,15 @@
 const { test, expect } = require('../utils/fixtures');
 const { navigateTo, ensureAssetExists } = require('../utils/helpers');
 
+const ACTIVE_SHARES_URL = /\/admin\/dam\/shared-links\/active\/(asset|directory)\/\d+$/;
+const STORE_SHARE_URL = /\/admin\/dam\/shared-links$/;
+const REVOKE_SHARE_URL = /\/admin\/dam\/shared-links\/\d+\/revoke$/;
+const REAUTHORIZE_SHARE_URL = /\/admin\/dam\/shared-links\/\d+\/reauthorize$/;
+
+function shareModal(page) {
+  return page.locator('div[data-unsaved-ignore]').filter({ hasText: /Share asset/i }).first();
+}
+
 async function navigateToFirstAssetEdit(page) {
   await navigateTo(page, 'dam');
   await page.waitForLoadState('domcontentloaded');
@@ -18,34 +27,71 @@ async function navigateToFirstAssetEdit(page) {
 }
 
 async function openShareModal(page) {
-
   const shareBtn = page.locator('button.transparent-button').filter({ hasText: /Share/ }).first();
   await shareBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await shareBtn.click();
+  await expect(shareBtn).toBeEnabled({ timeout: 15000 });
 
-  await page.getByText(/Share asset/i).first().waitFor({ state: 'visible', timeout: 15000 });
+  const activeSharesPromise = page.waitForResponse(
+    (res) => ACTIVE_SHARES_URL.test(res.url()) && res.request().method() === 'GET',
+    { timeout: 20000 }
+  );
+
+  await shareBtn.click();
+  await activeSharesPromise;
+
+  const modal = shareModal(page);
+  await modal.waitFor({ state: 'visible', timeout: 15000 });
+  await modal.getByText(/Loading…/).first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+
+  return modal;
 }
 
 async function generateShareLink(page) {
+  const modal = shareModal(page);
 
-  await page.getByText('Loading…').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+  const reauthorizeBtn = modal.getByRole('button', { name: /^Reauthorize$/ }).first();
 
-  const urlInput = page.locator('input[readonly]').first();
-  const alreadyHasShare = await urlInput.isVisible({ timeout: 8000 }).catch(() => false);
-  if (alreadyHasShare) {
+  if (await reauthorizeBtn.isVisible().catch(() => false)) {
+    const reauthorizePromise = page.waitForResponse(
+      (res) => REAUTHORIZE_SHARE_URL.test(res.url()) && res.request().method() === 'PATCH',
+      { timeout: 20000 }
+    );
+
+    await reauthorizeBtn.click();
+
+    const reauthorizeResponse = await reauthorizePromise;
+    expect(reauthorizeResponse.status(), 'Reauthorize should succeed').toBe(200);
+
+    const reauthorizeBody = await reauthorizeResponse.json();
+    expect(reauthorizeBody?.share?.public_url, 'API should return a public_url').toBeTruthy();
+
+    return reauthorizeBody.share.public_url;
+  }
+
+  const urlInput = modal.locator('input[readonly]').first();
+
+  if (await urlInput.isVisible().catch(() => false)) {
     const url = await urlInput.inputValue();
     if (url) return url;
   }
 
+  const createBtn = modal.getByRole('button', { name: /Generate link/i }).first();
+  await createBtn.waitFor({ state: 'visible', timeout: 15000 });
+  await expect(createBtn).toBeEnabled({ timeout: 15000 });
+
   const responsePromise = page.waitForResponse(
-    (res) => /\/admin\/dam\/shares$/.test(res.url()) && res.request().method() === 'POST',
-    { timeout: 15000 }
+    (res) => STORE_SHARE_URL.test(res.url()) && res.request().method() === 'POST',
+    { timeout: 20000 }
   );
 
-  await page.getByRole('button', { name: /Generate link/i }).first().click();
+  await createBtn.click();
+
   const response = await responsePromise;
+  expect(response.status(), 'Share creation should succeed').toBe(200);
+
   const body = await response.json();
   expect(body?.share?.public_url, 'API should return a public_url').toBeTruthy();
+
   return body.share.public_url;
 }
 
@@ -58,7 +104,7 @@ test.describe('DAM Share Links', () => {
   test('Admin can create a share link, view it publicly, and revoke it', async ({ adminPage, browser }) => {
     await navigateToFirstAssetEdit(adminPage);
 
-    await openShareModal(adminPage);
+    const modal = await openShareModal(adminPage);
     const publicUrl = await generateShareLink(adminPage);
 
     const guestContext = await browser.newContext({ storageState: undefined });
@@ -74,19 +120,24 @@ test.describe('DAM Share Links', () => {
       await guestContext.close();
     }
 
-    const advancedLabel = adminPage.locator('label.cursor-pointer').filter({ hasText: 'Advanced' }).first();
+    const advancedLabel = modal.locator('label.cursor-pointer').filter({ hasText: 'Advanced' }).first();
     await advancedLabel.waitFor({ state: 'visible', timeout: 15000 });
     await advancedLabel.click();
 
-    const revokeBtn = adminPage.getByRole('button', { name: /Revoke/i }).first();
-    await revokeBtn.waitFor({ state: 'visible', timeout: 10000 });
+    const revokeBtn = modal.getByRole('button', { name: /^Revoke$/ }).first();
+    await revokeBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await expect(revokeBtn).toBeEnabled({ timeout: 15000 });
 
     const revokePromise = adminPage.waitForResponse(
-      (res) => /\/admin\/dam\/shares\/\d+\/revoke$/.test(res.url()) && res.request().method() === 'PATCH',
-      { timeout: 15000 }
+      (res) => REVOKE_SHARE_URL.test(res.url()) && res.request().method() === 'PATCH',
+      { timeout: 20000 }
     );
+
     await revokeBtn.click();
-    await revokePromise;
+
+    const revokeResponse = await revokePromise;
+    expect(revokeResponse.status(), 'Revoke should succeed').toBe(200);
+    expect((await revokeResponse.json())?.success, 'Revoke should report success').toBeTruthy();
 
     const guestContext2 = await browser.newContext({ storageState: undefined });
     const guestPage2 = await guestContext2.newPage();
