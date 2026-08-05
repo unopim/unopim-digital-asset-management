@@ -8,6 +8,11 @@ async function openInfoModal(page) {
   await btn.click();
   await page.locator('.absolute.inset-0.bg-black\\/60').first()
     .waitFor({ state: 'visible', timeout: 20000 });
+  await infoModal(page).waitFor({ state: 'visible', timeout: 20000 });
+}
+
+function infoModal(page) {
+  return page.locator('div.fixed.inset-0').filter({ hasText: 'File Information' }).first();
 }
 
 test.describe('DAM Asset Preview Modal', () => {
@@ -110,58 +115,64 @@ test.describe('DAM Asset Preview Modal', () => {
     test('Clicking info button opens info modal', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('File Information').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('File Information', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows File Name row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('File Name').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('File Name', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows Type row with extension badge', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('Type').first()).toBeVisible({ timeout: 5000 });
+
+      const modal = infoModal(adminPage);
+      await expect(modal.getByText('Type', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+
+      const badge = modal.locator('span.rounded.font-semibold').first();
+      await expect(badge).toBeVisible({ timeout: 5000 });
+      await expect(badge).toHaveText(/^[A-Z0-9]+$/);
     });
 
     test('Info modal shows Size row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
 
-      const sizeRow = adminPage.locator('#app').getByText('Size').first();
+      const sizeRow = infoModal(adminPage).getByText('Size', { exact: true }).first();
       await expect(sizeRow).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows Path row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('Path').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('Path', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows MIME row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('MIME').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('MIME', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows Created date row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('Created').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('Created', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows Updated date row', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
-      await expect(adminPage.locator('#app').getByText('Updated').first()).toBeVisible({ timeout: 5000 });
+      await expect(infoModal(adminPage).getByText('Updated', { exact: true }).first()).toBeVisible({ timeout: 5000 });
     });
 
     test('Info modal shows Dimensions row for image asset', async ({ adminPage }) => {
       await navigateToAssetEditByName(adminPage, 'floral.jpg');
       await openInfoModal(adminPage);
 
-      const dimRow = adminPage.locator('#app').getByText('Dimensions').first();
+      const dimRow = infoModal(adminPage).getByText('Dimensions', { exact: true }).first();
       const visible = await dimRow.isVisible({ timeout: 5000 }).catch(() => false);
       if (!visible) {
         test.info().annotations.push({ type: 'note', description: 'width/height not extracted for this asset' });

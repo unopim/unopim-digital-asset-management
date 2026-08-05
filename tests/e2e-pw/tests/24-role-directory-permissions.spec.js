@@ -20,14 +20,58 @@ async function resolveCustomRoleId(page) {
   return match.id;
 }
 
-async function gotoCustomRoleEdit(page) {
-  const id = await resolveCustomRoleId(page);
-  await page.goto(`/admin/settings/roles/edit/${id}`, {
+async function gotoRoleEdit(page, roleId) {
+  await page.goto(`/admin/settings/roles/edit/${roleId}`, {
     waitUntil: 'domcontentloaded',
     timeout: 30000,
   });
   await page.waitForURL(/\/admin\/settings\/roles\/edit\/\d+/, { timeout: 15000 });
+}
+
+async function gotoCustomRoleEdit(page) {
+  const id = await resolveCustomRoleId(page);
+  await gotoRoleEdit(page, id);
   return id;
+}
+
+async function toggleDirectory(page, label) {
+  const cascade = page.waitForResponse(
+    (response) => /\/admin\/dam\/directory\/\d+\/descendants/.test(response.url()),
+    { timeout: 15000 }
+  );
+
+  await label.dispatchEvent('click');
+  await cascade;
+}
+
+async function saveAndCapturePayload(page, roleId) {
+  const submission = page.waitForRequest(
+    (request) => request.url().includes(`/admin/settings/roles/edit/${roleId}`)
+      && request.method() === 'POST',
+    { timeout: 20000 }
+  );
+
+  const save = page.getByRole('button', { name: /save/i }).first();
+  await save.waitFor({ state: 'visible', timeout: 10000 });
+  await save.dispatchEvent('click');
+
+  const request = await submission;
+  await request.response();
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+
+  return request.postData() || '';
+}
+
+function submittedDirectoryIds(payload) {
+  const multipart = [...payload.matchAll(/name="directories\[\]"\r?\n\r?\n([^\r\n]+)/g)]
+    .map((match) => match[1].trim());
+
+  if (multipart.length) {
+    return multipart;
+  }
+
+  return [...payload.matchAll(/(?:^|&)directories(?:\[\]|%5B%5D)=([^&]+)/g)]
+    .map((match) => decodeURIComponent(match[1]));
 }
 
 async function waitForTreeReady(page) {
@@ -177,48 +221,58 @@ test.describe('Role Edit — Lazy-loading Directory Permission Tree', () => {
     const roleId = await resolveCustomRoleId(adminPage);
     const rootId = await resolveRootDirectoryId(adminPage);
 
-    await gotoCustomRoleEdit(adminPage);
+    await grantDirectoryToRole(adminPage, roleId, rootId);
+
+    await gotoRoleEdit(adminPage, roleId);
     await waitForTreeReady(adminPage);
 
     const rootCb = () => adminPage.locator(`input.dam-perm-cb[data-id="${rootId}"]`);
     const rootLabel = () => adminPage.locator(`label:has(input.dam-perm-cb[data-id="${rootId}"])`);
 
-    const saveViaBar = async () => {
-      const save = adminPage.getByRole('button', { name: /save/i }).first();
-      await save.waitFor({ state: 'visible', timeout: 10000 });
-      const currentUrl = adminPage.url();
+    await rootCb().waitFor({ state: 'attached', timeout: 10000 });
+    await expect(rootCb()).toBeChecked();
 
-      await save.dispatchEvent('click');
-      await Promise.race([
-        adminPage.locator('.unsaved-bar').waitFor({ state: 'hidden', timeout: 20000 }),
-        adminPage.locator('#app').getByText(/saved|updated|success/i).first()
-          .waitFor({ state: 'visible', timeout: 20000 }),
-        adminPage.waitForURL((url) => url.toString() !== currentUrl, { timeout: 20000 }),
-      ]).catch(() => {});
-    };
+    await toggleDirectory(adminPage, rootLabel());
+    await expect(rootCb()).not.toBeChecked();
+
+    await toggleDirectory(adminPage, rootLabel());
+    await expect(rootCb()).toBeChecked();
+
+    const payload = await saveAndCapturePayload(adminPage, roleId);
+
+    expect(payload).toContain('dam_directory_grants_managed');
+    expect(submittedDirectoryIds(payload)).toContain(String(rootId));
+
+    await gotoRoleEdit(adminPage, roleId);
+    await waitForTreeReady(adminPage);
+    await rootCb().waitFor({ state: 'attached', timeout: 10000 });
+    await expect(rootCb()).toBeChecked();
+  });
+
+  test('clearing every directory falls back to the root grant', async ({ adminPage }) => {
+    const roleId = await resolveCustomRoleId(adminPage);
+    const rootId = await resolveRootDirectoryId(adminPage);
+
+    await grantDirectoryToRole(adminPage, roleId, rootId);
+
+    await gotoRoleEdit(adminPage, roleId);
+    await waitForTreeReady(adminPage);
+
+    const rootCb = () => adminPage.locator(`input.dam-perm-cb[data-id="${rootId}"]`);
+    const rootLabel = () => adminPage.locator(`label:has(input.dam-perm-cb[data-id="${rootId}"])`);
 
     await rootCb().waitFor({ state: 'attached', timeout: 10000 });
-
-    if (await rootCb().isChecked()) {
-      await rootLabel().click();
-      await expect(rootCb()).not.toBeChecked();
-      await saveViaBar();
-
-      await gotoCustomRoleEdit(adminPage);
-      await waitForTreeReady(adminPage);
-      await rootCb().waitFor({ state: 'attached', timeout: 10000 });
-    }
-
-    await expect(rootCb()).not.toBeChecked();
-    await rootLabel().click();
     await expect(rootCb()).toBeChecked();
-    await saveViaBar();
 
-    await adminPage.goto(`/admin/settings/roles/edit/${roleId}`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000,
-    });
-    await adminPage.waitForURL(/\/admin\/settings\/roles\/edit\/\d+/, { timeout: 15000 });
+    await toggleDirectory(adminPage, rootLabel());
+    await expect(rootCb()).not.toBeChecked();
+    await expect(adminPage.locator('#dam-directory-selection')).toHaveValue('');
+
+    const payload = await saveAndCapturePayload(adminPage, roleId);
+
+    expect(submittedDirectoryIds(payload)).toHaveLength(0);
+
+    await gotoRoleEdit(adminPage, roleId);
     await waitForTreeReady(adminPage);
     await rootCb().waitFor({ state: 'attached', timeout: 10000 });
     await expect(rootCb()).toBeChecked();

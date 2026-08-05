@@ -47,6 +47,7 @@ jobs:
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       INVALID_ADMIN_EMAIL: ${{ secrets.INVALID_ADMIN_EMAIL }}
       INVALID_ADMIN_PASSWORD: ${{ secrets.INVALID_ADMIN_PASSWORD }}
+      WEBHOOK_ALLOW_LOOPBACK: 'true'
 
     steps:
       - name: Checkout DAM
@@ -178,20 +179,54 @@ jobs:
           sed -i "s|^\(INSTALLER_ADMIN_PASSWORD=\s*\).*$|\1${ADMIN_PASSWORD:-admin123}|" .env
           grep -E '^INSTALLER_ADMIN_(EMAIL|PASSWORD)=' .env
 
+          # This job runs the upstream UnoPim e2e suite as well as the DAM one,
+          # so it needs the same throttle relief that suite's own workflow
+          # grants itself. The API specs fire many requests back-to-back; the
+          # login-heavy shards sign in as the same admin many times a minute;
+          # and the oauth spec requests well over a dozen tokens as one admin
+          # from one address. Left at production defaults these legitimate
+          # requests throttle the suite against itself and return 429 HTML
+          # where the specs expect JSON. The rate-limit security spec reads
+          # ADMIN_LOGIN_RATE_LIMIT back, so throttling is still asserted.
+          echo "REST_API_RATE_LIMIT=100000" >> .env
+          echo "ADMIN_LOGIN_RATE_LIMIT=20" >> .env
+          echo "OAUTH_TOKEN_RATE_LIMIT=100000" >> .env
+          echo "WEBHOOK_ALLOW_LOOPBACK=true" >> .env
+
       - name: Running UnoPim Installer & Start Server
         working-directory: unopim
         run: |
           php artisan unopim:install --skip-env-check --skip-admin-creation --with-demo-data
           php artisan dam-package:install --no-interaction
+          # Fixtures the upstream UnoPim e2e suite expects to already exist:
+          # the passport preset backs the ESPR templates spec, DiscardQaFixture
+          # seeds the E2E-MEDIA-QA-001 product the discard specs edit, and
+          # seed-dpp-e2e builds the digital product passport records.
+          chmod 0600 packages/Webkul/AdminApi/src/Secrets/Oauth/oauth-*.key
+          php artisan unopim:passport:install-preset
+          php artisan db:seed --class=DiscardQaFixtureSeeder
+          php artisan tinker tests/e2e-pw/scripts/seed-dpp-e2e.php
           npm install --no-progress
           npm run build
           php artisan serve --host=0.0.0.0 --port=8000 > /tmp/server.log 2>&1 &
-          php artisan queue:work --queue=default,system,completeness > /tmp/queue.log 2>&1 &
+          php artisan queue:work --queue=webhooks,default,system,completeness,publication > /tmp/queue.log 2>&1 &
           echo "Waiting for server..."
           timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || (cat /tmp/server.log && exit 1)
 
       - name: Run UnoPim Playwright tests
         id: unopim_pw
+        env:
+          # Without this the battery-passport spec shells out to a docker
+          # container that only exists on the upstream compose stack.
+          PASSPORT_E2E_LOCAL: '1'
+          # ensure-family-state.js refuses to build an admin session without a
+          # password, so the attribute-family and passport specs threw before
+          # their first assertion on a repo with no ADMIN_PASSWORD secret. The
+          # fallback matches the credentials the installer seeds above. It is
+          # deliberately scoped to FAMILY_ADMIN_PASSWORD rather than
+          # ADMIN_PASSWORD so the API credential bootstrap keeps skipping, the
+          # same way it does on the upstream workflow.
+          FAMILY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD || 'admin123' }}
         run: |
           cd unopim/tests/e2e-pw
           npx playwright test --reporter=list,html --shard=${{ matrix.shard-index }}/${{ matrix.shard-total }}
@@ -239,6 +274,19 @@ jobs:
           # So the client has to be created with the admin's id as user_id, or
           # token minting fails with invalid_client.
           #
+          # Passport 13 dropped the $userId and $redirect arguments from
+          # createPasswordGrantClient, so the old call silently stored the admin
+          # id as the client NAME and left user_id null — every token request
+          # then failed with invalid_client. Create the client with the v13
+          # signature and attach the owner afterwards, the same way
+          # Webkul\AdminApi\Console\ApiClientCommand does.
+          #
+          # The api_keys rows are written through the model, not
+          # ApiKeyRepository: that repository provisions its own throwaway
+          # integration admin and ignores the admin_id passed to it, which left
+          # the admin these tokens authenticate as without an apiKey relation —
+          # and ScopeMiddleware 403s every DAM API call in that state.
+          #
           # The ADMIN_USERNAME/ADMIN_PASSWORD secrets are blank on runs where
           # they aren't configured (and on fork PRs GitHub never exposes them),
           # which made getenv("ADMIN_USERNAME") return "" and the admin lookup
@@ -255,8 +303,13 @@ jobs:
           $admin = app(Webkul\User\Repositories\AdminRepository::class)->findByField("email", $email)->first();
           if (! $admin) { fwrite(STDERR, "No admin user found for " . $email . PHP_EOL); exit(1); }
           $client = app(Laravel\Passport\ClientRepository::class)
-              ->createPasswordGrantClient($admin->id, "DAM API Tests", "http://localhost", $provider);
-          app(Webkul\AdminApi\Repositories\ApiKeyRepository::class)->create([
+              ->createPasswordGrantClient("DAM API Tests", $provider, confidential: true);
+          $client->forceFill([
+              "user_id"    => $admin->id,
+              "owner_type" => Webkul\User\Models\Admin::class,
+              "owner_id"   => $admin->id,
+          ])->save();
+          Webkul\AdminApi\Models\Apikey::create([
               "name"            => "DAM API Tests",
               "admin_id"        => $admin->id,
               "oauth_client_id" => $client->getKey(),
@@ -285,8 +338,13 @@ jobs:
               "ui_locale_id" => $admin->ui_locale_id,
           ]);
           $scopedClient = app(Laravel\Passport\ClientRepository::class)
-              ->createPasswordGrantClient($scoped->id, "DAM Scoped API", "http://localhost", $provider);
-          app(Webkul\AdminApi\Repositories\ApiKeyRepository::class)->create([
+              ->createPasswordGrantClient("DAM Scoped API", $provider, confidential: true);
+          $scopedClient->forceFill([
+              "user_id"    => $scoped->id,
+              "owner_type" => Webkul\User\Models\Admin::class,
+              "owner_id"   => $scoped->id,
+          ])->save();
+          Webkul\AdminApi\Models\Apikey::create([
               "name"            => "DAM Scoped API",
               "admin_id"        => $scoped->id,
               "oauth_client_id" => $scopedClient->getKey(),
