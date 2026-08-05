@@ -21,24 +21,41 @@ async function openShareModal(page) {
 
   const shareBtn = page.locator('button.transparent-button').filter({ hasText: /Share/ }).first();
   await shareBtn.waitFor({ state: 'visible', timeout: 15000 });
+
+  const loaded = page.waitForResponse(
+    (res) => /\/admin\/dam\/shared-links\/active\/(asset|directory)\/\d+$/.test(res.url()),
+    { timeout: 15000 }
+  ).catch(() => null);
+
   await shareBtn.click();
 
   await page.getByText(/Share asset/i).first().waitFor({ state: 'visible', timeout: 15000 });
+  await loaded;
 }
 
 async function generateShareLink(page) {
 
   await page.getByText('Loading…').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
 
-  const urlInput = page.locator('input[readonly]').first();
-  const alreadyHasShare = await urlInput.isVisible({ timeout: 8000 }).catch(() => false);
-  if (alreadyHasShare) {
-    const url = await urlInput.inputValue();
+  const reauthorizeBtn = page.getByRole('button', { name: /^Reauthorize$/i }).first();
+  if (await reauthorizeBtn.isVisible().catch(() => false)) {
+    const reauthorized = page.waitForResponse(
+      (res) => /\/admin\/dam\/shared-links\/\d+\/reauthorize$/.test(res.url())
+        && res.request().method() === 'PATCH',
+      { timeout: 15000 }
+    );
+    await reauthorizeBtn.click();
+    await reauthorized;
+  }
+
+  const copyBtn = page.getByRole('button', { name: /^Copy$/i }).first();
+  if (await copyBtn.isVisible().catch(() => false)) {
+    const url = await page.locator('input[readonly]').first().inputValue();
     if (url) return url;
   }
 
   const responsePromise = page.waitForResponse(
-    (res) => /\/admin\/dam\/shares$/.test(res.url()) && res.request().method() === 'POST',
+    (res) => /\/admin\/dam\/shared-links$/.test(res.url()) && res.request().method() === 'POST',
     { timeout: 15000 }
   );
 
@@ -82,7 +99,7 @@ test.describe('DAM Share Links', () => {
     await revokeBtn.waitFor({ state: 'visible', timeout: 10000 });
 
     const revokePromise = adminPage.waitForResponse(
-      (res) => /\/admin\/dam\/shares\/\d+\/revoke$/.test(res.url()) && res.request().method() === 'PATCH',
+      (res) => /\/admin\/dam\/shared-links\/\d+\/revoke$/.test(res.url()) && res.request().method() === 'PATCH',
       { timeout: 15000 }
     );
     await revokeBtn.click();
