@@ -1,37 +1,24 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## **Version 3.0.0**
-
-This is a big update. The main goal is to make the DAM work with the **newest version of UnoPim**, and along the way we made it faster and easier to use.
+## Version 3.0.0
 
 ### Features & Enhancements
 
-* **Works with the latest UnoPim.** The DAM now runs on the newest UnoPim (built on Laravel 13 and PHP 8.4). If your UnoPim is up to date, the DAM will simply work.
+* Added support for the latest UnoPim 3.0.
+* Improved navigation by removing full-page reloads across the DAM for a smoother user experience.
+* Added breadcrumb navigation across all DAM pages.
+* Added an unsaved changes notification with **Save** and **Discard** actions on the Configuration page.
 
-* **Faster, smoother screens.** Moving around the DAM — opening the Explorer, switching tabs, editing an asset — no longer reloads the whole page. Everything feels quicker and there's no more "flash" when you click.
+### Bug Fixes
 
-* **You always know where you are.** Every DAM page now shows a small trail at the top, like **DAM / Tags** or **DAM / Assets / my-photo.jpg**, just like the rest of UnoPim. You can click a part of the trail to jump back.
-
-* **A friendly "unsaved changes" reminder.** On the DAM → Configuration page, when you change a setting a little bar slides up from the bottom with **Save** and **Discard** buttons. Your change is saved right away (no page reload), and if you try to leave without saving, the DAM gently reminds you first.
-
-### Fixed
-
-* **Images work again.** After moving to the new UnoPim, image thumbnails and previews had stopped showing, and the built-in image editor (crop, rotate, flip, brightness, background color, black-and-white) had stopped working. All of this is fixed.
-
-* **No more empty gap on the asset page.** The "edit asset" screen used to have a large blank strip on the left. The page now uses the full width.
-
-* **Small display and permission glitches** left over from the upgrade have been cleaned up.
-
-* **Fixed directory search behaviour:** Updated the search functionality so it now searches only within the currently selected directory instead of returning results from the entire DAM.
-
-* **Comment count is correct again.** Posting a comment on an asset made the tab counter jump by more than one — it grew by however many times you had opened an asset edit page in that session. The counter now moves by exactly one on add and delete, without needing a page refresh.
-
-* **Assets filters now match the rest of UnoPim.** The filter panel on the Assets page (and in the asset picker) had kept the old layout while Tags and Shared Links moved to the new one. It now behaves the same everywhere: each filter starts collapsed with a summary of what it is set to, the **Filter** button shows how many filters are applied, and the panel has a fixed **Apply** and **Clear All** at the bottom.
-
-* **Assigning assets to a category field.** The asset field no longer empties itself when the asset lookup fails — it keeps what you had and tells you what went wrong. It also notifies the form that something changed, so the **Save changes** bar appears after you assign an asset.
-
-* **The DAM follows your UnoPim colours.** Every screen used a purple of its own. It now uses the same `primary` colour token as the rest of UnoPim, so re-skinning UnoPim re-skins the DAM with it. Nothing looks different out of the box — the default token is the exact same purple.
-
+* Fixed image thumbnails, previews, and the built-in image editor after upgrading to the latest UnoPim.
+* Fixed the layout issue causing empty space on the Asset Edit page.
+* Fixed UI and permission-related issues introduced during the upgrade.
+* Updated directory search to return results only from the currently selected directory.
+* Fixed the asset comment counter to update correctly when comments are added or removed.
+* Updated the Assets page and Asset Picker filters to match the latest UnoPim filtering experience.
+* Fixed asset assignment in category fields to preserve selected assets on lookup failure and correctly detect unsaved changes.
+* Updated the DAM to use UnoPim's shared `primary` color token for consistent application theming.
 
 ## **Version 2.2.0**
 
