@@ -8,7 +8,6 @@ use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
-use Webkul\DataTransfer\Support\SafeZipExtractor;
 
 /**
  * Unpacks an export archive and brings its assets into the DAM before any row is read.

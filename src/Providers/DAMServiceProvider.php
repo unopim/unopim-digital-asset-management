@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Webkul\Admin\DataGrids\Catalog\ProductDataGrid;
+use Webkul\Admin\Http\Requests\ProductForm;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
@@ -44,6 +45,7 @@ class DAMServiceProvider extends ServiceProvider
         Import::class                                                   => \Webkul\DAM\Helpers\Import::class,
         ProductJobValidator::class                                      => \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class,
         CategoryJobValidator::class                                     => \Webkul\DAM\Validators\JobInstances\Import\CategoryJobValidator::class,
+        ProductForm::class                                              => \Webkul\DAM\Http\Requests\ProductForm::class,
         Attribute::class                                                => \Webkul\DAM\Models\Attribute::class,
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,

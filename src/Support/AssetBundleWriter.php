@@ -4,7 +4,6 @@ namespace Webkul\DAM\Support;
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Directory;
-use Webkul\DataTransfer\Helpers\Exporters\AbstractExporter;
 
 /**
  * Streams DAM asset binaries into the folder an export job is assembling.
@@ -16,6 +15,13 @@ use Webkul\DataTransfer\Helpers\Exporters\AbstractExporter;
 class AssetBundleWriter
 {
     /**
+     * The disk the tracker builds and zips an export folder on. Named here rather than
+     * read from core so the package runs against a released UnoPim, where the exporters
+     * reach for this disk literally.
+     */
+    public const EXPORT_DISK = 'private';
+
+    /**
      * Destinations already written by this instance. An asset referenced by many rows
      * resolves to one destination, so it is streamed once rather than once per reference.
      *
@@ -25,6 +31,10 @@ class AssetBundleWriter
 
     /**
      * Copy one asset into the export folder, skipping work already done.
+     *
+     * Destination existence is checked as well as the in-memory set: batches run as
+     * separate queued jobs, so the set alone cannot dedupe an asset a sibling batch
+     * of the same export has already written.
      *
      * @return bool whether this call wrote the file
      */
@@ -40,10 +50,8 @@ class AssetBundleWriter
             return false;
         }
 
-        $targetDisk = Storage::disk(AbstractExporter::EXPORT_DISK);
+        $targetDisk = Storage::disk(self::EXPORT_DISK);
 
-        // Batches run as separate queued jobs, so the in-memory set alone cannot dedupe
-        // an asset already written by a sibling batch of the same export.
         if ($targetDisk->exists($destinationPath)) {
             $this->written[$destinationPath] = true;
 

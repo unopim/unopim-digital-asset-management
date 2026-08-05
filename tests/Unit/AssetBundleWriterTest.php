@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Support\AssetBundleWriter;
-use Webkul\DataTransfer\Helpers\Exporters\AbstractExporter;
 
 /*
  * Asset binaries must reach the disk the download archive is built from, and an asset
@@ -55,5 +54,5 @@ it('ignores an asset whose binary is missing', function () {
 });
 
 it('targets the disk the export archive is assembled from', function () {
-    expect(AbstractExporter::EXPORT_DISK)->toBe('private');
+    expect(AssetBundleWriter::EXPORT_DISK)->toBe('private');
 });
