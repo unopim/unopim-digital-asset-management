@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done de :total enviados',
                     'create-folder-failed' => 'Falha ao criar a pasta',
                 ],
-                'drop-zone-no-permission'        => 'Não tem permissão para carregar aqui.',
-                'upload-complete'                => 'Carregamento concluído',
-                'item-upload-complete'           => 'Upload concluído',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Não tem permissão para carregar aqui.',
+                'upload-complete'         => 'Carregamento concluído',
+                'item-upload-complete'    => 'Upload concluído',
+                'copy'                    => [
                     'directory' => 'A copiar o diretório ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'A ligação de partilha que abriu não existe. Pode ter sido digitada incorretamente ou removida.',
             'download-zip'          => 'Transferir tudo como ZIP',
             'per-page'              => 'Por página',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

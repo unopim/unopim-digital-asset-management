@@ -158,10 +158,10 @@ return [
                     'completed'            => ':total 件中 :done 件アップロード済み',
                     'create-folder-failed' => 'フォルダーを作成できませんでした',
                 ],
-                'drop-zone-no-permission'        => 'ここにアップロードする権限がありません。',
-                'upload-complete'                => 'アップロード完了',
-                'item-upload-complete'           => 'アップロード完了',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'ここにアップロードする権限がありません。',
+                'upload-complete'         => 'アップロード完了',
+                'item-upload-complete'    => 'アップロード完了',
+                'copy'                    => [
                     'directory' => 'ディレクトリ「:name」をコピー中…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => '開いた共有リンクは存在しません。入力ミスや削除された可能性があります。',
             'download-zip'          => 'すべてZIPでダウンロード',
             'per-page'              => '1ページあたり',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

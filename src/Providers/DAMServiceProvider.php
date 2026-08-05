@@ -26,7 +26,10 @@ use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
+use Webkul\DataTransfer\Helpers\Import;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
+use Webkul\DataTransfer\Validators\JobInstances\Import\CategoryJobValidator;
+use Webkul\DataTransfer\Validators\JobInstances\Import\ProductJobValidator;
 use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
@@ -38,6 +41,9 @@ class DAMServiceProvider extends ServiceProvider
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
         Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
         \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
+        Import::class                                                   => \Webkul\DAM\Helpers\Import::class,
+        ProductJobValidator::class                                      => \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class,
+        CategoryJobValidator::class                                     => \Webkul\DAM\Validators\JobInstances\Import\CategoryJobValidator::class,
         Attribute::class                                                => \Webkul\DAM\Models\Attribute::class,
         AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,

@@ -2,7 +2,8 @@
     'name'        => 'assets',
     'assetValues' => [],
     'width'       => '120px',
-    'height'      => '120px'
+    'height'      => '120px',
+    'readonly'    => false
 ])
 
 <v-asset-field
@@ -10,6 +11,7 @@
     asset-values="{{ (is_array($assetValues) ? implode(',', $assetValues) : $assetValues) }}"
     width="{{ $width }}"
     height="{{ $height }}"
+    :readonly="{{ $readonly ? 'true' : 'false' }}"
     :errors="errors"
 >
     <x-admin::shimmer.image class="w-[110px] h-[110px] rounded" />
@@ -33,6 +35,7 @@
                     :list="assets"
                     item-key="id"
                     handle=".icon-drag"
+                    :disabled="readonly"
                 >
                     <template #item="{ element, index }">
                         <v-asset-field-item
@@ -41,6 +44,7 @@
                             :asset="element"
                             :width="width"
                             :height="height"
+                            :readonly="readonly"
                             @onRemove="remove($event)"
                         >
                         </v-asset-field-item>
@@ -48,6 +52,7 @@
                 </draggable>
 
                 <label
+                    v-if="! readonly"
                     class="group flex flex-col justify-center items-center min-h-[160px] rounded-lg border-2 border-dashed border-gray-300 dark:border-cherry-500 bg-gradient-to-br from-primary-50/40 to-white dark:from-cherry-900/40 dark:to-cherry-900 cursor-pointer transition-all hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md"
                     @click="openPicker"
                 >
@@ -57,7 +62,7 @@
                     </p>
                 </label>
 
-                <v-dam-asset-picker ref="assetPicker" @assign="onAssign"></v-dam-asset-picker>
+                <v-dam-asset-picker ref="assetPicker" @assign="onAssign" v-if="! readonly"></v-dam-asset-picker>
             </div>
         </div>
     </script>
@@ -80,7 +85,10 @@
                 />
 
                 <div class="absolute inset-0 flex items-end justify-center gap-2 p-2 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                    <span class="icon-drag text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-grab active:cursor-grabbing"></span>
+                    <span
+                        class="icon-drag text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-grab active:cursor-grabbing"
+                        v-if="! readonly"
+                    ></span>
 
                     <span
                         class="icon-view text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-white/30 cursor-pointer"
@@ -98,6 +106,7 @@
                         class="icon-delete text-xl p-1.5 rounded-md text-white bg-white/10 hover:bg-red-500/80 cursor-pointer"
                         @click="remove"
                         aria-label="@lang('dam::app.admin.components.asset.field.remove')"
+                        v-if="! readonly"
                     ></span>
 
                     <input type="hidden" :name="name + '[]'" v-if="! asset.is_new && asset.value" :value="asset.value"/>
@@ -135,6 +144,11 @@
                 height: {
                     type: String,
                     default: '120px'
+                },
+
+                readonly: {
+                    type: Boolean,
+                    default: false
                 },
 
                 errors: {
@@ -249,7 +263,7 @@
         app.component('v-asset-field-item', {
             template: '#v-asset-field-item-template',
 
-            props: ['index', 'asset', 'name', 'width', 'height'],
+            props: ['index', 'asset', 'name', 'width', 'height', 'readonly'],
 
             data() {
                 return {

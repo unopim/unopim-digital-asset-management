@@ -158,10 +158,10 @@ return [
                     'completed'            => 'загружено :done из :total',
                     'create-folder-failed' => 'Не удалось создать папку',
                 ],
-                'drop-zone-no-permission'        => 'У вас нет разрешения на загрузку файлов сюда.',
-                'upload-complete'                => 'Загрузка завершена',
-                'item-upload-complete'           => 'Загрузка завершена',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'У вас нет разрешения на загрузку файлов сюда.',
+                'upload-complete'         => 'Загрузка завершена',
+                'item-upload-complete'    => 'Загрузка завершена',
+                'copy'                    => [
                     'directory' => 'Копирование каталога ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Открытая вами ссылка не существует. Возможно, она была введена неверно или удалена.',
             'download-zip'          => 'Скачать всё как ZIP',
             'per-page'              => 'На странице',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

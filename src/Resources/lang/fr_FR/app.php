@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done sur :total téléversés',
                     'create-folder-failed' => 'Échec de la création du dossier',
                 ],
-                'drop-zone-no-permission'        => 'Vous n\'avez pas la permission de téléverser ici.',
-                'upload-complete'                => 'Téléchargement terminé',
-                'item-upload-complete'           => 'Téléchargement terminé',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Vous n\'avez pas la permission de téléverser ici.',
+                'upload-complete'         => 'Téléchargement terminé',
+                'item-upload-complete'    => 'Téléchargement terminé',
+                'copy'                    => [
                     'directory' => 'Copie du répertoire ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Le lien de partage que vous avez ouvert n\'existe pas. Il est peut-être mal saisi ou a été supprimé.',
             'download-zip'          => 'Tout télécharger en ZIP',
             'per-page'              => 'Par page',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

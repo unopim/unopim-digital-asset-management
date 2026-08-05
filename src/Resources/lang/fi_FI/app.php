@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done / :total ladattu',
                     'create-folder-failed' => 'Kansion luonti epäonnistui',
                 ],
-                'drop-zone-no-permission'        => 'Sinulla ei ole oikeutta ladata tänne.',
-                'upload-complete'                => 'Lataus valmis',
-                'item-upload-complete'           => 'Lataus valmis',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Sinulla ei ole oikeutta ladata tänne.',
+                'upload-complete'         => 'Lataus valmis',
+                'item-upload-complete'    => 'Lataus valmis',
+                'copy'                    => [
                     'directory' => 'Kopioidaan hakemistoa ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Avaamasi jakolinkki ei ole olemassa. Se on ehkä kirjoitettu väärin tai poistettu.',
             'download-zip'          => 'Lataa kaikki ZIP-tiedostona',
             'per-page'              => 'Per sivu',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

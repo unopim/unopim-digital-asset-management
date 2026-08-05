@@ -21,4 +21,16 @@ return [
         ],
     ],
 
+    /**
+     * Limits applied to an export archive uploaded to an import job. These are far wider
+     * than the product-images equivalent because a DAM bundle legitimately carries video
+     * and other large binaries; they exist to bound zip-bomb damage, not to size assets.
+     */
+    'import_bundle' => [
+        'max_entry_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_ENTRY_SIZE', 524288000),
+        'max_total_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_TOTAL_SIZE', 5368709120),
+        'max_entries'           => (int) env('DAM_IMPORT_BUNDLE_MAX_ENTRIES', 50000),
+        'max_compression_ratio' => (float) env('DAM_IMPORT_BUNDLE_MAX_COMPRESSION_RATIO', 200),
+    ],
+
 ];

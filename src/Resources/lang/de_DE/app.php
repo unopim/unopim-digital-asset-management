@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done von :total hochgeladen',
                     'create-folder-failed' => 'Ordner konnte nicht erstellt werden',
                 ],
-                'drop-zone-no-permission'        => 'Sie haben keine Berechtigung, hier hochzuladen.',
-                'upload-complete'                => 'Upload abgeschlossen',
-                'item-upload-complete'           => 'Upload abgeschlossen',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'Sie haben keine Berechtigung, hier hochzuladen.',
+                'upload-complete'         => 'Upload abgeschlossen',
+                'item-upload-complete'    => 'Upload abgeschlossen',
+                'copy'                    => [
                     'directory' => 'Kopiere Verzeichnis ":name"…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'Der von Ihnen geöffnete Freigabe-Link existiert nicht. Er wurde möglicherweise falsch eingegeben oder entfernt.',
             'download-zip'          => 'Alles als ZIP herunterladen',
             'per-page'              => 'Pro Seite',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

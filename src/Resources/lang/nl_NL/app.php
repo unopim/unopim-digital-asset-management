@@ -158,10 +158,10 @@ return [
                     'completed'            => ':done van :total geüpload',
                     'create-folder-failed' => 'Map kon niet worden aangemaakt',
                 ],
-                'drop-zone-no-permission'        => 'U heeft geen toestemming om hier te uploaden.',
-                'upload-complete'                => 'Upload voltooid',
-                'item-upload-complete'           => 'Upload voltooid',
-                'copy'                           => [
+                'drop-zone-no-permission' => 'U heeft geen toestemming om hier te uploaden.',
+                'upload-complete'         => 'Upload voltooid',
+                'item-upload-complete'    => 'Upload voltooid',
+                'copy'                    => [
                     'directory' => 'Map ":name" wordt gekopieerd…',
                 ],
                 'delete' => [
@@ -872,6 +872,17 @@ return [
             'not-found-message'     => 'De deellink die u heeft geopend bestaat niet. Mogelijk is deze verkeerd getypt of verwijderd.',
             'download-zip'          => 'Alles downloaden als ZIP',
             'per-page'              => 'Per pagina',
+        ],
+    ],
+    'data-transfer' => [
+        'bundle' => [
+            'invalid-archive'            => 'The uploaded archive could not be opened.',
+            'invalid-zip'                => 'The uploaded archive is damaged and cannot be read.',
+            'no-data-file'               => 'The archive contains no CSV or Excel file to import.',
+            'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
+            'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
+            'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
+            'asset-not-found'            => 'No asset was found at path ":path".',
         ],
     ],
 ];

@@ -2,10 +2,9 @@
 
 namespace Webkul\DAM\Helpers\Exporters\Category;
 
-use Illuminate\Support\Facades\Storage;
 use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\Category\Validator\FieldValidator;
-use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Helpers\Exporters\Concerns\CopiesDamMedia;
 use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CategoryExporter;
@@ -15,6 +14,8 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Exporter extends CategoryExporter
 {
+    use CopiesDamMedia;
+
     public function __construct(
         JobTrackBatchRepository $exportBatchRepository,
         FlatItemBuffer $exportFileBuffer,
@@ -90,38 +91,5 @@ class Exporter extends CategoryExporter
         }
 
         return $fieldValues;
-    }
-
-    public function copyMedia(string $sourcePath, string $destinationPath, bool $isAssetField = false): void
-    {
-        $disk = Directory::getAssetDisk();
-
-        if ($isAssetField && Storage::disk($disk)->exists($sourcePath)) {
-            $stream = Storage::disk($disk)->readStream($sourcePath);
-
-            if ($stream === false) {
-                throw new \RuntimeException("Unable to read stream: {$sourcePath}");
-            }
-
-            if ($disk === Directory::ASSETS_DISK_AWS) {
-                Storage::writeStream($destinationPath, $stream);
-            } else {
-
-                Storage::disk('public')->writeStream($sourcePath, $stream);
-            }
-
-            return;
-        }
-
-        parent::copyMedia($sourcePath, $destinationPath);
-    }
-
-    public function makePublicUrlMedia(string $filePath, bool $isAssetField = false): string
-    {
-        if ($isAssetField) {
-            return route('admin.dam.file.fetch', [$filePath]);
-        }
-
-        return Storage::url($filePath);
     }
 }

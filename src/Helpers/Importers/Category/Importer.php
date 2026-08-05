@@ -7,8 +7,8 @@ use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\Category\Repositories\CategoryRepository;
 use Webkul\Core\Repositories\ChannelRepository;
 use Webkul\Core\Repositories\LocaleRepository;
+use Webkul\DAM\Helpers\Importers\Concerns\ResolvesAssetPaths;
 use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DataTransfer\Helpers\Importers\Category\Importer as CategoryImporter;
 use Webkul\DataTransfer\Helpers\Importers\Category\Storage;
 use Webkul\DataTransfer\Helpers\Importers\FieldProcessor;
@@ -17,6 +17,8 @@ use Webkul\DataTransfer\Validators\Import\CategoryRulesExtractor;
 
 class Importer extends CategoryImporter
 {
+    use ResolvesAssetPaths;
+
     public function __construct(
         protected JobTrackBatchRepository $importBatchRepository,
         protected CategoryRepository $categoryRepository,
@@ -27,7 +29,6 @@ class Importer extends CategoryImporter
         protected ChannelRepository $channelRepository,
         protected CategoryRulesExtractor $categoryRulesExtractor,
         protected FieldProcessor $fieldProcessor,
-        protected AssetRepository $assetRepository
     ) {
         parent::__construct(
             $importBatchRepository,
@@ -69,23 +70,10 @@ class Importer extends CategoryImporter
             $catalogField = $this->categoryFieldRepository->where('code', $field)->first();
 
             if ($catalogField->type === Asset::ASSET_ATTRIBUTE_TYPE) {
-                if (! empty($value)) {
-                    $values = explode(',', $value);
+                $assets = $this->resolveAssetIds((string) $value);
 
-                    $assets = [];
-                    foreach ($values as $value) {
-                        $asset = $this->assetRepository->findWhereIn('path', [trim($value)])->first();
-
-                        if ($asset) {
-                            $assets[] = $asset->id;
-                        }
-                    }
-
-                    if ($assets) {
-                        $value = implode(',', $assets);
-
-                        $data['additional_data']['common'][$field] = $value;
-                    }
+                if ($assets !== []) {
+                    $data['additional_data']['common'][$field] = implode(',', $assets);
                 }
 
                 continue;
