@@ -9,8 +9,9 @@ use Webkul\DAM\Support\AssetBundleReader;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
 
 /*
- * Reading a bundle has to reproduce the source DAM tree and stay idempotent: an import
- * re-run must not duplicate assets, nor overwrite a binary edited since the first run.
+ * Reading a bundle has to reproduce the source DAM tree without duplicating it: a path
+ * already held by an asset is that asset's, so a re-run carrying a changed binary
+ * replaces the file behind the row it already has rather than adding a second one.
  */
 
 beforeEach(function (): void {
@@ -108,7 +109,7 @@ it('queues metadata extraction for each ingested asset', function () {
     Bus::assertDispatched(ProcessAssetUpload::class);
 });
 
-it('reuses an asset already present at the same path', function () {
+it('reuses the row and replaces the binary of an asset already present at the same path', function () {
     $entries = [
         'products.csv'                   => "sku\nsku-1",
         'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
@@ -124,7 +125,7 @@ it('reuses an asset already present at the same path', function () {
 
     expect(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->count())->toBe(1)
         ->and(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->value('id'))->toBe($firstId)
-        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('edited-in-the-explorer');
+        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
 });
 
 it('does not duplicate directories across repeated imports', function () {
