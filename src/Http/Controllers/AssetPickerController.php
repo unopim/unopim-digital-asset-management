@@ -51,7 +51,7 @@ class AssetPickerController extends Controller
 
         return [
             'id'                => $assetId,
-            'url'               => route('admin.dam.file.thumbnail', ['path' => urlencode($filePath)]),
+            'url'               => AssetHelper::getThumbnailUrl($filePath),
             'value'             => $assetId,
             'file_name'         => AssetHelper::getDisplayFileName($asset->file_name),
             'file_type'         => $asset->file_type,

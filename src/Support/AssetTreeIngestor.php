@@ -14,32 +14,72 @@ class AssetTreeIngestor
 
     protected const STORED_FILE_TYPES = ['image', 'video', 'audio', 'document'];
 
+    protected const THUMBNAIL_DIRECTORY = 'thumbnails';
+
+    protected const PREVIEW_DIRECTORY = 'preview';
+
     /**
      * @return array<string, int>
      */
     public function ingest(string $sourceRoot): array
     {
-        $entries = $this->collect($sourceRoot);
+        $assetTreeRoot = $this->resolveAssetTreeRoot($sourceRoot);
+
+        if ($assetTreeRoot === null) {
+            return [];
+        }
+
+        $entries = $this->collect($assetTreeRoot);
 
         if ($entries === []) {
             return [];
         }
 
-        $existing = Asset::whereIn('path', $entries)->pluck('id', 'path')->all();
+        $existing = Asset::whereIn('path', $entries)->get()->keyBy('path');
 
         $ingested = [];
 
         foreach ($entries as $entry) {
-            if (isset($existing[$entry])) {
-                $ingested[$entry] = $existing[$entry];
+            $sourceFile = $assetTreeRoot.DIRECTORY_SEPARATOR.$entry;
 
-                continue;
-            }
+            $asset = $existing->get($entry);
 
-            $ingested[$entry] = $this->createAsset($entry, $sourceRoot.DIRECTORY_SEPARATOR.$entry);
+            $ingested[$entry] = $asset
+                ? $this->refreshAsset($asset, $entry, $sourceFile)
+                : $this->createAsset($entry, $sourceFile);
         }
 
         return $ingested;
+    }
+
+    /**
+     * An archive compressed from a folder rather than from that folder's contents arrives
+     * with the whole tree one level down, which used to leave the asset tree unfound and
+     * the import silently ingesting nothing. The wrapping folder is looked through before
+     * the tree is declared absent, and whichever directory holds it becomes the root the
+     * entries are made relative to, so they still read as the asset paths the rows carry.
+     */
+    protected function resolveAssetTreeRoot(string $sourceRoot): ?string
+    {
+        if (! is_dir($sourceRoot)) {
+            return null;
+        }
+
+        if (is_dir($sourceRoot.DIRECTORY_SEPARATOR.Directory::ASSETS_DIRECTORY)) {
+            return $sourceRoot;
+        }
+
+        foreach (new \FilesystemIterator($sourceRoot, \FilesystemIterator::SKIP_DOTS) as $candidate) {
+            if (! $candidate->isDir() || $candidate->isLink()) {
+                continue;
+            }
+
+            if (is_dir($candidate->getPathname().DIRECTORY_SEPARATOR.Directory::ASSETS_DIRECTORY)) {
+                return $candidate->getPathname();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -90,6 +130,61 @@ class AssetTreeIngestor
     {
         $directory = $this->ensureDirectory($entry);
 
+        $this->store($entry, $sourceFile);
+
+        $asset = Asset::create($this->fileAttributes($entry, $sourceFile));
+
+        $directory->assets()->attach($asset->id);
+
+        ProcessAssetUpload::dispatch($asset->id);
+
+        return $asset->id;
+    }
+
+    /**
+     * A path already held by an asset is that asset's, so a bundled binary that differs
+     * from the stored one is a new revision rather than a second asset: the row keeps its
+     * id and everything referencing it, and only the file behind it moves on.
+     *
+     * An identical binary is left alone, cached renders included, so re-running an import
+     * does not cost a re-render of the whole library.
+     */
+    protected function refreshAsset(Asset $asset, string $entry, string $sourceFile): int
+    {
+        if (! $this->hasChanged($entry, $sourceFile)) {
+            return $asset->id;
+        }
+
+        $this->store($entry, $sourceFile);
+
+        $asset->update($this->fileAttributes($entry, $sourceFile));
+
+        ProcessAssetUpload::dispatch($asset->id);
+
+        return $asset->id;
+    }
+
+    protected function hasChanged(string $entry, string $sourceFile): bool
+    {
+        $disk = Storage::disk(Directory::getAssetDisk());
+
+        if (! $disk->exists($entry)) {
+            return true;
+        }
+
+        try {
+            if ($disk->size($entry) !== filesize($sourceFile)) {
+                return true;
+            }
+
+            return $disk->checksum($entry) !== md5_file($sourceFile);
+        } catch (\Throwable) {
+            return true;
+        }
+    }
+
+    protected function store(string $entry, string $sourceFile): void
+    {
         $stream = fopen($sourceFile, 'rb');
 
         if ($stream === false) {
@@ -104,24 +199,43 @@ class AssetTreeIngestor
             }
         }
 
+        $this->purgeDerivatives($entry);
+    }
+
+    /**
+     * Thumbnails and previews are cached under a path derived from the asset's own path
+     * and are served without consulting the binary they were rendered from, so dropping
+     * them is what makes a replaced image show up as the replacement.
+     */
+    protected function purgeDerivatives(string $entry): void
+    {
+        $disk = Storage::disk(Directory::getAssetDisk());
+
+        $disk->delete(self::THUMBNAIL_DIRECTORY.'/'.$entry);
+        $disk->delete(self::THUMBNAIL_DIRECTORY.'/'.$entry.'.jpg');
+
+        foreach ($disk->directories(self::PREVIEW_DIRECTORY) as $sizeDirectory) {
+            $disk->delete($sizeDirectory.'/'.$entry);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function fileAttributes(string $entry, string $sourceFile): array
+    {
         $extension = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
 
         $mimeType = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($sourceFile);
 
-        $asset = Asset::create([
+        return [
             'file_name' => basename($entry),
             'file_type' => $this->fileTypeFor($extension, $mimeType),
             'file_size' => (int) filesize($sourceFile),
             'mime_type' => $mimeType,
             'extension' => $extension,
             'path'      => $entry,
-        ]);
-
-        $directory->assets()->attach($asset->id);
-
-        ProcessAssetUpload::dispatch($asset->id);
-
-        return $asset->id;
+        ];
     }
 
     protected function fileTypeFor(string $extension, string $mimeType): string

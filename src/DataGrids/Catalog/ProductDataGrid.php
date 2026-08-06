@@ -3,6 +3,7 @@
 namespace Webkul\DAM\DataGrids\Catalog;
 
 use Webkul\Admin\DataGrids\Catalog\ProductDataGrid as BaseProductDataGrid;
+use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Repositories\AssetRepository;
 
 class ProductDataGrid extends BaseProductDataGrid
@@ -41,7 +42,7 @@ class ProductDataGrid extends BaseProductDataGrid
             }
 
             return $asset->file_type === 'image'
-                ? route('admin.dam.file.thumbnail', ['path' => urlencode($asset->path)])
+                ? AssetHelper::getThumbnailUrl($asset->path)
                 : $this->getAssetPlaceholder($asset->file_type);
         };
     }

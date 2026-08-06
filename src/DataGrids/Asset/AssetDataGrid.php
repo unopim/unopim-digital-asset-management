@@ -120,7 +120,7 @@ class AssetDataGrid extends DataGrid
             'filterable' => false,
             'sortable'   => true,
             'closure'    => function ($row) {
-                return isset($row->path) ? route('admin.dam.file.thumbnail', ['path' => urlencode($row->path)]) : '';
+                return isset($row->path) ? AssetHelper::getThumbnailUrl($row->path) : '';
             },
         ]);
 

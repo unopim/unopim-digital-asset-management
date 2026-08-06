@@ -112,11 +112,46 @@ class AssetHelper
         return $fileName;
     }
 
+    /**
+     * Thumbnails and previews are addressed by the asset's path, which does not change
+     * when the binary behind it does, so a browser holding a render has no reason to ask
+     * for it again inside its cache window. Stamping the stored file's modification time
+     * into the URL turns a replaced binary into a new address and the render is fetched
+     * on the next paint instead of after a forced reload.
+     */
+    public static function getThumbnailUrl(string $path): string
+    {
+        return route('admin.dam.file.thumbnail', [
+            'path' => urlencode($path),
+            'v'    => self::getRenderVersion($path),
+        ]);
+    }
+
+    /**
+     * S3 is left unstamped: its media is served straight from the bucket or through a
+     * signed URL that already carries its own query, so there is no local render to bust.
+     */
+    public static function getRenderVersion(string $path): ?int
+    {
+        $disk = Directory::getAssetDisk();
+
+        if ($disk === Directory::ASSETS_DISK_AWS) {
+            return null;
+        }
+
+        try {
+            return Storage::disk($disk)->lastModified($path) ?: null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public static function getPreviewUrl(string $path, ?int $size = null): string
     {
         $previewUrl = route('admin.dam.file.preview', [
             'path' => urlencode($path),
             'size' => $size,
+            'v'    => self::getRenderVersion($path),
         ]);
 
         $disk = Directory::getAssetDisk();
