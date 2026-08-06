@@ -4,47 +4,38 @@ namespace Webkul\DAM\Support;
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Helpers\AssetHelper;
-use Webkul\DAM\Jobs\ProcessAssetUpload;
-use Webkul\DAM\Models\Asset;
-use Webkul\DAM\Models\Directory;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
 
-/**
- * Unpacks an export archive and brings its assets into the DAM before any row is read.
- *
- * The archive produced by a media-enabled export stores each asset under its DAM path,
- * and the data file references those same paths. Ingesting first therefore means the
- * importers' existing path lookups resolve without any separate mapping structure.
- */
 class AssetBundleReader
 {
-    public const ASSET_ENTRY_PREFIX = Directory::ASSETS_DIRECTORY.'/';
+    public const MEDIA_DIRECTORY_PREFIX = 'import-bundles/';
 
     protected const DATA_FILE_EXTENSIONS = ['csv', 'xlsx', 'xls'];
 
-    /** The only values `dam_assets.file_type` accepts. */
-    protected const STORED_FILE_TYPES = ['image', 'video', 'audio', 'document'];
+    public function __construct(protected AssetTreeIngestor $assetTreeIngestor) {}
 
     /**
-     * Extract the archive, ingest its assets, and return the data file's path on the
-     * private disk, ready to be handed to a CSV or Excel source.
-     *
      * @throws \RuntimeException when the archive is unreadable, unsafe, or carries no data file
      */
-    public function prepare(JobTrackContract $import): string
+    public function prepare(JobTrackContract $import): PreparedBundle
     {
         $relativeRoot = 'imports/bundles/'.$import->id;
         $extractPath = Storage::disk('private')->path($relativeRoot);
 
         $entries = $this->extract($import->file_path, $extractPath);
 
-        $this->ingestAssets($entries, $extractPath);
+        $dataFile = $this->locateDataFile($entries);
 
-        return $relativeRoot.'/'.$this->locateDataFile($entries);
+        $this->assetTreeIngestor->ingest($extractPath);
+
+        return new PreparedBundle(
+            $relativeRoot.'/'.$dataFile,
+            $this->stageMedia($entries, $dataFile, $extractPath, $import->id),
+        );
     }
 
     /**
-     * @return list<string> relative paths present in the extraction directory
+     * @return list<string>
      */
     protected function extract(string $archivePath, string $extractPath): array
     {
@@ -75,13 +66,9 @@ class AssetBundleReader
         return $entries;
     }
 
-    /**
-     * Apply the same file-type policy a DAM upload goes through, so an archive cannot
-     * introduce anything the explorer would have refused.
-     */
     protected function isPermittedEntry(string $relativePath, string $extension, string $stagedPath): bool
     {
-        if (! str_starts_with($relativePath, self::ASSET_ENTRY_PREFIX)) {
+        if (! str_contains($relativePath, '/')) {
             return in_array($extension, self::DATA_FILE_EXTENSIONS, true);
         }
 
@@ -109,128 +96,54 @@ class AssetBundleReader
     }
 
     /**
-     * Create a DAM asset for every archived binary, reusing anything already present at
-     * the same path so a repeated import neither duplicates rows nor overwrites files
-     * someone has since edited in the explorer.
-     *
      * @param  list<string>  $entries
-     * @return array<string, int> ingested asset ids keyed by DAM path
      */
-    protected function ingestAssets(array $entries, string $extractPath): array
+    protected function stageMedia(array $entries, string $dataFile, string $extractPath, int $trackId): ?string
     {
-        $assetEntries = array_values(array_filter(
-            $entries,
-            fn (string $entry): bool => str_starts_with($entry, self::ASSET_ENTRY_PREFIX)
-        ));
+        $directory = self::MEDIA_DIRECTORY_PREFIX.$trackId;
 
-        if ($assetEntries === []) {
-            return [];
-        }
+        $disk = Storage::disk('public');
 
-        $existing = Asset::whereIn('path', $assetEntries)->pluck('id', 'path')->all();
+        $staged = 0;
 
-        $ingested = [];
-
-        foreach ($assetEntries as $entry) {
-            if (isset($existing[$entry])) {
-                $ingested[$entry] = $existing[$entry];
-
+        foreach ($entries as $entry) {
+            if ($entry === $dataFile || str_starts_with($entry, AssetTreeIngestor::ASSET_ENTRY_PREFIX)) {
                 continue;
             }
 
-            $ingested[$entry] = $this->createAsset($entry, $extractPath.DIRECTORY_SEPARATOR.$entry);
-        }
+            $sourceFile = $extractPath.DIRECTORY_SEPARATOR.$entry;
 
-        return $ingested;
-    }
-
-    protected function createAsset(string $entry, string $sourceFile): int
-    {
-        $directory = $this->ensureDirectory($entry);
-
-        $stream = fopen($sourceFile, 'rb');
-
-        if ($stream === false) {
-            throw new \RuntimeException("Unable to read bundled asset: {$entry}");
-        }
-
-        try {
-            Storage::disk(Directory::getAssetDisk())->writeStream($entry, $stream);
-        } finally {
-            if (is_resource($stream)) {
-                fclose($stream);
+            if (! $this->isServableMedia($entry, $sourceFile)) {
+                continue;
             }
-        }
 
-        $extension = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
+            $stream = fopen($sourceFile, 'rb');
 
-        $mimeType = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($sourceFile);
-
-        $asset = Asset::create([
-            'file_name' => basename($entry),
-            'file_type' => $this->fileTypeFor($extension, $mimeType),
-            'file_size' => (int) filesize($sourceFile),
-            'mime_type' => $mimeType,
-            'extension' => $extension,
-            'path'      => $entry,
-        ]);
-
-        $directory->assets()->attach($asset->id);
-
-        ProcessAssetUpload::dispatch($asset->id);
-
-        return $asset->id;
-    }
-
-    /**
-     * The stored type has to come from the column's own set. The DAM's extension map
-     * also answers with the icon buckets `file` and `sheet`, which the column rejects,
-     * so anything outside the set falls back to the mime type and finally to document.
-     */
-    protected function fileTypeFor(string $extension, string $mimeType): string
-    {
-        $type = AssetHelper::getFileTypeUsingExtension($extension);
-
-        if (in_array($type, self::STORED_FILE_TYPES, true)) {
-            return $type;
-        }
-
-        foreach (self::STORED_FILE_TYPES as $candidate) {
-            if (str_contains($mimeType, $candidate)) {
-                return $candidate;
+            if ($stream === false) {
+                continue;
             }
+
+            try {
+                $disk->writeStream($directory.'/'.$entry, $stream);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            $staged++;
         }
 
-        return 'document';
+        return $staged > 0 ? $directory : null;
     }
 
-    /**
-     * Walk the archived path, creating any directory the target DAM is missing, so the
-     * source tree is reproduced rather than flattened.
-     */
-    protected function ensureDirectory(string $entry): Directory
+    protected function isServableMedia(string $relativePath, string $sourceFile): bool
     {
-        $segments = explode('/', trim(substr($entry, strlen(self::ASSET_ENTRY_PREFIX)), '/'));
-
-        array_pop($segments);
-
-        if ($segments === []) {
-            throw new \RuntimeException("Bundled asset is not inside a directory: {$entry}");
-        }
-
-        $parentId = null;
-        $directory = null;
-
-        foreach ($segments as $name) {
-            $directory = Directory::firstOrCreate([
-                'name'      => $name,
-                'parent_id' => $parentId,
-            ]);
-
-            $parentId = $directory->id;
-        }
-
-        return $directory;
+        return ServableMedia::permits(
+            strtolower(pathinfo($relativePath, PATHINFO_EXTENSION)),
+            $sourceFile,
+            basename($relativePath)
+        );
     }
 
     protected function extractor(): SafeZipExtractor
