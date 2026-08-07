@@ -8,32 +8,38 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Core\Helpers\Database\DatabaseSequenceHelper;
+use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\Directory;
 
 class DamDemoDataSeeder extends Seeder
 {
     private array $directoryTree = [
-        'Accessories' => [
-            'Bags'       => [],
-            'Belts'      => [],
-            'Hats'       => [],
-            'Scarves'    => [],
-            'Sunglasses' => [],
+        'Audio' => [
+            'Podcasts'    => [],
+            'Sound Logos' => [],
         ],
-        'Audio and Video' => [
-            'Headphones'   => [],
-            'Loudspeakers' => [],
+        'Brand' => [
+            'Guidelines' => [],
+            'Logos'      => [],
         ],
-        'Clothes' => [
-            'Accessories' => [
-                'Caps'   => [],
-                'Gloves' => [],
-                'Ties'   => [],
-            ],
+        'Documents' => [
+            'Contracts'   => [],
+            'Datasheets'  => [],
+            'Price Lists' => [],
         ],
-        'Documents' => [],
+        'Marketing' => [
+            'Campaign Videos' => [],
+            'Social Clips'    => [],
+        ],
+        'Product Photography' => [
+            'Apparel'   => [],
+            'Audio'     => [],
+            'Furniture' => [],
+            'Outdoor'   => [],
+        ],
     ];
 
     public function run(): void
@@ -46,7 +52,7 @@ class DamDemoDataSeeder extends Seeder
             return;
         }
 
-        if ($root->children()->where('name', 'Accessories')->exists()) {
+        if ($root->children()->where('name', 'Brand')->exists()) {
             return;
         }
 
@@ -155,6 +161,45 @@ class DamDemoDataSeeder extends Seeder
 
         if (! empty($pivotRows)) {
             DB::table('dam_asset_directory')->insert($pivotRows);
+        }
+
+        $this->finaliseAssets($insertedAssets->pluck('id')->all());
+    }
+
+    /**
+     * Run each seeded asset through the same job a real upload uses, so demo rows
+     * carry metadata, audio cover art and video/PDF thumbnails rather than a null
+     * `meta_data`.
+     *
+     * `ProcessAssetUpload` dispatches its thumbnail jobs onto the configured queue.
+     * Forcing `sync` for the duration of the loop makes those nested dispatches run
+     * inline, so `dam:demo-data` returns only once the library is complete instead of
+     * leaving work on a queue that may have no worker.
+     *
+     * A host without ffmpeg, ghostscript or exiftool falls back to `meta_data => null`
+     * for the affected asset; that must not fail the seed.
+     */
+    protected function finaliseAssets(array $assetIds): void
+    {
+        $queueConnection = config('queue.default');
+
+        config(['queue.default' => 'sync']);
+
+        try {
+            foreach ($assetIds as $assetId) {
+                try {
+                    ProcessAssetUpload::dispatchSync((int) $assetId);
+                } catch (\Throwable $e) {
+                    Log::warning('DAM demo asset finalisation failed.', [
+                        'asset'   => $assetId,
+                        'message' => $e->getMessage(),
+                    ]);
+
+                    $this->command?->warn("Could not finalise asset {$assetId}: {$e->getMessage()}");
+                }
+            }
+        } finally {
+            config(['queue.default' => $queueConnection]);
         }
     }
 

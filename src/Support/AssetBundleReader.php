@@ -10,6 +10,8 @@ class AssetBundleReader
 {
     public const MEDIA_DIRECTORY_PREFIX = 'import-bundles/';
 
+    public const EXTRACT_DIRECTORY_PREFIX = 'imports/bundles/';
+
     protected const DATA_FILE_EXTENSIONS = ['csv', 'xlsx', 'xls'];
 
     public function __construct(protected AssetTreeIngestor $assetTreeIngestor) {}
@@ -19,7 +21,7 @@ class AssetBundleReader
      */
     public function prepare(JobTrackContract $import): PreparedBundle
     {
-        $relativeRoot = 'imports/bundles/'.$import->id;
+        $relativeRoot = self::EXTRACT_DIRECTORY_PREFIX.$import->id;
         $extractPath = Storage::disk('private')->path($relativeRoot);
 
         $entries = $this->extract($import->file_path, $extractPath);

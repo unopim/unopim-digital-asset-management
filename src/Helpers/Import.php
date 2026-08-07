@@ -50,4 +50,25 @@ class Import extends BaseImport
     {
         return Str::endsWith(Str::lower((string) $this->import->file_path), '.zip');
     }
+
+    public function completed(): void
+    {
+        parent::completed();
+
+        $this->discardBundleWorkspace();
+    }
+
+    public function cancel(): void
+    {
+        parent::cancel();
+
+        $this->discardBundleWorkspace();
+    }
+
+    protected function discardBundleWorkspace(): void
+    {
+        Storage::disk('private')->deleteDirectory(AssetBundleReader::EXTRACT_DIRECTORY_PREFIX.$this->import->id);
+
+        Storage::disk('public')->deleteDirectory(AssetBundleReader::MEDIA_DIRECTORY_PREFIX.$this->import->id);
+    }
 }

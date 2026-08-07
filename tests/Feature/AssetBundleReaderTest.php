@@ -128,6 +128,26 @@ it('reuses the row and replaces the binary of an asset already present at the sa
         ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
 });
 
+it('leaves an asset alone when the bundle carries the binary it already holds', function () {
+    $entries = [
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+    ];
+
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
+
+    Bus::assertDispatchedTimes(ProcessAssetUpload::class, 1);
+});
+
+it('reads the stored digest with the algorithm the local comparison is made in', function () {
+    Storage::disk('private')->put('assets/Root/Marketing/hero.jpg', 'hero-bytes');
+
+    $stored = Storage::disk('private')->checksum('assets/Root/Marketing/hero.jpg', ['checksum_algo' => 'md5']);
+
+    expect($stored)->toBe(md5('hero-bytes'));
+});
+
 it('does not duplicate directories across repeated imports', function () {
     $entries = [
         'products.csv'                   => "sku\nsku-1",

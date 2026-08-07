@@ -211,50 +211,193 @@ class AssetHelper
         ];
     }
 
+    /**
+     * Extensions that must never be stored, regardless of where they appear in the
+     * file name. Includes the numbered and alternate PHP handler suffixes, because a
+     * server configured with `AddHandler php-script .php5` executes them exactly as
+     * it would a `.php`.
+     */
+    public const FORBIDDEN_EXTENSIONS = [
+        'php',
+        'php3',
+        'php4',
+        'php5',
+        'php7',
+        'php8',
+        'phps',
+        'pht',
+        'phtm',
+        'phtml',
+        'phar',
+        'inc',
+        'js',
+        'mjs',
+        'cjs',
+        'py',
+        'sh',
+        'bash',
+        'bat',
+        'cmd',
+        'pl',
+        'cgi',
+        'asp',
+        'aspx',
+        'asa',
+        'asax',
+        'ascx',
+        'ashx',
+        'asmx',
+        'cfm',
+        'cfml',
+        'jsp',
+        'jspx',
+        'jspf',
+        'exe',
+        'msi',
+        'com',
+        'scr',
+        'dll',
+        'so',
+        'dylib',
+        'rb',
+        'jar',
+        'war',
+        'ps1',
+        'psm1',
+        'vbs',
+        'vbe',
+        'wsf',
+        'wsh',
+        'jse',
+        'reg',
+        'lnk',
+        'html',
+        'htm',
+        'xhtml',
+        'shtml',
+        'hta',
+        'svgz',
+        'zip',
+        'rar',
+        '7z',
+        'tar',
+        'gz',
+        'tgz',
+        'bz2',
+        'xz',
+        'iso',
+        'dmg',
+        'cab',
+    ];
+
+    /**
+     * Detected media types that must never be stored whatever the file is called.
+     *
+     * `text/x-php` matters as much as `application/x-php`: libmagic reports the former
+     * for a plain `<?php ...` script, so a backend script renamed `adminer.jpg` was
+     * detected correctly and still passed, because only the `application/*` spelling was
+     * listed.
+     */
+    public const FORBIDDEN_MIME_TYPES = [
+        'application/x-php',
+        'text/x-php',
+        'application/x-httpd-php',
+        'application/x-httpd-php-source',
+        'application/x-javascript',
+        'text/javascript',
+        'application/javascript',
+        'text/x-python',
+        'application/x-python-code',
+        'application/x-sh',
+        'text/x-sh',
+        'text/x-shellscript',
+        'application/x-shellscript',
+        'application/x-bat',
+        'application/x-msdos-program',
+        'application/x-perl',
+        'text/x-perl',
+        'application/x-cgi',
+        'text/x-asp',
+        'application/x-aspx',
+        'application/x-jsp',
+        'application/x-msdownload',
+        'application/x-dosexec',
+        'application/x-executable',
+        'application/x-sharedlib',
+        'application/x-mach-binary',
+        'application/java-archive',
+        'application/x-java-applet',
+        'application/x-ruby',
+        'text/x-ruby',
+        'text/html',
+        'application/xhtml+xml',
+        'application/zip',
+        'application/x-rar-compressed',
+        'application/vnd.rar',
+        'application/x-7z-compressed',
+        'application/x-tar',
+        'application/gzip',
+        'application/x-gzip',
+        'application/x-bzip2',
+        'application/x-xz',
+    ];
+
+    /**
+     * Detected types that say nothing about what a file really is.
+     *
+     * libmagic falls back to these for short, empty or unrecognised payloads, so they
+     * cannot contradict a declared extension — a `.jpg` reported as `text/plain` may be a
+     * truncated fixture as easily as an attack. Anything genuinely dangerous in this
+     * group is caught by FORBIDDEN_MIME_TYPES or by the executable-content scan instead.
+     */
+    private const INCONCLUSIVE_MIME_TYPES = [
+        'text/plain',
+        'application/octet-stream',
+        'application/x-empty',
+        'inode/x-empty',
+    ];
+
+    /**
+     * Extension families used to check a file's real content against the name it was
+     * given. Office and PDF types are deliberately absent: their detected types vary too
+     * much across libmagic builds to gate on, and they are covered by the blocklists.
+     */
+    private const EXTENSION_MIME_PREFIXES = [
+        'jpg'  => ['image/'],
+        'jpeg' => ['image/'],
+        'png'  => ['image/'],
+        'gif'  => ['image/'],
+        'webp' => ['image/'],
+        'bmp'  => ['image/'],
+        'tif'  => ['image/'],
+        'tiff' => ['image/'],
+        'avif' => ['image/'],
+        'heic' => ['image/'],
+        'heif' => ['image/'],
+        'ico'  => ['image/', 'application/octet-stream'],
+        'svg'  => ['image/svg+xml', 'text/xml', 'application/xml', 'text/plain'],
+        'mp4'  => ['video/', 'application/mp4'],
+        'mov'  => ['video/'],
+        'webm' => ['video/', 'audio/'],
+        'mkv'  => ['video/'],
+        'avi'  => ['video/'],
+        'flv'  => ['video/'],
+        'wmv'  => ['video/'],
+        'm4v'  => ['video/'],
+        'mp3'  => ['audio/', 'application/octet-stream'],
+        'wav'  => ['audio/'],
+        'ogg'  => ['audio/', 'video/', 'application/ogg'],
+        'flac' => ['audio/'],
+        'aac'  => ['audio/'],
+        'm4a'  => ['audio/', 'video/mp4'],
+        'wma'  => ['audio/', 'video/x-ms-asf'],
+    ];
+
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
-        $forbiddenExtensions = [
-            'php',
-            'phtml',
-            'phar',
-            'js',
-            'py',
-            'sh',
-            'bat',
-            'pl',
-            'cgi',
-            'asp',
-            'aspx',
-            'jsp',
-            'exe',
-            'rb',
-            'jar',
-            'html',
-            'htm',
-            'xhtml',
-            'shtml',
-            'hta',
-        ];
+        $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
 
-        $forbiddenMimeTypes = [
-            'application/x-php',
-            'application/x-javascript',
-            'text/javascript',
-            'application/javascript',
-            'text/x-python',
-            'application/x-sh',
-            'application/x-bat',
-            'application/x-perl',
-            'application/x-cgi',
-            'text/x-asp',
-            'application/x-aspx',
-            'application/x-jsp',
-            'application/x-msdownload',
-            'application/java-archive',
-            'application/x-ruby',
-            'text/html',
-            'application/xhtml+xml',
-        ];
+        $forbiddenMimeTypes = self::FORBIDDEN_MIME_TYPES;
 
         $forbiddenFileNames = [
             '.DS_Store',
@@ -279,7 +422,169 @@ class AssetHelper
             return true;
         }
 
-        return ($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes));
+        if (self::hasForbiddenExtensionSegment($fileName, $forbiddenExtensions)) {
+            return true;
+        }
+
+        if (($extension && in_array($extension, $forbiddenExtensions)) || ($mimeType && in_array($mimeType, $forbiddenMimeTypes))) {
+            return true;
+        }
+
+        $detected = self::detectMimeType($realPath) ?: $mimeType;
+
+        if ($detected && in_array(strtolower($detected), $forbiddenMimeTypes, true)) {
+            return true;
+        }
+
+        if (self::mismatchesDeclaredExtension($extension, $detected)) {
+            return true;
+        }
+
+        return self::hasExecutableContent($realPath, $extension);
+    }
+
+    /**
+     * Read the media type from the bytes on disk rather than trusting the client.
+     *
+     * `UploadedFile::getMimeType()` already guesses from content, but not every caller
+     * supplies one, and the browser-supplied type is attacker-controlled.
+     */
+    protected static function detectMimeType(?string $realPath): ?string
+    {
+        if (! $realPath || ! is_file($realPath) || ! function_exists('finfo_open')) {
+            return null;
+        }
+
+        $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+
+        if ($finfo === false) {
+            return null;
+        }
+
+        try {
+            $detected = @finfo_file($finfo, $realPath);
+
+            return is_string($detected) && $detected !== '' ? strtolower($detected) : null;
+        } finally {
+            @finfo_close($finfo);
+        }
+    }
+
+    /**
+     * Reject a file whose bytes disagree with the extension it claims.
+     *
+     * Renaming `adminer.php` to `adminer.jpg` defeats every name-based rule — the name
+     * carries one plausible extension and nothing else looks wrong. Requiring a `.jpg` to
+     * actually contain an image closes that, and closes the same trick for every other
+     * media extension at once.
+     *
+     * Extensions outside the map are not gated here, so documents and archives keep
+     * relying on the blocklists above.
+     */
+    protected static function mismatchesDeclaredExtension(?string $extension, ?string $detectedMime): bool
+    {
+        if (! $extension || ! $detectedMime) {
+            return false;
+        }
+
+        $allowedPrefixes = self::EXTENSION_MIME_PREFIXES[strtolower($extension)] ?? null;
+
+        if ($allowedPrefixes === null) {
+            return false;
+        }
+
+        if (in_array($detectedMime, self::INCONCLUSIVE_MIME_TYPES, true)) {
+            return false;
+        }
+
+        foreach ($allowedPrefixes as $prefix) {
+            if (str_starts_with($detectedMime, $prefix)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Reject media whose bytes carry a script the server could be tricked into running.
+     *
+     * A `GIF89a<?php ... ?>` polyglot is a genuine GIF by magic number, so the blocklists
+     * and the extension check both pass it; only reading the bytes catches it.
+     *
+     * Scoped to the media extensions because that is where such a marker is anomalous,
+     * and matched only against long markers. Scanning every type for short ones produced
+     * false positives on legitimate binaries — `<%` occurs by chance at offset 1544 of a
+     * perfectly ordinary generated PDF, and `<?=` is short enough to collide roughly once
+     * in two thousand 8 KB files. A shebang only means anything at offset 0.
+     */
+    protected static function hasExecutableContent(?string $realPath, ?string $extension): bool
+    {
+        if (! $realPath || ! is_file($realPath) || ! $extension) {
+            return false;
+        }
+
+        if (! array_key_exists(strtolower($extension), self::EXTENSION_MIME_PREFIXES)) {
+            return false;
+        }
+
+        $handle = @fopen($realPath, 'rb');
+
+        if ($handle === false) {
+            return false;
+        }
+
+        try {
+            $head = (string) @fread($handle, 8192);
+        } finally {
+            @fclose($handle);
+        }
+
+        if ($head === '') {
+            return false;
+        }
+
+        if (str_starts_with($head, '#!/')) {
+            return true;
+        }
+
+        if (stripos($head, '<?php') !== false) {
+            return true;
+        }
+
+        return (bool) preg_match('/<script[\s>]/i', $head);
+    }
+
+    /**
+     * Reject a name carrying a forbidden extension anywhere in it, not just as the
+     * final segment.
+     *
+     * Callers derive `$extension` from `getClientOriginalExtension()` or
+     * `pathinfo(PATHINFO_EXTENSION)`, both of which return only the last segment, so
+     * `shell.php.jpg` presented as `jpg` passed every check and was stored verbatim.
+     * Apache's `mod_mime` matches handlers against *any* extension segment, so that
+     * file executes as PHP on a default LAMP host.
+     *
+     * Trailing dots and spaces are stripped per segment because Windows and some
+     * upload paths silently discard them, turning `shell.php.` back into `shell.php`.
+     */
+    protected static function hasForbiddenExtensionSegment(?string $fileName, array $forbiddenExtensions): bool
+    {
+        if (! $fileName) {
+            return false;
+        }
+
+        $segments = explode('.', strtolower(basename(str_replace('\\', '/', $fileName))));
+
+        array_shift($segments);
+
+        foreach ($segments as $segment) {
+            if (in_array(trim($segment, " \t\n\r\0\x0B."), $forbiddenExtensions, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function isPlaceholderImage(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool

@@ -2,10 +2,10 @@
 
 ## Version 3.0.1
 
-### Features & Enhancements
+### Bug Fixes
 
-* Added support for exporting and importing bulk products with associated DAM assets.
-* Enabled bulk product import using CSV/XLSX with ZIP packages containing product media and DAM assets.
+* Fixed issues with bulk product export/import and associated DAM assets.
+* Fixed bulk CSV/XLSX product imports with ZIP packages containing product media and DAM assets.
 
 
 ## Version 3.0.0

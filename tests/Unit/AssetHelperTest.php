@@ -238,3 +238,81 @@ it('should keep using the preview route for resizable images on s3', function ()
         ->toContain(route('admin.dam.file.preview', [], false))
         ->toContain("path={$encodedPath}");
 });
+
+it('rejects a forbidden extension hidden behind an allowed one', function (string $fileName, string $extension, string $mimeType) {
+    expect(AssetHelper::isForbiddenFile($extension, $mimeType, $fileName))->toBeTrue();
+})->with([
+    'php masked as jpg'      => ['test.php.jpg', 'jpg', 'image/jpeg'],
+    'numbered php handler'   => ['shell.php5.png', 'png', 'image/png'],
+    'phtml masked as webp'   => ['evil.phtml.webp', 'webp', 'image/webp'],
+    'trailing dot and space' => ['shell.php. ', 'php', 'text/x-php'],
+    'html masked as gif'     => ['page.html.gif', 'gif', 'image/gif'],
+    'executable masked'      => ['setup.exe.png', 'png', 'image/png'],
+]);
+
+it('rejects archive uploads', function (string $fileName, string $extension, string $mimeType) {
+    expect(AssetHelper::isForbiddenFile($extension, $mimeType, $fileName))->toBeTrue();
+})->with([
+    'zip'    => ['bundle.zip', 'zip', 'application/zip'],
+    'rar'    => ['bundle.rar', 'rar', 'application/vnd.rar'],
+    'seven'  => ['bundle.7z', '7z', 'application/x-7z-compressed'],
+    'tar gz' => ['backup.tar.gz', 'gz', 'application/gzip'],
+]);
+
+it('still permits legitimate asset uploads', function (string $fileName, string $extension, string $mimeType) {
+    expect(AssetHelper::isForbiddenFile($extension, $mimeType, $fileName))->toBeFalse();
+})->with([
+    'webp photo'      => ['apparel-linen-shirt.webp', 'webp', 'image/webp'],
+    'jpg photo'       => ['photo.jpg', 'jpg', 'image/jpeg'],
+    'dotted mp4'      => ['campaign.autumn.v2.mp4', 'mp4', 'video/mp4'],
+    'podcast mp3'     => ['podcast-ep01.mp3', 'mp3', 'audio/mpeg'],
+    'pdf datasheet'   => ['datasheet-linen-shirt.pdf', 'pdf', 'application/pdf'],
+    'xlsx price list' => ['price-list-2026-audio.xlsx', 'xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    'svg logo'        => ['meridian-logo.svg', 'svg', 'image/svg+xml'],
+]);
+
+/**
+ * A backend script renamed to a media extension carries one plausible extension and
+ * nothing else suspicious in its name, so only its bytes give it away.
+ */
+it('rejects a script renamed to a media extension', function (string $fileName, string $content) {
+    $path = tempnam(sys_get_temp_dir(), 'damsec_');
+    file_put_contents($path, $content);
+
+    try {
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        expect(AssetHelper::isForbiddenFile($extension, mime_content_type($path), $fileName, $path))->toBeTrue();
+    } finally {
+        @unlink($path);
+    }
+})->with([
+    'php renamed to jpg'   => ['adminer.jpg', "<?php\neval(\$_REQUEST['x']);\n"],
+    'shell renamed to png' => ['evil.png', "#!/bin/bash\nrm -rf /\n"],
+    'gif php polyglot'     => ['polyglot.gif', "GIF89a<?php system(\$_GET['c']); ?>"],
+    'php renamed to mp4'   => ['clip.mp4', "<?php phpinfo();\n"],
+    'script in svg'        => ['x.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'],
+]);
+
+it('accepts genuine media from the demo library', function (string $relativePath) {
+    $path = __DIR__.'/../../src/Database/Data/demo-assets/Root/'.$relativePath;
+
+    expect(is_file($path))->toBeTrue();
+
+    $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+    expect(AssetHelper::isForbiddenFile($extension, mime_content_type($path), basename($path), $path))->toBeFalse();
+})->with([
+    'webp photo'  => ['Product Photography/Apparel/apparel-linen-shirt.webp'],
+    'jpg photo'   => ['Product Photography/Apparel/apparel-tailored-chinos.jpg'],
+    'png logo'    => ['Brand/Logos/meridian-logo-primary.png'],
+    'svg logo'    => ['Brand/Logos/meridian-logo.svg'],
+    'mp4 video'   => ['Marketing/Campaign Videos/campaign-audio-launch.mp4'],
+    'webm video'  => ['Marketing/Social Clips/social-loop-outdoor.webm'],
+    'mp3 audio'   => ['Audio/Podcasts/podcast-ep01-designing-the-catalog.mp3'],
+    'wav audio'   => ['Audio/Sound Logos/sound-logo-primary.wav'],
+    'pdf doc'     => ['Documents/Datasheets/datasheet-linen-shirt.pdf'],
+    'docx doc'    => ['Documents/Contracts/contract-supplier-agreement.docx'],
+    'xlsx sheet'  => ['Documents/Price Lists/price-list-2026-audio.xlsx'],
+    'csv list'    => ['Documents/Price Lists/price-list-2026-outdoor.csv'],
+]);

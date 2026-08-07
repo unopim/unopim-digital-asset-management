@@ -177,7 +177,7 @@ class AssetTreeIngestor
                 return true;
             }
 
-            return $disk->checksum($entry) !== md5_file($sourceFile);
+            return $disk->checksum($entry, ['checksum_algo' => 'md5']) !== md5_file($sourceFile);
         } catch (\Throwable) {
             return true;
         }

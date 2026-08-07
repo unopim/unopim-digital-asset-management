@@ -50,11 +50,15 @@
             },
         },
         mounted() {
-            this.$emitter.on('update-current-item', (data) => {
+            this.$emitter.on('update-current-item', this._hUpdateCurrentItem = (data) => {
                 if (data.id === this.item.id) {
                     this.item = data;
                 }
             });
+        },
+
+        beforeUnmount() {
+            if (this._hUpdateCurrentItem) this.$emitter.off('update-current-item', this._hUpdateCurrentItem);
         },
         methods: {
             setFilters(item) {
@@ -317,7 +321,7 @@
                 this.fetchChildCounts(this.item.children.map((child) => child.id));
             }
 
-            this.$emitter.on('current-item-expanded', (data) => {
+            this.$emitter.on('current-item-expanded', this._hCurrentItemExpanded = (data) => {
                 if (data.id !== this.item.id) return;
                 this.isOpen = true;
                 if (this.item.has_children && ! this.childrenLoaded && ! this.childrenLoading) {
@@ -328,15 +332,21 @@
                 }
             });
 
-            this.$emitter.on('update-current-item', (data) => {
+            this.$emitter.on('update-current-item', this._hUpdateCurrentItem = (data) => {
                 if (data.id === this.item.id) this.item = data;
             });
 
-            this.$emitter.on('invalidate-dir-assets', (dirId) => {
+            this.$emitter.on('invalidate-dir-assets', this._hInvalidateDirAssets = (dirId) => {
                 if (dirId == null || dirId == this.item.id) {
                     this.invalidateAssetCache();
                 }
             });
+        },
+
+        beforeUnmount() {
+            if (this._hCurrentItemExpanded) this.$emitter.off('current-item-expanded', this._hCurrentItemExpanded);
+            if (this._hUpdateCurrentItem)   this.$emitter.off('update-current-item', this._hUpdateCurrentItem);
+            if (this._hInvalidateDirAssets) this.$emitter.off('invalidate-dir-assets', this._hInvalidateDirAssets);
         },
         watch: {
 
@@ -1084,6 +1094,23 @@
 
         beforeUnmount() {
             this.$axios.interceptors.response.eject(this._csrfInterceptorId);
+
+            const handlers = {
+                'uploaded-assets':           this._hUploadedAssets,
+                'delete-assets':             this._hDeleteAssets,
+                'dam:grid-busy':             this._hDamGridBusy,
+                'dam:cancel-folder-upload':  this._hDamCancelFolderUpload,
+                'dam:folder-drop-uploaded':  this._hDamFolderDropUploaded,
+                'dam:reveal-directory':      this._hDamRevealDirectory,
+                'dam:explorer-tree-sync':    this._hDamExplorerTreeSync,
+                'dam:tree-reload':           this._hDamTreeReload,
+                'dam:open-create-dir':       this._hDamOpenCreateDir,
+                'dam:open-rename-dir':       this._hDamOpenRenameDir,
+            };
+
+            Object.entries(handlers).forEach(([event, handler]) => {
+                if (handler) this.$emitter.off(event, handler);
+            });
         },
 
         mounted() {
@@ -1106,7 +1133,7 @@
                 }
             );
 
-            this.$emitter.on('uploaded-assets', (data) => {
+            this.$emitter.on('uploaded-assets', this._hUploadedAssets = (data) => {
                 const uploadedCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
                 if (uploadedCount > 0 && this.selectedItem) {
                     this.adjustAncestorCounts(this.selectedItem.id, uploadedCount);
@@ -1114,7 +1141,7 @@
                 this.setAssets(data);
             });
 
-            this.$emitter.on('delete-assets', (payload = {}) => {
+            this.$emitter.on('delete-assets', this._hDeleteAssets = (payload = {}) => {
 
                 const deletedCount = Number(payload.count || 0);
                 if (deletedCount > 0 && this.selectedItem) {
@@ -1123,24 +1150,24 @@
                 this.invalidateAllAssetCaches();
             });
 
-            this.$emitter.on('dam:grid-busy', (busy) => {
+            this.$emitter.on('dam:grid-busy', this._hDamGridBusy = (busy) => {
                 this.gridBusy = !! busy;
             });
 
-            this.$emitter.on('dam:cancel-folder-upload', () => {
+            this.$emitter.on('dam:cancel-folder-upload', this._hDamCancelFolderUpload = () => {
                 if (this._folderAbortController) {
                     this._folderAbortController.abort();
                 }
             });
 
-            this.$emitter.on('dam:folder-drop-uploaded', ({ directoryId, count } = {}) => {
+            this.$emitter.on('dam:folder-drop-uploaded', this._hDamFolderDropUploaded = ({ directoryId, count } = {}) => {
                 if (count > 0 && directoryId) {
                     this.adjustAncestorCounts(directoryId, count);
                 }
                 this.loadDirectories();
             });
 
-            this.$emitter.on('dam:reveal-directory', ({ id, silent = false } = {}) => {
+            this.$emitter.on('dam:reveal-directory', this._hDamRevealDirectory = ({ id, silent = false } = {}) => {
 
                 if (! this.formattedItems || ! this.formattedItems[0]) {
                     this._pendingReveal = { id, silent };
@@ -1149,7 +1176,7 @@
                 this.revealDirectory(id, silent);
             });
 
-            this.$emitter.on('dam:explorer-tree-sync', async ({ id, fromTree } = {}) => {
+            this.$emitter.on('dam:explorer-tree-sync', this._hDamExplorerTreeSync = async ({ id, fromTree } = {}) => {
                 if (id == null) return;
                 if (! this.formattedItems || ! this.formattedItems[0]) {
 
@@ -1186,11 +1213,11 @@
                 }));
             });
 
-            this.$emitter.on('dam:tree-reload', () => {
+            this.$emitter.on('dam:tree-reload', this._hDamTreeReload = () => {
                 this.loadDirectories();
             });
 
-            this.$emitter.on('dam:open-create-dir', ({ item } = {}) => {
+            this.$emitter.on('dam:open-create-dir', this._hDamOpenCreateDir = ({ item } = {}) => {
                 if (! item?.id) return;
                 this.selectedItem = item;
                 this.directoryCreate = true;
@@ -1198,7 +1225,7 @@
                 this.$refs.directoryCreateOrRenameModal.toggle();
             });
 
-            this.$emitter.on('dam:open-rename-dir', ({ item } = {}) => {
+            this.$emitter.on('dam:open-rename-dir', this._hDamOpenRenameDir = ({ item } = {}) => {
                 if (! item?.id) return;
                 this.selectedItem = item;
                 this.directoryCreate = false;
@@ -1335,7 +1362,7 @@
                     container.scrollTo({ top: scrollTop, behavior: 'smooth' });
                 }
 
-                this.setFilters(target);
+                this.setFilters(target, 'directory', silent);
             },
 
             async loadNodeChildrenUntilFound(node, targetId) {
@@ -1421,7 +1448,7 @@
                 return path;
             },
 
-            setFilters(item, type = "directory") {
+            setFilters(item, type = "directory", silent = false) {
                 this.selectedItem = item;
                 this.parentItem = item;
 
@@ -1436,14 +1463,17 @@
                     this.$emitter.emit('current-directory', this.parentItem);
                 }
                 this.emitBreadcrumb(this.parentItem);
-                this.$emitter.emit('data-grid:reset-all-filters');
-                this.$emitter.emit('data-grid:filter', {
-                    column: {
-                        column: column,
-                        index: column
-                    },
-                    value
-                });
+
+                if (! silent) {
+                    this.$emitter.emit('data-grid:reset-all-filters');
+                    this.$emitter.emit('data-grid:filter', {
+                        column: {
+                            column: column,
+                            index: column
+                        },
+                        value
+                    });
+                }
 
                 this.closeContextMenu();
 
