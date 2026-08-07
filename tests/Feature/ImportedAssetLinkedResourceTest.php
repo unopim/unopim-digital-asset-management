@@ -8,10 +8,6 @@ use Webkul\Attribute\Models\AttributeFamily;
 use Webkul\DAM\Models\Asset;
 use Webkul\Product\Models\Product;
 
-/**
- * Builds a product carrying an asset attribute, written the way the importer writes
- * it — straight to the `values` column, without going through ProductRepository.
- */
 function damImportedProductFixture(string $scope = 'common', bool $scoped = false): array
 {
     $assetCode = 'asset_'.Str::random(8);
@@ -42,6 +38,7 @@ function damImportedProductFixture(string $scope = 'common', bool $scoped = fals
 
     $product = Product::create([
         'sku'                 => 'IMP-'.Str::random(8),
+        'type'                => 'simple',
         'attribute_family_id' => $family->id,
     ]);
 
@@ -101,11 +98,6 @@ it('ignores an empty batch payload', function () {
     expect(DB::table('dam_asset_resource_mappings')->count())->toBe(0);
 });
 
-/**
- * The DAM product importer stores resolved ids the way
- * `Webkul\DAM\Helpers\Importers\Product\Importer::prepareAttributeValues()` writes them —
- * `implode(',', $assets)`, a comma-separated string rather than an array.
- */
 it('links assets stored as a comma-separated string, as the importer writes them', function () {
     $assetCode = 'asset_'.Str::random(8);
 
@@ -125,6 +117,7 @@ it('links assets stored as a comma-separated string, as the importer writes them
 
     $product = Product::create([
         'sku'                 => 'IMP-'.Str::random(8),
+        'type'                => 'simple',
         'attribute_family_id' => $family->id,
     ]);
 
