@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" width="560" height="140" role="img" aria-label="Meridian Goods and Supply">
+  <rect x="16" y="22" width="96" height="96" rx="22" fill="#1f4f47"/>
+  <circle cx="64" cy="45" r="7.5" fill="#8fb3ac"/>
+  <path d="M38 92 L64 58 L90 92" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="140" y="82" font-family="Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#1f4f47" textLength="392" lengthAdjust="spacingAndGlyphs">MERIDIAN</text>
+  <text x="142" y="110" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#7a8b87" textLength="330" lengthAdjust="spacingAndGlyphs">GOODS &amp; SUPPLY</text>
+</svg>

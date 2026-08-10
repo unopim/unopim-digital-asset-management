@@ -49,7 +49,7 @@ class DamDemoDataInstaller
 
             return DB::table('dam_directories')
                 ->where('parent_id', $root->id)
-                ->where('name', 'Accessories')
+                ->where('name', 'Brand')
                 ->exists();
         } catch (Throwable) {
             return false;
@@ -84,7 +84,7 @@ class DamDemoDataInstaller
         }
 
         DB::table('dam_tags')
-            ->whereIn('name', ['Accessories', 'Audio and Video', 'Clothes', 'Documents'])
+            ->whereIn('name', ['Audio', 'Brand', 'Documents', 'Marketing', 'Product Photography'])
             ->delete();
 
         Directory::fixTree();

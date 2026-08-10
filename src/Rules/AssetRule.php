@@ -13,7 +13,9 @@ class AssetRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
-        $value = array_filter($value);
+        $value = array_filter(is_array($value)
+            ? $value
+            : array_map(trim(...), explode(',', (string) $value)));
 
         if ($this->productAttribute->is_required && empty($value)) {
             $fail(trans('dam::app.admin.validation.asset.required'));

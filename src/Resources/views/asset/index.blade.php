@@ -149,7 +149,7 @@
                         this.$emitter.emit('dam:reveal-directory', { id: Number(dirId), silent: true });
                     }
 
-                    this.$emitter.on('dam:toggle-sidebar', () => {
+                    this._onToggleSidebar = () => {
                         if (this.isDesktop()) {
                             this.showSidebar = !this.showSidebar;
                             try { localStorage.setItem('dam_show_sidebar', this.showSidebar); } catch {}
@@ -157,7 +157,8 @@
                         } else {
                             this.drawerOpen = !this.drawerOpen;
                         }
-                    });
+                    };
+                    this.$emitter.on('dam:toggle-sidebar', this._onToggleSidebar);
 
                     this._onSidebarKeydown = (e) => { if (e.key === 'Escape') this.drawerOpen = false; };
                     window.addEventListener('keydown', this._onSidebarKeydown);
@@ -165,12 +166,15 @@
                     this._onSidebarResize = () => { this.isDesktopView = this.isDesktop(); if (this.isDesktop()) this.drawerOpen = false; };
                     window.addEventListener('resize', this._onSidebarResize);
 
-                    this.$emitter.on('current-directory', () => { if (! this.isDesktop()) this.drawerOpen = false; });
+                    this._onSidebarDirectory = () => { if (! this.isDesktop()) this.drawerOpen = false; };
+                    this.$emitter.on('current-directory', this._onSidebarDirectory);
                 },
 
                 beforeUnmount() {
                     if (this._onSidebarKeydown) window.removeEventListener('keydown', this._onSidebarKeydown);
                     if (this._onSidebarResize) window.removeEventListener('resize', this._onSidebarResize);
+                    if (this._onToggleSidebar) this.$emitter.off('dam:toggle-sidebar', this._onToggleSidebar);
+                    if (this._onSidebarDirectory) this.$emitter.off('current-directory', this._onSidebarDirectory);
                 },
 
                 methods: {
@@ -406,37 +410,45 @@
                 };
                 document.addEventListener('click', this._linkClickHandler, true);
 
-                this.$emitter.on('current-directory', (data) => {
+                this._onCurrentDirectory = (data) => {
                     this.currentDirectory = data;
-                });
+                };
 
-                this.$emitter.on('dam:tree-busy', (busy) => {
+                this._onTreeBusy = (busy) => {
                     this.treeBusy = !! busy;
-                });
+                };
 
-                this.$emitter.on('dam:directory-granted', (id) => {
+                this._onDirectoryGranted = (id) => {
                     const numId = Number(id);
                     if (! this.localAccessibleIds.map(Number).includes(numId)) {
                         this.localAccessibleIds.push(numId);
                     }
-                });
+                };
 
-                this.$emitter.on('dam:upload-files', (formData) => {
+                this._onUploadFiles = (formData) => {
                     if (this.isUploading) return;
                     this.handleFileUpload(formData);
-                });
+                };
 
-                this.$emitter.on('dam:folder-upload-start', () => {
+                this._onFolderUploadStart = () => {
                     this.isFolderUploading = true;
-                });
+                };
 
-                this.$emitter.on('dam:folder-upload-end', () => {
+                this._onFolderUploadEnd = () => {
                     this.isFolderUploading = false;
-                });
+                };
 
-                this.$emitter.on('dam:drop-upload-active', (count) => {
+                this._onDropUploadActive = (count) => {
                     this.dropActiveCount = count;
-                });
+                };
+
+                this.$emitter.on('current-directory', this._onCurrentDirectory);
+                this.$emitter.on('dam:tree-busy', this._onTreeBusy);
+                this.$emitter.on('dam:directory-granted', this._onDirectoryGranted);
+                this.$emitter.on('dam:upload-files', this._onUploadFiles);
+                this.$emitter.on('dam:folder-upload-start', this._onFolderUploadStart);
+                this.$emitter.on('dam:folder-upload-end', this._onFolderUploadEnd);
+                this.$emitter.on('dam:drop-upload-active', this._onDropUploadActive);
             },
 
             watch: {
@@ -571,6 +583,14 @@
             beforeUnmount() {
                 window.removeEventListener('beforeunload', this._beforeUnloadHandler);
                 document.removeEventListener('click', this._linkClickHandler, true);
+
+                if (this._onCurrentDirectory)   this.$emitter.off('current-directory', this._onCurrentDirectory);
+                if (this._onTreeBusy)           this.$emitter.off('dam:tree-busy', this._onTreeBusy);
+                if (this._onDirectoryGranted)   this.$emitter.off('dam:directory-granted', this._onDirectoryGranted);
+                if (this._onUploadFiles)        this.$emitter.off('dam:upload-files', this._onUploadFiles);
+                if (this._onFolderUploadStart)  this.$emitter.off('dam:folder-upload-start', this._onFolderUploadStart);
+                if (this._onFolderUploadEnd)    this.$emitter.off('dam:folder-upload-end', this._onFolderUploadEnd);
+                if (this._onDropUploadActive)   this.$emitter.off('dam:drop-upload-active', this._onDropUploadActive);
             },
         })
     </script>

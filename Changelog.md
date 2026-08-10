@@ -1,5 +1,13 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 3.0.1
+
+### Bug Fixes
+
+* Fixed issues with bulk product export/import and associated DAM assets.
+* Fixed bulk CSV/XLSX product imports with ZIP packages containing product media and DAM assets.
+
+
 ## Version 3.0.0
 
 ### Features & Enhancements

@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
@@ -256,7 +257,7 @@ class ExplorerDataController extends Controller
             ->get()
             ->map(function ($asset) {
                 $asset->path = $asset->path
-                    ? route('admin.dam.file.thumbnail', ['path' => urlencode($asset->path)])
+                    ? AssetHelper::getThumbnailUrl($asset->path)
                     : '';
 
                 return $asset;

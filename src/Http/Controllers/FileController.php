@@ -31,19 +31,47 @@ class FileController
 
     protected function resolveOriginalAssetPath(string $path): string
     {
-        if (Str::startsWith($path, 'thumbnails/')) {
-            return Str::after($path, 'thumbnails/');
-        }
+        $previous = null;
 
-        if (Str::startsWith($path, 'preview/')) {
-            $rest = Str::after($path, 'preview/');
+        while ($previous !== $path) {
+            $previous = $path;
 
-            $slash = strpos($rest, '/');
+            if (Str::startsWith($path, 'thumbnails/')) {
+                $path = Str::after($path, 'thumbnails/');
 
-            return $slash === false ? $rest : substr($rest, $slash + 1);
+                continue;
+            }
+
+            if (Str::startsWith($path, 'preview/')) {
+                $rest = Str::after($path, 'preview/');
+
+                $slash = strpos($rest, '/');
+
+                $path = $slash === false ? $rest : substr($rest, $slash + 1);
+            }
         }
 
         return $path;
+    }
+
+    protected function resolveAssetForPath(string $path): ?Asset
+    {
+        $original = $this->resolveOriginalAssetPath($path);
+
+        $candidates = array_values(array_unique(array_filter([
+            $original,
+            preg_replace('/\.jpg$/i', '', $original),
+        ])));
+
+        $asset = Asset::whereIn('path', $candidates)->first();
+
+        if ($asset) {
+            return $asset;
+        }
+
+        return Asset::where('meta_data->thumbnail_path', $path)
+            ->orWhere('meta_data->cover_art_path', $path)
+            ->first();
     }
 
     protected function assertPathAllowed(string $path)
@@ -53,10 +81,13 @@ class FileController
             return null;
         }
 
-        $original = $this->resolveOriginalAssetPath($path);
-        $asset = Asset::where('path', $original)->first();
+        $asset = $this->resolveAssetForPath($path);
 
         if (! $asset) {
+            if (Storage::disk(Directory::getAssetDisk())->exists($path)) {
+                return abort(403, trans('dam::app.admin.permissions.unauthorized'));
+            }
+
             return null;
         }
 

@@ -25,6 +25,14 @@ class EventServiceProvider extends ServiceProvider
             'Webkul\DAM\Listeners\Product@afterCreateOrupdate',
         ],
 
+        'data_transfer.imports.batch.product.created.after' => [
+            'Webkul\DAM\Listeners\Product@afterImportBatch',
+        ],
+
+        'data_transfer.imports.batch.product.updated.after' => [
+            'Webkul\DAM\Listeners\Product@afterImportBatch',
+        ],
+
         'catalog.category.create.after' => [
             'Webkul\DAM\Listeners\Category@afterUpdateOrCreate',
         ],

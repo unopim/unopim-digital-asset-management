@@ -8,10 +8,14 @@ use Webkul\DAM\Contracts\Asset;
 use Webkul\DAM\DataGrids\Asset\PickerDataGrid;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Repositories\AssetRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetPickerController extends Controller
 {
-    public function __construct(protected AssetRepository $assetRepository) {}
+    public function __construct(
+        protected AssetRepository $assetRepository,
+        protected DirectoryPermissionService $permissionService,
+    ) {}
 
     public function index()
     {
@@ -32,7 +36,18 @@ class AssetPickerController extends Controller
             $assetIds = str_contains($assetIds, ',') ? explode(',', $assetIds) : [$assetIds];
         }
 
-        $assets = $this->assetRepository->findWhereIn('id', $assetIds);
+        $query = $this->assetRepository->getModel()->newQuery()->whereIn('id', $assetIds);
+
+        if (! $this->permissionService->bypass()) {
+            $grantedDirectoryIds = $this->permissionService->directlyGrantedIds();
+
+            $query->whereHas(
+                'directories',
+                fn ($directories) => $directories->whereIn('dam_directories.id', $grantedDirectoryIds)
+            );
+        }
+
+        $assets = $query->get();
 
         $response = [];
 
@@ -51,7 +66,7 @@ class AssetPickerController extends Controller
 
         return [
             'id'                => $assetId,
-            'url'               => route('admin.dam.file.thumbnail', ['path' => urlencode($filePath)]),
+            'url'               => AssetHelper::getThumbnailUrl($filePath),
             'value'             => $assetId,
             'file_name'         => AssetHelper::getDisplayFileName($asset->file_name),
             'file_type'         => $asset->file_type,

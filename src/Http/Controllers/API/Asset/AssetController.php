@@ -601,16 +601,11 @@ class AssetController extends Controller
         $this->damAuthorizeAsset((int) $id);
 
         $request->validate([
-            'file_name' => 'string',
-            'file_type' => 'string',
-            'file_size' => 'integer',
-            'mime_type' => 'string',
-            'extension' => 'string',
-            'path'      => 'string',
+            'file_name' => ['sometimes', 'string', 'max:255', 'regex:/^(?!\.)[\w .-]+$/'],
             'tags'      => 'array',
         ]);
 
-        $asset->update($request->only(['file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'path']));
+        $asset->update($request->only(['file_name']));
 
         if ($request->has('tags')) {
             $invalidTags = array_diff($request->input('tags'), Tag::pluck('id')->toArray());

@@ -869,15 +869,10 @@ class AssetController extends Controller
         }
 
         $request->validate([
-            'file_name' => 'string',
-            'file_type' => 'string',
-            'file_size' => 'integer',
-            'mime_type' => 'string',
-            'extension' => 'string',
-            'path'      => 'string',
+            'file_name' => ['sometimes', 'string', 'max:255', 'regex:/^(?!\.)[\w .-]+$/'],
         ]);
 
-        $asset->update($request->only(['file_name', 'file_type', 'file_size', 'mime_type', 'extension', 'path']));
+        $asset->update($request->only(['file_name']));
 
         return response()->json([
             'success' => true,
@@ -1079,6 +1074,12 @@ class AssetController extends Controller
 
     public function customDownload(Request $request, int $id)
     {
+        abort_unless(
+            bouncer()->hasPermission('dam.asset.download'),
+            403,
+            trans('dam::app.admin.permissions.unauthorized')
+        );
+
         $format = $request->query('format', null);
         $height = $request->query('height', null);
         $width = $request->query('width', null);

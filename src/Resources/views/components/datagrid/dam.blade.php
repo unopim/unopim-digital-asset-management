@@ -169,36 +169,50 @@
             },
 
             mounted() {
-                this.$emitter.on('data-grid:reset-all-filters', () => {
+                this._onResetAllFilters = () => {
                     this.applied.filters.columns = [{
                         index: 'all',
                         value: []
                     }];
                     this.applied.pagination.page = 1;
-                })
+                };
 
-                this.$emitter.on('data-grid:refresh', () => this.get())
+                this._onRefresh = () => this.get();
 
-                this.$emitter.on('data-grid:filter', (data) => {
+                this._onFilter = (data) => {
                     data.value.forEach( (value, index) => {
                         this.applyFilter(data.column, value);
                     });
 
                     this.get();
-                })
+                };
 
-                this.$emitter.on('dam:tree-busy', (busy) => {
+                this._onTreeBusy = (busy) => {
                     this.treeBusy = !! busy;
-                });
+                };
 
-                this.$emitter.on('dam:tag-assign:done', ({ context } = {}) => {
+                this._onTagAssignDone = ({ context } = {}) => {
                     if (context && context !== 'legacy-datagrid') return;
                     this.applied.massActions.indices = [];
                     this.applied.massActions.meta.mode = 'none';
                     this.get();
-                });
+                };
+
+                this.$emitter.on('data-grid:reset-all-filters', this._onResetAllFilters);
+                this.$emitter.on('data-grid:refresh', this._onRefresh);
+                this.$emitter.on('data-grid:filter', this._onFilter);
+                this.$emitter.on('dam:tree-busy', this._onTreeBusy);
+                this.$emitter.on('dam:tag-assign:done', this._onTagAssignDone);
 
                 this.boot();
+            },
+
+            beforeUnmount() {
+                if (this._onResetAllFilters) this.$emitter.off('data-grid:reset-all-filters', this._onResetAllFilters);
+                if (this._onRefresh)         this.$emitter.off('data-grid:refresh', this._onRefresh);
+                if (this._onFilter)          this.$emitter.off('data-grid:filter', this._onFilter);
+                if (this._onTreeBusy)        this.$emitter.off('dam:tree-busy', this._onTreeBusy);
+                if (this._onTagAssignDone)   this.$emitter.off('dam:tag-assign:done', this._onTagAssignDone);
             },
 
             methods: {
@@ -267,6 +281,14 @@
                     const focusedName = document.activeElement?.name ?? null;
                     const focusedSelectionStart = document.activeElement?.selectionStart ?? null;
 
+                    const requestKey = JSON.stringify({ ...params, ...extraParams });
+
+                    if (this._inFlightKey === requestKey) {
+                        return;
+                    }
+
+                    this._inFlightKey = requestKey;
+
                     this.isLoading = true;
 
                     this.$refs['filterDrawer']?.close();
@@ -326,6 +348,9 @@
                                     }
                                 });
                             }
+                        })
+                        .finally(() => {
+                            this._inFlightKey = null;
                         });
                 },
 
