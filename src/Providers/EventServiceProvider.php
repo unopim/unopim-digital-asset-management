@@ -64,6 +64,14 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::style');
         });
 
+        Event::listen('unopim.admin.layout.head', static function (ViewRenderEventManager $viewRenderEventManager) {
+            if (auth()->guard('admin')->check()) {
+                return;
+            }
+
+            $viewRenderEventManager->addTemplate('dam::style');
+        });
+
         Event::listen('unopim.admin.settings.roles.edit.card.access-control.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
