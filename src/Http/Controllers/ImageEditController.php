@@ -25,6 +25,7 @@ use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\MagicAI\Enums\AiProvider;
 use Webkul\MagicAI\Models\MagicAIPlatform;
 use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
+use Webkul\Webhook\Validators\SafeWebhookUrl;
 
 class ImageEditController
 {
@@ -661,18 +662,30 @@ class ImageEditController
         };
     }
 
+    /** Re-validates api_url/extras.* URLs from the persisted row (SSRF defense-in-depth); bad values are dropped, not applied. */
     private function configureAiProvider(AiProvider $aiProvider, MagicAIPlatform $platform): void
     {
         $configKey = $aiProvider->configKey();
 
         config(["ai.providers.{$configKey}.key" => $platform->api_key]);
 
-        if ($platform->api_url) {
+        if ($platform->api_url && (SafeWebhookUrl::validate($platform->api_url)['valid'] ?? false)) {
             config(["ai.providers.{$configKey}.url" => $platform->api_url]);
         }
 
         if ($platform->extras && is_array($platform->extras)) {
             foreach ($platform->extras as $key => $value) {
+                if (is_string($value) && preg_match('#^https?://#i', $value)) {
+                    if (! (SafeWebhookUrl::validate($value)['valid'] ?? false)) {
+                        Log::warning('DAM MagicAI: dropped unsafe URL in platform extras.', [
+                            'platform' => $platform->id,
+                            'key'      => $key,
+                        ]);
+
+                        continue;
+                    }
+                }
+
                 config(["ai.providers.{$configKey}.{$key}" => $value]);
             }
         }

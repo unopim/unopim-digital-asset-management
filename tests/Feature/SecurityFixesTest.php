@@ -119,6 +119,45 @@ it('skips assets outside the admin\'s granted directories during mass delete', f
     $this->assertDatabaseHas('dam_assets', ['id' => $deniedAsset->id]);
 });
 
+it('rejects a malicious PDF upload with a specific reason, not a generic failure message', function () {
+    $this->loginAsAdmin();
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+    Storage::disk($disk)->makeDirectory('assets/New');
+
+    $directory = Directory::factory()->create(['name' => 'New', 'parent_id' => null]);
+
+    $file = UploadedFile::fake()->createWithContent(
+        'evil.pdf',
+        "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /OpenAction 2 0 R >>\nendobj\n%%EOF"
+    );
+
+    $response = $this->postJson(route('admin.dam.assets.upload'), [
+        'files'        => [$file],
+        'directory_id' => $directory->id,
+    ]);
+
+    $response->assertStatus(500)->assertJsonPath('success', false);
+    expect($response->json('message'))
+        ->toBe(trans('dam::app.admin.dam.index.directory.not-allowed'))
+        ->not->toBe(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
+
+    Storage::disk($disk)->assertDirectoryEmpty('assets/New');
+});
+
+it('blocks SSRF via a loopback URL on the asset URL-import endpoint', function () {
+    $headers = $this->getAuthenticationHeaders();
+    $directory = Directory::factory()->create(['name' => 'New', 'parent_id' => null]);
+
+    $response = $this->withHeaders($headers)->postJson(route('admin.api.dam.assets.upload'), [
+        'files'        => ['http://127.0.0.1/secret'],
+        'directory_id' => $directory->id,
+    ]);
+
+    $response->assertStatus(422);
+    expect($response->json('errors.0'))->toContain('Blocked URL');
+});
+
 it('denies folder upload to an admin without the upload permission', function () {
     $admin = $this->loginWithPermissions('custom', ['dashboard']);
 
