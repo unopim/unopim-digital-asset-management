@@ -18,6 +18,7 @@ use Intervention\Image\Encoders\TiffEncoder;
 use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
@@ -223,7 +224,7 @@ class FileController
             if (! AssetHelper::isInlineSafeMime($mimeType)) {
                 $response->header(
                     'Content-Disposition',
-                    'attachment; filename="'.addslashes(basename($path)).'"'
+                    HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, basename($path))
                 );
             }
 
@@ -421,7 +422,7 @@ class FileController
         $mimeType = Storage::disk($disk)->mimeType($path);
 
         if (! AssetHelper::isInlineSafeMime($mimeType)) {
-            $headers['Content-Disposition'] = 'attachment; filename="'.addslashes(basename($path)).'"';
+            $headers['Content-Disposition'] = HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, basename($path));
         }
 
         return $this->applyAssetCache(

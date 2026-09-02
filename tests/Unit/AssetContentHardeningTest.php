@@ -82,6 +82,15 @@ it('still allows a benign SVG with no script or event handlers', function () {
     unlink($path);
 });
 
+it('rejects a malicious SVG even when the extension/MIME are spoofed as an unrelated image type', function () {
+    $path = tempnam(sys_get_temp_dir(), 'dam_svg_spoof_test_');
+    file_put_contents($path, '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>');
+
+    expect(AssetHelper::isForbiddenFile('png', 'image/png', 'evil.png', $path))->toBeTrue();
+
+    unlink($path);
+});
+
 it('exposes hardening headers that block script execution and MIME sniffing', function () {
     $headers = AssetHelper::assetResponseHeaders();
 

@@ -187,12 +187,7 @@ class AssetHelper
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /**
-     * PDF and SVG are trusted inline based on the upload-time content scan (hasPdfActiveContent,
-     * hasSvgActiveContent) rather than blocked here — sandboxing the serving side turned out
-     * unworkable: Chrome's PDF viewer is a plugin and refuses to load inside a sandboxed iframe at
-     * all (not just refuses to script), so there's no inline-but-safe serving mode for it.
-     */
+    /** PDF/SVG are trusted here via the upload-time content scan, not sandboxed serving — Chrome's PDF viewer won't load in a sandboxed iframe at all. */
     public static function isInlineSafeMime(?string $mimeType): bool
     {
         $mimeType = strtolower(trim((string) $mimeType));
@@ -398,6 +393,9 @@ class AssetHelper
         'wma'  => ['audio/', 'video/x-ms-asf'],
     ];
 
+    /** Cap for hasPdfActiveContent()/hasSvgActiveContent() scans — avoids reading multi-GB files fully into memory. */
+    protected const MAX_CONTENT_SCAN_BYTES = 2 * 1024 * 1024;
+
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
@@ -445,27 +443,61 @@ class AssetHelper
             return true;
         }
 
-        if ($extension === 'pdf' && self::hasPdfActiveContent($realPath)) {
+        $detectedLower = strtolower((string) $detected);
+
+        if (($extension === 'pdf' || $detectedLower === 'application/pdf') && self::hasPdfActiveContent($realPath)) {
             return true;
         }
 
-        if ($extension === 'svg' && self::hasSvgActiveContent($realPath)) {
+        if (($extension === 'svg' || $detectedLower === 'image/svg+xml') && self::hasSvgActiveContent($realPath)) {
+            return true;
+        }
+
+        if ($extension === 'csv' && self::hasCsvActiveContent($realPath)) {
+            return true;
+        }
+
+        if ($extension === 'rtf' && self::hasRtfActiveContent($realPath)) {
+            return true;
+        }
+
+        if (in_array($extension, ['docx', 'xlsx', 'odt', 'ods'], true) && self::hasOfficeZipMacroContent($realPath)) {
+            return true;
+        }
+
+        if (in_array($extension, ['doc', 'xls'], true) && self::hasLegacyOfficeMacroContent($realPath)) {
             return true;
         }
 
         return self::hasExecutableContent($realPath, $extension);
     }
 
-    /** Rejects auto-run PDF scripting (/OpenAction, /AA, /JavaScript, /JS, /Launch); text-grep, not a full parser. */
+    /** Reads up to self::MAX_CONTENT_SCAN_BYTES from the start of the file. */
+    protected static function readScanPrefix(string $realPath): string
+    {
+        $handle = @fopen($realPath, 'rb');
+
+        if ($handle === false) {
+            return '';
+        }
+
+        try {
+            return (string) @fread($handle, self::MAX_CONTENT_SCAN_BYTES);
+        } finally {
+            @fclose($handle);
+        }
+    }
+
+    /** Rejects auto-run PDF scripting. */
     protected static function hasPdfActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
             return false;
         }
 
-        $content = @file_get_contents($realPath);
+        $content = self::readScanPrefix($realPath);
 
-        if ($content === false || $content === '') {
+        if ($content === '') {
             return false;
         }
 
@@ -479,9 +511,9 @@ class AssetHelper
             return false;
         }
 
-        $content = @file_get_contents($realPath);
+        $content = self::readScanPrefix($realPath);
 
-        if ($content === false || $content === '') {
+        if ($content === '') {
             return false;
         }
 
@@ -498,6 +530,114 @@ class AssetHelper
         }
 
         return (bool) preg_match('/<foreignObject[\s>]/i', $content);
+    }
+
+    /** Rejects a cell starting with =, +, -, or @ — Excel/Sheets treats it as a formula, enabling DDE/command injection on open (OWASP CSV Injection). */
+    protected static function hasCsvActiveContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $content = self::readScanPrefix($realPath);
+
+        if ($content === '') {
+            return false;
+        }
+
+        foreach (preg_split('/\r\n|\r|\n/', $content) as $line) {
+            foreach (str_getcsv($line, escape: '') as $cell) {
+                if (preg_match('/^[\s"\']*[=+\-@]/', (string) $cell)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** Rejects an RTF carrying an embedded/linked OLE object (\object, \objdata, \objautlink) — a known parser-exploit and payload-delivery vector. */
+    protected static function hasRtfActiveContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $content = self::readScanPrefix($realPath);
+
+        if ($content === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/\\\\(object|objdata|objclass|objautlink|objupdate)\b/i', $content);
+    }
+
+    /** Rejects a macro-enabled OOXML/ODF file: word|xl/vbaProject.bin, or an ODF Basic/ auto-run event listener. */
+    protected static function hasOfficeZipMacroContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath) || ! class_exists(\ZipArchive::class)) {
+            return false;
+        }
+
+        $zip = new \ZipArchive;
+
+        if ($zip->open($realPath) !== true) {
+            return false;
+        }
+
+        try {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+
+                if ($name === false) {
+                    continue;
+                }
+
+                if (preg_match('#^(word|xl)/vbaProject\.bin$#i', $name) || str_starts_with($name, 'Basic/')) {
+                    return true;
+                }
+            }
+
+            foreach (['content.xml', 'settings.xml'] as $entry) {
+                $xml = $zip->getFromName($entry);
+
+                if (is_string($xml) && preg_match('/office:event-listeners|script:event-listener|vnd\.sun\.star\.script/i', $xml)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /** Rejects a legacy OLE2 .doc/.xls carrying a VBA project; stream names stay plaintext UTF-16LE even when p-code is compiled. */
+    protected static function hasLegacyOfficeMacroContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $content = self::readScanPrefix($realPath);
+
+        if ($content === '' || ! str_starts_with($content, "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1")) {
+            return false;
+        }
+
+        foreach (['VBA_PROJECT', 'Macros', '_VBA_PROJECT'] as $marker) {
+            if (str_contains($content, $marker) || str_contains($content, self::toUtf16Le($marker))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** UTF-16LE re-encode, used to match OLE2 directory-sector stream names against ASCII markers. */
+    protected static function toUtf16Le(string $ascii): string
+    {
+        return implode('', array_map(fn (string $char) => $char."\x00", str_split($ascii)));
     }
 
     /**
