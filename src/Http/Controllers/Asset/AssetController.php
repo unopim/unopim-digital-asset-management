@@ -336,7 +336,7 @@ class AssetController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
+                'message' => $e->getMessage() ?: trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
             ], 500);
         }
     }

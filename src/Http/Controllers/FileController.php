@@ -417,9 +417,15 @@ class FileController
         }
 
         $absolutePath = Storage::disk($disk)->path($path);
+        $headers = AssetHelper::assetResponseHeaders();
+        $mimeType = Storage::disk($disk)->mimeType($path);
+
+        if (! AssetHelper::isInlineSafeMime($mimeType)) {
+            $headers['Content-Disposition'] = 'attachment; filename="'.addslashes(basename($path)).'"';
+        }
 
         return $this->applyAssetCache(
-            response()->file($absolutePath, AssetHelper::assetResponseHeaders())
+            response()->file($absolutePath, $headers)
         );
     }
 

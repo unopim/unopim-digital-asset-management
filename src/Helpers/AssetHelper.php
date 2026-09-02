@@ -187,6 +187,12 @@ class AssetHelper
             Str::startsWith($mimeType, 'audio/');
     }
 
+    /**
+     * PDF and SVG are trusted inline based on the upload-time content scan (hasPdfActiveContent,
+     * hasSvgActiveContent) rather than blocked here — sandboxing the serving side turned out
+     * unworkable: Chrome's PDF viewer is a plugin and refuses to load inside a sandboxed iframe at
+     * all (not just refuses to script), so there's no inline-but-safe serving mode for it.
+     */
     public static function isInlineSafeMime(?string $mimeType): bool
     {
         $mimeType = strtolower(trim((string) $mimeType));
@@ -199,8 +205,7 @@ class AssetHelper
             return true;
         }
 
-        return Str::startsWith($mimeType, ['image/', 'video/', 'audio/'])
-            || $mimeType === 'application/pdf';
+        return Str::startsWith($mimeType, ['image/', 'video/', 'audio/', 'application/pdf']);
     }
 
     public static function assetResponseHeaders(): array
@@ -440,7 +445,59 @@ class AssetHelper
             return true;
         }
 
+        if ($extension === 'pdf' && self::hasPdfActiveContent($realPath)) {
+            return true;
+        }
+
+        if ($extension === 'svg' && self::hasSvgActiveContent($realPath)) {
+            return true;
+        }
+
         return self::hasExecutableContent($realPath, $extension);
+    }
+
+    /** Rejects auto-run PDF scripting (/OpenAction, /AA, /JavaScript, /JS, /Launch); text-grep, not a full parser. */
+    protected static function hasPdfActiveContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $content = @file_get_contents($realPath);
+
+        if ($content === false || $content === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/\/(OpenAction|AA|JavaScript|JS|Launch)\b/', $content);
+    }
+
+    /** SVG is served inline, so <script>/event-handlers/javascript: URIs run in-origin like HTML. */
+    protected static function hasSvgActiveContent(?string $realPath): bool
+    {
+        if (! $realPath || ! is_file($realPath)) {
+            return false;
+        }
+
+        $content = @file_get_contents($realPath);
+
+        if ($content === false || $content === '') {
+            return false;
+        }
+
+        if (preg_match('/<script[\s>]/i', $content)) {
+            return true;
+        }
+
+        if (preg_match('/\son\w+\s*=/i', $content)) {
+            return true;
+        }
+
+        if (preg_match('/(?:href|xlink:href)\s*=\s*["\']?\s*javascript:/i', $content)) {
+            return true;
+        }
+
+        return (bool) preg_match('/<foreignObject[\s>]/i', $content);
     }
 
     /**
