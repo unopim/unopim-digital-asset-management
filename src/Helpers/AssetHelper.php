@@ -396,6 +396,18 @@ class AssetHelper
     /** Cap for hasPdfActiveContent()/hasSvgActiveContent() scans — avoids reading multi-GB files fully into memory. */
     protected const MAX_CONTENT_SCAN_BYTES = 2 * 1024 * 1024;
 
+    /** Matches the upload size limit already enforced before isForbiddenFile() runs, so padding past a fixed cap can't hide a marker. */
+    protected static function maxScanBytes(): int
+    {
+        $maxUploadKb = self::getMaxUploadSizeKb();
+
+        if ($maxUploadKb <= 0 || $maxUploadKb === PHP_INT_MAX) {
+            return self::MAX_CONTENT_SCAN_BYTES;
+        }
+
+        return max(self::MAX_CONTENT_SCAN_BYTES, $maxUploadKb * 1024);
+    }
+
     public static function isForbiddenFile(?string $extension, ?string $mimeType, ?string $fileName = null, ?string $realPath = null): bool
     {
         $forbiddenExtensions = self::FORBIDDEN_EXTENSIONS;
@@ -482,7 +494,7 @@ class AssetHelper
         }
 
         try {
-            return (string) @fread($handle, self::MAX_CONTENT_SCAN_BYTES);
+            return (string) @fread($handle, self::maxScanBytes());
         } finally {
             @fclose($handle);
         }
