@@ -6,6 +6,7 @@
 
 * Fixed issues with bulk product export/import and associated DAM assets.
 * Fixed bulk CSV/XLSX product imports with ZIP packages containing product media and DAM assets.
+* Hardened asset upload validation against malicious PDF, SVG, CSV, RTF, and Office (DOCX/XLSX/ODT/ODS/DOC/XLS) files, and closed an extension-spoofing bypass and an internal error-message leak in the upload endpoint.
 
 
 ## Version 3.0.0

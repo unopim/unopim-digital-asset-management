@@ -22,7 +22,7 @@ it('still allows genuine media uploads', function () {
     expect(AssetHelper::isForbiddenFile('pdf', 'application/pdf', 'ok.pdf', null))->toBeFalse();
 });
 
-it('treats only real media MIME types as inline-safe', function () {
+it('treats real media MIME types as inline-safe, trusting the upload-time content scan for PDF/SVG', function () {
     expect(AssetHelper::isInlineSafeMime('image/png'))->toBeTrue();
     expect(AssetHelper::isInlineSafeMime('video/mp4'))->toBeTrue();
     expect(AssetHelper::isInlineSafeMime('audio/mpeg'))->toBeTrue();
@@ -34,6 +34,61 @@ it('treats only real media MIME types as inline-safe', function () {
     expect(AssetHelper::isInlineSafeMime('text/plain'))->toBeFalse();
     expect(AssetHelper::isInlineSafeMime(''))->toBeFalse();
     expect(AssetHelper::isInlineSafeMime(null))->toBeFalse();
+});
+
+it('rejects a PDF carrying auto-run scripting', function (string $marker) {
+    $path = tempnam(sys_get_temp_dir(), 'dam_pdf_test_');
+    file_put_contents($path, "%PDF-1.4\n1 0 obj\n<< /Type /Catalog {$marker} >>\nendobj\n%%EOF");
+
+    expect(AssetHelper::isForbiddenFile('pdf', 'application/pdf', 'evil.pdf', $path))->toBeTrue();
+
+    unlink($path);
+})->with([
+    '/OpenAction 2 0 R',
+    '/AA << /O 2 0 R >>',
+    '/Names << /JavaScript 2 0 R >>',
+    '/Launch (calc.exe)',
+]);
+
+it('still allows a benign PDF with no scripting markers', function () {
+    $path = tempnam(sys_get_temp_dir(), 'dam_pdf_test_');
+    file_put_contents($path, "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF");
+
+    expect(AssetHelper::isForbiddenFile('pdf', 'application/pdf', 'ok.pdf', $path))->toBeFalse();
+
+    unlink($path);
+});
+
+it('rejects an SVG carrying inline script or event-handler payloads', function (string $svg) {
+    $path = tempnam(sys_get_temp_dir(), 'dam_svg_test_');
+    file_put_contents($path, $svg);
+
+    expect(AssetHelper::isForbiddenFile('svg', 'image/svg+xml', 'evil.svg', $path))->toBeTrue();
+
+    unlink($path);
+})->with([
+    '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg"><a href="javascript:alert(1)">x</a></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><body xmlns="http://www.w3.org/1999/xhtml">x</body></foreignObject></svg>',
+]);
+
+it('still allows a benign SVG with no script or event handlers', function () {
+    $path = tempnam(sys_get_temp_dir(), 'dam_svg_test_');
+    file_put_contents($path, '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="4"/></svg>');
+
+    expect(AssetHelper::isForbiddenFile('svg', 'image/svg+xml', 'ok.svg', $path))->toBeFalse();
+
+    unlink($path);
+});
+
+it('rejects a malicious SVG even when the extension/MIME are spoofed as an unrelated image type', function () {
+    $path = tempnam(sys_get_temp_dir(), 'dam_svg_spoof_test_');
+    file_put_contents($path, '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>');
+
+    expect(AssetHelper::isForbiddenFile('png', 'image/png', 'evil.png', $path))->toBeTrue();
+
+    unlink($path);
 });
 
 it('exposes hardening headers that block script execution and MIME sniffing', function () {
@@ -55,6 +110,20 @@ it('fetchFile serves an HTML file as an attachment with hardening headers', func
 
     expect($response->headers->get('Content-Disposition'))->toContain('attachment');
     expect($response->headers->get('X-Content-Type-Options'))->toBe('nosniff');
+    expect($response->headers->get('Content-Security-Policy'))->not->toBeNull();
+});
+
+it('fetchFile serves a clean PDF inline, relying on the upload-time scan to keep it clean', function () {
+    config(['filesystems.default' => Directory::ASSETS_DISK_PRIVATE]);
+    Storage::fake(Directory::ASSETS_DISK_PRIVATE);
+    Auth::shouldReceive('check')->andReturn(true);
+
+    $path = 'assets/Root/report.pdf';
+    Storage::disk(Directory::ASSETS_DISK_PRIVATE)->put($path, "%PDF-1.4\n%%EOF");
+
+    $response = (new FileController)->fetchFile($path);
+
+    expect($response->headers->get('Content-Disposition'))->toBeNull();
     expect($response->headers->get('Content-Security-Policy'))->not->toBeNull();
 });
 

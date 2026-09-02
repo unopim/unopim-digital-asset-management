@@ -25,6 +25,7 @@ use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
+use Webkul\Webhook\Validators\SafeWebhookUrl;
 
 class AssetController extends Controller
 {
@@ -77,7 +78,7 @@ class AssetController extends Controller
 
                 $extension = pathinfo($fileName, PATHINFO_EXTENSION);
                 if (! $extension) {
-                    $headResponse = Http::withOptions(['allow_redirects' => false])->head($url);
+                    $headResponse = Http::withOptions(SafeWebhookUrl::httpOptions($url))->head($url);
                     $contentType = $headResponse->header('Content-Type');
                     $extension = match ($contentType) {
                         'image/jpeg'      => 'jpg',
@@ -91,7 +92,7 @@ class AssetController extends Controller
 
                 $tempPath = sys_get_temp_dir().'/'.uniqid().'_'.$fileName;
 
-                $response = Http::sink($tempPath)->withOptions(['allow_redirects' => false])->get($url);
+                $response = Http::sink($tempPath)->withOptions(SafeWebhookUrl::httpOptions($url))->get($url);
 
                 if ($response->failed() || ! file_exists($tempPath) || filesize($tempPath) === 0) {
                     $errors[] = "Failed to download: $url";
@@ -127,51 +128,10 @@ class AssetController extends Controller
         return $files;
     }
 
+    /** Delegates to the shared SSRF validator; pair with SafeWebhookUrl::httpOptions($url) to pin the IP at fetch time. */
     private function isSafeRemoteUrl(string $url): bool
     {
-        $parts = parse_url($url);
-
-        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
-            return false;
-        }
-
-        if (! in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
-            return false;
-        }
-
-        $host = trim($parts['host'], '[]');
-
-        $ips = [];
-
-        if (filter_var($host, FILTER_VALIDATE_IP)) {
-            $ips[] = $host;
-        } else {
-            foreach (@dns_get_record($host, DNS_A + DNS_AAAA) ?: [] as $record) {
-                if (! empty($record['ip'])) {
-                    $ips[] = $record['ip'];
-                }
-
-                if (! empty($record['ipv6'])) {
-                    $ips[] = $record['ipv6'];
-                }
-            }
-
-            if (empty($ips)) {
-                $ips = gethostbynamel($host) ?: [];
-            }
-        }
-
-        if (empty($ips)) {
-            return false;
-        }
-
-        foreach ($ips as $ip) {
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                return false;
-            }
-        }
-
-        return true;
+        return SafeWebhookUrl::validate($url)['valid'] ?? false;
     }
 
     public function upload(Request $request): JsonResponse
@@ -303,7 +263,9 @@ class AssetController extends Controller
 
         if (! empty($errors)) {
             $response['errors'] = $errors;
-            $response['message'] = trans('dam::app.admin.dam.asset.datagrid.files-upload-failed');
+            $response['message'] = count($errors) === 1
+                ? $errors[0]
+                : trans('dam::app.admin.dam.asset.datagrid.files-upload-failed');
         }
 
         return response()->json($response, count($errors) === 0 ? 201 : 422);

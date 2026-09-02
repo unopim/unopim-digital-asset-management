@@ -9,6 +9,17 @@ beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
 });
 
+it('serves a clean PDF through the preview route inline, not forced to download', function () {
+    $disk = Directory::getAssetDisk();
+    $path = 'assets/Root/report.pdf';
+    Storage::disk($disk)->put($path, "%PDF-1.4\n%%EOF");
+
+    $response = $this->get(route('admin.dam.file.preview', ['path' => $path]));
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Disposition'))->toBeNull();
+});
+
 it('should create a file in private storage and return its path', function () {
     $file = UploadedFile::fake()->image('create.png', 100, 100);
 

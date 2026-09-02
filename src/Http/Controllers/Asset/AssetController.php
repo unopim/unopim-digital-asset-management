@@ -334,9 +334,13 @@ class AssetController extends Controller
         } catch (\Exception $e) {
             report($e);
 
+            $forbiddenFileMessage = trans('dam::app.admin.dam.index.directory.not-allowed');
+
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
+                'message' => $e->getMessage() === $forbiddenFileMessage
+                    ? $forbiddenFileMessage
+                    : trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'),
             ], 500);
         }
     }
