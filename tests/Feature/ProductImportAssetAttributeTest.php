@@ -56,8 +56,8 @@ it('stores the asset id rather than the path carried by the row', function () {
         $textCode          => "'=formula'",
     ], $attributeValues);
 
-    expect($attributeValues['common'][$assetCode] ?? null)->toBe((string) $asset->id)
-        ->and($attributeValues['common'][$textCode] ?? null)->toBe('=formula');
+    expect(data_get($attributeValues, ['common', $assetCode]))->toBe((string) $asset->id)
+        ->and(data_get($attributeValues, ['common', $textCode]))->toBe('=formula');
 });
 
 it('leaves the value unset and reports a path that resolves to no asset', function () {
@@ -72,7 +72,7 @@ it('leaves the value unset and reports a path that resolves to no asset', functi
         $assetCode         => 'assets/Root/missing.pdf',
     ], $attributeValues);
 
-    expect($attributeValues['common'] ?? [])->not->toHaveKey($assetCode)
+    expect(data_get($attributeValues, ['common', $assetCode]))->toBeNull()
         ->and($errors->getAllErrorsGroupedByCode())
         ->toHaveKey($importer::ERROR_CODE_ASSET_NOT_FOUND);
 });
