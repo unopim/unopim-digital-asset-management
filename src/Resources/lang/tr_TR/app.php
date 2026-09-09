@@ -883,6 +883,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Arşiv, "assets" yerine ":name" adlı bir klasör içeriyor; bu nedenle varlıklarından hiçbiri içe aktarılamadı. Klasörü "assets" olarak yeniden adlandırın ve altındaki klasörlerin veri dosyanızdaki yollarla eşleşmesini sağlayın, örneğin "assets/Root/Seed/Tech Sheets/Cotton/". macOS, klasör adına yazılan "/" karakterini ":" olarak kaydeder; olağan neden budur.',
         ],
     ],
 ];

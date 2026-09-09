@@ -883,6 +883,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Архів містить теку з назвою ":name" замість "assets", тому жоден із її ресурсів не вдалося імпортувати. Перейменуйте її на "assets" і залиште вкладені теки відповідними шляхам у файлі даних, наприклад "assets/Root/Seed/Tech Sheets/Cotton/". macOS зберігає введений у назві теки символ "/" як ":", що і є звичайною причиною.',
         ],
     ],
 ];

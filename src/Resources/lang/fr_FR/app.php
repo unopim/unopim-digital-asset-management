@@ -883,6 +883,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'L\'archive contient un dossier nommé ":name" au lieu de "assets", aucun de ses actifs n\'a donc pu être importé. Renommez-le en "assets" et gardez les dossiers en dessous conformes aux chemins de votre fichier de données, par exemple "assets/Root/Seed/Tech Sheets/Cotton/". macOS enregistre un "/" saisi dans un nom de dossier sous la forme ":", ce qui est la cause habituelle.',
         ],
     ],
 ];

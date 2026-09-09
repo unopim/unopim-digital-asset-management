@@ -1,5 +1,13 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version Unreleased
+
+### Bug Fixes
+
+* Fixed product imports storing the raw asset path instead of the asset id when the Measurement package is installed, by binding the DAM importer after Measurement registers its own.
+* Failed the import with a clear message when the bundled asset tree is misnamed (for example `assets:`), instead of silently importing nothing.
+
+
 ## Version 3.0.1
 
 ### Bug Fixes

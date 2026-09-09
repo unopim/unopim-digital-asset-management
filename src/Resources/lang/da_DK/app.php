@@ -883,6 +883,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Arkivet indeholder en mappe ved navn ":name" i stedet for "assets", så ingen af dets aktiver kunne importeres. Omdøb den til "assets", og sørg for, at mapperne under den svarer til stierne i din datafil, f.eks. "assets/Root/Seed/Tech Sheets/Cotton/". macOS gemmer et "/" skrevet i et mappenavn som ":", hvilket er den sædvanlige årsag.',
         ],
     ],
 ];

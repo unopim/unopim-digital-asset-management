@@ -26,6 +26,14 @@ class AssetTreeIngestor
         $assetTreeRoot = $this->resolveAssetTreeRoot($sourceRoot);
 
         if ($assetTreeRoot === null) {
+            $misnamed = $this->findMisnamedAssetDirectory($sourceRoot);
+
+            if ($misnamed !== null) {
+                throw new \RuntimeException(
+                    trans('dam::app.data-transfer.bundle.asset-tree-misnamed', ['name' => $misnamed])
+                );
+            }
+
             return [];
         }
 
@@ -80,6 +88,58 @@ class AssetTreeIngestor
         }
 
         return null;
+    }
+
+    /**
+     * A tree the archive plainly meant to carry but named in a way the exact match
+     * never accepts, such as "assets:" (what macOS stores when a "/" is typed into a
+     * folder name), would otherwise ingest nothing and report success. Both levels
+     * resolveAssetTreeRoot() searches are mirrored so a wrapping folder cannot hide it.
+     */
+    protected function findMisnamedAssetDirectory(string $sourceRoot): ?string
+    {
+        foreach ($this->childDirectories($sourceRoot) as $child) {
+            if ($this->isMisnamedAssetDirectory($child->getFilename())) {
+                return $child->getFilename();
+            }
+
+            foreach ($this->childDirectories($child->getPathname()) as $nested) {
+                if ($this->isMisnamedAssetDirectory($nested->getFilename())) {
+                    return $nested->getFilename();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<\SplFileInfo>
+     */
+    protected function childDirectories(string $path): array
+    {
+        if (! is_dir($path)) {
+            return [];
+        }
+
+        $directories = [];
+
+        foreach (new \FilesystemIterator($path, \FilesystemIterator::SKIP_DOTS) as $entry) {
+            if ($entry->isDir() && ! $entry->isLink()) {
+                $directories[] = $entry;
+            }
+        }
+
+        return $directories;
+    }
+
+    protected function isMisnamedAssetDirectory(string $name): bool
+    {
+        if ($name === Directory::ASSETS_DIRECTORY) {
+            return false;
+        }
+
+        return strtolower(trim($name, " \t\n\r\0\x0B:/\\")) === Directory::ASSETS_DIRECTORY;
     }
 
     /**

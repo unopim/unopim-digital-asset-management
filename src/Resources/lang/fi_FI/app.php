@@ -883,6 +883,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Arkisto sisältää kansion nimeltä ":name" kansion "assets" sijaan, joten yhtään sen aineistoa ei voitu tuoda. Nimeä se uudelleen muotoon "assets" ja pidä sen alla olevat kansiot datatiedoston polkujen mukaisina, esimerkiksi "assets/Root/Seed/Tech Sheets/Cotton/". macOS tallentaa kansion nimeen kirjoitetun "/"-merkin muodossa ":", mikä on tavallisin syy.',
         ],
     ],
 ];
