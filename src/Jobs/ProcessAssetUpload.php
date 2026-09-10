@@ -24,6 +24,7 @@ class ProcessAssetUpload implements ShouldQueue
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
+        protected bool $autoTagEligible = false,
     ) {}
 
     public function handle(MetadataExtractionService $metadataService): void
@@ -57,6 +58,10 @@ class ProcessAssetUpload implements ShouldQueue
             $this->attachAudioCoverArt($metadataService, $asset, $metaData, $disk);
 
             $this->dispatchThumbnailJob($asset);
+
+            if ($this->autoTagEligible && $asset->file_type === 'image') {
+                TagAssetWithAi::dispatch($asset->id, $disk);
+            }
 
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {

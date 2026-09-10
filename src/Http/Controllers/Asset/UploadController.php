@@ -144,9 +144,11 @@ class UploadController extends Controller
                 'completed_at' => null,
             ]);
 
+            $autoTagEligible = $this->autoTagEligible();
+
             foreach ($failed as $batch) {
                 if ($batch->asset_id) {
-                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id);
+                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible);
                 }
             }
         }
@@ -189,11 +191,22 @@ class UploadController extends Controller
 
     protected function redispatch(UploadTracker $tracker, array $states): void
     {
+        $autoTagEligible = $this->autoTagEligible();
+
         $tracker->batches()
             ->whereIn('state', $states)
             ->whereNotNull('asset_id')
             ->get()
-            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id));
+            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible));
+    }
+
+    /**
+     * Auto-tagging is functionally "edit the asset" plus "create a tag",
+     * so both permissions must be held independently of upload rights.
+     */
+    protected function autoTagEligible(): bool
+    {
+        return bouncer()->hasPermission('dam.asset.update') && bouncer()->hasPermission('dam.tags.create');
     }
 
     protected function authorizedTracker(string $uuid)

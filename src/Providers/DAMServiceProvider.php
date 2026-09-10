@@ -75,6 +75,10 @@ class DAMServiceProvider extends ServiceProvider
             return Limit::perMinute(20)->by('dl|'.$request->ip());
         });
 
+        RateLimiter::for('dam-ai-tagging', function () {
+            return Limit::perMinute((int) config('dam.ai_tagging.rate_limit_per_minute', 60));
+        });
+
         Route::middleware(['web', 'admin', 'dam'])
             ->prefix(config('app.admin_url').'/dam')
             ->group(__DIR__.'/../Routes/explorer-routes.php');

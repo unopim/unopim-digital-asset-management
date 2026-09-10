@@ -737,7 +737,16 @@ class AssetController extends Controller
             ])->id;
         }
 
-        ProcessAssetUpload::dispatch($asset->id, $batchId);
+        ProcessAssetUpload::dispatch($asset->id, $batchId, $this->autoTagEligible());
+    }
+
+    /**
+     * Auto-tagging is functionally "edit the asset" plus "create a tag",
+     * so both permissions must be held independently of upload rights.
+     */
+    protected function autoTagEligible(): bool
+    {
+        return bouncer()->hasPermission('dam.asset.update') && bouncer()->hasPermission('dam.tags.create');
     }
 
     protected function dispatchThumbnailJob(?Asset $asset): void
