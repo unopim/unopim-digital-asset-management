@@ -745,6 +745,10 @@ return [
                     'label' => 'Tags maximum',
                     'hint'  => 'Nombre maximum de tags à suggérer par image (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limite de débit du marquage IA',
+                    'hint'  => 'Nombre maximum de requêtes de marquage IA par minute (1-120). Réduisez cette valeur pour correspondre à la limite de débit de votre fournisseur IA.',
+                ],
             ],
         ],
         'explorer' => [

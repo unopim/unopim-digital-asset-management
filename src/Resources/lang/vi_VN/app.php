@@ -745,6 +745,10 @@ return [
                     'label' => 'Số thẻ tối đa',
                     'hint'  => 'Số lượng thẻ tối đa được đề xuất cho mỗi hình ảnh (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Giới hạn tốc độ gắn thẻ AI',
+                    'hint'  => 'Số lượng yêu cầu gắn thẻ AI tối đa mỗi phút (1-120). Giảm giá trị này để phù hợp với giới hạn tốc độ của nhà cung cấp AI của bạn.',
+                ],
             ],
         ],
         'explorer' => [

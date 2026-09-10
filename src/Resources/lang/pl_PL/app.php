@@ -745,6 +745,10 @@ return [
                     'label' => 'Maks. liczba tagów',
                     'hint'  => 'Maksymalna liczba tagów sugerowanych na obraz (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limit szybkości tagowania AI',
+                    'hint'  => 'Maksymalna liczba żądań tagowania AI na minutę (1-120). Obniż tę wartość, aby dopasować ją do limitu szybkości dostawcy AI.',
+                ],
             ],
         ],
         'explorer' => [

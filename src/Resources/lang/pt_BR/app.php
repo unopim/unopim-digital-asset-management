@@ -745,6 +745,10 @@ return [
                     'label' => 'Máximo de tags',
                     'hint'  => 'Número máximo de tags a serem sugeridas por imagem (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limite de taxa de marcação de IA',
+                    'hint'  => 'Número máximo de solicitações de marcação de IA por minuto (1-120). Reduza este valor para corresponder ao limite de taxa do seu provedor de IA.',
+                ],
             ],
         ],
         'explorer' => [

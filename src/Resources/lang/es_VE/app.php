@@ -745,6 +745,10 @@ return [
                     'label' => 'Etiquetas máximas',
                     'hint'  => 'Número máximo de etiquetas a sugerir por imagen (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Límite de velocidad de etiquetado IA',
+                    'hint'  => 'Número máximo de solicitudes de etiquetado IA por minuto (1-120). Reduce este valor para ajustarlo al límite de tu proveedor de IA.',
+                ],
             ],
         ],
         'explorer' => [

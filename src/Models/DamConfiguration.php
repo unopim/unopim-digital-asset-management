@@ -28,11 +28,12 @@ class DamConfiguration extends Model
         'DAM_AI_TAGGING_ENABLED'         => 'dam.ai_tagging.enabled',
         'DAM_AI_TAGGING_PLATFORM_ID'     => 'dam.ai_tagging.platform_id',
         'DAM_AI_TAGGING_MAX_TAGS'        => 'dam.ai_tagging.max_tags',
+        'DAM_AI_TAGGING_RATE_LIMIT'      => 'dam.ai_tagging.rate_limit_per_minute',
     ];
 
     /**
      * Keys in KEY_MAP whose value is not a boolean, so the DAM middleware
      * must not run it through filter_var(FILTER_VALIDATE_BOOLEAN).
      */
-    public const NON_BOOLEAN_KEYS = ['DAM_AI_TAGGING_PLATFORM_ID', 'DAM_AI_TAGGING_MAX_TAGS'];
+    public const NON_BOOLEAN_KEYS = ['DAM_AI_TAGGING_PLATFORM_ID', 'DAM_AI_TAGGING_MAX_TAGS', 'DAM_AI_TAGGING_RATE_LIMIT'];
 }

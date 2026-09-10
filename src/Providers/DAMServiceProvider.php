@@ -26,6 +26,7 @@ use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
 use Webkul\DAM\Helpers\Importers\Product\MeasurementAwareImporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
+use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
@@ -86,7 +87,13 @@ class DAMServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('dam-ai-tagging', function () {
-            return Limit::perMinute((int) config('dam.ai_tagging.rate_limit_per_minute', 60));
+            $value = DamConfiguration::find('DAM_AI_TAGGING_RATE_LIMIT')?->value;
+
+            $perMinute = ($value !== null && $value !== '')
+                ? (int) $value
+                : (int) config('dam.ai_tagging.rate_limit_per_minute', 60);
+
+            return Limit::perMinute($perMinute);
         });
 
         Route::middleware(['web', 'admin', 'dam'])

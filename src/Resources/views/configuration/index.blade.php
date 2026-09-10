@@ -227,6 +227,24 @@
                             :value="$settings['DAM_AI_TAGGING_MAX_TAGS']"
                         />
                     </x-admin::form.control-group>
+
+                    <label for="dam_ai_tagging_rate_limit" class="text-sm font-medium text-gray-800 dark:text-white mt-2">
+                        @lang('dam::app.admin.configuration.ai-tagging.rate-limit.label')
+                    </label>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 -mt-1.5">
+                        @lang('dam::app.admin.configuration.ai-tagging.rate-limit.hint')
+                    </p>
+
+                    <x-admin::form.control-group class="max-w-[8rem]">
+                        <x-admin::form.control-group.control
+                            type="number"
+                            id="dam_ai_tagging_rate_limit"
+                            name="DAM_AI_TAGGING_RATE_LIMIT"
+                            min="1"
+                            max="120"
+                            :value="$settings['DAM_AI_TAGGING_RATE_LIMIT']"
+                        />
+                    </x-admin::form.control-group>
                 </div>
             </div>
         </div>

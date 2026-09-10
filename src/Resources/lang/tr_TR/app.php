@@ -745,6 +745,10 @@ return [
                     'label' => 'Maks. etiket',
                     'hint'  => 'Görsel başına önerilecek maksimum etiket sayısı (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'AI etiketleme hız sınırı',
+                    'hint'  => 'Dakikada maksimum AI etiketleme isteği (1-120). AI sağlayıcınızın hız sınırına uyacak şekilde bu değeri düşürün.',
+                ],
             ],
         ],
         'explorer' => [

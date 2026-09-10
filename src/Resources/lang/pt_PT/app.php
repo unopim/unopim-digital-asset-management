@@ -745,6 +745,10 @@ return [
                     'label' => 'Máximo de etiquetas',
                     'hint'  => 'Número máximo de etiquetas a sugerir por imagem (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limite de taxa de etiquetagem IA',
+                    'hint'  => 'Número máximo de pedidos de etiquetagem IA por minuto (1-120). Reduza este valor para corresponder ao limite de taxa do seu fornecedor de IA.',
+                ],
             ],
         ],
         'explorer' => [

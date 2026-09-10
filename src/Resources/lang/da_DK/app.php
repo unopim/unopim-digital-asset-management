@@ -745,6 +745,10 @@ return [
                     'label' => 'Maks. tags',
                     'hint'  => 'Maksimalt antal tags, der foreslås pr. billede (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Hastighedsgrænse for AI-tagging',
+                    'hint'  => 'Maksimalt antal AI-tagging-anmodninger pr. minut (1-120). Sænk denne værdi, så den matcher din AI-udbyders hastighedsgrænse.',
+                ],
             ],
         ],
         'explorer' => [

@@ -745,6 +745,10 @@ return [
                     'label' => 'Etichete maxime',
                     'hint'  => 'Numărul maxim de etichete sugerate per imagine (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limită de rată pentru etichetarea AI',
+                    'hint'  => 'Numărul maxim de solicitări de etichetare AI pe minut (1-120). Reduceți această valoare pentru a se potrivi cu limita de rată a furnizorului dvs. de AI.',
+                ],
             ],
         ],
         'explorer' => [

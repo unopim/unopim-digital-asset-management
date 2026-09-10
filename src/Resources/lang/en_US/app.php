@@ -745,6 +745,10 @@ return [
                     'label' => 'Max tags',
                     'hint'  => 'Maximum number of tags to suggest per image (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'AI tagging rate limit',
+                    'hint'  => 'Maximum AI tagging requests per minute (1-120). Lower this to match your AI provider\'s rate limit.',
+                ],
             ],
         ],
         'explorer' => [

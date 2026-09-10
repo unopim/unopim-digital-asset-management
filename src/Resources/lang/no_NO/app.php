@@ -745,6 +745,10 @@ return [
                     'label' => 'Maks. tagger',
                     'hint'  => 'Maksimalt antall tagger som foreslås per bilde (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Hastighetsgrense for AI-tagging',
+                    'hint'  => 'Maksimalt antall AI-taggeforespørsler per minutt (1-120). Reduser denne verdien for å matche hastighetsgrensen til AI-leverandøren din.',
+                ],
             ],
         ],
         'explorer' => [

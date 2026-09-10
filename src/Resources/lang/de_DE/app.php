@@ -745,6 +745,10 @@ return [
                     'label' => 'Max. Tags',
                     'hint'  => 'Maximale Anzahl an vorgeschlagenen Tags pro Bild (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Ratenlimit für KI-Tagging',
+                    'hint'  => 'Maximale Anzahl an KI-Tagging-Anfragen pro Minute (1-120). Senken Sie diesen Wert, um dem Ratenlimit Ihres KI-Anbieters zu entsprechen.',
+                ],
             ],
         ],
         'explorer' => [

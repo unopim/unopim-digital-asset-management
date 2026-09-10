@@ -745,6 +745,10 @@ return [
                     'label' => 'Maks. oznaka',
                     'hint'  => 'Maksimalan broj oznaka koje se predlažu po slici (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Ograničenje brzine AI označavanja',
+                    'hint'  => 'Maksimalan broj zahtjeva AI označavanja po minuti (1-120). Smanjite ovu vrijednost kako biste je uskladili s ograničenjem brzine vašeg AI pružatelja.',
+                ],
             ],
         ],
         'explorer' => [

@@ -745,6 +745,10 @@ return [
                     'label' => 'Enimmäistunnisteet',
                     'hint'  => 'Kuvaa kohden ehdotettavien tunnisteiden enimmäismäärä (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Tekoälymerkinnän nopeusrajoitus',
+                    'hint'  => 'Tekoälymerkintäpyyntöjen enimmäismäärä minuutissa (1-120). Pienennä tätä arvoa vastaamaan tekoälyntarjoajasi nopeusrajoitusta.',
+                ],
             ],
         ],
         'explorer' => [

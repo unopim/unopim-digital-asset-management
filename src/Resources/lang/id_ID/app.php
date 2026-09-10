@@ -745,6 +745,10 @@ return [
                     'label' => 'Tag maksimum',
                     'hint'  => 'Jumlah maksimum tag yang disarankan per gambar (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Batas laju penandaan AI',
+                    'hint'  => 'Jumlah maksimum permintaan penandaan AI per menit (1-120). Turunkan nilai ini agar sesuai dengan batas laju penyedia AI Anda.',
+                ],
             ],
         ],
         'explorer' => [

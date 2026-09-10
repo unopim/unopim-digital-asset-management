@@ -37,6 +37,7 @@ class ConfigurationController extends Controller
                 'DAM_AI_TAGGING_ENABLED'          => config('dam.ai_tagging.enabled'),
                 'DAM_AI_TAGGING_PLATFORM_ID'      => config('dam.ai_tagging.platform_id'),
                 'DAM_AI_TAGGING_MAX_TAGS'         => config('dam.ai_tagging.max_tags', 8),
+                'DAM_AI_TAGGING_RATE_LIMIT'       => config('dam.ai_tagging.rate_limit_per_minute', 60),
             ],
             'hasAiTaggingPlatforms'     => $platforms->isNotEmpty(),
             'selectedAiTaggingPlatform' => $platforms->firstWhere('id', (int) config('dam.ai_tagging.platform_id')),
@@ -91,6 +92,7 @@ class ConfigurationController extends Controller
         $request->validate([
             'DAM_AI_TAGGING_PLATFORM_ID' => 'nullable|integer|exists:magic_ai_platforms,id',
             'DAM_AI_TAGGING_MAX_TAGS'    => 'nullable|integer|min:1|max:20',
+            'DAM_AI_TAGGING_RATE_LIMIT'  => 'nullable|integer|min:1|max:120',
         ]);
 
         $keys = ['DAM_TREE_SHOW_ASSETS', 'DAM_EXPLORER_ENABLED', 'DAM_EXPLORER_BOOKMARKS_ENABLED', 'DAM_EXPLORER_SHOW_TREE', 'DAM_AI_TAGGING_ENABLED'];
@@ -110,6 +112,11 @@ class ConfigurationController extends Controller
         DamConfiguration::updateOrCreate(
             ['key' => 'DAM_AI_TAGGING_MAX_TAGS'],
             ['value' => (string) $request->input('DAM_AI_TAGGING_MAX_TAGS', '')]
+        );
+
+        DamConfiguration::updateOrCreate(
+            ['key' => 'DAM_AI_TAGGING_RATE_LIMIT'],
+            ['value' => (string) $request->input('DAM_AI_TAGGING_RATE_LIMIT', '')]
         );
 
         \Artisan::call('config:clear');

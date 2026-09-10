@@ -745,6 +745,10 @@ return [
                     'label' => 'Max na tags',
                     'hint'  => 'Pinakamataas na bilang ng tag na imumungkahi bawat larawan (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limitasyon sa bilis ng AI tagging',
+                    'hint'  => 'Pinakamataas na bilang ng AI tagging request bawat minuto (1-120). Babaan ito upang tumugma sa rate limit ng iyong AI provider.',
+                ],
             ],
         ],
         'explorer' => [

@@ -745,6 +745,10 @@ return [
                     'label' => 'Tag massimi',
                     'hint'  => 'Numero massimo di tag suggeriti per immagine (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Limite di frequenza del tagging IA',
+                    'hint'  => 'Numero massimo di richieste di tagging IA al minuto (1-120). Riduci questo valore per adeguarlo al limite di frequenza del tuo provider IA.',
+                ],
             ],
         ],
         'explorer' => [

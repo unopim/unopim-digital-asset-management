@@ -745,6 +745,10 @@ return [
                     'label' => 'Max. tags',
                     'hint'  => 'Maximaal aantal tags om per afbeelding voor te stellen (1-20).',
                 ],
+                'rate-limit' => [
+                    'label' => 'Snelheidslimiet voor AI-tagging',
+                    'hint'  => 'Maximaal aantal AI-tagverzoeken per minuut (1-120). Verlaag deze waarde om aan de snelheidslimiet van uw AI-provider te voldoen.',
+                ],
             ],
         ],
         'explorer' => [
