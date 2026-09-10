@@ -19,9 +19,16 @@ class DAM
         if (self::$tableExists) {
             DamConfiguration::all()->each(function ($row) {
                 $path = DamConfiguration::KEY_MAP[$row->key] ?? null;
-                if ($path) {
-                    config([$path => filter_var($row->value, FILTER_VALIDATE_BOOLEAN)]);
+
+                if (! $path) {
+                    return;
                 }
+
+                $value = in_array($row->key, DamConfiguration::NON_BOOLEAN_KEYS, true)
+                    ? ($row->value !== '' ? $row->value : null)
+                    : filter_var($row->value, FILTER_VALIDATE_BOOLEAN);
+
+                config([$path => $value]);
             });
         }
 
