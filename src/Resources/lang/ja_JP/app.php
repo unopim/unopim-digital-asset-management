@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'アーカイブには「assets」ではなく「:name」という名前のフォルダーが含まれているため、アセットを一切インポートできませんでした。「assets」に名前を変更し、その下のフォルダーをデータファイル内のパス（例: 「assets/Root/Seed/Tech Sheets/Cotton/」）と一致させてください。macOS はフォルダー名に入力された「/」を「:」として保存するため、これが通常の原因です。',
         ],
     ],
 ];

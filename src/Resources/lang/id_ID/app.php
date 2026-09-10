@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Arsip berisi folder bernama ":name" alih-alih "assets", sehingga tidak ada asetnya yang dapat diimpor. Ubah namanya menjadi "assets" dan pastikan folder di bawahnya sesuai dengan jalur di file data Anda, misalnya "assets/Root/Seed/Tech Sheets/Cotton/". macOS menyimpan "/" yang diketik pada nama folder sebagai ":", yang merupakan penyebab umumnya.',
         ],
     ],
 ];

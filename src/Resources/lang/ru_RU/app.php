@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Архив содержит папку с именем ":name" вместо "assets", поэтому ни один из её ресурсов не удалось импортировать. Переименуйте её в "assets" и оставьте вложенные папки соответствующими путям в файле данных, например "assets/Root/Seed/Tech Sheets/Cotton/". macOS сохраняет введённый в имени папки символ "/" как ":", что и является обычной причиной.',
         ],
     ],
 ];

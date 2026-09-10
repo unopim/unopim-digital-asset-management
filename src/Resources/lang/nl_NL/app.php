@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'Het archief bevat een map met de naam ":name" in plaats van "assets", waardoor geen van de assets kon worden geïmporteerd. Hernoem de map naar "assets" en zorg dat de onderliggende mappen overeenkomen met de paden in uw gegevensbestand, bijvoorbeeld "assets/Root/Seed/Tech Sheets/Cotton/". macOS slaat een "/" in een mapnaam op als ":", wat de gebruikelijke oorzaak is.',
         ],
     ],
 ];

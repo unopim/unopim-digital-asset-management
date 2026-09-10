@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'L\'arxiu conté una carpeta anomenada ":name" en lloc de "assets", de manera que no s\'ha pogut importar cap dels seus actius. Canvieu-li el nom a "assets" i mantingueu les carpetes de sota coincidents amb les rutes del fitxer de dades, per exemple "assets/Root/Seed/Tech Sheets/Cotton/". macOS desa una "/" escrita en un nom de carpeta com a ":", que és la causa habitual.',
         ],
     ],
 ];

@@ -3,9 +3,9 @@
 namespace Webkul\DAM\Helpers\Importers\Product;
 
 use Webkul\DAM\Helpers\Importers\Product\Concerns\ImportsAssetAttributes;
-use Webkul\DataTransfer\Helpers\Importers\Product\Importer as ProductImporter;
+use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 
-class Importer extends ProductImporter
+class MeasurementAwareImporter extends MeasurementImporter
 {
     use ImportsAssetAttributes;
 }

@@ -901,6 +901,7 @@ return [
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-tree-misnamed'        => 'يحتوي الأرشيف على مجلد باسم ":name" بدلاً من "assets"، لذلك تعذر استيراد أي من أصوله. أعد تسميته إلى "assets" وأبقِ المجلدات الموجودة تحته مطابقة للمسارات في ملف البيانات، مثل "assets/Root/Seed/Tech Sheets/Cotton/". يخزن macOS الرمز "/" المكتوب في اسم مجلد على شكل ":"، وهذا هو السبب المعتاد.',
         ],
     ],
 ];
