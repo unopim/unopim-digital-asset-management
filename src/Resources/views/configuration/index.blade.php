@@ -149,6 +149,86 @@
                     </div>
                 </div>
             </div>
+
+            <div class="grid gap-2.5 content-start">
+                <p class="text-base text-gray-800 dark:text-white font-semibold">
+                    @lang('dam::app.admin.configuration.ai-tagging.title')
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 leading-[140%]">
+                    @lang('dam::app.admin.configuration.ai-tagging.description')
+                </p>
+            </div>
+
+            <div class="bg-white dark:bg-cherry-900 rounded-lg box-shadow divide-y divide-gray-100 dark:divide-cherry-800">
+                <div class="flex items-center justify-between gap-4 px-5 py-4">
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-800 dark:text-white">
+                            @lang('dam::app.admin.configuration.ai-tagging.enabled.label')
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                            @lang('dam::app.admin.configuration.ai-tagging.enabled.hint')
+                        </p>
+                    </div>
+                    <div class="relative inline-flex items-center shrink-0">
+                        <input type="hidden" name="DAM_AI_TAGGING_ENABLED" value="0">
+                        <input
+                            type="checkbox"
+                            name="DAM_AI_TAGGING_ENABLED"
+                            id="dam_ai_tagging_enabled"
+                            value="1"
+                            class="sr-only peer"
+                            onchange="window.damConfigSync && window.damConfigSync('ai-tagging')"
+                            {{ $settings['DAM_AI_TAGGING_ENABLED'] ? 'checked' : '' }}
+                        >
+                        <label class="{{ $toggleClass }}" for="dam_ai_tagging_enabled"></label>
+                    </div>
+                </div>
+
+                <div id="ai-tagging-platform-row" class="grid gap-2 px-5 py-4 {{ $settings['DAM_AI_TAGGING_ENABLED'] ? '' : 'hidden' }}">
+                    <label for="dam_ai_tagging_platform_id" class="text-sm font-medium text-gray-800 dark:text-white">
+                        @lang('dam::app.admin.configuration.ai-tagging.platform.label')
+                    </label>
+
+                    <x-admin::form.control-group class="max-w-sm">
+                        <x-admin::form.control-group.control
+                            type="select"
+                            id="dam_ai_tagging_platform_id"
+                            name="DAM_AI_TAGGING_PLATFORM_ID"
+                            async="true"
+                            list-route="{{ route('admin.dam.configuration.ai-tagging.platforms') }}"
+                            track-by="id"
+                            label-by="label"
+                            :value="$selectedAiTaggingPlatform ? json_encode(['id' => (string) $selectedAiTaggingPlatform['id'], 'label' => $selectedAiTaggingPlatform['label']]) : 'null'"
+                            :placeholder="trans('dam::app.admin.configuration.ai-tagging.platform.use-default')"
+                            :disabled="! $hasAiTaggingPlatforms"
+                        />
+                    </x-admin::form.control-group>
+
+                    @unless ($hasAiTaggingPlatforms)
+                        <p class="text-xs text-primary-600 dark:text-primary-400 leading-relaxed">
+                            @lang('dam::app.admin.configuration.ai-tagging.platform.none-configured-hint')
+                        </p>
+                    @endunless
+
+                    <label for="dam_ai_tagging_max_tags" class="text-sm font-medium text-gray-800 dark:text-white mt-2">
+                        @lang('dam::app.admin.configuration.ai-tagging.max-tags.label')
+                    </label>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 -mt-1.5">
+                        @lang('dam::app.admin.configuration.ai-tagging.max-tags.hint')
+                    </p>
+
+                    <x-admin::form.control-group class="max-w-[8rem]">
+                        <x-admin::form.control-group.control
+                            type="number"
+                            id="dam_ai_tagging_max_tags"
+                            name="DAM_AI_TAGGING_MAX_TAGS"
+                            min="1"
+                            max="20"
+                            :value="$settings['DAM_AI_TAGGING_MAX_TAGS']"
+                        />
+                    </x-admin::form.control-group>
+                </div>
+            </div>
         </div>
 
     </x-admin::form>
@@ -170,6 +250,14 @@
 
             if (source === 'explorer' && explorer.checked && bookmarks) bookmarks.checked = true;
             if (source === 'tree'     && showTree.checked && showAssets) showAssets.checked = true;
+
+            if (source === 'ai-tagging') {
+                var aiTaggingEnabled = document.getElementById('dam_ai_tagging_enabled');
+                var aiTaggingPlatformRow = document.getElementById('ai-tagging-platform-row');
+                if (aiTaggingEnabled && aiTaggingPlatformRow) {
+                    aiTaggingPlatformRow.classList.toggle('hidden', ! aiTaggingEnabled.checked);
+                }
+            }
 
             var LOCK = ['opacity-60', 'pointer-events-none'];
             function setLocked(el, locked) {

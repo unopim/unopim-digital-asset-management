@@ -168,6 +168,7 @@ Route::group([
         ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'update')->name('update');
+            Route::get('/ai-tagging/platforms', 'aiTaggingPlatforms')->name('ai-tagging.platforms');
         });
 
 });
