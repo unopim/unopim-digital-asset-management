@@ -2,12 +2,15 @@
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Webkul\DAM\Jobs\TagAssetWithAi;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\MagicAI\Models\MagicAIPlatform;
 use Webkul\User\Models\Admin;
 use Webkul\User\Models\Role;
 
@@ -106,6 +109,93 @@ it('validates directory_id on api upload', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['directory_id']);
+});
+
+it('dispatches AI tagging for an eligible image upload via the api', function () {
+    Queue::fake();
+    config(['dam.ai_tagging.enabled' => true]);
+    MagicAIPlatform::create([
+        'label'   => 'Test OpenAI', 'provider' => 'openai', 'api_url' => 'https://api.openai.com/v1',
+        'api_key' => 'test-key', 'models' => 'gpt-4o', 'extras' => [], 'is_default' => true, 'status' => true,
+    ]);
+
+    $disk = Directory::getAssetDisk();
+    Storage::disk($disk)->makeDirectory('assets/AiTagApi');
+    $directory = Directory::factory()->create(['name' => 'AiTagApi', 'parent_id' => null]);
+
+    $file = UploadedFile::fake()->image('api-tag.png', 200, 200);
+
+    $response = $this->withHeaders($this->headers)
+        ->post(route('admin.api.dam.assets.upload'), [
+            'files'        => [$file],
+            'directory_id' => $directory->id,
+        ]);
+
+    $response->assertStatus(201);
+
+    $assetId = $response->json('files.0.id');
+
+    Queue::assertPushed(TagAssetWithAi::class, function (TagAssetWithAi $job) use ($assetId) {
+        return (fn () => $this->assetId)->call($job) === $assetId;
+    });
+});
+
+it('does not dispatch AI tagging via the api when the key lacks the required scopes', function () {
+    Queue::fake();
+    config(['dam.ai_tagging.enabled' => true]);
+    MagicAIPlatform::create([
+        'label'   => 'Test OpenAI', 'provider' => 'openai', 'api_url' => 'https://api.openai.com/v1',
+        'api_key' => 'test-key', 'models' => 'gpt-4o', 'extras' => [], 'is_default' => true, 'status' => true,
+    ]);
+
+    $disk = Directory::getAssetDisk();
+    Storage::disk($disk)->makeDirectory('assets/AiTagApiDenied');
+    $directory = Directory::factory()->create(['name' => 'AiTagApiDenied', 'parent_id' => null]);
+
+    $headers = $this->getAuthenticationHeaders('custom', ['api.dam.assets.upload', 'api.dam.assets.update']);
+
+    $file = UploadedFile::fake()->image('api-tag-denied.png', 200, 200);
+
+    $this->withHeaders($headers)
+        ->post(route('admin.api.dam.assets.upload'), [
+            'files'        => [$file],
+            'directory_id' => $directory->id,
+        ])->assertStatus(201);
+
+    Queue::assertNotPushed(TagAssetWithAi::class);
+});
+
+it('dispatches AI tagging on a reupload via the api', function () {
+    Queue::fake();
+    config(['dam.ai_tagging.enabled' => true]);
+    MagicAIPlatform::create([
+        'label'   => 'Test OpenAI', 'provider' => 'openai', 'api_url' => 'https://api.openai.com/v1',
+        'api_key' => 'test-key', 'models' => 'gpt-4o', 'extras' => [], 'is_default' => true, 'status' => true,
+    ]);
+
+    $disk = Directory::getAssetDisk();
+    Storage::disk($disk)->makeDirectory('assets/AiTagReupload');
+    $directory = Directory::factory()->create(['name' => 'AiTagReupload', 'parent_id' => null]);
+
+    $initialPath = 'assets/AiTagReupload/old.png';
+    Storage::disk($disk)->put($initialPath, 'old image bytes');
+    $asset = Asset::factory()->create([
+        'file_name' => 'old.png', 'mime_type' => 'image/png', 'extension' => 'png',
+        'file_type' => 'image', 'path' => $initialPath,
+    ]);
+    $asset->directories()->attach($directory->id);
+
+    $newFile = UploadedFile::fake()->image('new.png', 100, 100);
+
+    $this->withHeaders($this->headers)
+        ->post(route('admin.api.dam.assets.reUpload'), [
+            'file'     => $newFile,
+            'asset_id' => $asset->id,
+        ])->assertStatus(201);
+
+    Queue::assertPushed(TagAssetWithAi::class, function (TagAssetWithAi $job) use ($asset) {
+        return (fn () => $this->assetId)->call($job) === $asset->id;
+    });
 });
 
 it('deletes an asset via the api destroy endpoint', function () {
