@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Exiba ativos junto com as pastas na árvore de diretórios em vez de mostrar apenas pastas.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Marcação com IA',
+                'description' => 'Sugere automaticamente tags para imagens enviadas usando sua plataforma Magic AI configurada.',
+                'enabled'     => [
+                    'label' => 'Marcar ativos automaticamente com IA',
+                    'hint'  => 'Usa sua plataforma Magic AI configurada para sugerir tags para imagens automaticamente quando são enviadas.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plataforma',
+                    'use-default'              => 'Usar plataforma padrão',
+                    'none-configured'          => 'Nenhuma plataforma de IA configurada',
+                    'none-configured-hint'     => 'Adicione primeiro uma plataforma Magic AI com capacidade de visão — consulte Configurações → Magic AI → Plataformas.',
+                ],
+                'max-tags' => [
+                    'label' => 'Máximo de tags',
+                    'hint'  => 'Número máximo de tags a serem sugeridas por imagem (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Diretório não encontrado.',

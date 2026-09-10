@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Apresente os recursos juntamente com as pastas na árvore de diretórios em vez de mostrar apenas pastas.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Etiquetagem com IA',
+                'description' => 'Sugere automaticamente etiquetas para imagens carregadas utilizando a sua plataforma Magic AI configurada.',
+                'enabled'     => [
+                    'label' => 'Etiquetar automaticamente os recursos com IA',
+                    'hint'  => 'Utiliza a sua plataforma Magic AI configurada para sugerir etiquetas para imagens automaticamente quando são carregadas.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plataforma',
+                    'use-default'              => 'Utilizar plataforma predefinida',
+                    'none-configured'          => 'Nenhuma plataforma de IA configurada',
+                    'none-configured-hint'     => 'Adicione primeiro uma plataforma Magic AI com capacidade de visão — consulte Definições → Magic AI → Plataformas.',
+                ],
+                'max-tags' => [
+                    'label' => 'Máximo de etiquetas',
+                    'hint'  => 'Número máximo de etiquetas a sugerir por imagem (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Diretório não encontrado.',

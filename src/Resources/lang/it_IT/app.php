@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Mostra le risorse insieme alle cartelle all\'interno dell\'albero directory invece di mostrare solo le cartelle.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Tagging con IA',
+                'description' => 'Suggerisce automaticamente tag per le immagini caricate utilizzando la piattaforma Magic AI configurata.',
+                'enabled'     => [
+                    'label' => 'Assegna automaticamente tag alle risorse con l\'IA',
+                    'hint'  => 'Utilizza la piattaforma Magic AI configurata per suggerire automaticamente tag per le immagini al momento del caricamento.',
+                ],
+                'platform' => [
+                    'label'                    => 'Piattaforma',
+                    'use-default'              => 'Usa piattaforma predefinita',
+                    'none-configured'          => 'Nessuna piattaforma IA configurata',
+                    'none-configured-hint'     => 'Aggiungi prima una piattaforma Magic AI con capacità di visione — vedi Impostazioni → Magic AI → Piattaforme.',
+                ],
+                'max-tags' => [
+                    'label' => 'Tag massimi',
+                    'hint'  => 'Numero massimo di tag suggeriti per immagine (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Directory non trovata.',

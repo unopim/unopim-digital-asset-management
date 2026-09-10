@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Display assets alongside folders within the directory tree instead of showing folders only.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI Tagging',
+                'description' => 'Automatically suggest tags for uploaded images using your configured Magic AI platform.',
+                'enabled'     => [
+                    'label' => 'Auto-tag assets with AI',
+                    'hint'  => 'Uses your configured Magic AI platform to suggest tags for images automatically when they are uploaded.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Use default platform',
+                    'none-configured'          => 'No AI platform configured',
+                    'none-configured-hint'     => 'Add a vision-capable Magic AI platform first — see Settings → Magic AI → Platforms.',
+                ],
+                'max-tags' => [
+                    'label' => 'Max tags',
+                    'hint'  => 'Maximum number of tags to suggest per image (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Directory not found.',

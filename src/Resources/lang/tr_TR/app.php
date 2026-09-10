@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Yalnızca klasörleri göstermek yerine varlıkları dizin ağacında klasörlerle birlikte görüntüler.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI Etiketleme',
+                'description' => 'Yapılandırılmış Magic AI platformunuzu kullanarak yüklenen görseller için otomatik olarak etiket önerir.',
+                'enabled'     => [
+                    'label' => 'Varlıkları AI ile otomatik etiketle',
+                    'hint'  => 'Görseller yüklendiğinde otomatik olarak etiket önermek için yapılandırılmış Magic AI platformunuzu kullanır.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Varsayılan platformu kullan',
+                    'none-configured'          => 'Yapılandırılmış AI platformu yok',
+                    'none-configured-hint'     => 'Önce görsel destekli bir Magic AI platformu ekleyin — bkz. Ayarlar → Magic AI → Platformlar.',
+                ],
+                'max-tags' => [
+                    'label' => 'Maks. etiket',
+                    'hint'  => 'Görsel başına önerilecek maksimum etiket sayısı (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Dizin bulunamadı.',

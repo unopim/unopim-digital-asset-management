@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Hiển thị tài sản cùng với thư mục trong cây thư mục thay vì chỉ hiển thị thư mục.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Gắn thẻ AI',
+                'description' => 'Tự động đề xuất thẻ cho hình ảnh đã tải lên bằng nền tảng Magic AI đã cấu hình của bạn.',
+                'enabled'     => [
+                    'label' => 'Tự động gắn thẻ tài sản bằng AI',
+                    'hint'  => 'Sử dụng nền tảng Magic AI đã cấu hình của bạn để tự động đề xuất thẻ cho hình ảnh khi chúng được tải lên.',
+                ],
+                'platform' => [
+                    'label'                    => 'Nền tảng',
+                    'use-default'              => 'Sử dụng nền tảng mặc định',
+                    'none-configured'          => 'Chưa cấu hình nền tảng AI nào',
+                    'none-configured-hint'     => 'Trước tiên hãy thêm nền tảng Magic AI có khả năng thị giác — xem Cài đặt → Magic AI → Nền tảng.',
+                ],
+                'max-tags' => [
+                    'label' => 'Số thẻ tối đa',
+                    'hint'  => 'Số lượng thẻ tối đa được đề xuất cho mỗi hình ảnh (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Không tìm thấy thư mục.',

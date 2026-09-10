@@ -728,6 +728,24 @@ return [
                     'hint'  => '在目录树中将资产与文件夹一同显示，而不仅仅显示文件夹。',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI 标记',
+                'description' => '使用您配置的 Magic AI 平台自动为上传的图片建议标签。',
+                'enabled'     => [
+                    'label' => '使用 AI 自动标记资产',
+                    'hint'  => '在图片上传时，使用您配置的 Magic AI 平台自动建议标签。',
+                ],
+                'platform' => [
+                    'label'                    => '平台',
+                    'use-default'              => '使用默认平台',
+                    'none-configured'          => '未配置 AI 平台',
+                    'none-configured-hint'     => '请先添加支持视觉功能的 Magic AI 平台 — 参见设置 → Magic AI → 平台。',
+                ],
+                'max-tags' => [
+                    'label' => '最大标签数',
+                    'hint'  => '每张图片建议的最大标签数（1-20）。',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => '目录未找到。',

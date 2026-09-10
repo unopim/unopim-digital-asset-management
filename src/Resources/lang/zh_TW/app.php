@@ -728,6 +728,24 @@ return [
                     'hint'  => '在目錄樹中將資產與資料夾一同顯示，而不僅僅顯示資料夾。',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI 標記',
+                'description' => '使用您設定的 Magic AI 平台自動為上傳的圖片建議標籤。',
+                'enabled'     => [
+                    'label' => '使用 AI 自動標記資產',
+                    'hint'  => '在圖片上傳時，使用您設定的 Magic AI 平台自動建議標籤。',
+                ],
+                'platform' => [
+                    'label'                    => '平台',
+                    'use-default'              => '使用預設平台',
+                    'none-configured'          => '未設定 AI 平台',
+                    'none-configured-hint'     => '請先新增支援視覺功能的 Magic AI 平台 — 參見設定 → Magic AI → 平台。',
+                ],
+                'max-tags' => [
+                    'label' => '最大標籤數',
+                    'hint'  => '每張圖片建議的最大標籤數（1-20）。',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => '找不到目錄。',

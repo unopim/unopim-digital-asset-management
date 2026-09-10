@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Afișează resursele alături de dosare în arborele de directoare, în loc să afișeze doar dosarele.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Etichetare AI',
+                'description' => 'Sugerează automat etichete pentru imaginile încărcate folosind platforma Magic AI configurată.',
+                'enabled'     => [
+                    'label' => 'Etichetează automat resursele cu AI',
+                    'hint'  => 'Utilizează platforma Magic AI configurată pentru a sugera automat etichete pentru imagini atunci când sunt încărcate.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platformă',
+                    'use-default'              => 'Utilizează platforma implicită',
+                    'none-configured'          => 'Nicio platformă AI configurată',
+                    'none-configured-hint'     => 'Adăugați mai întâi o platformă Magic AI capabilă de viziune — vedeți Setări → Magic AI → Platforme.',
+                ],
+                'max-tags' => [
+                    'label' => 'Etichete maxime',
+                    'hint'  => 'Numărul maxim de etichete sugerate per imagine (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Directorul nu a fost găsit.',

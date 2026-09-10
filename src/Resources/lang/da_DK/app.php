@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Vis aktiver sammen med mapper i mappetræet i stedet for kun at vise mapper.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI-mærkning',
+                'description' => 'Foreslå automatisk tags til uploadede billeder ved hjælp af din konfigurerede Magic AI-platform.',
+                'enabled'     => [
+                    'label' => 'Auto-tag aktiver med AI',
+                    'hint'  => 'Bruger din konfigurerede Magic AI-platform til automatisk at foreslå tags til billeder, når de uploades.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Brug standardplatform',
+                    'none-configured'          => 'Ingen AI-platform konfigureret',
+                    'none-configured-hint'     => 'Tilføj først en synskapabel Magic AI-platform — se Indstillinger → Magic AI → Platforme.',
+                ],
+                'max-tags' => [
+                    'label' => 'Maks. tags',
+                    'hint'  => 'Maksimalt antal tags, der foreslås pr. billede (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Mappen blev ikke fundet.',

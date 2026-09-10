@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Näyttää resurssit kansioiden ohella hakemistopuussa pelkkien kansioiden näyttämisen sijaan.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Tekoälymerkintä',
+                'description' => 'Ehdottaa automaattisesti tunnisteita ladatuille kuville käyttäen määritettyä Magic AI -alustaa.',
+                'enabled'     => [
+                    'label' => 'Merkitse resurssit automaattisesti tekoälyllä',
+                    'hint'  => 'Käyttää määritettyä Magic AI -alustaa ehdottaakseen automaattisesti tunnisteita kuville, kun ne ladataan.',
+                ],
+                'platform' => [
+                    'label'                    => 'Alusta',
+                    'use-default'              => 'Käytä oletusalustaa',
+                    'none-configured'          => 'Tekoälyalustaa ei ole määritetty',
+                    'none-configured-hint'     => 'Lisää ensin näkökykyinen Magic AI -alusta — katso Asetukset → Magic AI → Alustat.',
+                ],
+                'max-tags' => [
+                    'label' => 'Enimmäistunnisteet',
+                    'hint'  => 'Kuvaa kohden ehdotettavien tunnisteiden enimmäismäärä (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Hakemistoa ei löydy.',

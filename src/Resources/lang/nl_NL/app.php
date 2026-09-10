@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Toon assets naast mappen binnen de mappenstructuur in plaats van alleen mappen.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI-tagging',
+                'description' => 'Stelt automatisch tags voor geüploade afbeeldingen voor met behulp van uw geconfigureerde Magic AI-platform.',
+                'enabled'     => [
+                    'label' => 'Assets automatisch taggen met AI',
+                    'hint'  => 'Gebruikt uw geconfigureerde Magic AI-platform om automatisch tags voor afbeeldingen voor te stellen wanneer ze worden geüpload.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Standaardplatform gebruiken',
+                    'none-configured'          => 'Geen AI-platform geconfigureerd',
+                    'none-configured-hint'     => 'Voeg eerst een visiegeschikt Magic AI-platform toe — zie Instellingen → Magic AI → Platforms.',
+                ],
+                'max-tags' => [
+                    'label' => 'Max. tags',
+                    'hint'  => 'Maximaal aantal tags om per afbeelding voor te stellen (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Map niet gevonden.',

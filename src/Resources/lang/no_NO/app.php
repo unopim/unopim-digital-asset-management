@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Vis ressurser sammen med mapper i mappetreet i stedet for å bare vise mapper.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI-tagging',
+                'description' => 'Foreslår automatisk tagger for opplastede bilder ved hjelp av din konfigurerte Magic AI-plattform.',
+                'enabled'     => [
+                    'label' => 'Automatisk tagging av ressurser med AI',
+                    'hint'  => 'Bruker din konfigurerte Magic AI-plattform til å foreslå tagger for bilder automatisk når de lastes opp.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plattform',
+                    'use-default'              => 'Bruk standardplattform',
+                    'none-configured'          => 'Ingen AI-plattform konfigurert',
+                    'none-configured-hint'     => 'Legg først til en synskapabel Magic AI-plattform — se Innstillinger → Magic AI → Plattformer.',
+                ],
+                'max-tags' => [
+                    'label' => 'Maks. tagger',
+                    'hint'  => 'Maksimalt antall tagger som foreslås per bilde (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Mappen ble ikke funnet.',

@@ -728,6 +728,24 @@ return [
                     'hint'  => 'Mostra els recursos juntament amb les carpetes dins de l\'arbre de directoris en lloc de mostrar només les carpetes.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Etiquetatge amb IA',
+                'description' => 'Suggereix automàticament etiquetes per a les imatges pujades utilitzant la vostra plataforma Magic AI configurada.',
+                'enabled'     => [
+                    'label' => 'Etiquetar automàticament els recursos amb IA',
+                    'hint'  => 'Utilitza la vostra plataforma Magic AI configurada per suggerir etiquetes per a les imatges automàticament quan es pugen.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plataforma',
+                    'use-default'              => 'Utilitza la plataforma predeterminada',
+                    'none-configured'          => 'No hi ha cap plataforma d\'IA configurada',
+                    'none-configured-hint'     => 'Afegiu primer una plataforma Magic AI amb capacitat de visió — vegeu Configuració → Magic AI → Plataformes.',
+                ],
+                'max-tags' => [
+                    'label' => 'Etiquetes màximes',
+                    'hint'  => 'Nombre màxim d\'etiquetes a suggerir per imatge (1-20).',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'No s\'ha trobat el directori.',
