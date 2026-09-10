@@ -158,6 +158,25 @@ it('caps tags at a DB-saved max tags value even when config() says a higher defa
     expect($asset->refresh()->tags)->toHaveCount(2);
 });
 
+it('clamps a DB-saved max tags value above 20, in case validation was bypassed', function () {
+    makeVisionPlatform();
+
+    DamConfiguration::create(['key' => 'DAM_AI_TAGGING_MAX_TAGS', 'value' => '999']);
+
+    $tags = collect(range(1, 25))->map(fn ($n) => "tag{$n}")->all();
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->andReturnSelf();
+    $client->shouldReceive('chat')->once()->andReturn(['content' => json_encode(['tags' => $tags])]);
+    app()->instance(AiApiClient::class, $client);
+
+    $asset = makeTaggableAsset();
+
+    app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk());
+
+    expect($asset->refresh()->tags)->toHaveCount(20);
+});
+
 it('stays disabled when the DB row is off even if config() says enabled', function () {
     config(['dam.ai_tagging.enabled' => true]);
     makeVisionPlatform();

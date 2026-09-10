@@ -198,7 +198,7 @@
                             list-route="{{ route('admin.dam.configuration.ai-tagging.platforms') }}"
                             track-by="id"
                             label-by="label"
-                            :value="$selectedAiTaggingPlatform ? json_encode(['id' => (string) $selectedAiTaggingPlatform['id'], 'label' => $selectedAiTaggingPlatform['label']]) : 'null'"
+                            :value="$selectedAiTaggingPlatform ? json_encode(['id' => (string) $selectedAiTaggingPlatform['id'], 'label' => $selectedAiTaggingPlatform['label']]) : ''"
                             :placeholder="trans('dam::app.admin.configuration.ai-tagging.platform.use-default')"
                             :disabled="! $hasAiTaggingPlatforms"
                         />

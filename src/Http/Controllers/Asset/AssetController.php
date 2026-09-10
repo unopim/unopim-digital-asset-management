@@ -30,12 +30,13 @@ use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\DAM\Traits\AutoTagEligibility;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 use ZipArchive;
 
 class AssetController extends Controller
 {
-    use DirectoryTrait;
+    use AutoTagEligibility, DirectoryTrait;
 
     public function __construct(
         protected AssetRepository $assetRepository,
@@ -738,15 +739,6 @@ class AssetController extends Controller
         }
 
         ProcessAssetUpload::dispatch($asset->id, $batchId, $this->autoTagEligible());
-    }
-
-    /**
-     * Auto-tagging is functionally "edit the asset" plus "create a tag",
-     * so both permissions must be held independently of upload rights.
-     */
-    protected function autoTagEligible(): bool
-    {
-        return bouncer()->hasPermission('dam.asset.update') && bouncer()->hasPermission('dam.tags.create');
     }
 
     protected function dispatchThumbnailJob(?Asset $asset): void

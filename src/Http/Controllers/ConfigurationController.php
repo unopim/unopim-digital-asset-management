@@ -26,6 +26,8 @@ class ConfigurationController extends Controller
             abort(403);
         }
 
+        $platforms = $this->visionCapablePlatforms();
+
         return view('dam::configuration.index', [
             'settings' => [
                 'DAM_TREE_SHOW_ASSETS'            => config('dam.tree.show_assets'),
@@ -36,9 +38,8 @@ class ConfigurationController extends Controller
                 'DAM_AI_TAGGING_PLATFORM_ID'      => config('dam.ai_tagging.platform_id'),
                 'DAM_AI_TAGGING_MAX_TAGS'         => config('dam.ai_tagging.max_tags', 8),
             ],
-            'hasAiTaggingPlatforms'     => $this->visionCapablePlatforms()->isNotEmpty(),
-            'selectedAiTaggingPlatform' => $this->visionCapablePlatforms()
-                ->firstWhere('id', (int) config('dam.ai_tagging.platform_id')),
+            'hasAiTaggingPlatforms'     => $platforms->isNotEmpty(),
+            'selectedAiTaggingPlatform' => $platforms->firstWhere('id', (int) config('dam.ai_tagging.platform_id')),
         ]);
     }
 

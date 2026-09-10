@@ -9,9 +9,12 @@ use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Traits\AutoTagEligibility;
 
 class UploadController extends Controller
 {
+    use AutoTagEligibility;
+
     public function __construct(
         protected DirectoryPermissionService $permissionService,
     ) {}
@@ -198,15 +201,6 @@ class UploadController extends Controller
             ->whereNotNull('asset_id')
             ->get()
             ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible));
-    }
-
-    /**
-     * Auto-tagging is functionally "edit the asset" plus "create a tag",
-     * so both permissions must be held independently of upload rights.
-     */
-    protected function autoTagEligible(): bool
-    {
-        return bouncer()->hasPermission('dam.asset.update') && bouncer()->hasPermission('dam.tags.create');
     }
 
     protected function authorizedTracker(string $uuid)

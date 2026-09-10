@@ -122,7 +122,7 @@ class AssetAutoTaggingService
             return (int) config('dam.ai_tagging.max_tags', 8);
         }
 
-        return max(1, (int) $value);
+        return max(1, min(20, (int) $value));
     }
 
     protected function readAsDataUri(Asset $asset, string $disk): ?string
