@@ -32,6 +32,7 @@ class UploadTracker extends Model
         'summary',
         'started_at',
         'completed_at',
+        'job_track_id',
     ];
 
     protected $casts = [

@@ -151,7 +151,7 @@ class UploadController extends Controller
 
             foreach ($failed as $batch) {
                 if ($batch->asset_id) {
-                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible);
+                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible, userId: auth()->id());
                 }
             }
         }
@@ -200,7 +200,7 @@ class UploadController extends Controller
             ->whereIn('state', $states)
             ->whereNotNull('asset_id')
             ->get()
-            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible));
+            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible, userId: auth()->id()));
     }
 
     protected function authorizedTracker(string $uuid)

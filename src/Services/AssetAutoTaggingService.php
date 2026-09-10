@@ -17,31 +17,45 @@ use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
 
 class AssetAutoTaggingService
 {
+    protected ?string $lastError = null;
+
     public function __construct(
         protected MagicAIPlatformRepository $platformRepository,
         protected AssetTagRepository $tagRepository,
     ) {}
 
     /**
-     * Best-effort: swallows every failure so a broken AI call never fails the upload.
+     * The message from the most recent failed tagAsset() call, if any —
+     * lets a caller (e.g. the job tracker) surface why a run failed.
      */
-    public function tagAsset(Asset $asset, string $disk): void
+    public function lastError(): ?string
+    {
+        return $this->lastError;
+    }
+
+    /**
+     * Best-effort: swallows every failure so a broken AI call never fails the upload.
+     * Returns false only on a genuine error (caller uses this to mark its tracking
+     * batch failed vs processed) — a disabled feature or an empty tag suggestion
+     * still count as a successful, if uneventful, run.
+     */
+    public function tagAsset(Asset $asset, string $disk): bool
     {
         if (! $this->isEnabled() || $asset->file_type !== 'image') {
-            return;
+            return true;
         }
 
         try {
             $platform = $this->resolvePlatform();
 
             if (! $platform) {
-                return;
+                return true;
             }
 
             $dataUri = $this->readAsDataUri($asset, $disk);
 
             if (! $dataUri) {
-                return;
+                return true;
             }
 
             $apiClient = app(AiApiClient::class);
@@ -63,11 +77,17 @@ class AssetAutoTaggingService
             if ($tags !== []) {
                 $this->tagRepository->attachTagsByName($asset, $tags);
             }
+
+            return true;
         } catch (\Throwable $e) {
+            $this->lastError = $e->getMessage();
+
             Log::warning('DAM asset auto-tagging failed.', [
                 'asset'   => $asset->id,
                 'message' => $e->getMessage(),
             ]);
+
+            return false;
         }
     }
 
@@ -93,8 +113,10 @@ class AssetAutoTaggingService
     /**
      * Reads DAM_AI_TAGGING_ENABLED straight from the DB. config('dam.ai_tagging.*')
      * is only populated by the DAM HTTP middleware, which a queue worker never runs.
+     * Public so callers can decide whether tagging is worth tracking (e.g. a
+     * tracking batch) before dispatching, not just whether the admin may do it.
      */
-    protected function isEnabled(): bool
+    public function isEnabled(): bool
     {
         $value = DamConfiguration::find('DAM_AI_TAGGING_ENABLED')?->value;
 
