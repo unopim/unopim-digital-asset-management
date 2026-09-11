@@ -184,7 +184,7 @@ it('writes a processed job_track_batches row for a session-tracked run, so the l
     $trackBatch = JobTrackBatch::where('job_track_id', $jobTrack->id)->first();
     expect($trackBatch)->not->toBeNull();
     expect($trackBatch->state)->toBe(AbstractJob::STATE_PROCESSED);
-    expect($trackBatch->summary)->toBe(['created' => 0, 'updated' => 1, 'deleted' => 0]);
+    expect($trackBatch->summary)->toEqual(['created' => 0, 'updated' => 1, 'deleted' => 0]);
 });
 
 it('logs a session-job failure to the downloadable job log, since a session never flips to the failed state', function () {

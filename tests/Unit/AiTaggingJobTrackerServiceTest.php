@@ -80,7 +80,7 @@ it('completes a job_track with a summary the tracker\'s completed view actually 
     $jobTrack->refresh();
     expect($jobTrack->state)->toBe(AbstractJob::STATE_COMPLETED);
     expect($jobTrack->completed_at)->not->toBeNull();
-    expect($jobTrack->summary)->toBe(['created' => 0, 'updated' => 1, 'deleted' => 0]);
+    expect($jobTrack->summary)->toEqual(['created' => 0, 'updated' => 1, 'deleted' => 0]);
 });
 
 it('flips a standalone job to the failed state with the error message, instead of a misleading "completed"', function () {
@@ -117,7 +117,7 @@ it('completes a job_track_batches row with the summary keys the tracker view rea
 
     $trackBatch->refresh();
     expect($trackBatch->state)->toBe(AbstractJob::STATE_PROCESSED);
-    expect($trackBatch->summary)->toBe(['created' => 0, 'updated' => 1, 'deleted' => 0]);
+    expect($trackBatch->summary)->toEqual(['created' => 0, 'updated' => 1, 'deleted' => 0]);
 });
 
 it('completes a failed job_track_batches row with zero in the updated count', function () {
@@ -128,7 +128,7 @@ it('completes a failed job_track_batches row with zero in the updated count', fu
 
     $service->completeBatch($trackBatch, success: false);
 
-    expect($trackBatch->fresh()->summary)->toBe(['created' => 0, 'updated' => 0, 'deleted' => 0]);
+    expect($trackBatch->fresh()->summary)->toEqual(['created' => 0, 'updated' => 0, 'deleted' => 0]);
 });
 
 it('gives a standalone job a fresh job_track every time, not reused', function () {
