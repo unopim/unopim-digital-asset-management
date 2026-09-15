@@ -1,6 +1,6 @@
 # CHANGELOG for unopim-digital-asset-management
 
-## Version Unreleased
+## Version 3.1.0
 
 ### Features & Enhancements
 
