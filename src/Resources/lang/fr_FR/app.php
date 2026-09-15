@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Affiche les ressources aux côtés des dossiers dans l\'arborescence au lieu de n\'afficher que les dossiers.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Étiquetage par IA',
+                'description' => 'Suggère automatiquement des tags pour les images téléchargées à l\'aide de votre plateforme Magic AI configurée.',
+                'enabled'     => [
+                    'label' => 'Étiqueter automatiquement les ressources avec l\'IA',
+                    'hint'  => 'Utilise votre plateforme Magic AI configurée pour suggérer automatiquement des tags pour les images lors de leur téléchargement.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plateforme',
+                    'use-default'              => 'Utiliser la plateforme par défaut',
+                    'none-configured'          => 'Aucune plateforme d\'IA configurée',
+                    'none-configured-hint'     => 'Ajoutez d\'abord une plateforme Magic AI capable de vision — voir Paramètres → Magic AI → Plateformes.',
+                ],
+                'max-tags' => [
+                    'label' => 'Tags maximum',
+                    'hint'  => 'Nombre maximum de tags à suggérer par image (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Limite de débit du marquage IA',
+                    'hint'  => 'Nombre maximum de requêtes de marquage IA par minute (1-120). Réduisez cette valeur pour correspondre à la limite de débit de votre fournisseur IA.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Répertoire introuvable.',

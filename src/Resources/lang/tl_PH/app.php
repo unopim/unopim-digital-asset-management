@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Ipakita ang mga asset kasama ng mga folder sa loob ng directory tree sa halip na mga folder lamang.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI Tagging',
+                'description' => 'Awtomatikong magmungkahi ng mga tag para sa mga na-upload na larawan gamit ang inyong na-configure na Magic AI platform.',
+                'enabled'     => [
+                    'label' => 'Awtomatikong i-tag ang mga asset gamit ang AI',
+                    'hint'  => 'Ginagamit ang inyong na-configure na Magic AI platform upang awtomatikong magmungkahi ng mga tag para sa mga larawan kapag na-upload ang mga ito.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Gamitin ang default na platform',
+                    'none-configured'          => 'Walang na-configure na AI platform',
+                    'none-configured-hint'     => 'Magdagdag muna ng vision-capable na Magic AI platform — tingnan ang Settings → Magic AI → Platforms.',
+                ],
+                'max-tags' => [
+                    'label' => 'Max na tags',
+                    'hint'  => 'Pinakamataas na bilang ng tag na imumungkahi bawat larawan (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Limitasyon sa bilis ng AI tagging',
+                    'hint'  => 'Pinakamataas na bilang ng AI tagging request bawat minuto (1-120). Babaan ito upang tumugma sa rate limit ng iyong AI provider.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Hindi nahanap ang direktoryo.',

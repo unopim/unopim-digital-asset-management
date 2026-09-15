@@ -28,14 +28,17 @@ use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AiTaggingJobTrackerService;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\DAM\Traits\AutoTagEligibility;
 use Webkul\DAM\Traits\Directory as DirectoryTrait;
 use ZipArchive;
 
 class AssetController extends Controller
 {
-    use DirectoryTrait;
+    use AutoTagEligibility, DirectoryTrait;
 
     public function __construct(
         protected AssetRepository $assetRepository,
@@ -45,6 +48,8 @@ class AssetController extends Controller
         protected MetadataExtractionService $metadataExtractionService,
         protected DirectoryPermissionService $permissionService,
         protected DirectoryRolePermissionRepository $permissionRepository,
+        protected AssetAutoTaggingService $autoTaggingService,
+        protected AiTaggingJobTrackerService $jobTrackerService,
     ) {}
 
     protected function assetDirectoryId(?Asset $asset): ?int
@@ -725,9 +730,20 @@ class AssetController extends Controller
         return $tracker->isActive() ? $tracker : null;
     }
 
+    /**
+     * Tagging eligibility (file_type, permission, feature flag) is fully known
+     * here already, synchronously, before any job runs — so the tag batch and
+     * its job_track_batches row are created right now too, not lazily inside
+     * the queued job. That keeps the live tracker's batch total fixed at the
+     * true count for the whole session instead of growing as each queued job
+     * happens to execute.
+     */
     protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
     {
+        $autoTagEligible = $this->autoTagEligible();
         $batchId = null;
+        $tagBatchId = null;
+        $trackBatchId = null;
 
         if ($tracker) {
             $batchId = UploadBatch::create([
@@ -735,9 +751,25 @@ class AssetController extends Controller
                 'asset_id'          => $asset->id,
                 'state'             => UploadBatch::STATE_PENDING,
             ])->id;
+
+            if ($autoTagEligible && $asset->file_type === 'image' && $this->autoTaggingService->isEnabled()) {
+                $tagBatchId = UploadBatch::create([
+                    'upload_tracker_id' => $tracker->id,
+                    'asset_id'          => $asset->id,
+                    'state'             => UploadBatch::STATE_PENDING,
+                ])->id;
+
+                UploadTracker::whereKey($tracker->id)->increment('total_files');
+
+                $jobTrack = $this->jobTrackerService->ensureSessionJob($tracker);
+
+                if ($jobTrack) {
+                    $trackBatchId = $this->jobTrackerService->startBatch($jobTrack)->id;
+                }
+            }
         }
 
-        ProcessAssetUpload::dispatch($asset->id, $batchId);
+        ProcessAssetUpload::dispatch($asset->id, $batchId, $autoTagEligible, tagBatchId: $tagBatchId, trackBatchId: $trackBatchId, userId: auth()->id());
     }
 
     protected function dispatchThumbnailJob(?Asset $asset): void

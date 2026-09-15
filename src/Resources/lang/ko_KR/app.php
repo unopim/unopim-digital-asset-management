@@ -728,6 +728,28 @@ return [
                     'hint'  => '폴더만 표시하는 대신 디렉터리 트리 내에 폴더와 함께 자산을 표시합니다.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI 태깅',
+                'description' => '구성된 Magic AI 플랫폼을 사용하여 업로드된 이미지에 대한 태그를 자동으로 제안합니다.',
+                'enabled'     => [
+                    'label' => 'AI로 자산 자동 태그 지정',
+                    'hint'  => '이미지가 업로드될 때 구성된 Magic AI 플랫폼을 사용하여 태그를 자동으로 제안합니다.',
+                ],
+                'platform' => [
+                    'label'                    => '플랫폼',
+                    'use-default'              => '기본 플랫폼 사용',
+                    'none-configured'          => '구성된 AI 플랫폼이 없습니다',
+                    'none-configured-hint'     => '먼저 비전 지원 Magic AI 플랫폼을 추가하세요 — 설정 → Magic AI → 플랫폼을 참조하세요.',
+                ],
+                'max-tags' => [
+                    'label' => '최대 태그 수',
+                    'hint'  => '이미지당 제안할 최대 태그 수(1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'AI 태깅 속도 제한',
+                    'hint'  => '분당 최대 AI 태깅 요청 수(1-120). AI 제공업체의 속도 제한에 맞게 이 값을 낮추세요.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => '디렉터리를 찾을 수 없습니다.',

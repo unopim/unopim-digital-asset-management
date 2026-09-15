@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Visa tillgångar tillsammans med mappar i katalogträdet i stället för att bara visa mappar.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI-taggning',
+                'description' => 'Föreslår automatiskt taggar för uppladdade bilder med hjälp av din konfigurerade Magic AI-plattform.',
+                'enabled'     => [
+                    'label' => 'Automatisk taggning av tillgångar med AI',
+                    'hint'  => 'Använder din konfigurerade Magic AI-plattform för att automatiskt föreslå taggar för bilder när de laddas upp.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plattform',
+                    'use-default'              => 'Använd standardplattform',
+                    'none-configured'          => 'Ingen AI-plattform konfigurerad',
+                    'none-configured-hint'     => 'Lägg först till en synförmögen Magic AI-plattform — se Inställningar → Magic AI → Plattformar.',
+                ],
+                'max-tags' => [
+                    'label' => 'Max antal taggar',
+                    'hint'  => 'Maximalt antal taggar som föreslås per bild (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Hastighetsgräns för AI-taggning',
+                    'hint'  => 'Maximalt antal AI-taggningsförfrågningar per minut (1-120). Sänk detta värde för att matcha din AI-leverantörs hastighetsgräns.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Katalogen hittades inte.',

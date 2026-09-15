@@ -9,9 +9,12 @@ use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Traits\AutoTagEligibility;
 
 class UploadController extends Controller
 {
+    use AutoTagEligibility;
+
     public function __construct(
         protected DirectoryPermissionService $permissionService,
     ) {}
@@ -144,9 +147,11 @@ class UploadController extends Controller
                 'completed_at' => null,
             ]);
 
+            $autoTagEligible = $this->autoTagEligible();
+
             foreach ($failed as $batch) {
                 if ($batch->asset_id) {
-                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id);
+                    ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible, userId: auth()->id());
                 }
             }
         }
@@ -189,11 +194,13 @@ class UploadController extends Controller
 
     protected function redispatch(UploadTracker $tracker, array $states): void
     {
+        $autoTagEligible = $this->autoTagEligible();
+
         $tracker->batches()
             ->whereIn('state', $states)
             ->whereNotNull('asset_id')
             ->get()
-            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id));
+            ->each(fn (UploadBatch $batch) => ProcessAssetUpload::dispatch($batch->asset_id, $batch->id, $autoTagEligible, userId: auth()->id()));
     }
 
     protected function authorizedTracker(string $uuid)

@@ -14,6 +14,7 @@ use Webkul\DAM\Filesystem\FileStorer;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
+use Webkul\DAM\Jobs\TagAssetWithAi;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
@@ -21,6 +22,7 @@ use Webkul\DAM\Repositories\AssetPropertyRepository;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\DAM\Traits\AssetAccessControl;
@@ -38,7 +40,8 @@ class AssetController extends Controller
         protected AssetPropertyRepository $assetPropertyRepository,
         protected FileStorer $fileStorer,
         protected DirectoryRepository $directoryRepository,
-        protected MetadataExtractionService $metadataExtractionService
+        protected MetadataExtractionService $metadataExtractionService,
+        protected AssetAutoTaggingService $autoTaggingService,
     ) {}
 
     public function index(): JsonResponse
@@ -242,6 +245,10 @@ class AssetController extends Controller
                     GeneratePdfThumbnail::dispatch($asset->id)->afterCommit();
                 }
 
+                if ($asset->file_type === 'image' && $this->autoTagEligible() && $this->autoTaggingService->isEnabled()) {
+                    TagAssetWithAi::dispatch($asset->id, $disk, userId: auth()->guard('api')->id())->afterCommit();
+                }
+
                 $assetIds[] = $asset->id;
                 $uploadFiles[] = $asset;
             } catch (\Exception $e) {
@@ -362,6 +369,10 @@ class AssetController extends Controller
                 'path'      => $filePath,
                 'meta_data' => $metaData,
             ]);
+
+            if ($asset->file_type === 'image' && $this->autoTagEligible() && $this->autoTaggingService->isEnabled()) {
+                TagAssetWithAi::dispatch($asset->id, $disk, userId: auth()->guard('api')->id())->afterCommit();
+            }
         }
 
         return response()->json([
@@ -392,6 +403,27 @@ class AssetController extends Controller
         }
 
         $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
+    }
+
+    /**
+     * API requests authenticate on the 'api' guard via a personal API key, not the
+     * 'admin' guard bouncer() reads from — so this checks the key's own granted
+     * scopes instead of the web ACL, mirroring ScopeMiddleware's own permission check.
+     */
+    protected function autoTagEligible(): bool
+    {
+        $user = auth()->guard('api')->user();
+        $apiKey = $user?->apiKey;
+
+        if (! $apiKey || $apiKey->revoked || ! $user->status) {
+            return false;
+        }
+
+        if ($apiKey->permission_type === 'all') {
+            return true;
+        }
+
+        return $apiKey->hasPermission('api.dam.assets.update') && $apiKey->hasPermission('api.dam.tags.create');
     }
 
     protected function humanReadableSize(int $kilobytes): string

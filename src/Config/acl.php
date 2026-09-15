@@ -248,5 +248,10 @@ return [
         'name'  => 'dam::app.admin.acl.edit',
         'route' => 'admin.dam.configuration.update',
         'sort'  => 2,
+    ], [
+        'key'   => 'dam.configuration.ai_tagging_platforms',
+        'name'  => 'dam::app.admin.acl.view',
+        'route' => 'admin.dam.configuration.ai-tagging.platforms',
+        'sort'  => 3,
     ],
 ];

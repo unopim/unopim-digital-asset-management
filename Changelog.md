@@ -2,11 +2,14 @@
 
 ## Version Unreleased
 
+### Features & Enhancements
+
+* **AI Auto-Tagging** — Added an optional **AI Tagging** section to the DAM Configuration page: when enabled, newly uploaded images are automatically tagged using a configured Magic AI platform, with a configurable maximum tags per image. Tagging runs as its own rate-limited queued job so it never blocks or delays the upload itself, and only applies for admins holding both asset-update and tag-create permissions.
+
 ### Bug Fixes
 
 * Fixed product imports storing the raw asset path instead of the asset id when the Measurement package is installed, by binding the DAM importer after Measurement registers its own.
 * Failed the import with a clear message when the bundled asset tree is misnamed (for example `assets:`), instead of silently importing nothing.
-
 
 ## Version 3.0.1
 

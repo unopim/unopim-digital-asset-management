@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Zeigt Assets zusammen mit Ordnern im Verzeichnisbaum an, anstatt nur Ordner anzuzeigen.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'KI-Verschlagwortung',
+                'description' => 'Schlägt automatisch Tags für hochgeladene Bilder anhand der konfigurierten Magic-AI-Plattform vor.',
+                'enabled'     => [
+                    'label' => 'Assets automatisch mit KI verschlagworten',
+                    'hint'  => 'Verwendet Ihre konfigurierte Magic-AI-Plattform, um beim Hochladen automatisch Tags für Bilder vorzuschlagen.',
+                ],
+                'platform' => [
+                    'label'                    => 'Plattform',
+                    'use-default'              => 'Standardplattform verwenden',
+                    'none-configured'          => 'Keine KI-Plattform konfiguriert',
+                    'none-configured-hint'     => 'Fügen Sie zunächst eine bildfähige Magic-AI-Plattform hinzu — siehe Einstellungen → Magic AI → Plattformen.',
+                ],
+                'max-tags' => [
+                    'label' => 'Max. Tags',
+                    'hint'  => 'Maximale Anzahl an vorgeschlagenen Tags pro Bild (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Ratenlimit für KI-Tagging',
+                    'hint'  => 'Maximale Anzahl an KI-Tagging-Anfragen pro Minute (1-120). Senken Sie diesen Wert, um dem Ratenlimit Ihres KI-Anbieters zu entsprechen.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Verzeichnis nicht gefunden.',

@@ -13,20 +13,27 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
+use Webkul\DAM\Services\AiTaggingJobTrackerService;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\MetadataExtractionService;
+use Webkul\DAM\Traits\SettlesUploadBatch;
 
 class ProcessAssetUpload implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SettlesUploadBatch;
 
     public int $timeout = 300;
 
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
+        protected bool $autoTagEligible = false,
+        protected ?int $tagBatchId = null,
+        protected ?int $trackBatchId = null,
+        protected ?int $userId = null,
     ) {}
 
-    public function handle(MetadataExtractionService $metadataService): void
+    public function handle(MetadataExtractionService $metadataService, AssetAutoTaggingService $taggingService, AiTaggingJobTrackerService $jobTracker): void
     {
         $batch = $this->batchId ? UploadBatch::find($this->batchId) : null;
         $tracker = $batch?->tracker;
@@ -57,6 +64,12 @@ class ProcessAssetUpload implements ShouldQueue
             $this->attachAudioCoverArt($metadataService, $asset, $metaData, $disk);
 
             $this->dispatchThumbnailJob($asset);
+
+            if ($this->tagBatchId) {
+                TagAssetWithAi::dispatch($asset->id, $disk, $this->tagBatchId, userId: $this->userId, trackBatchId: $this->trackBatchId);
+            } elseif ($this->autoTagEligible && $asset->file_type === 'image' && $taggingService->isEnabled()) {
+                $this->dispatchTaggingJob($asset, $disk, $tracker, $jobTracker);
+            }
 
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {
@@ -137,52 +150,37 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
-    protected function settleBatch(?UploadBatch $batch, ?UploadTracker $tracker, bool $failed, ?string $error = null): void
+    /**
+     * A tagging batch is only created once tagging is actually queued (not upfront
+     * with the upload batch), so total_files stays accurate for files that never
+     * become tagging-eligible. It joins the same tracker session as the upload.
+     *
+     * The job_track_batches row is created here too — at dispatch time, not when
+     * the (rate-limited, possibly much later) TagAssetWithAi job actually runs —
+     * so the live tracker view's total reflects every queued image immediately
+     * instead of growing one row at a time as each tagging job starts.
+     */
+    protected function dispatchTaggingJob(Asset $asset, string $disk, ?UploadTracker $tracker, AiTaggingJobTrackerService $jobTracker): void
     {
-        if (! $batch) {
-            return;
+        $tagBatchId = null;
+        $trackBatchId = null;
+
+        if ($tracker) {
+            $jobTrack = $jobTracker->ensureSessionJob($tracker);
+
+            $tagBatchId = UploadBatch::create([
+                'upload_tracker_id' => $tracker->id,
+                'asset_id'          => $asset->id,
+                'state'             => UploadBatch::STATE_PENDING,
+            ])->id;
+
+            UploadTracker::whereKey($tracker->id)->increment('total_files');
+
+            if ($jobTrack) {
+                $trackBatchId = $jobTracker->startBatch($jobTrack)->id;
+            }
         }
 
-        $batch->update([
-            'state' => $failed ? UploadBatch::STATE_FAILED : UploadBatch::STATE_PROCESSED,
-            'error' => $failed ? $error : null,
-        ]);
-
-        if (! $tracker) {
-            return;
-        }
-
-        UploadTracker::whereKey($tracker->id)
-            ->increment($failed ? 'failed_files' : 'processed_files');
-
-        $this->finalizeTrackerIfDone($tracker->id);
-    }
-
-    protected function finalizeTrackerIfDone(int $trackerId): void
-    {
-        $tracker = UploadTracker::find($trackerId);
-
-        if (! $tracker || ! in_array($tracker->state, [UploadTracker::STATE_PENDING, UploadTracker::STATE_PROCESSING], true)) {
-            return;
-        }
-
-        $settled = $tracker->processed_files + $tracker->failed_files;
-
-        if ($tracker->total_files <= 0 || $settled < $tracker->total_files) {
-            return;
-        }
-
-        $stillOpen = $tracker->batches()
-            ->whereIn('state', [UploadBatch::STATE_PENDING, UploadBatch::STATE_PROCESSING])
-            ->exists();
-
-        if ($stillOpen) {
-            return;
-        }
-
-        $tracker->update([
-            'state'        => UploadTracker::STATE_COMPLETED,
-            'completed_at' => now(),
-        ]);
+        TagAssetWithAi::dispatch($asset->id, $disk, $tagBatchId, userId: $this->userId, trackBatchId: $trackBatchId);
     }
 }

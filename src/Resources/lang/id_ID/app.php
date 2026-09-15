@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Menampilkan aset bersama folder di dalam pohon direktori alih-alih hanya menampilkan folder.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Penandaan AI',
+                'description' => 'Secara otomatis menyarankan tag untuk gambar yang diunggah menggunakan platform Magic AI yang telah dikonfigurasi.',
+                'enabled'     => [
+                    'label' => 'Tandai aset secara otomatis dengan AI',
+                    'hint'  => 'Menggunakan platform Magic AI yang telah dikonfigurasi untuk menyarankan tag untuk gambar secara otomatis saat diunggah.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platform',
+                    'use-default'              => 'Gunakan platform default',
+                    'none-configured'          => 'Tidak ada platform AI yang dikonfigurasi',
+                    'none-configured-hint'     => 'Tambahkan platform Magic AI yang mendukung visi terlebih dahulu — lihat Pengaturan → Magic AI → Platform.',
+                ],
+                'max-tags' => [
+                    'label' => 'Tag maksimum',
+                    'hint'  => 'Jumlah maksimum tag yang disarankan per gambar (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Batas laju penandaan AI',
+                    'hint'  => 'Jumlah maksimum permintaan penandaan AI per menit (1-120). Turunkan nilai ini agar sesuai dengan batas laju penyedia AI Anda.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Direktori tidak ditemukan.',

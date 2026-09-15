@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Wyświetl zasoby obok folderów w drzewie katalogów zamiast pokazywać tylko foldery.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'Tagowanie AI',
+                'description' => 'Automatycznie sugeruje tagi dla przesłanych obrazów przy użyciu skonfigurowanej platformy Magic AI.',
+                'enabled'     => [
+                    'label' => 'Automatyczne tagowanie zasobów za pomocą AI',
+                    'hint'  => 'Wykorzystuje skonfigurowaną platformę Magic AI do automatycznego sugerowania tagów dla obrazów podczas ich przesyłania.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platforma',
+                    'use-default'              => 'Użyj domyślnej platformy',
+                    'none-configured'          => 'Nie skonfigurowano żadnej platformy AI',
+                    'none-configured-hint'     => 'Najpierw dodaj platformę Magic AI obsługującą rozpoznawanie obrazu — zobacz Ustawienia → Magic AI → Platformy.',
+                ],
+                'max-tags' => [
+                    'label' => 'Maks. liczba tagów',
+                    'hint'  => 'Maksymalna liczba tagów sugerowanych na obraz (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Limit szybkości tagowania AI',
+                    'hint'  => 'Maksymalna liczba żądań tagowania AI na minutę (1-120). Obniż tę wartość, aby dopasować ją do limitu szybkości dostawcy AI.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Katalog nie został znaleziony.',

@@ -21,6 +21,13 @@ return [
         ],
     ],
 
+    'ai_tagging' => [
+        'enabled'               => env('DAM_AI_TAGGING_ENABLED', false),
+        'platform_id'           => env('DAM_AI_TAGGING_PLATFORM_ID'),
+        'max_tags'              => (int) env('DAM_AI_TAGGING_MAX_TAGS', 8),
+        'rate_limit_per_minute' => (int) env('DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE', 60),
+    ],
+
     /**
      * Limits applied to an export archive uploaded to an import job. These are far wider
      * than the product-images equivalent because a DAM bundle legitimately carries video

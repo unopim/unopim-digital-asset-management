@@ -728,6 +728,28 @@ return [
                     'hint'  => 'Prikazuje resurse uz mape unutar stabla direktorija umjesto prikaza samo mapa.',
                 ],
             ],
+            'ai-tagging' => [
+                'title'       => 'AI označavanje',
+                'description' => 'Automatski predlaže oznake za prenesene slike koristeći vašu konfiguriranu Magic AI platformu.',
+                'enabled'     => [
+                    'label' => 'Automatski označi resurse pomoću AI-ja',
+                    'hint'  => 'Koristi vašu konfiguriranu Magic AI platformu za automatsko predlaganje oznaka za slike prilikom prijenosa.',
+                ],
+                'platform' => [
+                    'label'                    => 'Platforma',
+                    'use-default'              => 'Koristi zadanu platformu',
+                    'none-configured'          => 'Nije konfigurirana nijedna AI platforma',
+                    'none-configured-hint'     => 'Prvo dodajte Magic AI platformu sposobnu za vid — pogledajte Postavke → Magic AI → Platforme.',
+                ],
+                'max-tags' => [
+                    'label' => 'Maks. oznaka',
+                    'hint'  => 'Maksimalan broj oznaka koje se predlažu po slici (1-20).',
+                ],
+                'rate-limit' => [
+                    'label' => 'Ograničenje brzine AI označavanja',
+                    'hint'  => 'Maksimalan broj zahtjeva AI označavanja po minuti (1-120). Smanjite ovu vrijednost kako biste je uskladili s ograničenjem brzine vašeg AI pružatelja.',
+                ],
+            ],
         ],
         'explorer' => [
             'not-found'         => 'Direktorij nije pronađen.',
