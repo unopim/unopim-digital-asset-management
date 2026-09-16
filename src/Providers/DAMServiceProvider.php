@@ -15,6 +15,7 @@ use Webkul\Admin\Http\Requests\ProductForm;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
+use Webkul\DAM\Console\Commands\CleanupOrphanedAssetResourceMappings;
 use Webkul\DAM\Console\Commands\DamInstaller;
 use Webkul\DAM\Console\Commands\DamUpdate;
 use Webkul\DAM\Console\Commands\DamUpdateRestore;
@@ -116,6 +117,7 @@ class DAMServiceProvider extends ServiceProvider
             $this->commands([
                 DamInstaller::class,
                 BackfillThumbnails::class,
+                CleanupOrphanedAssetResourceMappings::class,
                 SeedDamDemoData::class,
                 GenerateScaleData::class,
                 DamVersion::class,

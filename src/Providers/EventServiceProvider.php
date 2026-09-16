@@ -40,6 +40,14 @@ class EventServiceProvider extends ServiceProvider
         'catalog.category.update.after' => [
             'Webkul\DAM\Listeners\Category@afterUpdateOrCreate',
         ],
+
+        'catalog.category_field.delete.after' => [
+            'Webkul\DAM\Listeners\CategoryField@afterDelete',
+        ],
+
+        'catalog.attribute.delete.after' => [
+            'Webkul\DAM\Listeners\Attribute@afterDelete',
+        ],
     ];
 
     public function boot()

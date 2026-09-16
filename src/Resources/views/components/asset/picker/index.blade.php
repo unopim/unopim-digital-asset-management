@@ -15,6 +15,11 @@
             <div class="flex items-center flex-wrap gap-1.5 text-sm mb-3" v-if="breadcrumbs.length">
                 <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
                     <span
+                        v-if="i > 0"
+                        class="text-gray-300 dark:text-gray-600"
+                    >/</span>
+
+                    <span
                         class="cursor-pointer transition-colors"
                         :class="i === breadcrumbs.length - 1
                             ? 'text-primary-700 dark:text-primary-400 font-semibold'
