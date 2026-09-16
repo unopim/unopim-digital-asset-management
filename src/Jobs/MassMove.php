@@ -37,7 +37,9 @@ class MassMove implements ShouldQueue
         protected array $dirIds,
         protected int $targetId,
         protected int $userId
-    ) {}
+    ) {
+        $this->queue = 'dam-bulk';
+    }
 
     public function handle(): void
     {

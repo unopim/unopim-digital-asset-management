@@ -17,7 +17,9 @@ class SyncDirectoryGrants implements ShouldQueue
     public function __construct(
         protected int $roleId,
         protected array $directoryIds,
-    ) {}
+    ) {
+        $this->queue = 'dam';
+    }
 
     public function handle(): void {}
 }

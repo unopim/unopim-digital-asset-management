@@ -22,7 +22,10 @@ class GeneratePdfThumbnail implements ShouldQueue
 
     public int $timeout = 120;
 
-    public function __construct(protected int $assetId) {}
+    public function __construct(protected int $assetId)
+    {
+        $this->queue = 'dam-media';
+    }
 
     public function handle(): void
     {

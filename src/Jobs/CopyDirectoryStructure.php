@@ -17,7 +17,10 @@ class CopyDirectoryStructure implements ShouldQueue
 {
     use ActionRequestTrait, DirectoryTrait, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(protected int $directoryId, protected int $userId) {}
+    public function __construct(protected int $directoryId, protected int $userId)
+    {
+        $this->queue = 'dam-bulk';
+    }
 
     public function handle()
     {

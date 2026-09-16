@@ -28,7 +28,9 @@ class CopyDirectory implements ShouldQueue
         protected int $sourceId,
         protected int $targetId,
         protected int $userId
-    ) {}
+    ) {
+        $this->queue = 'dam-bulk';
+    }
 
     public function handle(): void
     {

@@ -81,9 +81,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
    php artisan dam-package:install;
    php artisan optimize:clear;
    ```
-- Start the queue to execute actions, such as job operations, by running the following command:
+- Start the queue to execute actions, such as job operations, by running the following command. DAM jobs run on dedicated `dam`, `dam-bulk`, and `dam-media` queues, so a plain `queue:work` (which only drains `default`) will leave them pending:
     ```bash
-      php artisan queue:work
+      php artisan queue:work --queue=default,dam,dam-bulk,dam-media
     ```
 - If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
@@ -123,9 +123,9 @@ To manually install UnoPim DAM:
      ```
 
 5. **Enable Queue Operations**  
-   - Start the queue to execute actions, such as job operations, by running the following command:
+   - Start the queue to execute actions, such as job operations, by running the following command. DAM jobs run on dedicated `dam`, `dam-bulk`, and `dam-media` queues, so a plain `queue:work` (which only drains `default`) will leave them pending:
      ```bash
-       php artisan queue:work
+       php artisan queue:work --queue=default,dam,dam-bulk,dam-media
      ```
    - If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
@@ -201,7 +201,7 @@ Automatically suggests tags for newly uploaded **images** using a vision-capable
 1. Add a vision-capable platform under **Settings → Magic AI → Platforms**.
 2. Go to **DAM → Configuration → AI Tagging**, switch **Auto-tag assets with AI** on, and choose the platform, the maximum tags per image and the rate limit.
 
-Only admins holding both the **asset update** and **tag create** permissions trigger tagging, and tagging runs on the queue — make sure a worker is running (`php artisan queue:work`). Each run is reported on the core **Job Tracker** page, with failures written to the downloadable job log.
+Only admins holding both the **asset update** and **tag create** permissions trigger tagging, and tagging runs on the `dam-media` queue — make sure a worker is listening to it (`php artisan queue:work --queue=default,dam,dam-bulk,dam-media`). Each run is reported on the core **Job Tracker** page, with failures written to the downloadable job log.
 
 ### Environment defaults
 

@@ -209,7 +209,7 @@ jobs:
           npm install --no-progress
           npm run build
           php artisan serve --host=0.0.0.0 --port=8000 > /tmp/server.log 2>&1 &
-          php artisan queue:work --queue=webhooks,default,system,completeness,publication > /tmp/queue.log 2>&1 &
+          php artisan queue:work --queue=webhooks,default,system,completeness,publication,dam,dam-bulk,dam-media > /tmp/queue.log 2>&1 &
           echo "Waiting for server..."
           timeout 30 bash -c 'until curl -s http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || (cat /tmp/server.log && exit 1)
 
