@@ -23,7 +23,10 @@ class MoveDirectoryStructure implements ShouldQueue
 
     public int $timeout = 3600;
 
-    public function __construct(protected int $directoryId, protected int $newParentId, protected int $userId) {}
+    public function __construct(protected int $directoryId, protected int $newParentId, protected int $userId)
+    {
+        $this->queue = 'dam-bulk';
+    }
 
     public function handle(): void
     {

@@ -19,7 +19,10 @@ class GenerateVideoThumbnail implements ShouldQueue
 
     public int $timeout = 180;
 
-    public function __construct(protected int $assetId) {}
+    public function __construct(protected int $assetId)
+    {
+        $this->queue = 'dam-media';
+    }
 
     public function handle(): void
     {

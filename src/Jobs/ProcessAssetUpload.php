@@ -31,7 +31,9 @@ class ProcessAssetUpload implements ShouldQueue
         protected ?int $tagBatchId = null,
         protected ?int $trackBatchId = null,
         protected ?int $userId = null,
-    ) {}
+    ) {
+        $this->queue = 'dam-media';
+    }
 
     public function handle(MetadataExtractionService $metadataService, AssetAutoTaggingService $taggingService, AiTaggingJobTrackerService $jobTracker): void
     {
