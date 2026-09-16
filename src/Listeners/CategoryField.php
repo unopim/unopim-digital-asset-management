@@ -24,9 +24,9 @@ class CategoryField
     {
         $liveFieldCodes = $this->categoryFieldRepository->all(['code'])->pluck('code')->all();
 
-        $this->assetResourceMappingRepository
-            ->where('type', AssetResourceMappingRepository::CATEGORY_TYPE_MAPPING)
-            ->whereNotIn('related_field', $liveFieldCodes)
-            ->delete();
+        $this->assetResourceMappingRepository->deleteOrphanedMappings(
+            AssetResourceMappingRepository::CATEGORY_TYPE_MAPPING,
+            $liveFieldCodes
+        );
     }
 }

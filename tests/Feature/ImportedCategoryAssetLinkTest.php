@@ -115,10 +115,16 @@ it('removes the linked resource when the imported category clears the field', fu
 });
 
 it('purges the category mappings of a deleted field and keeps product mappings', function () {
+    $categoryId = DB::table('categories')->insertGetId([
+        'code' => 'orphan_'.Str::random(6),
+        '_lft' => 1,
+        '_rgt' => 2,
+    ]);
+
     DB::table('dam_asset_resource_mappings')->insert([
         'type'          => 'category',
         'dam_asset_id'  => $this->asset->id,
-        'category_id'   => 1,
+        'category_id'   => $categoryId,
         'related_field' => 'a_field_that_no_longer_exists',
     ]);
 

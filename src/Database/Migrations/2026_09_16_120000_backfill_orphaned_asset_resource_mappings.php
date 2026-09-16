@@ -9,12 +9,19 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 return new class extends Migration
 {
     /**
-     * Clear mapping rows left behind when a category field or product attribute is
-     * deleted, since only category-field deletes are auto-cleaned (`Listeners\CategoryField`,
-     * wired to `catalog.category_field.delete.after`) and no listener exists yet for
-     * attribute deletes. Orphan rows keep referencing a `related_field` code that no
-     * longer exists, which blocks the asset from ever being deleted
-     * ("Asset in use. Unlink before deleting").
+     * Laravel wraps a migration in one transaction on PostgreSQL by default, which would
+     * hold every batch's rows locked (and grow the transaction/WAL) until up() finishes -
+     * exactly what the batching below is meant to avoid. Disabling it lets each batch's
+     * DELETE commit on its own.
+     */
+    public $withinTransaction = false;
+
+    /**
+     * Clear mapping rows left behind by a category field or product attribute deleted
+     * before `Listeners\CategoryField` (`catalog.category_field.delete.after`) and
+     * `Listeners\Attribute` (`catalog.attribute.delete.after`) existed to auto-clean them.
+     * Orphan rows keep referencing a `related_field` code that no longer exists, which
+     * blocks the asset from ever being deleted ("Asset in use. Unlink before deleting").
      */
     public function up(): void
     {
@@ -38,10 +45,11 @@ return new class extends Migration
     }
 
     /**
-     * Delete in bounded batches so a mapping table with millions of rows never holds
-     * one giant transaction/lock - a handful of orphans shouldn't block concurrent
-     * asset reads/writes while this runs. `DELETE ... LIMIT` isn't portable to
-     * PostgreSQL, so batch by id instead.
+     * Delete in bounded batches, each its own committed transaction (see
+     * $withinTransaction above), so a mapping table with millions of rows never holds
+     * one giant lock - a handful of orphans shouldn't block concurrent asset
+     * reads/writes while this runs. `DELETE ... LIMIT` isn't portable to PostgreSQL,
+     * so batch by id instead.
      */
     protected function dropOrphans(string $type, Collection $liveFieldCodes): void
     {

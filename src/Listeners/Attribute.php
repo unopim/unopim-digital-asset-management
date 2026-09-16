@@ -25,9 +25,9 @@ class Attribute
     {
         $liveAttributeCodes = $this->attributeRepository->all(['code'])->pluck('code')->all();
 
-        $this->assetResourceMappingRepository
-            ->where('type', AssetResourceMappingRepository::PRODUCT_TYPE_MAPPING)
-            ->whereNotIn('related_field', $liveAttributeCodes)
-            ->delete();
+        $this->assetResourceMappingRepository->deleteOrphanedMappings(
+            AssetResourceMappingRepository::PRODUCT_TYPE_MAPPING,
+            $liveAttributeCodes
+        );
     }
 }

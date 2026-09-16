@@ -15,10 +15,10 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 /**
  * Drop asset-resource mapping rows whose `related_field` no longer matches any live
- * category field or product attribute. Only category-field deletes are auto-cleaned
- * going forward (`Listeners\CategoryField`, `Listeners\Attribute`); installs that
- * deleted a field/attribute before those listeners existed still have orphans
- * blocking asset deletion.
+ * category field or product attribute. Both category-field and attribute deletes are
+ * auto-cleaned going forward (`Listeners\CategoryField`, `Listeners\Attribute`);
+ * installs that deleted a field/attribute before those listeners existed still have
+ * orphans blocking asset deletion, which this job sweeps up on demand.
  */
 class CleanupOrphanedAssetResourceMappings implements ShouldQueue
 {
@@ -36,44 +36,16 @@ class CleanupOrphanedAssetResourceMappings implements ShouldQueue
     ): void {
         $liveFieldCodes = $categoryFieldRepository->all(['code'])->pluck('code')->all();
 
-        $this->dropOrphans(
-            $assetResourceMappingRepository,
+        $assetResourceMappingRepository->deleteOrphanedMappings(
             AssetResourceMappingRepository::CATEGORY_TYPE_MAPPING,
             $liveFieldCodes
         );
 
         $liveAttributeCodes = $attributeRepository->all(['code'])->pluck('code')->all();
 
-        $this->dropOrphans(
-            $assetResourceMappingRepository,
+        $assetResourceMappingRepository->deleteOrphanedMappings(
             AssetResourceMappingRepository::PRODUCT_TYPE_MAPPING,
             $liveAttributeCodes
         );
-    }
-
-    /**
-     * Delete in bounded batches so a mapping table with millions of rows never holds
-     * one giant transaction/lock - a handful of orphans shouldn't block concurrent
-     * asset reads/writes while this runs. `DELETE ... LIMIT` isn't portable to
-     * PostgreSQL, so batch by id instead.
-     */
-    protected function dropOrphans(
-        AssetResourceMappingRepository $assetResourceMappingRepository,
-        string $type,
-        array $liveCodes
-    ): void {
-        do {
-            $ids = $assetResourceMappingRepository
-                ->where('type', $type)
-                ->whereNotIn('related_field', $liveCodes)
-                ->limit(1000)
-                ->pluck('id');
-
-            if ($ids->isEmpty()) {
-                break;
-            }
-
-            $assetResourceMappingRepository->whereIn('id', $ids)->delete();
-        } while (true);
     }
 }
