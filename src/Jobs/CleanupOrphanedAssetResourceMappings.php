@@ -26,7 +26,7 @@ class CleanupOrphanedAssetResourceMappings implements ShouldQueue
 
     public function __construct()
     {
-        $this->queue = 'dam';
+        $this->queue = config('dam.queues.dam');
     }
 
     public function handle(

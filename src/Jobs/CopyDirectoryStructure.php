@@ -19,7 +19,7 @@ class CopyDirectoryStructure implements ShouldQueue
 
     public function __construct(protected int $directoryId, protected int $userId)
     {
-        $this->queue = 'dam-bulk';
+        $this->queue = config('dam.queues.bulk');
     }
 
     public function handle()

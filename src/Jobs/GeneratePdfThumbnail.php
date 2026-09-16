@@ -24,7 +24,7 @@ class GeneratePdfThumbnail implements ShouldQueue
 
     public function __construct(protected int $assetId)
     {
-        $this->queue = 'dam-media';
+        $this->queue = config('dam.queues.media');
     }
 
     public function handle(): void

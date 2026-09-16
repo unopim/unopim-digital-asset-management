@@ -81,7 +81,11 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
    php artisan dam-package:install;
    php artisan optimize:clear;
    ```
-- Start the queue to execute actions, such as job operations, by running the following command. DAM jobs run on dedicated `dam`, `dam-bulk`, and `dam-media` queues, so a plain `queue:work` (which only drains `default`) will leave them pending:
+- Start the queue to execute actions, such as job operations, by running the following command:
+    ```bash
+      php artisan queue:work
+    ```
+- By default all DAM jobs run on the `default` queue, so the command above is all you need. To isolate DAM's workload (fast DB housekeeping, filesystem/DB-tree bulk operations, and CPU-heavy media processing) onto dedicated queues instead, set `DAM_QUEUE_DAM`, `DAM_QUEUE_BULK`, and `DAM_QUEUE_MEDIA` in `.env` (e.g. to `dam`, `dam-bulk`, `dam-media`) and point a worker at them:
     ```bash
       php artisan queue:work --queue=default,dam,dam-bulk,dam-media
     ```
@@ -123,7 +127,11 @@ To manually install UnoPim DAM:
      ```
 
 5. **Enable Queue Operations**  
-   - Start the queue to execute actions, such as job operations, by running the following command. DAM jobs run on dedicated `dam`, `dam-bulk`, and `dam-media` queues, so a plain `queue:work` (which only drains `default`) will leave them pending:
+   - Start the queue to execute actions, such as job operations, by running the following command:
+     ```bash
+       php artisan queue:work
+     ```
+   - By default all DAM jobs run on the `default` queue, so the command above is all you need. To isolate DAM's workload (fast DB housekeeping, filesystem/DB-tree bulk operations, and CPU-heavy media processing) onto dedicated queues instead, set `DAM_QUEUE_DAM`, `DAM_QUEUE_BULK`, and `DAM_QUEUE_MEDIA` in `.env` (e.g. to `dam`, `dam-bulk`, `dam-media`) and point a worker at them:
      ```bash
        php artisan queue:work --queue=default,dam,dam-bulk,dam-media
      ```
@@ -201,7 +209,7 @@ Automatically suggests tags for newly uploaded **images** using a vision-capable
 1. Add a vision-capable platform under **Settings → Magic AI → Platforms**.
 2. Go to **DAM → Configuration → AI Tagging**, switch **Auto-tag assets with AI** on, and choose the platform, the maximum tags per image and the rate limit.
 
-Only admins holding both the **asset update** and **tag create** permissions trigger tagging, and tagging runs on the `dam-media` queue — make sure a worker is listening to it (`php artisan queue:work --queue=default,dam,dam-bulk,dam-media`). Each run is reported on the core **Job Tracker** page, with failures written to the downloadable job log.
+Only admins holding both the **asset update** and **tag create** permissions trigger tagging, and tagging runs on the queue (`default` unless `DAM_QUEUE_MEDIA` is set — see [Installation with Composer](#installation-with-composer)) — make sure a worker is listening to it. Each run is reported on the core **Job Tracker** page, with failures written to the downloadable job log.
 
 ### Environment defaults
 
