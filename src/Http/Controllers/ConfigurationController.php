@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Webkul\DAM\Http\Requests\ConfigurationRequest;
 use Webkul\DAM\Models\DamConfiguration;
 use Webkul\MagicAI\Enums\AiProvider;
 use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
@@ -83,18 +84,8 @@ class ConfigurationController extends Controller
             ->values();
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(ConfigurationRequest $request): RedirectResponse
     {
-        if (! bouncer()->hasPermission('dam.configuration.update')) {
-            abort(403);
-        }
-
-        $request->validate([
-            'DAM_AI_TAGGING_PLATFORM_ID' => 'nullable|integer|exists:magic_ai_platforms,id',
-            'DAM_AI_TAGGING_MAX_TAGS'    => 'nullable|integer|min:1|max:20',
-            'DAM_AI_TAGGING_RATE_LIMIT'  => 'nullable|integer|min:1|max:120',
-        ]);
-
         $keys = ['DAM_TREE_SHOW_ASSETS', 'DAM_EXPLORER_ENABLED', 'DAM_EXPLORER_BOOKMARKS_ENABLED', 'DAM_EXPLORER_SHOW_TREE', 'DAM_AI_TAGGING_ENABLED'];
 
         foreach ($keys as $key) {

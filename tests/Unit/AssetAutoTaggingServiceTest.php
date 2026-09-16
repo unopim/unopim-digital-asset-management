@@ -208,3 +208,35 @@ it('leaves the asset untagged when the AI response is malformed JSON', function 
 
     expect($asset->refresh()->tags)->toBeEmpty();
 });
+
+it('skips an image larger than the configured size limit without reading it into memory', function () {
+    config(['dam.ai_tagging.max_file_size' => 8]);
+    makeVisionPlatform();
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldNotReceive('chat');
+    app()->instance(AiApiClient::class, $client);
+
+    $asset = makeTaggableAsset();
+
+    $result = app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk());
+
+    expect($result)->toBeTrue();
+    expect($asset->refresh()->tags)->toBeEmpty();
+});
+
+it('applies no size limit when the limit is zero', function () {
+    config(['dam.ai_tagging.max_file_size' => 0]);
+    makeVisionPlatform();
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->andReturnSelf();
+    $client->shouldReceive('chat')->once()->andReturn(['content' => json_encode(['tags' => ['forest']])]);
+    app()->instance(AiApiClient::class, $client);
+
+    $asset = makeTaggableAsset();
+
+    app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk());
+
+    expect($asset->refresh()->tags->pluck('name')->all())->toBe(['forest']);
+});

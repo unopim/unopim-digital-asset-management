@@ -25,6 +25,7 @@ return [
         'enabled'               => env('DAM_AI_TAGGING_ENABLED', false),
         'platform_id'           => env('DAM_AI_TAGGING_PLATFORM_ID'),
         'max_tags'              => (int) env('DAM_AI_TAGGING_MAX_TAGS', 8),
+        'max_file_size'         => (int) env('DAM_AI_TAGGING_MAX_FILE_SIZE', 10 * 1024 * 1024),
         'rate_limit_per_minute' => (int) env('DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE', 60),
     ],
 

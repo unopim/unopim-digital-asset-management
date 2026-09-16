@@ -2,6 +2,7 @@
 
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Webkul\AiAgent\Http\Client\AiApiClient;
@@ -258,4 +259,14 @@ it('gives a batchless (e.g. API) run its own job_track, failed with the real err
     expect($jobTrack->state)->toBe(AbstractJob::STATE_FAILED);
     expect($jobTrack->user_id)->toBe($admin->id);
     expect($jobTrack->errors)->toBe(['AI API error (503): Unknown API error']);
+});
+
+it('clamps an out-of-range configured rate limit, so tagging is never blocked outright', function () {
+    config(['dam.ai_tagging.rate_limit_per_minute' => 0]);
+
+    expect(call_user_func(RateLimiter::limiter('dam-ai-tagging'))->maxAttempts)->toBe(1);
+
+    config(['dam.ai_tagging.rate_limit_per_minute' => 5000]);
+
+    expect(call_user_func(RateLimiter::limiter('dam-ai-tagging'))->maxAttempts)->toBe(120);
 });

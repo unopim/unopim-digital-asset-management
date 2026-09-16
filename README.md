@@ -3,7 +3,7 @@
 UnoPim DAM is a flexible, open-source Digital Asset Management (DAM) system built on Laravel. It enables businesses to store, organize, and manage digital assets such as images, videos, documents, and more. The system is designed for seamless cross-team asset management. Key features include:
 
 ## Requirements
-- **UnoPim**: the latest version. DAM **3.0.0** is built for the newest UnoPim, which runs on **Laravel 13** and **PHP 8.4**. If you are still on an older UnoPim (Laravel 12), please use DAM **2.x** instead.
+- **UnoPim**: the latest version. DAM **3.x** is built for the newest UnoPim, which runs on **Laravel 13** and **PHP 8.4**. If you are still on an older UnoPim (Laravel 12), please use DAM **2.x** instead.
 - **PHP**: 8.4 or newer
 
 ### Optional system binaries (for media previews)
@@ -46,6 +46,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
 
 - **Tag Management**  
   Manage tags from a dedicated **DAM → Tags** page: a datagrid listing each tag with its asset count and creation date, with search, filters, sorting, inline edit/delete, and bulk delete. Tags can be created here and assigned to assets — individually or in bulk — from the gallery.
+
+- **AI Auto-Tagging**  
+  Optionally tag newly uploaded images automatically using a vision-capable Magic AI platform. Enable it under **DAM → Configuration → AI Tagging**, pick the platform and the maximum number of tags per image. Tagging runs as its own rate-limited queued job, so it never delays the upload itself, and only applies for admins holding both the asset-update and tag-create permissions. Disabled by default; see [AI Auto-Tagging](#-ai-auto-tagging) for the settings.
 
 - **History Tracking**
  Maintain a complete history of changes made to assets, ensuring transparency and easy tracking of modifications over time
@@ -184,6 +187,31 @@ Clears all assets and directories under `assets/Root/` and re-seeds from scratch
 ### During installation
 
 `php artisan dam-package:install` asks whether to seed demo data as the final step, after migrations and asset publishing are complete.
+
+## 🤖 AI Auto-Tagging
+
+Automatically suggests tags for newly uploaded **images** using a vision-capable Magic AI platform (OpenAI, Gemini, Ollama and other providers that accept image input). It is **disabled by default**.
+
+> When enabled, the image is sent to the AI platform you configure. Only enable it if sending your assets to that provider is acceptable for your data policy.
+
+### Enabling it
+
+1. Add a vision-capable platform under **Settings → Magic AI → Platforms**.
+2. Go to **DAM → Configuration → AI Tagging**, switch **Auto-tag assets with AI** on, and choose the platform, the maximum tags per image and the rate limit.
+
+Only admins holding both the **asset update** and **tag create** permissions trigger tagging, and tagging runs on the queue — make sure a worker is running (`php artisan queue:work`). Each run is reported on the core **Job Tracker** page, with failures written to the downloadable job log.
+
+### Environment defaults
+
+These act as the defaults before anything is saved on the Configuration page (values saved there win). Only the file-size cap is env-only.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `DAM_AI_TAGGING_ENABLED` | `false` | Turns auto-tagging on. |
+| `DAM_AI_TAGGING_PLATFORM_ID` | _(unset)_ | Magic AI platform to use; falls back to the active default platform. |
+| `DAM_AI_TAGGING_MAX_TAGS` | `8` | Maximum tags suggested per image (1–20). |
+| `DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE` | `60` | Tagging jobs allowed per minute (1–120), to stay inside your provider's quota. |
+| `DAM_AI_TAGGING_MAX_FILE_SIZE` | `10485760` | Bytes; images larger than this are skipped instead of being read into memory and base64-encoded. `0` disables the cap. |
 
 ## 📬 Postman API Collection
 

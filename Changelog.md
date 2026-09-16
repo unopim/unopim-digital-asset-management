@@ -4,7 +4,7 @@
 
 ### Features & Enhancements
 
-* **AI Auto-Tagging** — Added an optional **AI Tagging** section to the DAM Configuration page: when enabled, newly uploaded images are automatically tagged using a configured Magic AI platform, with a configurable maximum tags per image. Tagging runs as its own rate-limited queued job so it never blocks or delays the upload itself, and only applies for admins holding both asset-update and tag-create permissions.
+* **AI Auto-Tagging** — Added an optional **AI Tagging** section to the DAM Configuration page: when enabled, newly uploaded images are automatically tagged using a configured Magic AI platform, with a configurable maximum tags per image. Tagging runs as its own rate-limited queued job so it never blocks or delays the upload itself, and only applies for admins holding both asset-update and tag-create permissions. Images above a configurable size limit (10 MB by default, `DAM_AI_TAGGING_MAX_FILE_SIZE`) are skipped rather than loaded into the queue worker's memory.
 
 ### Bug Fixes
 

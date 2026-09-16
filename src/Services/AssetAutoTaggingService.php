@@ -147,15 +147,41 @@ class AssetAutoTaggingService
         return max(1, min(20, (int) $value));
     }
 
+    /**
+     * The whole binary has to be resident to be base64-encoded, and the encoding adds
+     * another third on top, so an oversized image is skipped before it is read rather
+     * than after — a single unbounded read is enough to exhaust a queue worker.
+     */
     protected function readAsDataUri(Asset $asset, string $disk): ?string
     {
-        if (! Storage::disk($disk)->exists($asset->path)) {
+        $storage = Storage::disk($disk);
+
+        if (! $storage->exists($asset->path)) {
             return null;
         }
 
-        $raw = Storage::disk($disk)->get($asset->path);
+        $maxFileSize = $this->maxFileSize();
+
+        if ($maxFileSize > 0 && $storage->size($asset->path) > $maxFileSize) {
+            Log::info('DAM asset skipped for auto-tagging: larger than the configured limit.', [
+                'asset' => $asset->id,
+                'limit' => $maxFileSize,
+            ]);
+
+            return null;
+        }
+
+        $raw = $storage->get($asset->path);
 
         return 'data:'.($asset->mime_type ?: 'image/jpeg').';base64,'.base64_encode($raw);
+    }
+
+    /**
+     * Bytes; 0 or less disables the cap.
+     */
+    protected function maxFileSize(): int
+    {
+        return (int) config('dam.ai_tagging.max_file_size', 10 * 1024 * 1024);
     }
 
     /**

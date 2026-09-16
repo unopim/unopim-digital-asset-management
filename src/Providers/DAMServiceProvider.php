@@ -93,7 +93,7 @@ class DAMServiceProvider extends ServiceProvider
                 ? (int) $value
                 : (int) config('dam.ai_tagging.rate_limit_per_minute', 60);
 
-            return Limit::perMinute($perMinute);
+            return Limit::perMinute(max(1, min(120, $perMinute)));
         });
 
         Route::middleware(['web', 'admin', 'dam'])
