@@ -4,6 +4,19 @@ declare(strict_types=1);
 
 return [
 
+    /**
+     * Queues DAM jobs dispatch onto. Default to Laravel's 'default' queue so an
+     * existing worker that only runs `queue:work` (no --queue flag) keeps processing
+     * everything with no config change; set these to route DAM's own workload
+     * (fast DB housekeeping, filesystem/DB-tree bulk ops, CPU-heavy media processing)
+     * onto dedicated queues instead.
+     */
+    'queues' => [
+        'dam'   => env('DAM_QUEUE_DAM', 'default'),
+        'bulk'  => env('DAM_QUEUE_BULK', 'default'),
+        'media' => env('DAM_QUEUE_MEDIA', 'default'),
+    ],
+
     'tree' => [
         'show_assets' => env('DAM_TREE_SHOW_ASSETS', false),
     ],

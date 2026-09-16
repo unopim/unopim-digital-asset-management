@@ -38,7 +38,7 @@ class TagAssetWithAi implements ShouldQueue
         protected ?int $userId = null,
         protected ?int $trackBatchId = null,
     ) {
-        $this->queue = 'dam-media';
+        $this->queue = config('dam.queues.media');
     }
 
     /**
