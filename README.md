@@ -50,6 +50,8 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
 - **AI Auto-Tagging**  
   Optionally tag newly uploaded images automatically using a vision-capable Magic AI platform. Enable it under **DAM → Configuration → AI Tagging**, pick the platform and the maximum number of tags per image. Tagging runs as its own rate-limited queued job, so it never delays the upload itself, and only applies for admins holding both the asset-update and tag-create permissions. Disabled by default; see [AI Auto-Tagging](#-ai-auto-tagging) for the settings.
 
+![AI Auto-Tagging](https://github.com/unopim/temp-media/blob/6fe9a969e8eb4908767aa581b35d9617942fd67c/dam-ai-auto-tagging.png)
+
 - **History Tracking**
  Maintain a complete history of changes made to assets, ensuring transparency and easy tracking of modifications over time
 ![History Tracking](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/history.png)
