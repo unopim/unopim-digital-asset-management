@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'フィールド :attribute は必須です。',
+                'invalid'  => ':attribute で選択したアセットの一部が見つからないか、利用する権限がありません。',
             ],
             'comment' => [
                 'required' => 'コメントメッセージは必須です。',

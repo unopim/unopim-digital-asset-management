@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Das Feld :attribute ist erforderlich.',
+                'invalid'  => 'Ein oder mehrere ausgewählte Assets für :attribute wurden nicht gefunden oder sind für Sie nicht verfügbar.',
             ],
             'comment' => [
                 'required' => 'Das Kommentarfeld ist erforderlich.',

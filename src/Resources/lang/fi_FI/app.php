@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Kenttä :attribute on pakollinen.',
+                'invalid'  => 'Yhtä tai useampaa kohteelle :attribute valittua resurssia ei löytynyt tai se ei ole käytettävissäsi.',
             ],
             'comment' => [
                 'required' => 'Kommenttiviesti on pakollinen.',

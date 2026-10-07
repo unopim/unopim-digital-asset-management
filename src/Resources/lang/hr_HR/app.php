@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Polje :attribute je obavezno.',
+                'invalid'  => 'Jedan ili više odabranih resursa za :attribute nije pronađen ili vam nije dostupan.',
             ],
             'comment' => [
                 'required' => 'Poruka komentara je obavezna.',

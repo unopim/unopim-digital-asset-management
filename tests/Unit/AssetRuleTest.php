@@ -1,14 +1,19 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Webkul\Attribute\Models\Attribute;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Rules\AssetRule;
+
+uses(DatabaseTransactions::class);
 
 it('passes when value is non-empty for a required attribute', function () {
     $attribute = new Attribute(['is_required' => true]);
     $rule = new AssetRule($attribute);
+    $ids = Asset::factory()->count(2)->create()->pluck('id')->map(strval(...))->all();
 
     $failed = false;
-    $rule->validate('field', ['1', '2'], function () use (&$failed) {
+    $rule->validate('field', $ids, function () use (&$failed) {
         $failed = true;
     });
 

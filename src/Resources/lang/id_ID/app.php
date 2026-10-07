@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Kolom :attribute wajib diisi.',
+                'invalid'  => 'Satu atau beberapa aset yang dipilih untuk :attribute tidak ditemukan atau tidak tersedia untuk Anda.',
             ],
             'comment' => [
                 'required' => 'Pesan Komentar wajib diisi.',

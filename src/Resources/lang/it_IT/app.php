@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Il campo :attribute è obbligatorio.',
+                'invalid'  => 'Uno o più asset selezionati per :attribute non sono stati trovati o non sono disponibili per te.',
             ],
             'comment' => [
                 'required' => 'Il messaggio del commento è obbligatorio.',

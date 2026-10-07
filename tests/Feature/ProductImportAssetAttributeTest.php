@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeFamily;
@@ -76,3 +77,18 @@ it('leaves the value unset and reports a path that resolves to no asset', functi
         ->and($errors->getAllErrorsGroupedByCode())
         ->toHaveKey($importer::ERROR_CODE_ASSET_NOT_FOUND);
 });
+
+it('accepts asset paths in a row, which the importer resolves itself', function (bool $known) {
+    [$family, $assetCode, , $asset, $importer] = damImportFixture();
+
+    $row = [
+        'sku'              => 'dam-import-'.uniqid(),
+        'type'             => 'simple',
+        'attribute_family' => $family->code,
+        $assetCode         => $known ? $asset->path : 'assets/Root/missing.pdf',
+    ];
+
+    $validator = Validator::make($row, $importer->getValidationRules($row));
+
+    expect($validator->errors()->get($assetCode))->toBe([]);
+})->with(['known path' => true, 'unknown path' => false]);

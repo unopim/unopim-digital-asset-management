@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => ':attribute 欄位為必填。',
+                'invalid'  => '為 :attribute 選擇的一個或多個資產不存在或您無權使用。',
             ],
             'comment' => [
                 'required' => '留言內容為必填。',

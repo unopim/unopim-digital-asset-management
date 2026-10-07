@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'El camp :attribute és obligatori.',
+                'invalid'  => 'No s\'han trobat un o més dels actius seleccionats per a :attribute o no estan disponibles per a vostè.',
             ],
             'comment' => [
                 'required' => 'El missatge del comentari és obligatori.',
