@@ -17,16 +17,32 @@ trait ImportsAssetAttributes
 {
     use ResolvesAssetPaths;
 
+    public function validateRow(array $rowData, int $rowNumber): bool
+    {
+        $firstValidation = ! isset($this->validatedRows[$rowNumber]);
+
+        if (! parent::validateRow($rowData, $rowNumber)) {
+            return false;
+        }
+
+        $this->warnAboutMissingAssets(
+            $rowData,
+            $rowNumber,
+            $firstValidation,
+            (string) $rowData['sku'],
+            $this->assetAttributesFor($rowData)->keys()
+        );
+
+        return true;
+    }
+
     /**
      * Assets are applied after the delegation so their ids overwrite nothing the
      * importer above wrote for the same attribute.
      */
     public function prepareAttributeValues(array $rowData, array &$attributeValues): void
     {
-        $assetAttributes = $this->getProductTypeFamilyAttributes(
-            $rowData['type'],
-            $rowData[self::ATTRIBUTE_FAMILY_CODE]
-        )->where('type', Asset::ASSET_ATTRIBUTE_TYPE)->keyBy('code');
+        $assetAttributes = $this->assetAttributesFor($rowData);
 
         parent::prepareAttributeValues(
             $this->withoutAssetColumns($rowData, $assetAttributes),
@@ -57,6 +73,14 @@ trait ImportsAssetAttributes
                 $rowData['locale'] ?? null
             );
         }
+    }
+
+    protected function assetAttributesFor(array $rowData): Collection
+    {
+        return $this->getProductTypeFamilyAttributes(
+            $rowData['type'],
+            $rowData[self::ATTRIBUTE_FAMILY_CODE]
+        )->where('type', Asset::ASSET_ATTRIBUTE_TYPE)->keyBy('code');
     }
 
     protected function withoutAssetColumns(array $rowData, Collection $assetAttributes): array

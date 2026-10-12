@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Мөр :row (:identifier), багана ":column": ":path" замд хөрөнгө олдсонгүй. Хөрөнгийг алгассан бөгөөд мөрийн бусад өгөгдөл импортлогдсоор байна.',
             'asset-tree-misnamed'        => 'Архивт "assets" гэхийн оронд ":name" нэртэй хавтас байгаа тул түүний нэг ч ассетыг импортлож чадсангүй. Нэрийг нь "assets" болгож, доорх хавтаснуудыг өгөгдлийн файл дахь замуудтай тохируулна уу, жишээ нь "assets/Root/Seed/Tech Sheets/Cotton/". macOS хавтасны нэрэнд бичсэн "/" тэмдгийг ":" болгож хадгалдаг бөгөөд энэ нь ердийн шалтгаан юм.',
         ],
     ],

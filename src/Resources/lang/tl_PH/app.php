@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Hanay :row (:identifier), kolum ":column": walang asset na nakita sa path na ":path". Nilaktawan ang asset at ii-import pa rin ang natitirang bahagi ng hanay.',
             'asset-tree-misnamed'        => 'Naglalaman ang archive ng folder na pinangalanang ":name" sa halip na "assets", kaya wala sa mga asset nito ang na-import. Palitan ang pangalan nito ng "assets" at panatilihing tugma ang mga folder sa ilalim nito sa mga path sa iyong data file, halimbawa "assets/Root/Seed/Tech Sheets/Cotton/". Sine-save ng macOS ang "/" na itinipa sa pangalan ng folder bilang ":", na siyang karaniwang dahilan.',
         ],
     ],

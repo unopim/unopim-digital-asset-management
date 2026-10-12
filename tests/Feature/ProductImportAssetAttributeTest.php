@@ -61,7 +61,7 @@ it('stores the asset id rather than the path carried by the row', function () {
         ->and(data_get($attributeValues, ['common', $textCode]))->toBe('=formula');
 });
 
-it('leaves the value unset and reports a path that resolves to no asset', function () {
+it('leaves the value unset for a path that resolves to no asset without failing the row', function () {
     [$family, $assetCode, , , $importer, $errors] = damImportFixture();
 
     $attributeValues = [];
@@ -74,8 +74,7 @@ it('leaves the value unset and reports a path that resolves to no asset', functi
     ], $attributeValues);
 
     expect(data_get($attributeValues, ['common', $assetCode]))->toBeNull()
-        ->and($errors->getAllErrorsGroupedByCode())
-        ->toHaveKey($importer::ERROR_CODE_ASSET_NOT_FOUND);
+        ->and($errors->getErrorsCount())->toBe(0);
 });
 
 it('accepts asset paths in a row, which the importer resolves itself', function (bool $known) {

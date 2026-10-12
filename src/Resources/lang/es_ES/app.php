@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Fila :row (:identifier), columna ":column": no se encontró ningún recurso en la ruta ":path". Se omitió el recurso y el resto de la fila se importará igualmente.',
             'asset-tree-misnamed'        => 'El archivo contiene una carpeta llamada ":name" en lugar de "assets", por lo que no se pudo importar ninguno de sus activos. Cámbiele el nombre a "assets" y mantenga las carpetas inferiores coincidiendo con las rutas de su archivo de datos, por ejemplo "assets/Root/Seed/Tech Sheets/Cotton/". macOS guarda una "/" escrita en el nombre de una carpeta como ":", que es la causa habitual.',
         ],
     ],

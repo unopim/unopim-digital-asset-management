@@ -20,6 +20,14 @@ class AssetPathStorage
     protected array $items = [];
 
     /**
+     * Paths already looked up and not found, so a typo repeated across rows is
+     * queried once.
+     *
+     * @var array<string, true>
+     */
+    protected array $missing = [];
+
+    /**
      * Resolve any of the given paths not already known, in chunks so a large batch
      * cannot overflow the driver's bind-parameter limit.
      *
@@ -29,7 +37,7 @@ class AssetPathStorage
     {
         $pending = array_values(array_unique(array_filter(
             $paths,
-            fn (string $path): bool => $path !== '' && ! isset($this->items[$path])
+            fn (string $path): bool => $path !== '' && ! isset($this->items[$path]) && ! isset($this->missing[$path])
         )));
 
         if ($pending === []) {
@@ -44,6 +52,12 @@ class AssetPathStorage
 
             foreach ($assets as $asset) {
                 $this->items[$asset->path] = (int) $asset->id;
+            }
+
+            foreach ($chunk as $path) {
+                if (! isset($this->items[$path])) {
+                    $this->missing[$path] = true;
+                }
             }
         }
     }
@@ -62,12 +76,16 @@ class AssetPathStorage
     {
         $this->items[$path] = $id;
 
+        unset($this->missing[$path]);
+
         return $this;
     }
 
     public function flush(): self
     {
         $this->items = [];
+
+        $this->missing = [];
 
         return $this;
     }

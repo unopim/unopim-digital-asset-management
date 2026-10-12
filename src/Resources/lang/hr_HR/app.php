@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Redak :row (:identifier), stupac ":column": na putanji ":path" nije pronađen nijedan resurs. Resurs je preskočen, a ostatak retka i dalje će se uvesti.',
             'asset-tree-misnamed'        => 'Arhiva sadrži mapu naziva ":name" umjesto "assets", pa nijedan njezin sadržaj nije bilo moguće uvesti. Preimenujte je u "assets" i neka mape ispod nje odgovaraju putanjama u vašoj datoteci s podacima, na primjer "assets/Root/Seed/Tech Sheets/Cotton/". macOS sprema "/" upisan u naziv mape kao ":", što je uobičajeni uzrok.',
         ],
     ],
