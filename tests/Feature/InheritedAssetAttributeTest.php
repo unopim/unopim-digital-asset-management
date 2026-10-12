@@ -357,6 +357,12 @@ describe('attributes the variant owns', function () {
 
         $fixture = damInheritanceFixture();
 
+        VariantStructureAttribute::create([
+            'variant_structure_id' => $fixture['configurable']->variant_structure_id,
+            'attribute_id'         => Attribute::where('code', $fixture['textCode'])->value('id'),
+            'level'                => 'variant',
+        ]);
+
         damSubmitProductValues($fixture['child'], [$fixture['textCode'] => 'CHILD-TEXT']);
 
         expect(damStoredCommonValues(Product::find($fixture['child']->id))[$fixture['textCode']])->toBe('CHILD-TEXT');

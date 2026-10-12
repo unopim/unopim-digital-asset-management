@@ -212,7 +212,6 @@ jobs:
           # the passport preset backs the ESPR templates spec, DiscardQaFixture
           # seeds the E2E-MEDIA-QA-001 product the discard specs edit, and
           # seed-dpp-e2e builds the digital product passport records.
-          chmod 0600 packages/Webkul/AdminApi/src/Secrets/Oauth/oauth-*.key
           php artisan unopim:passport:install-preset
           php artisan db:seed --class=DiscardQaFixtureSeeder
           php artisan tinker tests/e2e-pw/scripts/seed-dpp-e2e.php
