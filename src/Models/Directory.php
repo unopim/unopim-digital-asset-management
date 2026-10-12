@@ -5,6 +5,9 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Kalnoy\Nestedset\NodeTrait;
 use Webkul\DAM\Contracts\Directory as DirectoryContract;
@@ -28,22 +31,22 @@ class Directory extends Model implements DirectoryContract
 
     protected $fillable = ['name', 'parent_id'];
 
-    public function assets()
+    public function assets(): BelongsToMany
     {
         return $this->belongsToMany(Asset::class, 'dam_asset_directory');
     }
 
-    public function parent()
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(Directory::class, 'parent_id');
     }
 
-    public function children()
+    public function children(): HasMany
     {
         return $this->hasMany(Directory::class, 'parent_id');
     }
 
-    public function shares()
+    public function shares(): HasMany
     {
         return $this->hasMany(Share::class, 'target_id')
             ->where('share_type', Share::TYPE_DIRECTORY);
@@ -97,7 +100,7 @@ class Directory extends Model implements DirectoryContract
             $path = Storage::disk($disk)->path($path);
 
             return is_writable($path);
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -113,7 +116,7 @@ class Directory extends Model implements DirectoryContract
             Storage::disk($disk)->delete($fullPath);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }

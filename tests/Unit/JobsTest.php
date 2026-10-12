@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Jobs\CopyDirectoryStructure;
 use Webkul\DAM\Jobs\DeleteDirectory;
+use Webkul\DAM\Jobs\MassMove;
 use Webkul\DAM\Jobs\MoveDirectoryStructure;
 use Webkul\DAM\Models\ActionRequest;
 use Webkul\DAM\Models\Asset;
@@ -165,4 +166,55 @@ it('move directory structure job updates asset paths', function () {
 
     $asset->refresh();
     expect($asset->path)->toContain('Target');
+});
+
+it('move directory structure job rewrites asset paths in nested subdirectories', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+
+    $root = Directory::factory()->create(['name' => 'Root']);
+    $source = Directory::factory()->create(['name' => 'Source', 'parent_id' => $root->id]);
+    $child = Directory::factory()->create(['name' => 'Child', 'parent_id' => $source->id]);
+    $target = Directory::factory()->create(['name' => 'Target', 'parent_id' => $root->id]);
+
+    $asset = Asset::factory()->create([
+        'file_name' => 'nested.jpg',
+        'path'      => 'assets/Root/Source/Child/nested.jpg',
+    ]);
+    $child->assets()->attach($asset->id);
+
+    Storage::disk($disk)->put('assets/Root/Source/Child/nested.jpg', 'content');
+    Storage::disk($disk)->makeDirectory('assets/Root/Target');
+
+    createPendingActionRequest('move_directory_structure');
+
+    (new MoveDirectoryStructure($source->id, $target->id, auth()->id()))->handle();
+
+    expect($asset->refresh()->path)->toBe('assets/Root/Target/Source/Child/nested.jpg');
+});
+
+it('mass move job rewrites asset paths in nested subdirectories', function () {
+    $disk = Directory::getAssetDisk();
+    Storage::fake($disk);
+
+    $root = Directory::factory()->create(['name' => 'Root']);
+    $source = Directory::factory()->create(['name' => 'Source', 'parent_id' => $root->id]);
+    $child = Directory::factory()->create(['name' => 'Child', 'parent_id' => $source->id]);
+    $target = Directory::factory()->create(['name' => 'Target', 'parent_id' => $root->id]);
+
+    $asset = Asset::factory()->create([
+        'file_name' => 'nested.jpg',
+        'path'      => 'assets/Root/Source/Child/nested.jpg',
+    ]);
+    $child->assets()->attach($asset->id);
+
+    Storage::disk($disk)->put('assets/Root/Source/Child/nested.jpg', 'content');
+    Storage::disk($disk)->makeDirectory('assets/Root/Target');
+
+    createPendingActionRequest('mass_move');
+
+    (new MassMove([], [$source->id], $target->id, auth()->id()))->handle();
+
+    expect($asset->refresh()->path)->toBe('assets/Root/Target/Source/Child/nested.jpg')
+        ->and(ActionRequest::where('event_type', 'mass_move')->value('status'))->toBe('completed');
 });

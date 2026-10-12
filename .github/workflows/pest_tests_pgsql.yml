@@ -28,7 +28,7 @@ jobs:
           --health-cmd="pg_isready -U unopim"
           --health-interval=5s
           --health-timeout=3s
-          --health-retries=3
+          --health-retries=20
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=600m
 
     steps:
@@ -172,7 +172,7 @@ jobs:
           --health-cmd="pg_isready -U unopim"
           --health-interval=5s
           --health-timeout=3s
-          --health-retries=3
+          --health-retries=20
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=600m
 
       elasticsearch:

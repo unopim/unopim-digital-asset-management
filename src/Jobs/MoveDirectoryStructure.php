@@ -109,7 +109,7 @@ class MoveDirectoryStructure implements ShouldQueue
             return;
         }
 
-        $subtreeDirIds = $directory->descendants()->pluck('id')->prepend($directory->id);
+        $subtreeDirIds = $directory->descendants()->getQuery()->pluck('id')->prepend($directory->id);
 
         $pivotTable = (new Asset)->directories()->getTable();
         $assetIds = DB::table($pivotTable)

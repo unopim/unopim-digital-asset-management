@@ -34,7 +34,7 @@ jobs:
           --health-cmd="mysqladmin ping"
           --health-interval=5s
           --health-timeout=3s
-          --health-retries=3
+          --health-retries=20
           --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=600m
           --tmpfs /tmp:rw,noexec,nosuid,size=100m
 

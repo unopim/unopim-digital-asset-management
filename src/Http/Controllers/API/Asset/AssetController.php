@@ -103,17 +103,13 @@ class AssetController extends Controller
                     continue;
                 }
 
-                $mimeType = mime_content_type($tempPath);
-
-                $uploadedFile = new UploadedFile(
+                $files[] = new UploadedFile(
                     $tempPath,
                     $fileName,
-                    $mimeType,
-                    filesize($tempPath),
+                    mime_content_type($tempPath) ?: null,
                     UPLOAD_ERR_OK,
                     true
                 );
-                $files[] = $uploadedFile;
             } catch (\Exception $e) {
                 $errors[] = $e->getMessage();
             }
