@@ -24,6 +24,9 @@ class AssetPickerController extends Controller
         }
     }
 
+    /**
+     * Resolve the requested asset ids, returned in the order they were requested.
+     */
     public function fetchAssets(): JsonResponse
     {
         $assetIds = request()->get('assetIds') ?? '';
@@ -47,7 +50,11 @@ class AssetPickerController extends Controller
             );
         }
 
-        $assets = $query->get();
+        $position = array_flip(array_values(array_unique(array_map(fn ($id): string => trim((string) $id), $assetIds))));
+
+        $assets = $query->get()->sortBy(
+            fn (Asset $asset): int => $position[(string) $asset->id] ?? PHP_INT_MAX
+        );
 
         $response = [];
 
