@@ -26,7 +26,7 @@ jobs:
           --health-cmd="mysqladmin ping"
           --health-interval=5s
           --health-timeout=3s
-          --health-retries=3
+          --health-retries=20
 
     steps:
       - name: Checkout DAM
@@ -167,7 +167,7 @@ jobs:
           --health-cmd="mysqladmin ping"
           --health-interval=5s
           --health-timeout=3s
-          --health-retries=3
+          --health-retries=20
 
       elasticsearch:
         image: elasticsearch:8.17.0
