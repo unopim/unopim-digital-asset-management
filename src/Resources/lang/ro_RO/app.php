@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Rândul :row (:identifier), coloana ":column": nu a fost găsit niciun activ la calea ":path". Activul a fost omis, iar restul rândului va fi importat în continuare.',
             'asset-tree-misnamed'        => 'Arhiva conține un folder numit ":name" în loc de "assets", așa că niciunul dintre activele sale nu a putut fi importat. Redenumiți-l în "assets" și păstrați folderele de sub el potrivite cu căile din fișierul de date, de exemplu "assets/Root/Seed/Tech Sheets/Cotton/". macOS salvează un "/" tastat în numele unui folder ca ":", ceea ce este cauza obișnuită.',
         ],
     ],

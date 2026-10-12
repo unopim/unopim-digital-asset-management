@@ -905,7 +905,7 @@ return [
             'zip-too-many-entries'       => 'The archive contains :count entries, which is above the limit of :limit.',
             'zip-contents-too-large'     => 'The archive expands to more than :limit MB.',
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
-            'asset-not-found'            => 'No asset was found at path ":path".',
+            'asset-not-found'            => 'Rad :row (:identifier), kolonne ":column": fant ingen ressurs på banen ":path". Ressursen ble hoppet over, og resten av raden importeres fortsatt.',
             'asset-tree-misnamed'        => 'Arkivet inneholder en mappe med navnet ":name" i stedet for "assets", så ingen av ressursene kunne importeres. Gi den nytt navn til "assets" og sørg for at mappene under samsvarer med stiene i datafilen din, for eksempel "assets/Root/Seed/Tech Sheets/Cotton/". macOS lagrer en "/" skrevet i et mappenavn som ":", noe som er den vanlige årsaken.',
         ],
     ],

@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 * Fixed asset attribute values being shown in asset-id order instead of the order stored on the product, which also made the next save overwrite that order and changed the product grid thumbnail ([#62](https://github.com/unopim/unopim-digital-asset-management/issues/62)).
+* Fixed product and category imports silently dropping an asset path that matches no asset: each one is now written to the job log as a warning naming the row, SKU or category code, column and path, while the rest of the row still imports ([#59](https://github.com/unopim/unopim-digital-asset-management/issues/59)).
 
 ## Version 3.1.0
 

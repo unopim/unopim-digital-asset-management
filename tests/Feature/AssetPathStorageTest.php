@@ -73,3 +73,23 @@ it('ignores empty paths', function () {
 
     DB::disableQueryLog();
 });
+
+it('does not re-query paths it already knows to be missing', function () {
+    $this->storage->load(['assets/Root/missing.jpg']);
+
+    DB::enableQueryLog();
+
+    $this->storage->load(['assets/Root/missing.jpg']);
+
+    expect(DB::getQueryLog())->toBeEmpty();
+
+    DB::disableQueryLog();
+});
+
+it('resolves a path previously missing once it is set', function () {
+    $this->storage->load(['assets/Root/missing.jpg']);
+
+    $this->storage->set('assets/Root/missing.jpg', 99);
+
+    expect($this->storage->get('assets/Root/missing.jpg'))->toBe(99);
+});

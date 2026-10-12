@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Helpers\Importers\Category;
 
+use Illuminate\Support\Collection;
 use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Category\Contracts\CategoryField;
 use Webkul\Category\Repositories\CategoryFieldRepository;
@@ -21,6 +22,11 @@ use Webkul\DataTransfer\Validators\Import\CategoryRulesExtractor;
 class Importer extends CategoryImporter
 {
     use ResolvesAssetPaths;
+
+    /**
+     * @var Collection<int, CategoryField>|null
+     */
+    protected ?Collection $assetFields = null;
 
     public function __construct(
         protected JobTrackBatchRepository $importBatchRepository,
@@ -46,6 +52,25 @@ class Importer extends CategoryImporter
             $categoryRulesExtractor,
             $fieldProcessor
         );
+    }
+
+    public function validateRow(array $rowData, int $rowNumber): bool
+    {
+        $firstValidation = ! isset($this->validatedRows[$rowNumber]);
+
+        if (! parent::validateRow($rowData, $rowNumber)) {
+            return false;
+        }
+
+        $this->warnAboutMissingAssets(
+            $rowData,
+            $rowNumber,
+            $firstValidation,
+            (string) $rowData['code'],
+            $this->assetFields()->pluck('code')
+        );
+
+        return true;
     }
 
     public function prepareCategories(array $rowData, array &$categories): void
@@ -111,7 +136,7 @@ class Importer extends CategoryImporter
      *
      * A blank cell unlinks the field; skipping it instead left the old ids in place, so
      * an asset could never be unlinked by import. A path that resolves to nothing keeps
-     * the current value — `reportMissingAsset()` already reports it, and a typo should
+     * the current value — validation already warned about it, and a typo should
      * not wipe a working association.
      */
     protected function resolveAssetFieldValue(string $rawValue, string $currentValue): string
@@ -141,10 +166,7 @@ class Importer extends CategoryImporter
 
     protected function syncAssetMappings(array $categories): void
     {
-        $assetFields = $this->categoryFieldRepository->findWhere([
-            'status' => 1,
-            'type'   => Asset::ASSET_ATTRIBUTE_TYPE,
-        ]);
+        $assetFields = $this->assetFields();
 
         if ($assetFields->isEmpty()) {
             return;
@@ -165,6 +187,17 @@ class Importer extends CategoryImporter
                 }
             }
         }
+    }
+
+    /**
+     * @return Collection<int, CategoryField>
+     */
+    protected function assetFields(): Collection
+    {
+        return $this->assetFields ??= $this->categoryFieldRepository->findWhere([
+            'status' => 1,
+            'type'   => Asset::ASSET_ATTRIBUTE_TYPE,
+        ]);
     }
 
     protected function syncAssetField(int $categoryId, CategoryField $assetField, array $additionalData): void
