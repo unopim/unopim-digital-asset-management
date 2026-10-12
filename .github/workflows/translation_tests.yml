@@ -86,4 +86,4 @@ jobs:
 
       - name: Run Translation Checker
         working-directory: unopim
-        run: php artisan unopim:translations:check
+        run: php artisan unopim:translations:check --package=DAM --strict
