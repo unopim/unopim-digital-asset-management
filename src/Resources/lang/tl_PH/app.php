@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Ang field na :attribute ay kinakailangan.',
+                'invalid'  => 'Hindi mahanap o hindi available sa iyo ang isa o higit pang napiling asset para sa :attribute.',
             ],
             'comment' => [
                 'required' => 'Kinakailangan ang mensahe ng Komento.',

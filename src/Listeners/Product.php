@@ -4,10 +4,13 @@ namespace Webkul\DAM\Listeners;
 
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetResourceMappingRepository;
+use Webkul\DAM\Traits\CollectsAssetIds;
 use Webkul\Product\Models\ProductProxy;
 
 class Product
 {
+    use CollectsAssetIds;
+
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetResourceMappingRepository $assetResourceMappingRepository
@@ -77,61 +80,6 @@ class Product
 
             $this->assetResourceMappingRepository->createProductAssetMappings($assets, $product->id, $fieldCode);
         }
-    }
-
-    /**
-     * Collect an asset field's ids from every scope the values carry.
-     *
-     * `afterCreateOrupdate()` resolves a single scope via `core()->getRequestedChannelCode()`
-     * and `getRequestedLocaleCode()`, which is right for an admin request but wrong on a
-     * queued import: there is no request, so those fall back to defaults that need not
-     * match the channel or locale the import wrote. Reading the union of
-     * `common`, `locale_specific`, `channel_specific` and `channel_locale_specific`
-     * keeps the mapping correct whichever scope the file targeted.
-     *
-     * @return list<int|string>
-     */
-    protected function collectAssetIdsAcrossScopes(array $values, string $fieldCode): array
-    {
-        $collected = [];
-
-        $harvest = function ($value) use (&$collected): void {
-            if ($value === null || $value === '' || $value === []) {
-                return;
-            }
-
-            if (! is_array($value)) {
-                $value = str_contains((string) $value, ',')
-                    ? explode(',', (string) $value)
-                    : [$value];
-            }
-
-            foreach ($value as $assetId) {
-                $assetId = trim((string) $assetId);
-
-                if ($assetId !== '') {
-                    $collected[$assetId] = $assetId;
-                }
-            }
-        };
-
-        $harvest($values['common'][$fieldCode] ?? null);
-
-        foreach (($values['locale_specific'] ?? []) as $localeValues) {
-            $harvest($localeValues[$fieldCode] ?? null);
-        }
-
-        foreach (($values['channel_specific'] ?? []) as $channelValues) {
-            $harvest($channelValues[$fieldCode] ?? null);
-        }
-
-        foreach (($values['channel_locale_specific'] ?? []) as $channelValues) {
-            foreach ((array) $channelValues as $localeValues) {
-                $harvest($localeValues[$fieldCode] ?? null);
-            }
-        }
-
-        return array_values($collected);
     }
 
     public function afterCreateOrupdate($product)

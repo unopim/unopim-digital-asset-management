@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Pole :attribute jest wymagane.',
+                'invalid'  => 'Co najmniej jeden z wybranych zasobów dla :attribute nie został znaleziony lub nie jest dla Ciebie dostępny.',
             ],
             'comment' => [
                 'required' => 'Treść komentarza jest wymagana.',

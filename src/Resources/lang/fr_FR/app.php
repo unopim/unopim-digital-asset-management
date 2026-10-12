@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Le champ :attribute est requis.',
+                'invalid'  => 'Un ou plusieurs des ressources sélectionnées pour :attribute sont introuvables ou ne vous sont pas accessibles.',
             ],
             'comment' => [
                 'required' => 'Le message du commentaire est requis.',

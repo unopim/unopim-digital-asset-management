@@ -13,7 +13,7 @@ class Attribute extends BaseAttribute
 
         switch ($this->type) {
             case 'asset':
-                $rules[] = new AssetRule($this);
+                $rules[] = new AssetRule($this, $id);
 
                 break;
         }

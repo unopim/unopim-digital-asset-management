@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => ':attribute 필드는 필수입니다.',
+                'invalid'  => ':attribute에 선택한 자산 중 하나 이상을 찾을 수 없거나 사용할 수 없습니다.',
             ],
             'comment' => [
                 'required' => '댓글 메시지는 필수입니다.',

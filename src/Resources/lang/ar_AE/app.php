@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'حقل :attribute مطلوب.',
+                'invalid'  => 'تعذر العثور على أصل واحد أو أكثر من الأصول المحددة لـ :attribute أو أنها غير متاحة لك.',
             ],
             'comment' => [
                 'required' => 'رسالة التعليق مطلوبة.',

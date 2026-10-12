@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => ':attribute alanı zorunludur.',
+                'invalid'  => ':attribute için seçilen varlıklardan biri veya birkaçı bulunamadı ya da sizin için kullanılamıyor.',
             ],
             'comment' => [
                 'required' => 'Yorum mesajı zorunludur.',

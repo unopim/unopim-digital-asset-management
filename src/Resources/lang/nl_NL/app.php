@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Het veld :attribute is verplicht.',
+                'invalid'  => 'Een of meer geselecteerde assets voor :attribute zijn niet gevonden of niet voor u beschikbaar.',
             ],
             'comment' => [
                 'required' => 'Het bericht van de Opmerking is verplicht.',

@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Câmpul :attribute este obligatoriu.',
+                'invalid'  => 'Unul sau mai multe dintre activele selectate pentru :attribute nu au fost găsite sau nu vă sunt disponibile.',
             ],
             'comment' => [
                 'required' => 'Mesajul comentariului este obligatoriu.',

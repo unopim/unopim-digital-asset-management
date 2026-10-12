@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Feltet :attribute er påkrevd.',
+                'invalid'  => 'Én eller flere av de valgte ressursene for :attribute ble ikke funnet eller er ikke tilgjengelige for deg.',
             ],
             'comment' => [
                 'required' => 'Kommentarmeldingen er påkrevd.',

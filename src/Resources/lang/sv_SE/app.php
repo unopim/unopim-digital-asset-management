@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Fältet :attribute är obligatoriskt.',
+                'invalid'  => 'En eller flera av de valda tillgångarna för :attribute hittades inte eller är inte tillgängliga för dig.',
             ],
             'comment' => [
                 'required' => 'Kommentarmeddelandet är obligatoriskt.',

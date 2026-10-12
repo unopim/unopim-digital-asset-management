@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => 'Trường :attribute là bắt buộc.',
+                'invalid'  => 'Không tìm thấy một hoặc nhiều tài sản đã chọn cho :attribute hoặc bạn không có quyền sử dụng chúng.',
             ],
             'comment' => [
                 'required' => 'Nội dung bình luận là bắt buộc.',

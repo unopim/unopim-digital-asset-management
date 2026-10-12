@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => '字段 :attribute 是必需的。',
+                'invalid'  => '为 :attribute 选择的一个或多个资产不存在或您无权使用。',
             ],
             'comment' => [
                 'required' => '评论内容是必需的。',

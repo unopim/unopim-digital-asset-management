@@ -678,6 +678,7 @@ return [
         'validation' => [
             'asset' => [
                 'required' => ':attribute फ़ील्ड आवश्यक है।',
+                'invalid'  => ':attribute के लिए चुनी गई एक या अधिक एसेट नहीं मिलीं या आपके लिए उपलब्ध नहीं हैं।',
             ],
             'comment' => [
                 'required' => 'टिप्पणी संदेश आवश्यक है।',
