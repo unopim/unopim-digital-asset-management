@@ -5,6 +5,8 @@ namespace Webkul\DAM\Models;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\DAM\Contracts\Asset as AssetContract;
 use Webkul\DAM\Database\Factories\AssetFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
@@ -31,34 +33,34 @@ class Asset extends Model implements AssetContract, HistoryAuditable
         'id',
     ];
 
-    public function tags()
+    public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'dam_asset_tag');
     }
 
-    public function directories()
+    public function directories(): BelongsToMany
     {
         return $this->belongsToMany(Directory::class, 'dam_asset_directory');
     }
 
-    public function properties()
+    public function properties(): HasMany
     {
         return $this->hasMany(AssetProperty::class, 'dam_asset_id');
     }
 
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(AssetComments::class, 'dam_asset_id')
             ->whereNull('parent_id')
             ->with(['admin', 'children.admin']);
     }
 
-    public function resources()
+    public function resources(): HasMany
     {
         return $this->hasMany(AssetResourceMapping::class, 'dam_asset_id');
     }
 
-    public function shares()
+    public function shares(): HasMany
     {
         return $this->hasMany(Share::class, 'target_id')
             ->where('share_type', Share::TYPE_ASSET);

@@ -1,0 +1,11 @@
+includes:
+    - ../../../phpstan.neon
+
+parameters:
+    # Their Measurement parents exist only in UnoPim 3.0.x; DAMServiceProvider binds them behind class_exists.
+    excludePaths:
+        - src/Helpers/Importers/Product/MeasurementAwareImporter.php
+        - src/Helpers/Exporters/Product/MeasurementAwareExporter.php
+
+    # Core's ignore patterns target the whole monorepo, so some never match inside DAM alone.
+    reportUnmatchedIgnoredErrors: false

@@ -45,7 +45,7 @@ class DirectoryRepository extends Repository
 
         $oldPath = $oldDirectory->generatePath();
 
-        $hasParent = $oldDirectory->parent ? true : false;
+        $hasParent = (bool) $oldDirectory->parent;
 
         $this->isDirectoryWritable($hasParent ? $oldDirectory->parent : $oldDirectory, 'rename', $hasParent);
 
@@ -76,9 +76,11 @@ class DirectoryRepository extends Repository
 
         $path = $directory->generatePath();
 
-        parent::delete($id);
+        $deleted = parent::delete($id);
 
         $this->deleteDirectoryWithStorage($path);
+
+        return $deleted;
     }
 
     public function copy($copyId, $parentId)

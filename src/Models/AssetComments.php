@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Webkul\DAM\Contracts\AssetComments as AssetCommentsContract;
 use Webkul\DAM\Database\Factories\CommentFactory;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
@@ -39,7 +40,7 @@ class AssetComments extends Model implements AssetCommentsContract, HistoryAudit
         return $this->belongsTo(Admin::class, 'admin_id');
     }
 
-    public function children()
+    public function children(): HasMany
     {
         return $this->hasMany(AssetComments::class, 'parent_id');
     }
