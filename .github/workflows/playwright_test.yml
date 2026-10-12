@@ -55,11 +55,21 @@ jobs:
         with:
           path: dam-package
 
+      - name: Resolve latest UnoPim release
+        id: unopim
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh api repos/unopim/unopim/releases/latest --jq .tag_name)
+          test -n "$tag"
+          echo "Testing against UnoPim $tag"
+          echo "ref=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Checkout UnoPim
         uses: actions/checkout@v5
         with:
           repository: unopim/unopim
-          ref: 3fc23bf8d30ac9b7ed2a18936b28e64a6d255e92
+          ref: ${{ steps.unopim.outputs.ref }}
           path: unopim
 
       - name: Set up Node.js
@@ -202,7 +212,6 @@ jobs:
           # the passport preset backs the ESPR templates spec, DiscardQaFixture
           # seeds the E2E-MEDIA-QA-001 product the discard specs edit, and
           # seed-dpp-e2e builds the digital product passport records.
-          chmod 0600 packages/Webkul/AdminApi/src/Secrets/Oauth/oauth-*.key
           php artisan unopim:passport:install-preset
           php artisan db:seed --class=DiscardQaFixtureSeeder
           php artisan tinker tests/e2e-pw/scripts/seed-dpp-e2e.php
