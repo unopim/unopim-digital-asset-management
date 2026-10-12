@@ -1,5 +1,11 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 3.1.1
+
+### Bug Fixes
+
+* Fixed asset attribute values being shown in asset-id order instead of the order stored on the product, which also made the next save overwrite that order and changed the product grid thumbnail ([#62](https://github.com/unopim/unopim-digital-asset-management/issues/62)).
+
 ## Version 3.1.0
 
 ### Features & Enhancements

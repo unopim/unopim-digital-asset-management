@@ -27,6 +27,28 @@ it('should fetch assets by ids', function () {
     ]);
 });
 
+it('should return assets in the order the ids were requested', function () {
+    [$first, $second, $third] = Asset::factory()->createMany(3)->all();
+
+    $requested = [$third->id, $first->id, $second->id];
+
+    $response = $this->getJson(route('admin.dam.asset_picker.get_assets', ['assetIds' => implode(',', $requested)]));
+
+    $response->assertOk();
+
+    expect(array_column($response->json(), 'id'))->toBe($requested);
+});
+
+it('should keep the requested order when asset ids are sent as an array', function () {
+    [$first, $second] = Asset::factory()->createMany(2)->all();
+
+    $response = $this->getJson(route('admin.dam.asset_picker.get_assets', ['assetIds' => [$second->id, $first->id]]));
+
+    $response->assertOk();
+
+    expect(array_column($response->json(), 'id'))->toBe([$second->id, $first->id]);
+});
+
 it('should return empty array when no asset ids provided', function () {
     $response = $this->getJson(route('admin.dam.asset_picker.get_assets'));
 
