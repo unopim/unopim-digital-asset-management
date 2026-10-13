@@ -1903,7 +1903,7 @@
                     if (e.name === 'AbortError' || e.name === 'NotAllowedError') return;
                     this.$emitter.emit('add-flash', {
                         type: 'error',
-                        message: @js(trans('dam::app.admin.dam.index.folder-upload-https-required')),
+                        message: @json(trans('dam::app.admin.dam.index.folder-upload-https-required')),
                     });
                 }
             },
@@ -1941,7 +1941,7 @@
                 if (fileEntries.length === 0 && emptyDirs.length === 0) {
                     this.$emitter.emit('add-flash', {
                         type: 'warning',
-                        message: @js(trans('dam::app.admin.dam.index.folder-upload-no-files')),
+                        message: @json(trans('dam::app.admin.dam.index.folder-upload-no-files')),
                     });
                     return;
                 }

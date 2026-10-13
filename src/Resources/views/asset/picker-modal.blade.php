@@ -223,7 +223,7 @@
 
                     const dirId = this.pickerCurrentDirectory?.id;
                     if (! dirId) {
-                        this.$emitter.emit('add-flash', { type: 'warning', message: @js(trans('dam::app.admin.dam.index.select-directory-to-upload')) });
+                        this.$emitter.emit('add-flash', { type: 'warning', message: @json(trans('dam::app.admin.dam.index.select-directory-to-upload')) });
                         e.target.value = '';
                         return;
                     }

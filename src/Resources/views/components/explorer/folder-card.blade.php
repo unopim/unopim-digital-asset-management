@@ -21,7 +21,7 @@
             type="button"
             class="dam-ctx-trigger absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-cherry-900/80 hover:bg-white dark:hover:bg-cherry-900 hover:text-primary-700 dark:hover:text-primary-400 shadow-sm transition-opacity"
             :class="(hovered || anySelected) ? 'opacity-100' : 'opacity-0'"
-            :title="@js(trans('dam::app.admin.explorer.list.header.actions'))"
+            :title='@json(trans('dam::app.admin.explorer.list.header.actions'))'
             @click.stop="$emit('ctx', { event: $event, dir })"
         >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

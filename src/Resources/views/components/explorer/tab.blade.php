@@ -254,7 +254,7 @@
                 <span
                     v-if="operationOverlay.fileCount != null"
                     class="text-xs text-white/70 flex-shrink-0 ml-2"
-                    v-text="@js(trans('dam::app.admin.explorer.mass-actions.total-files')).replace(':count', operationOverlay.fileCount)"
+                    v-text='@json(trans('dam::app.admin.explorer.mass-actions.total-files')).replace(":count", operationOverlay.fileCount)'
                 ></span>
             </div>
 

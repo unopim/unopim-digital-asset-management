@@ -349,7 +349,7 @@ window._damImageViewer = {
                 const imagePlatforms = (data.platforms || []).filter(p => ['openai', 'gemini', 'xai'].includes(p.provider));
                 this.bgPlatforms = imagePlatforms;
                 if (!this.bgPlatforms.length) {
-                    this.bgPlatformError = @js(trans('dam::app.admin.dam.asset.edit.image-editor.error-no-image-platform'));
+                    this.bgPlatformError = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-no-image-platform'));
                     return;
                 }
                 const def = this.bgPlatforms.find(p => p.is_default) || this.bgPlatforms[0];
@@ -358,10 +358,10 @@ window._damImageViewer = {
                     this.bgSelectedModel      = this.bgCurrentPlatformModels[0] || null;
                 }
                 if (!this.bgSelectedModel) {
-                    this.bgPlatformError = @js(trans('dam::app.admin.dam.asset.edit.image-editor.no-models'));
+                    this.bgPlatformError = @json(trans('dam::app.admin.dam.asset.edit.image-editor.no-models'));
                 }
             } catch (e) {
-                this.bgPlatformError = @js(trans('dam::app.admin.dam.asset.edit.image-editor.error-platforms'));
+                this.bgPlatformError = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-platforms'));
             }
         },
 
@@ -369,7 +369,7 @@ window._damImageViewer = {
             this.bgSelectedModel = this.bgCurrentPlatformModels[0] || null;
             this.bgPlatformError = this.bgSelectedModel
                 ? null
-                : @js(trans('dam::app.admin.dam.asset.edit.image-editor.no-models'));
+                : @json(trans('dam::app.admin.dam.asset.edit.image-editor.no-models'));
         },
 
         async applyEdit() {
@@ -407,7 +407,7 @@ window._damImageViewer = {
             if (this.editTool === 'edit-bg') {
                 const needsPlatform = !(this.bgSubTab === 'color' && this.bgColorMode === 'normal');
                 if (needsPlatform && (!this.bgSelectedPlatformId || !this.bgSelectedModel)) {
-                    this.editError    = @js(trans('dam::app.admin.dam.asset.edit.image-editor.error-platforms'));
+                    this.editError    = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-platforms'));
                     this.editApplying = false;
                     return;
                 }
@@ -419,7 +419,7 @@ window._damImageViewer = {
                 if (this.bgSubTab !== 'color') postRoute = bgRoutes[this.bgSubTab];
                 if (this.bgSubTab === 'color') {
                     if (!this.bgColor) {
-                        this.editError    = @js(trans('dam::app.admin.dam.asset.edit.image-editor.error-select-color'));
+                        this.editError    = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-select-color'));
                         this.editApplying = false;
                         return;
                     }
@@ -452,7 +452,7 @@ window._damImageViewer = {
                 url.searchParams.set('_img', Date.now());
                 this.$navigate(url.toString());
             } catch (e) {
-                this.editError = e?.response?.data?.message || @js(trans('dam::app.admin.dam.asset.edit.image-editor.error-operation'));
+                this.editError = e?.response?.data?.message || @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-operation'));
             } finally {
                 this.editApplying = false;
             }

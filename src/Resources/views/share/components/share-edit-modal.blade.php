@@ -60,10 +60,10 @@
                 noExpiry: false,
                 expiryOption: null,
                 expiryOptions: [
-                    { value: 1,   label: @js(trans('dam::app.admin.dam.share.modal.expiry-1d')) },
-                    { value: 7,   label: @js(trans('dam::app.admin.dam.share.modal.expiry-7d')) },
-                    { value: 30,  label: @js(trans('dam::app.admin.dam.share.modal.expiry-30d')) },
-                    { value: 365, label: @js(trans('dam::app.admin.dam.share.modal.expiry-365d')) },
+                    { value: 1,   label: @json(trans('dam::app.admin.dam.share.modal.expiry-1d')) },
+                    { value: 7,   label: @json(trans('dam::app.admin.dam.share.modal.expiry-7d')) },
+                    { value: 30,  label: @json(trans('dam::app.admin.dam.share.modal.expiry-30d')) },
+                    { value: 365, label: @json(trans('dam::app.admin.dam.share.modal.expiry-365d')) },
                 ],
             };
         },
@@ -97,7 +97,7 @@
                 this.url      = payload?.url || null;
                 this.name     = record.share_name || record.name || '';
                 this.noExpiry = !record.expires_at
-                    || record.expires_at === @js(trans('dam::app.admin.dam.share.datagrid.never'));
+                    || record.expires_at === @json(trans('dam::app.admin.dam.share.datagrid.never'));
                 this.expiryOption = this.optionForExpiry(this.noExpiry ? null : record.expires_at);
 
                 this.$refs.shareEditModal?.toggle?.();
@@ -134,7 +134,7 @@
                         this.$emitter.emit('add-flash', {
                             type:    'error',
                             message: error.response?.data?.message
-                                || @js(trans('dam::app.admin.dam.share.update-failed')),
+                                || @json(trans('dam::app.admin.dam.share.update-failed')),
                         });
                     })
                     .finally(() => {

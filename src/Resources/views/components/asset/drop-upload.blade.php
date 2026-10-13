@@ -220,8 +220,8 @@
     </script>
 
     <script type="module">
-        const damDropUploadFailedMsg   = @js(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
-        const damDropUploadCompleteMsg = @js(trans('dam::app.admin.dam.index.upload-complete'));
+        const damDropUploadFailedMsg   = @json(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
+        const damDropUploadCompleteMsg = @json(trans('dam::app.admin.dam.index.upload-complete'));
 
         const DAM_UPLOAD_CONCURRENCY = Math.max(1, @js((int) config('dam.explorer.upload.concurrency', 4)));
         const DAM_RESUME_ENABLED     = @js((bool) config('dam.explorer.upload.resume_enabled', true));
@@ -336,12 +336,12 @@
                      * handed over as translated templates and the placeholders filled client-side.
                      */
                     i18n: {
-                        uploading:           @js(trans('dam::app.admin.dam.index.upload-session.uploading')),
-                        paused:              @js(trans('dam::app.admin.dam.index.upload-session.paused')),
-                        interrupted:         @js(trans('dam::app.admin.dam.index.upload-session.interrupted')),
-                        failed:              @js(trans('dam::app.admin.dam.index.upload-session.failed')),
-                        completed:           @js(trans('dam::app.admin.dam.index.upload-session.completed')),
-                        createFolderFailed:  @js(trans('dam::app.admin.dam.index.upload-session.create-folder-failed')),
+                        uploading:           @json(trans('dam::app.admin.dam.index.upload-session.uploading')),
+                        paused:              @json(trans('dam::app.admin.dam.index.upload-session.paused')),
+                        interrupted:         @json(trans('dam::app.admin.dam.index.upload-session.interrupted')),
+                        failed:              @json(trans('dam::app.admin.dam.index.upload-session.failed')),
+                        completed:           @json(trans('dam::app.admin.dam.index.upload-session.completed')),
+                        createFolderFailed:  @json(trans('dam::app.admin.dam.index.upload-session.create-folder-failed')),
                     },
                     isPrimary: false,
                     isDragOver: false,

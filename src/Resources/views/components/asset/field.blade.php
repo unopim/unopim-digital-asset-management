@@ -249,7 +249,7 @@
 
                             this.$emitter.emit('add-flash', {
                                 type: 'error',
-                                message: @js(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
+                                message: @json(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
                             });
                         });
                 },

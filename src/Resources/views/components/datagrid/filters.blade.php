@@ -56,7 +56,7 @@
                         <span
                             v-else
                             class="text-sm text-gray-400 dark:text-gray-400"
-                            v-text="@js(trans('admin::app.components.datagrid.filters.select'))"
+                            v-text='@json(trans('admin::app.components.datagrid.filters.select'))'
                         >
                         </span>
 
@@ -99,7 +99,7 @@
                             <span
                                 v-else
                                 class="text-sm text-gray-400 dark:text-gray-400"
-                                v-text="@js(trans('admin::app.components.datagrid.filters.select'))"
+                                v-text='@json(trans('admin::app.components.datagrid.filters.select'))'
                             >
                             </span>
 
@@ -307,7 +307,7 @@
                 >
                     <span
                         class="text-sm text-gray-400 dark:text-gray-400"
-                        v-text="@js(trans('admin::app.components.datagrid.filters.select'))"
+                        v-text='@json(trans('admin::app.components.datagrid.filters.select'))'
                     >
                     </span>
 
@@ -330,7 +330,7 @@
                                 <li v-if="!isMinimumCharacters">
                                     <p
                                         class="block p-2 text-gray-600 dark:text-gray-300"
-                                        v-text="@js(trans('admin::app.components.datagrid.filters.dropdown.searchable.atleast-two-chars'))"
+                                        v-text='@json(trans('admin::app.components.datagrid.filters.dropdown.searchable.atleast-two-chars'))'
                                     >
                                     </p>
                                 </li>
@@ -338,7 +338,7 @@
                                 <li v-else-if="!searchedOptions.length">
                                     <p
                                         class="block p-2 text-gray-600 dark:text-gray-300"
-                                        v-text="@js(trans('admin::app.components.datagrid.filters.dropdown.searchable.no-results'))"
+                                        v-text='@json(trans('admin::app.components.datagrid.filters.dropdown.searchable.no-results'))'
                                     >
                                     </p>
                                 </li>

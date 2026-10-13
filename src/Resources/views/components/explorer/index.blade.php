@@ -36,7 +36,7 @@
                     v-if="tabs.length > 1"
                     class="tab-close-btn shrink-0 w-4 h-4 flex items-center justify-center rounded text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 text-base leading-none"
                     @click.stop="closeTab(tab.id)"
-                    :title="@js(trans('dam::app.admin.explorer.tab.close'))"
+                    :title='@json(trans('dam::app.admin.explorer.tab.close'))'
                 >×</span>
             </div>
 
@@ -45,7 +45,7 @@
                 type="button"
                 class="w-7 h-7 mb-0.5 ml-1 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-200 dark:hover:bg-cherry-800 hover:text-gray-700 text-lg font-light shrink-0"
                 @click="newTabFromCurrent()"
-                :title="@js(trans('dam::app.admin.explorer.tab.new'))"
+                :title='@json(trans('dam::app.admin.explorer.tab.new'))'
             >+</button>
         </div>
 
