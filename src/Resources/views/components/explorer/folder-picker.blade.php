@@ -117,7 +117,7 @@
                                 @click="submitCreate"
                                 :disabled="creating.loading || ! creating.name.trim()"
                                 class="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                                :aria-label="'@lang('dam::app.admin.explorer.mass-actions.new-folder')'"
+                                :aria-label='@json(trans('dam::app.admin.explorer.mass-actions.new-folder'))'
                             >
                                 <svg v-if="! creating.loading" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>

@@ -316,14 +316,14 @@
         </script>
 
     <script type="module">
-        const damUploadFileTooLargeMsg = @js(trans('dam::app.admin.dam.asset.datagrid.file-too-large', ['size' => \Webkul\DAM\Helpers\AssetHelper::humanReadableSize(\Webkul\DAM\Helpers\AssetHelper::getMaxUploadSizeKb())]));
-        const damUploadFailedMsg = @js(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
-        const damUploadCompleteMsg     = @js(trans('dam::app.admin.dam.index.upload-complete'));
-        const damItemUploadCompleteMsg = @js(trans('dam::app.admin.dam.index.item-upload-complete'));
-        const damUploadInProgressTitle   = @js(trans('dam::app.admin.dam.index.upload-in-progress-title'));
-        const damUploadInProgressMessage = @js(trans('dam::app.admin.dam.index.upload-in-progress-message'));
-        const damUploadLeaveBtn          = @js(trans('dam::app.admin.dam.index.upload-leave-page'));
-        const damUploadStayBtn           = @js(trans('dam::app.admin.dam.index.upload-stay-page'));
+        const damUploadFileTooLargeMsg = @json(trans('dam::app.admin.dam.asset.datagrid.file-too-large', ['size' => \Webkul\DAM\Helpers\AssetHelper::humanReadableSize(\Webkul\DAM\Helpers\AssetHelper::getMaxUploadSizeKb())]));
+        const damUploadFailedMsg = @json(trans('dam::app.admin.dam.asset.datagrid.files-upload-failed'));
+        const damUploadCompleteMsg     = @json(trans('dam::app.admin.dam.index.upload-complete'));
+        const damItemUploadCompleteMsg = @json(trans('dam::app.admin.dam.index.item-upload-complete'));
+        const damUploadInProgressTitle   = @json(trans('dam::app.admin.dam.index.upload-in-progress-title'));
+        const damUploadInProgressMessage = @json(trans('dam::app.admin.dam.index.upload-in-progress-message'));
+        const damUploadLeaveBtn          = @json(trans('dam::app.admin.dam.index.upload-leave-page'));
+        const damUploadStayBtn           = @json(trans('dam::app.admin.dam.index.upload-stay-page'));
 
         app.component('v-dam-upload', {
             template: '#v-dam-upload-template',
@@ -565,7 +565,7 @@
                         if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED') {
                             this.$emitter.emit('add-flash', {
                                 type: 'warning',
-                                message: @js(trans('dam::app.admin.dam.index.upload-cancelled')),
+                                message: @json(trans('dam::app.admin.dam.index.upload-cancelled')),
                             });
                             return;
                         }

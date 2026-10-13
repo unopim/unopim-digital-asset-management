@@ -140,7 +140,7 @@
                 <x-admin::modal ref="tagModal">
                     <x-slot:header>
                         <p class="text-lg text-gray-800 dark:text-white font-bold">
-                            @{{ isEditing ? @js(trans('dam::app.admin.dam.tag.modal.edit-title')) : @js(trans('dam::app.admin.dam.tag.modal.create-title')) }}
+                            @{{ isEditing ? @json(trans('dam::app.admin.dam.tag.modal.edit-title')) : @json(trans('dam::app.admin.dam.tag.modal.create-title')) }}
                         </p>
                     </x-slot>
 
@@ -153,7 +153,7 @@
                             <input
                                 type="text"
                                 v-model="form.name"
-                                :placeholder="@js(trans('dam::app.admin.dam.tag.modal.name-placeholder'))"
+                                :placeholder='@json(trans('dam::app.admin.dam.tag.modal.name-placeholder'))'
                                 class="w-full rounded-md border bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                 :class="error ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-cherry-700'"
                                 @keyup.enter="saveTag"
@@ -215,7 +215,7 @@
                         const name = (this.form.name || '').trim();
 
                         if (! name) {
-                            this.error = @js(trans('dam::app.admin.dam.tag.modal.name-label'));
+                            this.error = @json(trans('dam::app.admin.dam.tag.modal.name-label'));
                             return;
                         }
 
@@ -235,7 +235,7 @@
                                 const resp = error?.response?.data;
                                 this.error = resp?.errors?.name?.[0]
                                     ?? resp?.message
-                                    ?? @js(trans('dam::app.admin.dam.tag.modal.name-label'));
+                                    ?? @json(trans('dam::app.admin.dam.tag.modal.name-label'));
                             })
                             .finally(() => {
                                 this.isSaving = false;

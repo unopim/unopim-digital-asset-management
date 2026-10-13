@@ -30,8 +30,8 @@
                             :show-labels="false"
                             :loading="tagsLoading"
                             :internal-search="false"
-                            :tag-placeholder="@js(trans('dam::app.admin.dam.tag.mass-action.add-tag'))"
-                            :placeholder="@js(trans('dam::app.admin.dam.tag.mass-action.tags-placeholder'))"
+                            :tag-placeholder='@json(trans('dam::app.admin.dam.tag.mass-action.add-tag'))'
+                            :placeholder='@json(trans('dam::app.admin.dam.tag.mass-action.tags-placeholder'))'
                             @tag="addTag"
                             @search-change="onTagSearch"
                         ></v-multiselect>
@@ -96,7 +96,7 @@
                     if (! this.assetIds.length && ! this.directoryIds.length) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.tag.mass-action.no-items')),
+                            message: @json(trans('dam::app.admin.dam.tag.mass-action.no-items')),
                         });
                         return;
                     }
@@ -159,7 +159,7 @@
                     if (! tags.length) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',
-                            message: @js(trans('dam::app.admin.dam.tag.mass-action.no-tags')),
+                            message: @json(trans('dam::app.admin.dam.tag.mass-action.no-tags')),
                         });
                         return;
                     }
@@ -180,7 +180,7 @@
                             this.$emitter.emit('add-flash', {
                                 type: 'error',
                                 message: error?.response?.data?.message
-                                    ?? @js(trans('dam::app.admin.dam.tag.mass-action.assign-failed')),
+                                    ?? @json(trans('dam::app.admin.dam.tag.mass-action.assign-failed')),
                             });
                         })
                         .finally(() => {

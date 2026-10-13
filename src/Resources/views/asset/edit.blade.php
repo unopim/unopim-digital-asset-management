@@ -361,7 +361,7 @@
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
                                 type: 'error',
-                                message: @js(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
+                                message: @json(trans('dam::app.admin.dam.asset.datagrid.not-found-to-show')),
                             });
                         } finally {
                             this.isNavigating = false;
@@ -1115,8 +1115,8 @@
         </script>
 
         <script type="module">
-            const reUploadFileTooLargeMsg = @js(trans('dam::app.admin.dam.asset.datagrid.file-too-large', ['size' => \Webkul\DAM\Helpers\AssetHelper::humanReadableSize(\Webkul\DAM\Helpers\AssetHelper::getMaxUploadSizeKb())]));
-            const reUploadFailedMsg = @js(trans('dam::app.admin.dam.asset.datagrid.file-upload-failed'));
+            const reUploadFileTooLargeMsg = @json(trans('dam::app.admin.dam.asset.datagrid.file-too-large', ['size' => \Webkul\DAM\Helpers\AssetHelper::humanReadableSize(\Webkul\DAM\Helpers\AssetHelper::getMaxUploadSizeKb())]));
+            const reUploadFailedMsg = @json(trans('dam::app.admin.dam.asset.datagrid.file-upload-failed'));
 
             app.component('v-reupload-asset', {
                 template: '#v-reupload-asset-template',
@@ -1186,7 +1186,7 @@
                             if (this.$axios.isCancel(error) || error.code === 'ERR_CANCELED') {
                                 this.$emitter.emit('add-flash', {
                                     type: 'warning',
-                                    message: @js(trans('dam::app.admin.dam.asset.edit.button.re-upload-cancelled')),
+                                    message: @json(trans('dam::app.admin.dam.asset.edit.button.re-upload-cancelled')),
                                 });
                                 return;
                             }

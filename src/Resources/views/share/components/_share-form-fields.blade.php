@@ -33,7 +33,7 @@
             :searchable="false"
             :show-labels="false"
             :disabled="{{ $noExpiryModel }} || {{ $disabledExpr }}"
-            :placeholder="@js(trans('dam::app.admin.dam.share.modal.expiry'))"
+            :placeholder='@json(trans('dam::app.admin.dam.share.modal.expiry'))'
         ></v-multiselect>
     </x-admin::form.control-group>
 

@@ -105,7 +105,7 @@
                                         <input
                                             type="text"
                                             v-model="advancedName"
-                                            :placeholder="@js(trans('dam::app.admin.dam.share.modal.name-hint'))"
+                                            :placeholder='@json(trans('dam::app.admin.dam.share.modal.name-hint'))'
                                             class="w-full rounded-md border border-gray-300 dark:border-cherry-700 bg-white dark:bg-cherry-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 dark:focus:border-primary-400"
                                         />
                                     </div>
@@ -124,7 +124,7 @@
                                             :clear-on-select="false"
                                             :searchable="false"
                                             :show-labels="false"
-                                            :placeholder="@js(trans('dam::app.admin.dam.share.modal.expiry'))"
+                                            :placeholder='@json(trans('dam::app.admin.dam.share.modal.expiry'))'
                                         ></v-multiselect>
                                     </div>
 
@@ -199,11 +199,11 @@
                 advancedName: '',
 
                 expiryOptions: [
-                    { value: '',  label: @js(trans('dam::app.admin.dam.share.modal.no-expiry')) },
-                    { value: 1,   label: @js(trans('dam::app.admin.dam.share.modal.expiry-1d')) },
-                    { value: 7,   label: @js(trans('dam::app.admin.dam.share.modal.expiry-7d')) },
-                    { value: 30,  label: @js(trans('dam::app.admin.dam.share.modal.expiry-30d')) },
-                    { value: 365, label: @js(trans('dam::app.admin.dam.share.modal.expiry-365d')) },
+                    { value: '',  label: @json(trans('dam::app.admin.dam.share.modal.no-expiry')) },
+                    { value: 1,   label: @json(trans('dam::app.admin.dam.share.modal.expiry-1d')) },
+                    { value: 7,   label: @json(trans('dam::app.admin.dam.share.modal.expiry-7d')) },
+                    { value: 30,  label: @json(trans('dam::app.admin.dam.share.modal.expiry-30d')) },
+                    { value: 365, label: @json(trans('dam::app.admin.dam.share.modal.expiry-365d')) },
                 ],
                 expiryOption: null,
                 openHandler: null,
@@ -212,8 +212,8 @@
         computed: {
             headerLabel() {
                 return this.targetType === 'directory'
-                    ? @js(trans('dam::app.admin.dam.share.modal.title-directory'))
-                    : @js(trans('dam::app.admin.dam.share.modal.title-asset'));
+                    ? @json(trans('dam::app.admin.dam.share.modal.title-directory'))
+                    : @json(trans('dam::app.admin.dam.share.modal.title-asset'));
             },
         },
         mounted() {
@@ -280,7 +280,7 @@
                     .catch(error => {
                         this.$emitter.emit('add-flash', {
                             type: 'error',
-                            message: error?.response?.data?.message ?? @js(trans('dam::app.admin.dam.share.modal.load-failed')),
+                            message: error?.response?.data?.message ?? @json(trans('dam::app.admin.dam.share.modal.load-failed')),
                         });
                     })
                     .finally(() => {
@@ -307,14 +307,14 @@
                             this.advancedName = data.share.name || '';
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
-                                message: @js(trans('dam::app.admin.dam.share.modal.created')),
+                                message: @json(trans('dam::app.admin.dam.share.modal.created')),
                             });
                         }
                     })
                     .catch(error => {
                         this.$emitter.emit('add-flash', {
                             type: 'error',
-                            message: error?.response?.data?.message ?? @js(trans('dam::app.admin.dam.share.modal.create-failed')),
+                            message: error?.response?.data?.message ?? @json(trans('dam::app.admin.dam.share.modal.create-failed')),
                         });
                     })
                     .finally(() => {
@@ -337,13 +337,13 @@
                         }
                         this.$emitter.emit('add-flash', {
                             type: 'success',
-                            message: data?.message ?? @js(trans('dam::app.admin.dam.share.updated')),
+                            message: data?.message ?? @json(trans('dam::app.admin.dam.share.updated')),
                         });
                     })
                     .catch(error => {
                         this.$emitter.emit('add-flash', {
                             type: 'error',
-                            message: error?.response?.data?.message ?? @js(trans('dam::app.admin.dam.share.update-failed')),
+                            message: error?.response?.data?.message ?? @json(trans('dam::app.admin.dam.share.update-failed')),
                         });
                     })
                     .finally(() => {
@@ -361,13 +361,13 @@
                         }
                         this.$emitter.emit('add-flash', {
                             type: 'success',
-                            message: data?.message ?? @js(trans('dam::app.admin.dam.share.reauthorized')),
+                            message: data?.message ?? @json(trans('dam::app.admin.dam.share.reauthorized')),
                         });
                     })
                     .catch(error => {
                         this.$emitter.emit('add-flash', {
                             type: 'error',
-                            message: error?.response?.data?.message ?? @js(trans('dam::app.admin.dam.share.modal.reauthorize-failed')),
+                            message: error?.response?.data?.message ?? @json(trans('dam::app.admin.dam.share.modal.reauthorize-failed')),
                         });
                     })
                     .finally(() => {
@@ -386,14 +386,14 @@
                             this.loadShares();
                             this.$emitter.emit('add-flash', {
                                 type: 'success',
-                                message: data.message ?? @js(trans('dam::app.admin.dam.share.modal.revoked')),
+                                message: data.message ?? @json(trans('dam::app.admin.dam.share.modal.revoked')),
                             });
                         }
                     })
                     .catch(error => {
                         this.$emitter.emit('add-flash', {
                             type: 'error',
-                            message: error?.response?.data?.message ?? @js(trans('dam::app.admin.dam.share.modal.revoke-failed')),
+                            message: error?.response?.data?.message ?? @json(trans('dam::app.admin.dam.share.modal.revoke-failed')),
                         });
                     })
                     .finally(() => {
@@ -404,7 +404,7 @@
                 if (!url) return;
                 const success = () => this.$emitter.emit('add-flash', {
                     type: 'success',
-                    message: @js(trans('dam::app.admin.dam.share.modal.copied')),
+                    message: @json(trans('dam::app.admin.dam.share.modal.copied')),
                 });
                 const fallback = () => {
                     const tmp = document.createElement('textarea');
