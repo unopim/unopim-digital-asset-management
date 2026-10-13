@@ -9,6 +9,7 @@
 * Fixed assets downloaded from remote URLs through the asset upload API being created as invalid uploads (the file size was passed as the upload error code).
 * Fixed `DirectoryRepository::delete()` returning nothing instead of the delete result.
 * Fixed mass-action success messages dropping the source and destination folder names in all translated locales, and translated the asset bundle import errors that were still in English.
+* Fixed a JavaScript syntax error on DAM pages (e.g. "Unexpected identifier 'onglet'" on the assets page) when the UI locale's translations contain apostrophes, such as French, Catalan, Italian, Ukrainian and Turkish.
 
 ### CI
 
