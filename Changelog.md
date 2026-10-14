@@ -10,6 +10,7 @@
 * Fixed `DirectoryRepository::delete()` returning nothing instead of the delete result.
 * Fixed mass-action success messages dropping the source and destination folder names in all translated locales, and translated the asset bundle import errors that were still in English.
 * Fixed a JavaScript syntax error on DAM pages (e.g. "Unexpected identifier 'onglet'" on the assets page) when the UI locale's translations contain apostrophes, such as French, Catalan, Italian, Ukrainian and Turkish.
+* Fixed the asset `path` column keeping a case-insensitive collation on MariaDB, so paths differing only by case were treated as the same value. A new MariaDB-only migration applies `utf8mb4_bin`; run `php artisan migrate` on MariaDB installs.
 
 ### CI
 
