@@ -9,6 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MariaDB is handled by 2026_10_14_000000_update_path_collation_in_dam_assets_table_for_mariadb.
         if (DB::getDriverName() !== 'mysql') {
             return;
         }
