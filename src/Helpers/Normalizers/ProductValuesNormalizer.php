@@ -40,14 +40,6 @@ class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
                 continue;
             }
 
-            // if ($attribute->type === 'asset') {
-            //     $assets = str_contains($value, ',') ? explode(',', $value) : [$value];
-
-            //     $assets = $this->assetRepository->findWhereIn('id', $assets)->pluck('path')->toArray();
-
-            //     $value = implode(', ', $assets);
-            // }
-
             if ($attribute->type === 'asset') {
                 $ids = is_array($value)
                     ? $value
