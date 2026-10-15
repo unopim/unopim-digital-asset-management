@@ -68,7 +68,7 @@
             mounted() {
                 this.$emitter.on('dam-open-preview', this.openById);
 
-                window.addEventListener('keydown', this.handleEscape);
+                window.addEventListener('keydown', this.handleEscape, true);
 
                 this.imgMounted();
                 this.videoMounted();
@@ -83,7 +83,7 @@
             },
 
             beforeUnmount() {
-                window.removeEventListener('keydown', this.handleEscape);
+                window.removeEventListener('keydown', this.handleEscape, true);
                 this.imgBeforeUnmount();
                 this.videoBeforeUnmount();
                 document.body.style.overflow = '';
@@ -184,6 +184,8 @@
 
                 handleEscape(e) {
                     if (e.key === 'Escape' && this.isOpen) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
                         this.closePreview();
                         return;
                     }
