@@ -1264,13 +1264,29 @@
                 },
                 data() {
                     return {
+                        currentAssetId: this.assetId,
                         isLocked: false,
                         onLockChange: null,
+                        onAssetChange: null,
                     };
                 },
                 mounted() {
                     this.onLockChange = (locked) => { this.isLocked = !!locked; };
+                    this.onAssetChange = (data) => {
+                        if (data.asset?.id) {
+                            this.currentAssetId = Number(data.asset.id);
+                        }
+                    };
                     this.$emitter.on('dam-asset-action-locked', this.onLockChange);
+                    this.$emitter.on('dam-asset-changed', this.onAssetChange);
+                },
+                beforeUnmount() {
+                    if (this.onLockChange) {
+                        this.$emitter.off('dam-asset-action-locked', this.onLockChange);
+                    }
+                    if (this.onAssetChange) {
+                        this.$emitter.off('dam-asset-changed', this.onAssetChange);
+                    }
                 },
                 unmounted() {
                     if (this.onLockChange) {
@@ -1282,7 +1298,7 @@
                         if (this.isLocked) return;
                         this.$emitter.emit('open-share-modal', {
                             targetType: 'asset',
-                            targetId: this.assetId,
+                            targetId: this.currentAssetId,
                         });
                     },
                 },

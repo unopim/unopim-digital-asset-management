@@ -69,6 +69,8 @@ trait ExportsAssetAttributes
             return [];
         }
 
-        return $this->assetRepository->findWhereIn('id', $ids)->pluck('path')->filter()->values()->all();
+        $assetsById = $this->assetRepository->findWhereIn('id', $ids)->keyBy(fn ($asset) => (string) $asset->id);
+
+        return collect($ids)->map(fn ($id) => $assetsById->get((string) $id)?->path)->filter()->values()->all();
     }
 }

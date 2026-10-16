@@ -41,11 +41,20 @@ class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
             }
 
             if ($attribute->type === 'asset') {
-                $assets = str_contains($value, ',') ? explode(',', $value) : [$value];
+                $ids = is_array($value)
+                    ? $value
+                    : array_filter(array_map('trim', explode(',', (string) $value)), 'strlen');
 
-                $assets = $this->assetRepository->findWhereIn('id', $assets)->pluck('path')->toArray();
+                $assetsById = $this->assetRepository
+                    ->findWhereIn('id', $ids)
+                    ->keyBy(fn ($asset) => (string) $asset->id);
 
-                $value = implode(', ', $assets);
+                $paths = collect($ids)
+                    ->map(fn ($id) => $assetsById->get((string) $id)?->path)
+                    ->filter()
+                    ->values();
+
+                $value = $paths->implode(', ');
             }
 
             $values[$attributeCode] = $value;

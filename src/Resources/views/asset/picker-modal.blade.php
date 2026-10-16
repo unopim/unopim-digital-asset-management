@@ -106,6 +106,7 @@
                                                 <img
                                                     :src="record.path"
                                                     alt=""
+                                                    draggable="false"
                                                     loading="lazy"
                                                     decoding="async"
                                                     class="w-full h-full object-cover object-top"

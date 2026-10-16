@@ -11,6 +11,10 @@
 * Fixed mass-action success messages dropping the source and destination folder names in all translated locales, and translated the asset bundle import errors that were still in English.
 * Fixed a JavaScript syntax error on DAM pages (e.g. "Unexpected identifier 'onglet'" on the assets page) when the UI locale's translations contain apostrophes, such as French, Catalan, Italian, Ukrainian and Turkish.
 * Fixed the asset `path` column keeping a case-insensitive collation on MariaDB, so paths differing only by case were treated as the same value. A new MariaDB-only migration applies `utf8mb4_bin`; run `php artisan migrate` on MariaDB installs.
+* Fixed the asset edit page’s share button continuing to target the original asset after carousel navigation.
+* Fixed DAM asset picker thumbnails being uploaded when accidentally dragged into the picker’s drop zone.
+* Fixed DAM asset paths appearing in asset ID order instead of their stored order in quick, product and category exports.
+* Fixed pressing Escape in the asset preview also closing the asset picker modal.
 
 ### CI
 
