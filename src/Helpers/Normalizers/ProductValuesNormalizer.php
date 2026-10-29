@@ -17,49 +17,28 @@ class ProductValuesNormalizer extends ProductAttributeValuesNormalizer
 
     public function normalizeAttributes(array $attributeValues, array $options = []): array
     {
-        $values = [];
-
-        if (empty($options['locale'])) {
-            $options['locale'] = core()->getRequestedLocaleCode();
-        }
-
         foreach ($attributeValues as $attributeCode => $value) {
             $attribute = $this->attributeService->findAttributeByCode($attributeCode);
 
-            if (! $attribute) {
+            if (! $attribute || $attribute->type !== 'asset') {
                 continue;
             }
 
-            if ($attribute->type == 'price' && 'true' == ($options['forExport'] ?? '')) {
-                $value = ! is_array($value) ? [] : $value;
+            $ids = is_array($value)
+                ? $value
+                : array_filter(array_map('trim', explode(',', (string) $value)), 'strlen');
 
-                foreach ($value as $currency => $price) {
-                    $values["{$attributeCode} ({$currency})"] = $price;
-                }
+            $assetsById = $this->assetRepository
+                ->findWhereIn('id', $ids)
+                ->keyBy(fn ($asset) => (string) $asset->id);
 
-                continue;
-            }
-
-            if ($attribute->type === 'asset') {
-                $ids = is_array($value)
-                    ? $value
-                    : array_filter(array_map('trim', explode(',', (string) $value)), 'strlen');
-
-                $assetsById = $this->assetRepository
-                    ->findWhereIn('id', $ids)
-                    ->keyBy(fn ($asset) => (string) $asset->id);
-
-                $paths = collect($ids)
-                    ->map(fn ($id) => $assetsById->get((string) $id)?->path)
-                    ->filter()
-                    ->values();
-
-                $value = $paths->implode(', ');
-            }
-
-            $values[$attributeCode] = $value;
+            $attributeValues[$attributeCode] = collect($ids)
+                ->map(fn ($id) => $assetsById->get((string) $id)?->path)
+                ->filter()
+                ->values()
+                ->implode(', ');
         }
 
-        return $values;
+        return parent::normalizeAttributes($attributeValues, $options);
     }
 }
