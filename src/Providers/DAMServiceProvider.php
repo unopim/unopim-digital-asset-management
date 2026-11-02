@@ -23,8 +23,6 @@ use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
-use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
-use Webkul\DAM\Helpers\Importers\Product\MeasurementAwareImporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Models\DamConfiguration;
@@ -36,8 +34,6 @@ use Webkul\DataTransfer\Helpers\Import;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\DataTransfer\Validators\JobInstances\Import\CategoryJobValidator;
 use Webkul\DataTransfer\Validators\JobInstances\Import\ProductJobValidator;
-use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
-use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
 
@@ -47,6 +43,8 @@ class DAMServiceProvider extends ServiceProvider
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
         \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
+        Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
+        Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
         Import::class                                                   => \Webkul\DAM\Helpers\Import::class,
         ImportController::class                                         => \Webkul\DAM\Http\Controllers\Settings\DataTransfer\ImportController::class,
         ProductJobValidator::class                                      => \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class,
@@ -57,23 +55,8 @@ class DAMServiceProvider extends ServiceProvider
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
     ];
 
-    /**
-     * Measurement binds the product exporter and importer inside register(), so a
-     * $bindings entry here loses to it. Every register() runs before any booted()
-     * callback fires, which makes these the bindings that survive.
-     */
     public function boot(Router $router)
     {
-        $this->app->booted(function (): void {
-            $this->app->bind(Exporter::class, class_exists(MeasurementExporter::class)
-                ? MeasurementAwareExporter::class
-                : \Webkul\DAM\Helpers\Exporters\Product\Exporter::class);
-
-            $this->app->bind(Importer::class, class_exists(MeasurementImporter::class)
-                ? MeasurementAwareImporter::class
-                : \Webkul\DAM\Helpers\Importers\Product\Importer::class);
-        });
-
         $router->aliasMiddleware('dam', DAM::class);
 
         RateLimiter::for('dam-share-thumb', function ($request) {

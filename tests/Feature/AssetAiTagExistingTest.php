@@ -199,7 +199,7 @@ it('shows a generate AI tags button on the edit page of an image', function () {
     $this->get(route('admin.dam.assets.edit', $asset->id))
         ->assertOk()
         ->assertViewHas('canAiTag', true)
-        ->assertSeeText(trans('dam::app.admin.dam.tag.mass-action.ai-tag'));
+        ->assertSee(trans('dam::app.admin.dam.tag.mass-action.ai-tag'));
 });
 
 it('hides the generate AI tags button when AI tagging is disabled', function () {

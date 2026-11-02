@@ -6,7 +6,6 @@ use Webkul\DAM\Helpers\Exporters\Product\Exporter as DamProductExporter;
 use Webkul\DAM\Models\Asset;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CoreCategoryExporter;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as CoreProductExporter;
-use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 
 $overrides = [
     [DamProductExporter::class, CoreProductExporter::class],
@@ -69,14 +68,8 @@ it('resolves the core product exporter to an exporter carrying the DAM asset beh
     expect(class_uses_recursive($exporter))->toContain(ExportsAssetAttributes::class);
 });
 
-it('keeps the measurement exporter in the product exporter chain when it is installed', function () {
-    if (! class_exists(MeasurementExporter::class)) {
-        expect(app(CoreProductExporter::class))->toBeInstanceOf(DamProductExporter::class);
-
-        return;
-    }
-
-    expect(app(CoreProductExporter::class))->toBeInstanceOf(MeasurementExporter::class);
+it('resolves the core product exporter to the DAM exporter', function () {
+    expect(app(CoreProductExporter::class))->toBeInstanceOf(DamProductExporter::class);
 });
 
 it('exports asset attribute values as stored paths rather than raw asset ids', function () {
