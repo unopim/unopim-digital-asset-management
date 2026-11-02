@@ -19,6 +19,7 @@ use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Jobs\GeneratePdfThumbnail;
 use Webkul\DAM\Jobs\GenerateVideoThumbnail;
 use Webkul\DAM\Jobs\ProcessAssetUpload;
+use Webkul\DAM\Jobs\TagAssetWithAi;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\AssetComments;
 use Webkul\DAM\Models\Directory;
@@ -136,7 +137,11 @@ class AssetController extends Controller
             ? number_format($bytes / 1048576, 2).' MB'
             : ($bytes >= 1024 ? number_format($bytes / 1024, 1).' KB' : ($bytes > 0 ? $bytes.' B' : null));
 
-        return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors', 'directory'));
+        $aiTaggingPending = $this->autoTaggingService->isPending($asset);
+
+        $canAiTag = $this->autoTagEligible() && $this->autoTaggingService->isAvailable();
+
+        return view('dam::asset.edit', compact('asset', 'id', 'tags', 'assetPosition', 'assetTotal', 'fileSize', 'directoryAncestors', 'directory', 'aiTaggingPending', 'canAiTag'));
     }
 
     protected function getNextAndPreviousAssets($asset, $id, ?Directory $directory = null)
@@ -697,6 +702,10 @@ class AssetController extends Controller
             ]);
 
             $this->dispatchThumbnailJob($asset->fresh());
+
+            if ($asset->file_type === 'image' && $this->autoTagEligible() && $this->autoTaggingService->isEnabled()) {
+                TagAssetWithAi::dispatch($asset->id, $disk, userId: auth()->id())->afterCommit();
+            }
         }
 
         return response()->json([
@@ -878,6 +887,7 @@ class AssetController extends Controller
             'assetTotal'            => $assetTotal,
             'editUrl'               => route('admin.dam.assets.edit', $id),
             'tags'                  => $tags,
+            'aiTaggingPending'      => $this->autoTaggingService->isPending($asset),
             'badgeCounts'           => [
                 'properties'       => $asset->properties()->count(),
                 'comments'         => AssetComments::where('dam_asset_id', $asset->id)->count(),

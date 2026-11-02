@@ -166,4 +166,29 @@ test.describe('DAM Asset Edit Page', () => {
     expect(detailsBox).not.toBeNull();
     expect(tagsBox.y).toBeLessThan(detailsBox.y);
   });
+
+  test('AI generated tags appear on the open edit page without a refresh', async ({ adminPage, uid }) => {
+    const aiTag = `ai-live-${uid}`;
+
+    await adminPage.route(/\/admin\/dam\/assets\/edit\/\d+/, async (route) => {
+      const response = await route.fetch();
+      const body = (await response.text()).replace('aiTaggingPending: false', 'aiTaggingPending: true');
+
+      await route.fulfill({ response, body });
+    });
+
+    await adminPage.route(/\/admin\/dam\/assets\/show\/\d+/, async (route) => {
+      const response = await route.fetch();
+      const json = await response.json();
+
+      json.tags = [...(json.tags ?? []), { id: 2147480000, name: aiTag }];
+      json.aiTaggingPending = false;
+
+      await route.fulfill({ response, json });
+    });
+
+    await navigateToFirstAssetEdit(adminPage);
+
+    await expect(adminPage.locator('#tags').getByText(aiTag)).toBeVisible({ timeout: 15000 });
+  });
 });

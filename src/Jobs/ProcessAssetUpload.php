@@ -33,6 +33,10 @@ class ProcessAssetUpload implements ShouldQueue
         protected ?int $userId = null,
     ) {
         $this->queue = config('dam.queues.media');
+
+        if ($autoTagEligible || $tagBatchId) {
+            app(AssetAutoTaggingService::class)->markPending($assetId);
+        }
     }
 
     public function handle(MetadataExtractionService $metadataService, AssetAutoTaggingService $taggingService, AiTaggingJobTrackerService $jobTracker): void
@@ -41,6 +45,8 @@ class ProcessAssetUpload implements ShouldQueue
         $tracker = $batch?->tracker;
 
         if ($tracker && $tracker->shouldStop()) {
+            $taggingService->clearPending($this->assetId);
+
             return;
         }
 
@@ -75,6 +81,8 @@ class ProcessAssetUpload implements ShouldQueue
 
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {
+            $taggingService->clearPending($this->assetId);
+
             Log::warning('DAM asset finalisation failed.', [
                 'asset'   => $this->assetId,
                 'batch'   => $this->batchId,

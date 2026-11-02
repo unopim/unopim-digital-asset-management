@@ -39,6 +39,8 @@ class TagAssetWithAi implements ShouldQueue
         protected ?int $trackBatchId = null,
     ) {
         $this->queue = config('dam.queues.media');
+
+        app(AssetAutoTaggingService::class)->markPending($assetId);
     }
 
     /**
@@ -57,6 +59,8 @@ class TagAssetWithAi implements ShouldQueue
         $asset = Asset::find($this->assetId);
 
         if (! $asset) {
+            $service->clearPending($this->assetId);
+
             $this->settleBatch($batch, $tracker, failed: false);
 
             return;
@@ -75,6 +79,8 @@ class TagAssetWithAi implements ShouldQueue
 
         $success = $service->tagAsset($asset, $this->disk);
 
+        $service->clearPending($this->assetId);
+
         if ($jobTrack) {
             $jobTracker->recordProgress($jobTrack, $success);
 
@@ -92,5 +98,10 @@ class TagAssetWithAi implements ShouldQueue
         }
 
         $this->settleBatch($batch, $tracker, failed: ! $success, error: $success ? null : 'AI tagging failed.');
+    }
+
+    public function failed(?\Throwable $exception): void
+    {
+        app(AssetAutoTaggingService::class)->clearPending($this->assetId);
     }
 }

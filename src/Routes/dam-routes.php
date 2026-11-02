@@ -64,6 +64,7 @@ Route::group([
             Route::post('/tag', 'addOrUpdateTag')->name('admin.dam.assets.tag');
             Route::post('/remove-tag', 'removeTag')->name('admin.dam.assets.remove-tag');
             Route::post('/mass-assign-tags', 'massAssignTags')->name('admin.dam.assets.mass_assign_tags');
+            Route::post('/mass-ai-tag', 'massAiTag')->name('admin.dam.assets.mass_ai_tag');
         });
 
         Route::controller(PropertyController::class)->prefix('')->group(function () {

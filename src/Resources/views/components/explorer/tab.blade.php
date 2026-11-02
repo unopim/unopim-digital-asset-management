@@ -612,6 +612,33 @@ app.component('v-dam-tab', {
             });
         },
 
+        performAiTag() {
+            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+
+            if (! assetIds.length) {
+                this.$emitter.emit('add-flash', {
+                    type: 'warning',
+                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-assets')",
+                });
+                return;
+            }
+
+            this.$emitter.emit('open-confirm-modal', {
+                message: "@lang('dam::app.admin.dam.tag.mass-action.ai-tag-confirm')".replace(':count', assetIds.length),
+                agree: async () => {
+                    try {
+                        const { data } = await this.$axios.post('{{ route("admin.dam.assets.mass_ai_tag") }}', { indices: assetIds });
+                        this.$emitter.emit('add-flash', { type: 'success', message: data.message });
+                    } catch (e) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                        });
+                    }
+                },
+            });
+        },
+
         performMassDelete() {
             const count = this.selection.ids.length;
 

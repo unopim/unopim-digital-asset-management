@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Webkul\DAM\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Webkul\AiAgent\DTOs\CredentialConfig;
@@ -123,6 +124,49 @@ class AssetAutoTaggingService
         return $value === null
             ? (bool) config('dam.ai_tagging.enabled')
             : filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Whether a tagging request could actually reach an AI platform right now:
+     * the feature is on and an active, image-capable platform resolves.
+     */
+    public function isAvailable(): bool
+    {
+        if (! $this->isEnabled()) {
+            return false;
+        }
+
+        try {
+            return $this->resolvePlatform() !== null;
+        } catch (\ValueError) {
+            return false;
+        }
+    }
+
+    /**
+     * Flags an asset as having AI tags on the way so an open edit page knows to
+     * poll for them. The TTL bounds polling if a job dies without clearing it.
+     */
+    public function markPending(int $assetId): void
+    {
+        Cache::put($this->pendingCacheKey($assetId), true, now()->addHour());
+    }
+
+    public function clearPending(int $assetId): void
+    {
+        Cache::forget($this->pendingCacheKey($assetId));
+    }
+
+    public function isPending(Asset $asset): bool
+    {
+        return $asset->file_type === 'image'
+            && Cache::has($this->pendingCacheKey($asset->id))
+            && $this->isEnabled();
+    }
+
+    protected function pendingCacheKey(int $assetId): string
+    {
+        return "dam.ai_tagging.pending.{$assetId}";
     }
 
     protected function platformId(): ?int

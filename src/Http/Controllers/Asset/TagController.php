@@ -2,10 +2,14 @@
 
 namespace Webkul\DAM\Http\Controllers\Asset;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Controllers\Controller;
+use Webkul\DAM\Http\Controllers\Concerns\QueuesAiTagging;
+use Webkul\DAM\Http\Requests\MassAiTagRequest;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
@@ -14,11 +18,21 @@ use Webkul\DAM\Traits\AssetAccessControl;
 class TagController extends Controller
 {
     use AssetAccessControl;
+    use QueuesAiTagging;
 
     public function __construct(
         protected AssetRepository $assetRepository,
         protected AssetTagRepository $assetTagRepository,
     ) {}
+
+    /**
+     * Queues AI tagging for existing assets — one or many. Generated tags are
+     * added alongside the asset's current tags; non-image assets are skipped.
+     */
+    public function massAiTag(MassAiTagRequest $request): JsonResponse
+    {
+        return $this->queueAiTagging($request->input('indices'), auth()->id());
+    }
 
     protected function addOrUpdateTag(Request $request)
     {

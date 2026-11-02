@@ -485,6 +485,34 @@ class AssetController extends Controller
         ], 200);
     }
 
+    /**
+     * The asset's tags, with whether AI tagging is still queued for it so a
+     * client that called POST /tags/ai knows when to stop polling.
+     */
+    public function tags(int $id): JsonResponse
+    {
+        $asset = $this->assetRepository->find($id);
+
+        if (! $asset) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset($id);
+
+        return response()->json([
+            'success'            => true,
+            'ai_tagging_pending' => $this->autoTaggingService->isPending($asset),
+            'data'               => $asset->tags()
+                ->orderBy('name')
+                ->get(['dam_tags.id', 'dam_tags.name'])
+                ->map(fn (Tag $tag): array => ['id' => $tag->id, 'name' => $tag->name])
+                ->values(),
+        ]);
+    }
+
     public function metadata(int $id): JsonResponse
     {
         $asset = $this->assetRepository->find($id);

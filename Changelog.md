@@ -1,5 +1,15 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 3.1.4 — Nov 2, 2026
+
+### Features & Enhancements
+
+* **AI tagging for existing assets via the API** — Added `POST /api/v1/rest/tags/ai` to queue AI tagging for existing image assets, and `GET /api/v1/rest/assets/{id}/tags` to read an asset's tags along with whether AI tagging is still pending. Each endpoint has its own API key scope (`api.dam.tags.ai-tag`, `api.dam.assets.tags`).
+
+### Breaking Changes
+
+* `/api/v1/rest/assets/edit/{id}` now accepts `GET` instead of `PUT`, since it only reads data. Clients still sending `PUT` get a 405.
+
 ## Version 3.1.1
 
 ### Bug Fixes
