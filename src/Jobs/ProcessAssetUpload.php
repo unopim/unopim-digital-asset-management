@@ -34,9 +34,18 @@ class ProcessAssetUpload implements ShouldQueue
     ) {
         $this->queue = config('dam.queues.media');
 
-        if ($autoTagEligible || $tagBatchId) {
+        if ($this->flagsAiTaggingPending()) {
             app(AssetAutoTaggingService::class)->markPending($assetId);
         }
+    }
+
+    /**
+     * Clears the pending AI tagging flag this job raised when the worker dies
+     * outside handle(), such as on a timeout, so the edit page stops polling.
+     */
+    public function failed(?\Throwable $exception = null): void
+    {
+        $this->releaseAiTaggingPending(resolve(AssetAutoTaggingService::class));
     }
 
     public function handle(MetadataExtractionService $metadataService, AssetAutoTaggingService $taggingService, AiTaggingJobTrackerService $jobTracker): void
@@ -45,7 +54,7 @@ class ProcessAssetUpload implements ShouldQueue
         $tracker = $batch?->tracker;
 
         if ($tracker && $tracker->shouldStop()) {
-            $taggingService->clearPending($this->assetId);
+            $this->releaseAiTaggingPending($taggingService);
 
             return;
         }
@@ -53,6 +62,8 @@ class ProcessAssetUpload implements ShouldQueue
         $asset = Asset::find($this->assetId);
 
         if (! $asset) {
+            $this->releaseAiTaggingPending($taggingService);
+
             $this->settleBatch($batch, $tracker, failed: false);
 
             return;
@@ -77,11 +88,13 @@ class ProcessAssetUpload implements ShouldQueue
                 TagAssetWithAi::dispatch($asset->id, $disk, $this->tagBatchId, userId: $this->userId, trackBatchId: $this->trackBatchId);
             } elseif ($this->autoTagEligible && $asset->file_type === 'image' && $taggingService->isEnabled()) {
                 $this->dispatchTaggingJob($asset, $disk, $tracker, $jobTracker);
+            } else {
+                $this->releaseAiTaggingPending($taggingService);
             }
 
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {
-            $taggingService->clearPending($this->assetId);
+            $this->releaseAiTaggingPending($taggingService);
 
             Log::warning('DAM asset finalisation failed.', [
                 'asset'   => $this->assetId,
@@ -90,6 +103,22 @@ class ProcessAssetUpload implements ShouldQueue
             ]);
 
             $this->settleBatch($batch, $tracker, failed: true, error: $e->getMessage());
+        }
+    }
+
+    protected function flagsAiTaggingPending(): bool
+    {
+        return $this->autoTagEligible || $this->tagBatchId !== null;
+    }
+
+    /**
+     * Only a flag this job raised is cleared, so a tagging job queued for the same
+     * asset from elsewhere keeps the edit page polling.
+     */
+    protected function releaseAiTaggingPending(AssetAutoTaggingService $taggingService): void
+    {
+        if ($this->flagsAiTaggingPending()) {
+            $taggingService->clearPending($this->assetId);
         }
     }
 

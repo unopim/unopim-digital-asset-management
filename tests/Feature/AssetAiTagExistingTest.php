@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Webkul\AiAgent\Http\Client\AiApiClient;
@@ -11,6 +13,7 @@ use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
 use Webkul\DAM\Models\UploadBatch;
 use Webkul\DAM\Models\UploadTracker;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\AbstractJob;
 use Webkul\DataTransfer\Models\JobTrack;
 use Webkul\MagicAI\Models\MagicAIPlatform;
@@ -164,6 +167,58 @@ it('forbids users who cannot update assets and create tags', function () {
         ->assertForbidden();
 
     Queue::assertNotPushed(TagAssetWithAi::class);
+});
+
+it('checks directory access for the whole selection with a single lookup', function () {
+    Queue::fake();
+
+    $admin = $this->loginWithPermissions('custom', ['dam', 'dam.asset', 'dam.asset.update', 'dam.tags', 'dam.tags.create']);
+
+    $granted = Directory::factory()->create(['name' => 'AiTagGranted']);
+    $hidden = Directory::factory()->create(['name' => 'AiTagHidden']);
+
+    DB::table('dam_directory_role')->insert([
+        'directory_id' => $granted->id,
+        'role_id'      => $admin->role_id,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+
+    DB::table('dam_role_settings')->updateOrInsert(
+        ['role_id' => $admin->role_id],
+        ['all_directories' => false, 'inherit_children' => false, 'created_at' => now(), 'updated_at' => now()]
+    );
+
+    app(DirectoryPermissionService::class)->flush();
+
+    $visible = collect(range(1, 5))->map(function () use ($granted) {
+        $asset = existingAsset();
+        $asset->directories()->attach($granted->id);
+
+        return $asset;
+    });
+
+    $blocked = existingAsset();
+    $blocked->directories()->attach($hidden->id);
+
+    $lookups = 0;
+
+    DB::listen(function (QueryExecuted $query) use (&$lookups) {
+        if (str_contains($query->sql, 'dam_asset_directory')) {
+            $lookups++;
+        }
+    });
+
+    $this->postJson(route('admin.dam.assets.mass_ai_tag'), [
+        'indices' => [...$visible->pluck('id')->all(), $blocked->id],
+    ])
+        ->assertOk()
+        ->assertJsonPath('queued', 5)
+        ->assertJsonPath('skipped', 1);
+
+    expect($lookups)->toBe(1);
+
+    Queue::assertPushed(TagAssetWithAi::class, 5);
 });
 
 it('offers the AI tagging mass action on the asset grid only while AI tagging is available', function () {

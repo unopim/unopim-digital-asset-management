@@ -47,6 +47,35 @@ trait AssetAccessControl
         }
     }
 
+    /**
+     * Narrows $assetIds to the assets whose directory the current user may access,
+     * resolving every directory in one query instead of one lookup per asset.
+     *
+     * @param  array<int, int>  $assetIds
+     * @return array<int, int>
+     */
+    protected function damAccessibleAssetIds(array $assetIds): array
+    {
+        try {
+            $service = $this->damPermissionService();
+
+            if ($service->bypass() || $assetIds === []) {
+                return $assetIds;
+            }
+
+            $directoryIds = DB::table('dam_asset_directory')
+                ->whereIn('asset_id', $assetIds)
+                ->pluck('directory_id', 'asset_id');
+
+            return array_values(array_filter(
+                $assetIds,
+                fn (int $assetId): bool => isset($directoryIds[$assetId]) && $service->canAccess((int) $directoryIds[$assetId]),
+            ));
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
     protected function damAuthorizeAsset(int $assetId): void
     {
         if (! $this->damCanAccessAsset($assetId)) {

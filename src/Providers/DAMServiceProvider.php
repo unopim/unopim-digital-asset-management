@@ -23,6 +23,8 @@ use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
+use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
+use Webkul\DAM\Helpers\Importers\Product\MeasurementAwareImporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Models\DamConfiguration;
@@ -194,5 +196,26 @@ class DAMServiceProvider extends ServiceProvider
         $this->commands([
             MoveDamAssetsToS3::class,
         ]);
+
+        $this->bindMeasurementAwareProductHelpers();
+    }
+
+    /**
+     * UnoPim 3.0.x's Measurement package binds the core product exporter and importer
+     * in its own register(), overriding $bindings, so DAM re-binds them once every
+     * provider has registered. The guard is on the Measurement parent classes, which
+     * later cores no longer ship.
+     */
+    protected function bindMeasurementAwareProductHelpers(): void
+    {
+        $this->app->booted(function (): void {
+            if (class_exists('Webkul\\Measurement\\Helpers\\Exporters\\ProductExporter')) {
+                $this->app->bind(Exporter::class, MeasurementAwareExporter::class);
+            }
+
+            if (class_exists('Webkul\\Measurement\\Helpers\\Importers\\Product\\Importer')) {
+                $this->app->bind(Importer::class, MeasurementAwareImporter::class);
+            }
+        });
     }
 }

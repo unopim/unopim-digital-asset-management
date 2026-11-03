@@ -629,6 +629,7 @@ app.component('v-dam-tab', {
                     try {
                         const { data } = await this.$axios.post('{{ route("admin.dam.assets.mass_ai_tag") }}', { indices: assetIds });
                         this.$emitter.emit('add-flash', { type: 'success', message: data.message });
+                        this.clearSelection();
                     } catch (e) {
                         this.$emitter.emit('add-flash', {
                             type: 'warning',

@@ -33,9 +33,8 @@ trait QueuesAiTagging
 
         $assetIds = array_values(array_unique(array_map(intval(...), $assetIds)));
 
-        $assets = Asset::whereIn('id', $assetIds)
-            ->get(['id', 'file_type'])
-            ->filter(fn (Asset $asset) => $this->damCanAccessAsset($asset->id));
+        $assets = Asset::whereIn('id', $this->damAccessibleAssetIds($assetIds))
+            ->get(['id', 'file_type']);
 
         $queued = resolve(AiTaggingDispatcher::class)->dispatch($assets, $userId);
 

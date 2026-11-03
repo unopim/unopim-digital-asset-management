@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Webkul\AiAgent\Http\Client\AiApiClient;
@@ -9,6 +11,7 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Services\AiTaggingJobTrackerService;
 use Webkul\DAM\Services\AssetAutoTaggingService;
+use Webkul\DAM\Services\MetadataExtractionService;
 use Webkul\MagicAI\Models\MagicAIPlatform;
 
 beforeEach(function () {
@@ -113,4 +116,75 @@ it('binds the tag options reactively so newly created AI tags can render', funct
     $this->get(route('admin.dam.assets.edit', $asset->id))
         ->assertOk()
         ->assertSee(':options="tagOptions"', false);
+});
+
+function aiTaggingPendingFlag(int $assetId): bool
+{
+    return Cache::has("dam.ai_tagging.pending.{$assetId}");
+}
+
+function runAssetFinalisation(ProcessAssetUpload $job): void
+{
+    $job->handle(
+        app(MetadataExtractionService::class),
+        app(AssetAutoTaggingService::class),
+        app(AiTaggingJobTrackerService::class),
+    );
+}
+
+it('clears the pending flag when the finalised asset no longer exists', function () {
+    $job = new ProcessAssetUpload(987654, autoTagEligible: true);
+
+    expect(aiTaggingPendingFlag(987654))->toBeTrue();
+
+    runAssetFinalisation($job);
+
+    expect(aiTaggingPendingFlag(987654))->toBeFalse();
+});
+
+it('clears the pending flag when finalisation queues no tagging job', function () {
+    Queue::fake();
+
+    $disk = Directory::getAssetDisk();
+    $path = 'assets/Root/finalise-'.uniqid().'.png';
+    Storage::disk($disk)->put($path, UploadedFile::fake()->image('finalise.png', 10, 10)->getContent());
+
+    $asset = Asset::factory()->create([
+        'file_type' => 'image',
+        'path'      => $path,
+        'mime_type' => 'image/png',
+        'extension' => 'png',
+    ]);
+
+    $job = new ProcessAssetUpload($asset->id, autoTagEligible: true);
+
+    config(['dam.ai_tagging.enabled' => false]);
+
+    runAssetFinalisation($job);
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeFalse();
+
+    Queue::assertNotPushed(TagAssetWithAi::class);
+});
+
+it('clears the pending flag when upload finalisation fails permanently', function () {
+    $asset = liveRefreshImageAsset();
+
+    $job = new ProcessAssetUpload($asset->id, autoTagEligible: true);
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeTrue();
+
+    $job->failed(new RuntimeException('worker killed'));
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeFalse();
+});
+
+it('leaves a pending flag owned by another tagging job untouched', function () {
+    $asset = liveRefreshImageAsset();
+
+    app(AssetAutoTaggingService::class)->markPending($asset->id);
+
+    (new ProcessAssetUpload($asset->id))->failed(new RuntimeException('worker killed'));
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeTrue();
 });
