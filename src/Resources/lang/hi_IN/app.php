@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'एसेट बनाया गया',
+            'updated' => 'एसेट अपडेट किया गया',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM अवलोकन',
+        'asset-analytics'   => 'एसेट विश्लेषण',
+        'total-assets'      => 'कुल एसेट',
+        'storage-used'      => 'उपयोग किया गया संग्रहण',
+        'total-directories' => 'निर्देशिकाएँ',
+        'total-tags'        => 'टैग',
+        'assets-by-type'    => 'प्रकार अनुसार एसेट',
+        'recent-uploads'    => 'हाल के अपलोड',
+        'no-assets'         => 'अभी तक कोई एसेट नहीं।',
+        'types' => [
+            'image'    => 'छवियाँ',
+            'video'    => 'वीडियो',
+            'audio'    => 'ऑडियो',
+            'document' => 'दस्तावेज़',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'पंक्ति :row (:identifier), कॉलम ":column": पथ ":path" पर कोई एसेट नहीं मिला। एसेट को छोड़ दिया गया है और पंक्ति का बाकी हिस्सा फिर भी इम्पोर्ट होगा।',
             'asset-tree-misnamed'        => 'आर्काइव में "assets" के बजाय ":name" नाम का फ़ोल्डर है, इसलिए इसकी कोई भी एसेट आयात नहीं की जा सकी। इसका नाम बदलकर "assets" करें और इसके नीचे के फ़ोल्डरों को अपनी डेटा फ़ाइल के पथों से मेल खाता रखें, उदाहरण के लिए "assets/Root/Seed/Tech Sheets/Cotton/"। macOS फ़ोल्डर नाम में टाइप किए गए "/" को ":" के रूप में सहेजता है, जो इसका सामान्य कारण है।',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'प्रत्येक पंक्ति के लिए "directory" कॉलम आवश्यक है — गंतव्य फ़ोल्डर ट्री, उदा. "Root/Brand/Summer"।',
+                        'asset-already-exists'         => 'पंक्ति :row छोड़ी गई — ":path" पर पहले से एक एसेट मौजूद है और टकराव रणनीति "skip" है। इसे बदलने के लिए "overwrite" या "update metadata" चुनें।',
+                        'asset-already-exists-summary' => 'बैच #:batch — मिलान करने वाला एसेट पहले से मौजूद होने के कारण :count पंक्ति(याँ) छोड़ी गईं।',
+                        'media-source-not-found'       => 'कोई स्रोत फ़ाइल नहीं मिली: "path" में एक सार्वजनिक https लिंक डालें, या छवि निर्देशिका में "path" से मेल खाती फ़ाइल रखें।',
+                        'url-invalid'                  => '"path" में दिया गया https लिंक वैध http या https पता नहीं है।',
+                        'url-unreachable'              => '"path" में दिया गया https लिंक डाउनलोड नहीं किया जा सका।',
+                        'url-blocked'                  => '"path" में दिया गया https लिंक एक अवरुद्ध होस्ट पर हल होता है।',
+                        'file-too-large'               => 'मीडिया फ़ाइल अनुमत अधिकतम आकार से अधिक है।',
+                        'forbidden-file'               => 'इस मीडिया फ़ाइल प्रकार की अनुमति नहीं है।',
+                        'import-failed'                => 'एक अप्रत्याशित त्रुटि के कारण पंक्ति आयात नहीं की जा सकी।',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'नमूना ZIP (CSV + मीडिया फ़ाइलें)',
+                    'media'  => 'नमूना ZIP (केवल मीडिया फ़ाइलें)',
+                ],
+                'options' => [
+                    'title' => 'एसेट आयात विकल्प',
+                    'conflict' => [
+                        'label'           => 'जब पथ पर पहले से कोई एसेट मौजूद हो',
+                        'skip'            => 'पंक्ति छोड़ें',
+                        'overwrite'       => 'फ़ाइल और मेटाडेटा अधिलेखित करें',
+                        'update-metadata' => 'केवल मेटाडेटा अपडेट करें',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'आयातित छवियों को स्वतः टैग करें',
+                        'hint'  => 'प्रत्येक आयातित छवि पर AI स्वतः-टैगिंग चलाएँ (एक कॉन्फ़िगर किया गया Magic AI प्लेटफ़ॉर्म आवश्यक है)।',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'एसेट फ़िल्टर',
+                ],
+            ],
+        ],
+
     ],
 ];

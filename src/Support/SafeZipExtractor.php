@@ -2,17 +2,6 @@
 
 namespace Webkul\DAM\Support;
 
-/**
- * Hardened ZIP extraction for the asset bundle an import job may receive.
- *
- * Archive-level limits (entry count, total size, compression ratio) guard against
- * zip bombs; per-entry handling guards against zip-slip and oversized entries. What
- * counts as an acceptable file is left to the caller, so bundle ingestion can apply
- * the same file-type policy a UI upload does.
- *
- * This lives in the DAM rather than leaning on a core equivalent so the package runs
- * against a released UnoPim, where no such class exists.
- */
 class SafeZipExtractor
 {
     protected int $maxEntrySize;
@@ -36,8 +25,6 @@ class SafeZipExtractor
     }
 
     /**
-     * Inspect the archive before extracting anything.
-     *
      * @return array{key: string, replace: array<string, mixed>}|null null when the archive is acceptable
      */
     public function rejectionReason(\ZipArchive $zip): ?array
@@ -85,12 +72,6 @@ class SafeZipExtractor
     }
 
     /**
-     * Extract every acceptable entry beneath $extractPath.
-     *
-     * Entries are streamed to a temporary file rather than buffered, so a large asset
-     * costs bounded memory. $accepts receives the staged file and decides whether it
-     * is kept; returning false discards it and extraction continues.
-     *
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
      * @return list<string> relative paths actually extracted
      */
@@ -155,9 +136,6 @@ class SafeZipExtractor
         return $extracted;
     }
 
-    /**
-     * Reject directories and any name that tries to climb out of the extraction root.
-     */
     protected function normaliseEntryName(string|false $entryName): ?string
     {
         if ($entryName === false || str_ends_with($entryName, '/')) {
@@ -173,10 +151,6 @@ class SafeZipExtractor
         return $relativePath;
     }
 
-    /**
-     * Create the entry's directory and confirm it resolves inside the extraction root,
-     * which catches traversal achieved through symlinks rather than through the name.
-     */
     protected function prepareTargetDirectory(string $targetPath, string $realBase): bool
     {
         $targetDir = dirname($targetPath);
@@ -191,10 +165,6 @@ class SafeZipExtractor
             && str_starts_with($realDir.DIRECTORY_SEPARATOR, $realBase.DIRECTORY_SEPARATOR);
     }
 
-    /**
-     * Copy one entry to a sibling temp file, enforcing the per-entry byte cap while
-     * streaming so a lying header cannot exhaust memory.
-     */
     protected function stageEntry(\ZipArchive $zip, string $relativePath, string $targetPath): ?string
     {
         $stream = $zip->getStream($relativePath);

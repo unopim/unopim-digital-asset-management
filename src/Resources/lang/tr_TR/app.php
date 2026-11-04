@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Varlık oluşturuldu',
+            'updated' => 'Varlık güncellendi',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM Genel Bakış',
+        'asset-analytics'   => 'Varlık Analizi',
+        'total-assets'      => 'Toplam Varlık',
+        'storage-used'      => 'Kullanılan Depolama',
+        'total-directories' => 'Dizinler',
+        'total-tags'        => 'Etiketler',
+        'assets-by-type'    => 'Türe Göre Varlıklar',
+        'recent-uploads'    => 'Son Yüklemeler',
+        'no-assets'         => 'Henüz varlık yok.',
+        'types' => [
+            'image'    => 'Görseller',
+            'video'    => 'Videolar',
+            'audio'    => 'Ses',
+            'document' => 'Belgeler',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Satır :row (:identifier), sütun ":column": ":path" yolunda varlık bulunamadı. Varlık atlandı, satırın geri kalanı yine de içe aktarılacak.',
             'asset-tree-misnamed'        => 'Arşiv, "assets" yerine ":name" adlı bir klasör içeriyor; bu nedenle varlıklarından hiçbiri içe aktarılamadı. Klasörü "assets" olarak yeniden adlandırın ve altındaki klasörlerin veri dosyanızdaki yollarla eşleşmesini sağlayın, örneğin "assets/Root/Seed/Tech Sheets/Cotton/". macOS, klasör adına yazılan "/" karakterini ":" olarak kaydeder; olağan neden budur.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => '"directory" sütunu her satır için zorunludur — hedef klasör ağacı, örn. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Satır :row atlandı — ":path" konumunda zaten bir varlık var ve çakışma stratejisi "skip". Değiştirmek için "overwrite" veya "update metadata" seçin.',
+                        'asset-already-exists-summary' => 'Toplu iş #:batch — eşleşen bir varlık zaten bulunduğundan :count satır atlandı.',
+                        'media-source-not-found'       => 'Kaynak dosya bulunamadı: "path" alanına herkese açık bir https bağlantısı veya görseller dizininde "path" ile eşleşen bir dosya koyun.',
+                        'url-invalid'                  => '"path" içindeki https bağlantısı geçerli bir http veya https adresi değil.',
+                        'url-unreachable'              => '"path" içindeki https bağlantısı indirilemedi.',
+                        'url-blocked'                  => '"path" içindeki https bağlantısı engellenmiş bir ana bilgisayara çözümleniyor.',
+                        'file-too-large'               => 'Medya dosyası izin verilen en büyük boyutu aşıyor.',
+                        'forbidden-file'               => 'Medya dosyası türüne izin verilmiyor.',
+                        'import-failed'                => 'Beklenmeyen bir hata nedeniyle satır içe aktarılamadı.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Örnek ZIP (CSV + medya dosyaları)',
+                    'media'  => 'Örnek ZIP (yalnızca medya dosyaları)',
+                ],
+                'options' => [
+                    'title' => 'Varlık İçe Aktarma Seçenekleri',
+                    'conflict' => [
+                        'label'           => 'Yolda zaten bir varlık varsa',
+                        'skip'            => 'Satırı atla',
+                        'overwrite'       => 'Dosyanın ve meta verilerin üzerine yaz',
+                        'update-metadata' => 'Yalnızca meta verileri güncelle',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'İçe aktarılan görselleri otomatik etiketle',
+                        'hint'  => 'İçe aktarılan her görsele yapay zekâ otomatik etiketlemesi uygula (yapılandırılmış bir Magic AI platformu gerektirir).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Varlık Filtreleri',
+                ],
+            ],
+        ],
+
     ],
 ];

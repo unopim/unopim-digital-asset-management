@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Нөөц үүсгэгдлээ',
+            'updated' => 'Нөөц шинэчлэгдлээ',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM тойм',
+        'asset-analytics'   => 'Нөөцийн шинжилгээ',
+        'total-assets'      => 'Нийт нөөц',
+        'storage-used'      => 'Ашигласан сан',
+        'total-directories' => 'Санууд',
+        'total-tags'        => 'Шошго',
+        'assets-by-type'    => 'Төрлөөр нь нөөц',
+        'recent-uploads'    => 'Сүүлийн байршуулалт',
+        'no-assets'         => 'Одоогоор нөөц алга.',
+        'types' => [
+            'image'    => 'Зураг',
+            'video'    => 'Видео',
+            'audio'    => 'Аудио',
+            'document' => 'Баримт бичиг',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Мөр :row (:identifier), багана ":column": ":path" замд хөрөнгө олдсонгүй. Хөрөнгийг алгассан бөгөөд мөрийн бусад өгөгдөл импортлогдсоор байна.',
             'asset-tree-misnamed'        => 'Архивт "assets" гэхийн оронд ":name" нэртэй хавтас байгаа тул түүний нэг ч ассетыг импортлож чадсангүй. Нэрийг нь "assets" болгож, доорх хавтаснуудыг өгөгдлийн файл дахь замуудтай тохируулна уу, жишээ нь "assets/Root/Seed/Tech Sheets/Cotton/". macOS хавтасны нэрэнд бичсэн "/" тэмдгийг ":" болгож хадгалдаг бөгөөд энэ нь ердийн шалтгаан юм.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => '"directory" багана мөр бүрд заавал байх ёстой — очих хавтасны мод, жишээ нь "Root/Brand/Summer".',
+                        'asset-already-exists'         => ':row мөрийг алгаслаа — ":path" дээр нөөц аль хэдийн байгаа бөгөөд зөрчлийн стратеги нь "skip" байна. Үүнийг өөрчлөхийн тулд "overwrite" эсвэл "update metadata"-г сонгоно уу.',
+                        'asset-already-exists-summary' => 'Багц #:batch — тохирох нөөц аль хэдийн байгаа тул :count мөрийг алгаслаа.',
+                        'media-source-not-found'       => 'Эх файл олдсонгүй: "path"-д нийтийн https холбоос, эсвэл зургийн санд "path"-тай тохирох файл байрлуулна уу.',
+                        'url-invalid'                  => '"path" доторх https холбоос нь хүчинтэй http эсвэл https хаяг биш байна.',
+                        'url-unreachable'              => '"path" доторх https холбоосыг татаж чадсангүй.',
+                        'url-blocked'                  => '"path" доторх https холбоос хориглосон хост руу чиглэж байна.',
+                        'file-too-large'               => 'Медиа файл зөвшөөрөгдсөн дээд хэмжээнээс хэтэрсэн байна.',
+                        'forbidden-file'               => 'Энэ медиа файлын төрлийг зөвшөөрөөгүй.',
+                        'import-failed'                => 'Гэнэтийн алдааны улмаас мөрийг импортлож чадсангүй.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Жишээ ZIP (CSV + медиа файл)',
+                    'media'  => 'Жишээ ZIP (зөвхөн медиа файл)',
+                ],
+                'options' => [
+                    'title' => 'Нөөц импортын сонголт',
+                    'conflict' => [
+                        'label'           => 'Замд нөөц аль хэдийн байгаа үед',
+                        'skip'            => 'Мөрийг алгасах',
+                        'overwrite'       => 'Файл болон мета өгөгдлийг дарж бичих',
+                        'update-metadata' => 'Зөвхөн мета өгөгдлийг шинэчлэх',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Импортолсон зургийг автоматаар шошголох',
+                        'hint'  => 'Импортолсон зураг бүрд AI автомат шошгололт ажиллуулна (тохируулсан Magic AI платформ шаардлагатай).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Нөөцийн шүүлтүүр',
+                ],
+            ],
+        ],
+
     ],
 ];

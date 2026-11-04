@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Activ creat',
+            'updated' => 'Activ actualizat',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Prezentare generală DAM',
+        'asset-analytics'   => 'Analiză active',
+        'total-assets'      => 'Total active',
+        'storage-used'      => 'Spațiu utilizat',
+        'total-directories' => 'Directoare',
+        'total-tags'        => 'Etichete',
+        'assets-by-type'    => 'Active după tip',
+        'recent-uploads'    => 'Încărcări recente',
+        'no-assets'         => 'Încă nu există active.',
+        'types' => [
+            'image'    => 'Imagini',
+            'video'    => 'Videoclipuri',
+            'audio'    => 'Audio',
+            'document' => 'Documente',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Rândul :row (:identifier), coloana ":column": nu a fost găsit niciun activ la calea ":path". Activul a fost omis, iar restul rândului va fi importat în continuare.',
             'asset-tree-misnamed'        => 'Arhiva conține un folder numit ":name" în loc de "assets", așa că niciunul dintre activele sale nu a putut fi importat. Redenumiți-l în "assets" și păstrați folderele de sub el potrivite cu căile din fișierul de date, de exemplu "assets/Root/Seed/Tech Sheets/Cotton/". macOS salvează un "/" tastat în numele unui folder ca ":", ceea ce este cauza obișnuită.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Coloana "directory" este obligatorie pentru fiecare rând — arborele folderului de destinație, de ex. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Rândul :row a fost omis — există deja un activ la ":path", iar strategia de conflict este "skip". Alegeți "overwrite" sau "update metadata" pentru a o modifica.',
+                        'asset-already-exists-summary' => 'Lotul #:batch — :count rând(uri) omise deoarece există deja un activ corespunzător.',
+                        'media-source-not-found'       => 'Niciun fișier sursă găsit: puneți un link https public în "path" sau un fișier care corespunde cu "path" în directorul de imagini.',
+                        'url-invalid'                  => 'Linkul https din "path" nu este o adresă http sau https validă.',
+                        'url-unreachable'              => 'Linkul https din "path" nu a putut fi descărcat.',
+                        'url-blocked'                  => 'Linkul https din "path" indică o gazdă blocată.',
+                        'file-too-large'               => 'Fișierul media depășește dimensiunea maximă permisă.',
+                        'forbidden-file'               => 'Tipul de fișier media nu este permis.',
+                        'import-failed'                => 'Rândul nu a putut fi importat din cauza unei erori neașteptate.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP exemplu (CSV + fișiere media)',
+                    'media'  => 'ZIP exemplu (doar fișiere media)',
+                ],
+                'options' => [
+                    'title' => 'Opțiuni de import active',
+                    'conflict' => [
+                        'label'           => 'Când există deja un activ la această cale',
+                        'skip'            => 'Omite rândul',
+                        'overwrite'       => 'Suprascrie fișierul și metadatele',
+                        'update-metadata' => 'Actualizează doar metadatele',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Etichetează automat imaginile importate',
+                        'hint'  => 'Rulează etichetarea automată cu IA pe fiecare imagine importată (necesită o platformă Magic AI configurată).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtre active',
+                ],
+            ],
+        ],
+
     ],
 ];

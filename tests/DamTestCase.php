@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 use Webkul\AdminApi\Tests\Traits\ApiHelperTrait;
+use Webkul\DAM\Support\PimIntegration;
 use Webkul\User\Tests\Concerns\UserAssertions;
 
 class DamTestCase extends TestCase
@@ -19,6 +20,8 @@ class DamTestCase extends TestCase
 
     protected function setUp(): void
     {
+        PimIntegration::fake(true);
+
         parent::setUp();
 
         config(['app.url' => self::TEST_ROOT_URL]);
@@ -28,6 +31,13 @@ class DamTestCase extends TestCase
         if (Schema::hasTable('dam_configuration')) {
             DB::table('dam_configuration')->delete();
         }
+    }
+
+    protected function tearDown(): void
+    {
+        PimIntegration::clearFake();
+
+        parent::tearDown();
     }
 
     protected function damResetAssetTables(): void

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Ressource créée',
+            'updated' => 'Ressource mise à jour',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Aperçu du DAM',
+        'asset-analytics'   => 'Analyse des ressources',
+        'total-assets'      => 'Total des ressources',
+        'storage-used'      => 'Stockage utilisé',
+        'total-directories' => 'Répertoires',
+        'total-tags'        => 'Étiquettes',
+        'assets-by-type'    => 'Ressources par type',
+        'recent-uploads'    => 'Téléversements récents',
+        'no-assets'         => 'Aucune ressource pour l’instant.',
+        'types' => [
+            'image'    => 'Images',
+            'video'    => 'Vidéos',
+            'audio'    => 'Audio',
+            'document' => 'Documents',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Ligne :row (:identifier), colonne ":column" : aucun fichier n\'a été trouvé au chemin ":path". Le fichier a été ignoré et le reste de la ligne sera tout de même importé.',
             'asset-tree-misnamed'        => 'L\'archive contient un dossier nommé ":name" au lieu de "assets", aucun de ses actifs n\'a donc pu être importé. Renommez-le en "assets" et gardez les dossiers en dessous conformes aux chemins de votre fichier de données, par exemple "assets/Root/Seed/Tech Sheets/Cotton/". macOS enregistre un "/" saisi dans un nom de dossier sous la forme ":", ce qui est la cause habituelle.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'La colonne "directory" est requise pour chaque ligne — l’arborescence du dossier de destination, par ex. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Ligne :row ignorée — une ressource existe déjà à ":path" et la stratégie de conflit est "skip". Choisissez "overwrite" ou "update metadata" pour la modifier.',
+                        'asset-already-exists-summary' => 'Lot #:batch — :count ligne(s) ignorée(s) car une ressource correspondante existe déjà.',
+                        'media-source-not-found'       => 'Aucun fichier source trouvé : indiquez un lien https public dans "path", ou un fichier correspondant à "path" dans le répertoire des images.',
+                        'url-invalid'                  => 'Le lien https dans "path" n’est pas une adresse http ou https valide.',
+                        'url-unreachable'              => 'Le lien https dans "path" n’a pas pu être téléchargé.',
+                        'url-blocked'                  => 'Le lien https dans "path" pointe vers un hôte bloqué.',
+                        'file-too-large'               => 'Le fichier multimédia dépasse la taille maximale autorisée.',
+                        'forbidden-file'               => 'Le type de fichier multimédia n’est pas autorisé.',
+                        'import-failed'                => 'La ligne n’a pas pu être importée en raison d’une erreur inattendue.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP d’exemple (CSV + fichiers multimédias)',
+                    'media'  => 'ZIP d’exemple (fichiers multimédias uniquement)',
+                ],
+                'options' => [
+                    'title' => 'Options d’import des ressources',
+                    'conflict' => [
+                        'label'           => 'Lorsqu’une ressource existe déjà à ce chemin',
+                        'skip'            => 'Ignorer la ligne',
+                        'overwrite'       => 'Écraser le fichier et les métadonnées',
+                        'update-metadata' => 'Mettre à jour uniquement les métadonnées',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Étiqueter automatiquement les images importées',
+                        'hint'  => 'Exécuter l’étiquetage automatique par IA sur chaque image importée (nécessite une plateforme Magic AI configurée).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtres de ressources',
+                ],
+            ],
+        ],
+
     ],
 ];

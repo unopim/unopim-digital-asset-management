@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Aktiv oprettet',
+            'updated' => 'Aktiv opdateret',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-oversigt',
+        'asset-analytics'   => 'Aktivanalyse',
+        'total-assets'      => 'Aktiver i alt',
+        'storage-used'      => 'Brugt lagerplads',
+        'total-directories' => 'Mapper',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Aktiver efter type',
+        'recent-uploads'    => 'Seneste uploads',
+        'no-assets'         => 'Ingen aktiver endnu.',
+        'types' => [
+            'image'    => 'Billeder',
+            'video'    => 'Videoer',
+            'audio'    => 'Lyd',
+            'document' => 'Dokumenter',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Række :row (:identifier), kolonne ":column": der blev ikke fundet noget aktiv på stien ":path". Aktivet blev sprunget over, og resten af rækken importeres stadig.',
             'asset-tree-misnamed'        => 'Arkivet indeholder en mappe ved navn ":name" i stedet for "assets", så ingen af dets aktiver kunne importeres. Omdøb den til "assets", og sørg for, at mapperne under den svarer til stierne i din datafil, f.eks. "assets/Root/Seed/Tech Sheets/Cotton/". macOS gemmer et "/" skrevet i et mappenavn som ":", hvilket er den sædvanlige årsag.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Kolonnen "directory" er påkrævet for hver række — destinationsmappens træ, f.eks. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Række :row sprunget over — der findes allerede et aktiv på ":path", og konfliktstrategien er "skip". Vælg "overwrite" eller "update metadata" for at ændre det.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count række(r) sprunget over, fordi et matchende aktiv allerede findes.',
+                        'media-source-not-found'       => 'Ingen kildefil fundet: angiv et offentligt https-link i "path", eller en fil der matcher "path" i billedmappen.',
+                        'url-invalid'                  => 'https-linket i "path" er ikke en gyldig http- eller https-adresse.',
+                        'url-unreachable'              => 'https-linket i "path" kunne ikke downloades.',
+                        'url-blocked'                  => 'https-linket i "path" peger på en blokeret vært.',
+                        'file-too-large'               => 'Mediefilen overstiger den maksimalt tilladte størrelse.',
+                        'forbidden-file'               => 'Mediefiltypen er ikke tilladt.',
+                        'import-failed'                => 'Rækken kunne ikke importeres på grund af en uventet fejl.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Eksempel-ZIP (CSV + mediefiler)',
+                    'media'  => 'Eksempel-ZIP (kun mediefiler)',
+                ],
+                'options' => [
+                    'title' => 'Indstillinger for aktivimport',
+                    'conflict' => [
+                        'label'           => 'Når der allerede findes et aktiv på stien',
+                        'skip'            => 'Spring rækken over',
+                        'overwrite'       => 'Overskriv filen og metadata',
+                        'update-metadata' => 'Opdater kun metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tag automatisk importerede billeder',
+                        'hint'  => 'Kør AI-automatisk tagging på hvert importeret billede (kræver en konfigureret Magic AI-platform).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Aktivfiltre',
+                ],
+            ],
+        ],
+
     ],
 ];

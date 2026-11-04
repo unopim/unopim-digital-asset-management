@@ -235,9 +235,6 @@ it('pre-creates the job_track_batches row at dispatch time, so the live view tot
         app(AiTaggingJobTrackerService::class),
     );
 
-    // TagAssetWithAi was only queued (Queue::fake), never actually ran — yet the
-    // batch row for it must already exist, since the live view's "total" is a
-    // pure count of job_track_batches rows for this job_track_id.
     $jobTrack = JobTrack::find($tracker->fresh()->job_track_id);
     expect($jobTrack)->not->toBeNull();
     expect(JobTrackBatch::where('job_track_id', $jobTrack->id)->count())->toBe(1);

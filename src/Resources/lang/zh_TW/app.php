@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => '資產已建立',
+            'updated' => '資產已更新',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM 概覽',
+        'asset-analytics'   => '資產分析',
+        'total-assets'      => '資產總數',
+        'storage-used'      => '已用儲存空間',
+        'total-directories' => '目錄',
+        'total-tags'        => '標籤',
+        'assets-by-type'    => '依類型分類的資產',
+        'recent-uploads'    => '最近上傳',
+        'no-assets'         => '尚無資產。',
+        'types' => [
+            'image'    => '圖片',
+            'video'    => '影片',
+            'audio'    => '音訊',
+            'document' => '文件',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => '第 :row 列（:identifier），欄位「:column」：在路徑「:path」下找不到資產。已略過此資產，該列的其餘資料仍會繼續匯入。',
             'asset-tree-misnamed'        => '壓縮檔中包含名為「:name」的資料夾而非「assets」，因此無法匯入其中的任何資產。請將其重新命名為「assets」，並讓其下的資料夾與資料檔中的路徑一致，例如「assets/Root/Seed/Tech Sheets/Cotton/」。macOS 會將資料夾名稱中輸入的「/」儲存為「:」，這是常見原因。',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => '每列都必須填寫 "directory" 欄 — 目標資料夾樹狀結構，例如 "Root/Brand/Summer"。',
+                        'asset-already-exists'         => '已略過第 :row 列 — ":path" 已存在資產，且衝突策略為 "skip"。請選擇 "overwrite" 或 "update metadata" 以變更。',
+                        'asset-already-exists-summary' => '批次 #:batch — 因已存在相符的資產，略過了 :count 列。',
+                        'media-source-not-found'       => '找不到來源檔案：請在 "path" 中填入公開的 https 連結，或在圖片目錄中放置與 "path" 相符的檔案。',
+                        'url-invalid'                  => '"path" 中的 https 連結不是有效的 http 或 https 位址。',
+                        'url-unreachable'              => '無法下載 "path" 中的 https 連結。',
+                        'url-blocked'                  => '"path" 中的 https 連結解析到被封鎖的主機。',
+                        'file-too-large'               => '媒體檔案超過允許的最大大小。',
+                        'forbidden-file'               => '不允許該媒體檔案類型。',
+                        'import-failed'                => '由於非預期的錯誤，無法匯入該列。',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => '範例 ZIP（CSV + 媒體檔案）',
+                    'media'  => '範例 ZIP（僅媒體檔案）',
+                ],
+                'options' => [
+                    'title' => '資產匯入選項',
+                    'conflict' => [
+                        'label'           => '當該路徑已存在資產時',
+                        'skip'            => '略過該列',
+                        'overwrite'       => '覆寫檔案與中繼資料',
+                        'update-metadata' => '僅更新中繼資料',
+                    ],
+                    'auto-tag' => [
+                        'label' => '自動為匯入的圖片加上標籤',
+                        'hint'  => '對每張匯入的圖片執行 AI 自動標籤（需要已設定的 Magic AI 平台）。',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => '資產篩選器',
+                ],
+            ],
+        ],
+
     ],
 ];

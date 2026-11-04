@@ -152,16 +152,6 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
-    /**
-     * A tagging batch is only created once tagging is actually queued (not upfront
-     * with the upload batch), so total_files stays accurate for files that never
-     * become tagging-eligible. It joins the same tracker session as the upload.
-     *
-     * The job_track_batches row is created here too — at dispatch time, not when
-     * the (rate-limited, possibly much later) TagAssetWithAi job actually runs —
-     * so the live tracker view's total reflects every queued image immediately
-     * instead of growing one row at a time as each tagging job starts.
-     */
     protected function dispatchTaggingJob(Asset $asset, string $disk, ?UploadTracker $tracker, AiTaggingJobTrackerService $jobTracker): void
     {
         $tagBatchId = null;

@@ -1,24 +1,24 @@
 <?php
 
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
-use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Support\AssetBundleReader;
+use Webkul\DAM\Support\PreparedBundle;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
 
-/*
- * Reading a bundle has to reproduce the source DAM tree without duplicating it: a path
- * already held by an asset is that asset's, so a re-run carrying a changed binary
- * replaces the file behind the row it already has rather than adding a second one.
- */
+function damBundlePng(): string
+{
+    return base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC'
+    );
+}
 
 beforeEach(function (): void {
     $this->damResetAssetTables();
 
     Storage::fake('private');
-    Bus::fake();
+    Storage::fake('public');
 
     $this->bundle = function (array $entries, int $trackId = 41): object {
         $archive = Storage::disk('private')->path('imports/bundle.zip');
@@ -45,125 +45,71 @@ beforeEach(function (): void {
     };
 });
 
-it('returns the archive data file and recreates the asset tree', function () {
+it('synthesizes a manifest with a directory column when the bundle has none', function () {
+    $track = ($this->bundle)([
+        'assets/Root/Marketing/hero.png' => damBundlePng(),
+        'assets/Root/Docs/spec.png'      => damBundlePng(),
+    ], 41);
+
+    $prepared = app(AssetBundleReader::class)->prepare($track);
+
+    expect($prepared)->toBeInstanceOf(PreparedBundle::class)
+        ->and($prepared->dataFile)->toBe('imports/bundles/41/'.AssetBundleReader::GENERATED_DATA_FILE);
+
+    $lines = array_values(array_filter(explode("\n", trim(Storage::disk('private')->get($prepared->dataFile))), 'strlen'));
+
+    expect($lines[0])->toBe('path,directory,file_name');
+
+    $byPath = collect(array_slice($lines, 1))->map(fn ($line) => str_getcsv($line))->keyBy(0);
+
+    expect($byPath->has('assets/Root/Marketing/hero.png'))->toBeTrue()
+        ->and($byPath['assets/Root/Marketing/hero.png'][1])->toBe('Root/Marketing')
+        ->and($byPath['assets/Root/Marketing/hero.png'][2])->toBe('hero.png')
+        ->and($byPath['assets/Root/Docs/spec.png'][1])->toBe('Root/Docs');
+
+    expect(Asset::count())->toBe(0)
+        ->and(Directory::count())->toBe(0);
+});
+
+it('returns the bundled manifest and stages the media when a data file is present', function () {
     $track = ($this->bundle)([
         'products.csv'                   => "sku,name\nsku-1,One",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
-    ]);
+        'assets/Root/Marketing/hero.png' => damBundlePng(),
+    ], 42);
 
-    $dataFile = app(AssetBundleReader::class)->prepare($track)->dataFile;
+    $prepared = app(AssetBundleReader::class)->prepare($track);
 
-    expect($dataFile)->toBe('imports/bundles/41/products.csv');
-
-    $root = Directory::where('name', 'Root')->whereNull('parent_id')->first();
-
-    expect($root)->not->toBeNull()
-        ->and(Directory::where('name', 'Marketing')->where('parent_id', $root->id)->exists())->toBeTrue()
-        ->and(Directory::where('name', 'Docs')->where('parent_id', $root->id)->exists())->toBeTrue();
-
-    $hero = Asset::where('path', 'assets/Root/Marketing/hero.jpg')->first();
-
-    expect($hero)->not->toBeNull()
-        ->and($hero->file_name)->toBe('hero.jpg')
-        ->and($hero->extension)->toBe('jpg')
-        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
+    expect($prepared->dataFile)->toBe('imports/bundles/42/products.csv')
+        ->and($prepared->mediaDirectory)->toBe(AssetBundleReader::MEDIA_DIRECTORY_PREFIX.'42')
+        ->and(Storage::disk('public')->exists($prepared->mediaDirectory.'/assets/Root/Marketing/hero.png'))->toBeTrue();
 });
 
-it('stores a file type the assets table accepts', function () {
-    ($this->bundle)([
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
-        'assets/Root/Docs/rates.xlsx'    => 'sheet-bytes',
-        'assets/Root/Clips/promo.mp4'    => 'clip-bytes',
-    ]);
+it('omits a media entry that has no sub-directory from the synthesized manifest', function () {
+    $track = ($this->bundle)([
+        'assets/top.png'                 => damBundlePng(),
+        'assets/Root/Marketing/hero.png' => damBundlePng(),
+    ], 43);
 
-    app(AssetBundleReader::class)->prepare(($this->bundle)([
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
-        'assets/Root/Docs/rates.xlsx'    => 'sheet-bytes',
-        'assets/Root/Clips/promo.mp4'    => 'clip-bytes',
-    ], 42));
+    $prepared = app(AssetBundleReader::class)->prepare($track);
 
-    expect(Asset::pluck('file_type', 'file_name')->sortKeys()->all())->toBe([
-        'hero.jpg'   => 'image',
-        'promo.mp4'  => 'video',
-        'rates.xlsx' => 'document',
-        'spec.pdf'   => 'document',
-    ]);
-});
+    $paths = collect(array_slice(array_filter(explode("\n", trim(Storage::disk('private')->get($prepared->dataFile))), 'strlen'), 1))
+        ->map(fn ($line) => str_getcsv($line)[0]);
 
-it('queues metadata extraction for each ingested asset', function () {
-    ($this->bundle)([
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-    ]);
-
-    app(AssetBundleReader::class)->prepare(($this->bundle)([
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-    ]));
-
-    Bus::assertDispatched(ProcessAssetUpload::class);
-});
-
-it('reuses the row and replaces the binary of an asset already present at the same path', function () {
-    $entries = [
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-    ];
-
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
-
-    $firstId = Asset::where('path', 'assets/Root/Marketing/hero.jpg')->value('id');
-
-    Storage::disk('private')->put('assets/Root/Marketing/hero.jpg', 'edited-in-the-explorer');
-
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
-
-    expect(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->count())->toBe(1)
-        ->and(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->value('id'))->toBe($firstId)
-        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
-});
-
-it('leaves an asset alone when the bundle carries the binary it already holds', function () {
-    $entries = [
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-    ];
-
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
-
-    Bus::assertDispatchedTimes(ProcessAssetUpload::class, 1);
+    expect($paths)->toContain('assets/Root/Marketing/hero.png')
+        ->and($paths)->not->toContain('assets/top.png');
 });
 
 it('reads the stored digest with the algorithm the local comparison is made in', function () {
-    Storage::disk('private')->put('assets/Root/Marketing/hero.jpg', 'hero-bytes');
+    Storage::disk('private')->put('assets/Root/Marketing/hero.png', 'hero-bytes');
 
-    $stored = Storage::disk('private')->checksum('assets/Root/Marketing/hero.jpg', ['checksum_algo' => 'md5']);
+    $stored = Storage::disk('private')->checksum('assets/Root/Marketing/hero.png', ['checksum_algo' => 'md5']);
 
     expect($stored)->toBe(md5('hero-bytes'));
 });
 
-it('does not duplicate directories across repeated imports', function () {
-    $entries = [
-        'products.csv'                   => "sku\nsku-1",
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
-    ];
-
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
-    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
-
-    expect(Directory::where('name', 'Root')->count())->toBe(1)
-        ->and(Directory::where('name', 'Marketing')->count())->toBe(1);
-});
-
-it('fails when the archive carries no data file', function () {
+it('throws when the archive carries neither a manifest nor servable media', function () {
     $track = ($this->bundle)([
-        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+        'assets/Root/Docs/broken.png' => 'this is not an image',
     ]);
 
     expect(fn () => app(AssetBundleReader::class)->prepare($track))
@@ -172,11 +118,12 @@ it('fails when the archive carries no data file', function () {
 
 it('refuses an executable disguised inside the asset tree', function () {
     $track = ($this->bundle)([
-        'products.csv'               => "sku\nsku-1",
-        'assets/Root/payload.php'    => '<?php echo "owned";',
-    ]);
+        'products.csv'            => "sku\nsku-1",
+        'assets/Root/payload.php' => '<?php echo "owned";',
+    ], 44);
 
-    app(AssetBundleReader::class)->prepare($track);
+    $prepared = app(AssetBundleReader::class)->prepare($track);
 
-    expect(Asset::where('path', 'assets/Root/payload.php')->exists())->toBeFalse();
+    expect($prepared->dataFile)->toBe('imports/bundles/44/products.csv')
+        ->and($prepared->mediaDirectory)->toBeNull();
 });

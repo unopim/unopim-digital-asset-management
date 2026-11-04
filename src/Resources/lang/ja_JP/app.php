@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'アセットを作成しました',
+            'updated' => 'アセットを更新しました',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM の概要',
+        'asset-analytics'   => 'アセット分析',
+        'total-assets'      => 'アセット総数',
+        'storage-used'      => '使用済みストレージ',
+        'total-directories' => 'ディレクトリ',
+        'total-tags'        => 'タグ',
+        'assets-by-type'    => 'タイプ別アセット',
+        'recent-uploads'    => '最近のアップロード',
+        'no-assets'         => 'アセットはまだありません。',
+        'types' => [
+            'image'    => '画像',
+            'video'    => '動画',
+            'audio'    => '音声',
+            'document' => 'ドキュメント',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => '行 :row (:identifier)、列「:column」: パス「:path」にアセットが見つかりませんでした。このアセットはスキップされ、行の残りのデータは引き続きインポートされます。',
             'asset-tree-misnamed'        => 'アーカイブには「assets」ではなく「:name」という名前のフォルダーが含まれているため、アセットを一切インポートできませんでした。「assets」に名前を変更し、その下のフォルダーをデータファイル内のパス（例: 「assets/Root/Seed/Tech Sheets/Cotton/」）と一致させてください。macOS はフォルダー名に入力された「/」を「:」として保存するため、これが通常の原因です。',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => '"directory" 列はすべての行で必須です — 宛先フォルダーツリー（例: "Root/Brand/Summer"）。',
+                        'asset-already-exists'         => '行 :row をスキップしました — ":path" にアセットが既に存在し、競合方針が "skip" です。変更するには "overwrite" または "update metadata" を選択してください。',
+                        'asset-already-exists-summary' => 'バッチ #:batch — 一致するアセットが既に存在するため、:count 行をスキップしました。',
+                        'media-source-not-found'       => 'ソースファイルが見つかりません: "path" に公開 https リンクを指定するか、画像ディレクトリ内の "path" に一致するファイルを配置してください。',
+                        'url-invalid'                  => '"path" の https リンクは有効な http または https アドレスではありません。',
+                        'url-unreachable'              => '"path" の https リンクをダウンロードできませんでした。',
+                        'url-blocked'                  => '"path" の https リンクはブロックされたホストに解決されます。',
+                        'file-too-large'               => 'メディアファイルが許可された最大サイズを超えています。',
+                        'forbidden-file'               => 'このメディアファイルタイプは許可されていません。',
+                        'import-failed'                => '予期しないエラーにより行をインポートできませんでした。',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'サンプル ZIP（CSV + メディアファイル）',
+                    'media'  => 'サンプル ZIP（メディアファイルのみ）',
+                ],
+                'options' => [
+                    'title' => 'アセットのインポートオプション',
+                    'conflict' => [
+                        'label'           => 'パスにアセットが既に存在する場合',
+                        'skip'            => '行をスキップ',
+                        'overwrite'       => 'ファイルとメタデータを上書き',
+                        'update-metadata' => 'メタデータのみ更新',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'インポートした画像を自動タグ付け',
+                        'hint'  => 'インポートした各画像に AI 自動タグ付けを実行します（設定済みの Magic AI プラットフォームが必要です）。',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'アセットフィルター',
+                ],
+            ],
+        ],
+
     ],
 ];

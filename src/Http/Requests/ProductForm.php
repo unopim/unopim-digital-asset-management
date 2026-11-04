@@ -10,27 +10,8 @@ use Webkul\Product\Models\Product;
 use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Product\Type\AbstractType;
 
-/**
- * Drops asset values a product does not own at its own structure level.
- *
- * An asset attribute placed at the common level belongs to the ancestor sitting at
- * that level. A descendant reads it back through the resolved value chain and renders
- * the control locked, so a submission carrying such a value can only come from a stale
- * or hand-crafted form. Storing it would put a copy on the descendant, and a
- * descendant's own value wins the merge — the ancestor would quietly stop being the
- * source of truth for every child that ever saved.
- *
- * Ownership is decided by {@see VariantStructurePlanner::ownsAtOwnLevel()}, the rule
- * the bulk product update job already applies, so no second notion of inheritance is
- * introduced. Only asset attributes are filtered, and only on this request, which the
- * admin product update is the sole consumer of: no other attribute type and no other
- * write path changes behaviour.
- */
 class ProductForm extends BaseProductForm
 {
-    /**
-     * Value buckets an attribute code can appear in, and how many keys sit above it.
-     */
     protected const VALUE_SCOPES = [
         AbstractType::COMMON_VALUES_KEY         => 0,
         AbstractType::LOCALE_VALUES_KEY         => 1,
@@ -73,9 +54,6 @@ class ProductForm extends BaseProductForm
     }
 
     /**
-     * Asset attributes on the product's family that an ancestor owns rather than this
-     * product. Products outside a variant structure own everything, so this is empty.
-     *
      * @return list<string>
      */
     protected function inheritedAssetCodes(Product $product): array

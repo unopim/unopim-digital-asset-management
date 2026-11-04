@@ -5,9 +5,12 @@ namespace Webkul\DAM\Providers;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AssetWebhookDispatcher;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Support\PimIntegration;
 use Webkul\Theme\ViewRenderEventManager;
 
 class EventServiceProvider extends ServiceProvider
@@ -50,26 +53,49 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
+    public function listens()
+    {
+        return PimIntegration::enabled() ? $this->listen : [];
+    }
+
     public function boot()
     {
-        Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
-            $viewRenderEventManager->addTemplate('dam::asset.catalog.categories.dynamic-fields.asset-control');
+        Asset::created(static function (Asset $asset): void {
+            app(AssetWebhookDispatcher::class)->created($asset);
         });
 
-        Event::listen('unopim.admin.products.dynamic-attribute-fields.control.'.self::ASSET_ATTRIBUTE_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
-            $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
+        Asset::updated(static function (Asset $asset): void {
+            app(AssetWebhookDispatcher::class)->updated($asset);
         });
 
-        Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
-            if (! request()->routeIs('admin.catalog.products.bulkedit')) {
-                return;
-            }
+        if (PimIntegration::enabled()) {
+            Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
+                $viewRenderEventManager->addTemplate('dam::asset.catalog.categories.dynamic-fields.asset-control');
+            });
 
-            $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
-        });
+            Event::listen('unopim.admin.products.dynamic-attribute-fields.control.'.self::ASSET_ATTRIBUTE_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
+                $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
+            });
+
+            Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+                if (! request()->routeIs('admin.catalog.products.bulkedit')) {
+                    return;
+                }
+
+                $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
+            });
+        }
 
         Event::listen('unopim.admin.layout.head.before', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::style');
+        });
+
+        Event::listen('unopim.admin.dashboard.index.cards', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::dashboard.cards');
+        });
+
+        Event::listen('unopim.admin.dashboard.index.stats', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::dashboard.stats');
         });
 
         Event::listen('unopim.admin.layout.head', static function (ViewRenderEventManager $viewRenderEventManager) {
@@ -86,6 +112,18 @@ class EventServiceProvider extends ServiceProvider
 
         Event::listen('unopim.admin.settings.roles.create.card.access_control.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
+        });
+
+        Event::listen('unopim.admin.settings.data_transfer.exports.create.card.scope.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.exports.asset-filters');
+        });
+
+        Event::listen('unopim.admin.settings.data_transfer.exports.edit.card.general.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.exports.asset-filters-edit');
+        });
+
+        Event::listen('unopim.admin.settings.data_transfer.imports.create.card.accordion.settings.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.imports.asset-options');
         });
 
         $syncDirectoryGrants = static function ($role) {

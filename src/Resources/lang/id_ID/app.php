@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Aset dibuat',
+            'updated' => 'Aset diperbarui',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Ikhtisar DAM',
+        'asset-analytics'   => 'Analitik Aset',
+        'total-assets'      => 'Total Aset',
+        'storage-used'      => 'Penyimpanan Terpakai',
+        'total-directories' => 'Direktori',
+        'total-tags'        => 'Tag',
+        'assets-by-type'    => 'Aset menurut Tipe',
+        'recent-uploads'    => 'Unggahan Terbaru',
+        'no-assets'         => 'Belum ada aset.',
+        'types' => [
+            'image'    => 'Gambar',
+            'video'    => 'Video',
+            'audio'    => 'Audio',
+            'document' => 'Dokumen',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Baris :row (:identifier), kolom ":column": tidak ada aset yang ditemukan di jalur ":path". Aset dilewati dan sisa baris tetap akan diimpor.',
             'asset-tree-misnamed'        => 'Arsip berisi folder bernama ":name" alih-alih "assets", sehingga tidak ada asetnya yang dapat diimpor. Ubah namanya menjadi "assets" dan pastikan folder di bawahnya sesuai dengan jalur di file data Anda, misalnya "assets/Root/Seed/Tech Sheets/Cotton/". macOS menyimpan "/" yang diketik pada nama folder sebagai ":", yang merupakan penyebab umumnya.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Kolom "directory" wajib untuk setiap baris — pohon folder tujuan, mis. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Baris :row dilewati — aset sudah ada di ":path" dan strategi konflik adalah "skip". Pilih "overwrite" atau "update metadata" untuk mengubahnya.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count baris dilewati karena aset yang cocok sudah ada.',
+                        'media-source-not-found'       => 'Berkas sumber tidak ditemukan: masukkan tautan https publik di "path", atau berkas yang cocok dengan "path" di direktori gambar.',
+                        'url-invalid'                  => 'Tautan https di "path" bukan alamat http atau https yang valid.',
+                        'url-unreachable'              => 'Tautan https di "path" tidak dapat diunduh.',
+                        'url-blocked'                  => 'Tautan https di "path" mengarah ke host yang diblokir.',
+                        'file-too-large'               => 'Berkas media melebihi ukuran maksimum yang diizinkan.',
+                        'forbidden-file'               => 'Tipe berkas media tidak diizinkan.',
+                        'import-failed'                => 'Baris tidak dapat diimpor karena kesalahan tak terduga.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Contoh ZIP (CSV + berkas media)',
+                    'media'  => 'Contoh ZIP (hanya berkas media)',
+                ],
+                'options' => [
+                    'title' => 'Opsi Impor Aset',
+                    'conflict' => [
+                        'label'           => 'Ketika aset sudah ada di jalur tersebut',
+                        'skip'            => 'Lewati baris',
+                        'overwrite'       => 'Timpa berkas dan metadata',
+                        'update-metadata' => 'Perbarui metadata saja',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Beri tag otomatis pada gambar yang diimpor',
+                        'hint'  => 'Jalankan pemberian tag otomatis AI pada setiap gambar yang diimpor (memerlukan platform Magic AI yang dikonfigurasi).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filter Aset',
+                ],
+            ],
+        ],
+
     ],
 ];

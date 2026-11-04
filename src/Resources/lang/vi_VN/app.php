@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Đã tạo tài sản',
+            'updated' => 'Đã cập nhật tài sản',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Tổng quan DAM',
+        'asset-analytics'   => 'Phân tích tài sản',
+        'total-assets'      => 'Tổng số tài sản',
+        'storage-used'      => 'Dung lượng đã dùng',
+        'total-directories' => 'Thư mục',
+        'total-tags'        => 'Thẻ',
+        'assets-by-type'    => 'Tài sản theo loại',
+        'recent-uploads'    => 'Tải lên gần đây',
+        'no-assets'         => 'Chưa có tài sản nào.',
+        'types' => [
+            'image'    => 'Hình ảnh',
+            'video'    => 'Video',
+            'audio'    => 'Âm thanh',
+            'document' => 'Tài liệu',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Dòng :row (:identifier), cột ":column": không tìm thấy tài sản nào tại đường dẫn ":path". Tài sản đã bị bỏ qua và phần còn lại của dòng vẫn sẽ được nhập.',
             'asset-tree-misnamed'        => 'Kho lưu trữ chứa một thư mục tên ":name" thay vì "assets", nên không thể nhập bất kỳ tài sản nào của nó. Hãy đổi tên thành "assets" và giữ các thư mục bên dưới khớp với đường dẫn trong tệp dữ liệu của bạn, ví dụ "assets/Root/Seed/Tech Sheets/Cotton/". macOS lưu ký tự "/" gõ trong tên thư mục thành ":", đây là nguyên nhân thường gặp.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Cột "directory" là bắt buộc cho mỗi hàng — cây thư mục đích, ví dụ "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Đã bỏ qua hàng :row — đã tồn tại tài sản tại ":path" và chiến lược xung đột là "skip". Chọn "overwrite" hoặc "update metadata" để thay đổi.',
+                        'asset-already-exists-summary' => 'Lô #:batch — đã bỏ qua :count hàng vì đã tồn tại tài sản trùng khớp.',
+                        'media-source-not-found'       => 'Không tìm thấy tệp nguồn: đặt một liên kết https công khai trong "path", hoặc một tệp khớp với "path" trong thư mục hình ảnh.',
+                        'url-invalid'                  => 'Liên kết https trong "path" không phải là địa chỉ http hoặc https hợp lệ.',
+                        'url-unreachable'              => 'Không thể tải xuống liên kết https trong "path".',
+                        'url-blocked'                  => 'Liên kết https trong "path" trỏ đến một máy chủ bị chặn.',
+                        'file-too-large'               => 'Tệp phương tiện vượt quá kích thước tối đa cho phép.',
+                        'forbidden-file'               => 'Loại tệp phương tiện không được phép.',
+                        'import-failed'                => 'Không thể nhập hàng do lỗi không mong muốn.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP mẫu (CSV + tệp phương tiện)',
+                    'media'  => 'ZIP mẫu (chỉ tệp phương tiện)',
+                ],
+                'options' => [
+                    'title' => 'Tùy chọn nhập tài sản',
+                    'conflict' => [
+                        'label'           => 'Khi đã tồn tại tài sản tại đường dẫn',
+                        'skip'            => 'Bỏ qua hàng',
+                        'overwrite'       => 'Ghi đè tệp và siêu dữ liệu',
+                        'update-metadata' => 'Chỉ cập nhật siêu dữ liệu',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tự động gắn thẻ hình ảnh đã nhập',
+                        'hint'  => 'Chạy gắn thẻ tự động bằng AI trên mỗi hình ảnh đã nhập (yêu cầu nền tảng Magic AI đã được cấu hình).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Bộ lọc tài sản',
+                ],
+            ],
+        ],
+
     ],
 ];

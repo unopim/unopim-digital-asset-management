@@ -4,11 +4,6 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Support\AssetPathStorage;
 
-/*
- * Importers resolve asset paths per value; without bulk loading a batch referencing one
- * asset a thousand times issued a thousand queries.
- */
-
 beforeEach(function (): void {
     $this->damResetAssetTables();
 

@@ -1,5 +1,11 @@
 # CHANGELOG for unopim-digital-asset-management
 
+## Version 3.1.2
+
+### Features & Enhancements
+
+* **Asset Import & Export** — Added queued import and export jobs for DAM assets, so asset data can be bulk exported to and imported from CSV/XLSX files and tracked from the core Job Tracker page.
+
 ## Version 3.1.1
 
 ### Bug Fixes

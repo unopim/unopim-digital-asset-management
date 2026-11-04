@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Nalikha ang asset',
+            'updated' => 'Na-update ang asset',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM Overview',
+        'asset-analytics'   => 'Analytics ng Asset',
+        'total-assets'      => 'Kabuuang Asset',
+        'storage-used'      => 'Nagamit na Storage',
+        'total-directories' => 'Mga Direktoryo',
+        'total-tags'        => 'Mga Tag',
+        'assets-by-type'    => 'Mga Asset ayon sa Uri',
+        'recent-uploads'    => 'Mga Kamakailang Upload',
+        'no-assets'         => 'Wala pang asset.',
+        'types' => [
+            'image'    => 'Mga Larawan',
+            'video'    => 'Mga Video',
+            'audio'    => 'Audio',
+            'document' => 'Mga Dokumento',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Hanay :row (:identifier), kolum ":column": walang asset na nakita sa path na ":path". Nilaktawan ang asset at ii-import pa rin ang natitirang bahagi ng hanay.',
             'asset-tree-misnamed'        => 'Naglalaman ang archive ng folder na pinangalanang ":name" sa halip na "assets", kaya wala sa mga asset nito ang na-import. Palitan ang pangalan nito ng "assets" at panatilihing tugma ang mga folder sa ilalim nito sa mga path sa iyong data file, halimbawa "assets/Root/Seed/Tech Sheets/Cotton/". Sine-save ng macOS ang "/" na itinipa sa pangalan ng folder bilang ":", na siyang karaniwang dahilan.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Kinakailangan ang column na "directory" sa bawat row — ang puno ng destination folder, hal. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Nilaktawan ang row :row — may asset nang umiiral sa ":path" at ang conflict strategy ay "skip". Piliin ang "overwrite" o "update metadata" upang baguhin ito.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count (na) row ang nilaktawan dahil may tugmang asset nang umiiral.',
+                        'media-source-not-found'       => 'Walang nakitang source file: maglagay ng pampublikong https link sa "path", o isang file na tumutugma sa "path" sa ilalim ng images directory.',
+                        'url-invalid'                  => 'Ang https link sa "path" ay hindi wastong http o https address.',
+                        'url-unreachable'              => 'Hindi ma-download ang https link sa "path".',
+                        'url-blocked'                  => 'Ang https link sa "path" ay tumuturo sa isang na-block na host.',
+                        'file-too-large'               => 'Lumampas ang media file sa pinakamataas na pinapayagang laki.',
+                        'forbidden-file'               => 'Hindi pinapayagan ang uri ng media file.',
+                        'import-failed'                => 'Hindi ma-import ang row dahil sa hindi inaasahang error.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Halimbawang ZIP (CSV + media files)',
+                    'media'  => 'Halimbawang ZIP (media files lamang)',
+                ],
+                'options' => [
+                    'title' => 'Mga Opsyon sa Pag-import ng Asset',
+                    'conflict' => [
+                        'label'           => 'Kapag may asset nang umiiral sa path',
+                        'skip'            => 'Laktawan ang row',
+                        'overwrite'       => 'I-overwrite ang file at metadata',
+                        'update-metadata' => 'I-update lang ang metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Awtomatikong i-tag ang mga na-import na larawan',
+                        'hint'  => 'Patakbuhin ang AI auto-tagging sa bawat na-import na larawan (kailangan ng naka-configure na Magic AI platform).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Mga Filter ng Asset',
+                ],
+            ],
+        ],
+
     ],
 ];

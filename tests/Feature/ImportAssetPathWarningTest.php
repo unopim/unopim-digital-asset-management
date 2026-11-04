@@ -22,11 +22,6 @@ use Webkul\DataTransfer\Services\JobLogger;
 use Webkul\Product\Models\Product;
 use Webkul\User\Models\Admin;
 
-/*
- * A data file row whose asset path resolves to nothing must still import, and the job
- * log must name the row, the record and the column so the path can be corrected.
- */
-
 uses(DatabaseTransactions::class);
 
 function damWarningAsset(string $path): Asset

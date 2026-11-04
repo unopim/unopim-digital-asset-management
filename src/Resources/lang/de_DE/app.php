@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Asset erstellt',
+            'updated' => 'Asset aktualisiert',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-Übersicht',
+        'asset-analytics'   => 'Asset-Analyse',
+        'total-assets'      => 'Assets gesamt',
+        'storage-used'      => 'Belegter Speicher',
+        'total-directories' => 'Verzeichnisse',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Assets nach Typ',
+        'recent-uploads'    => 'Neueste Uploads',
+        'no-assets'         => 'Noch keine Assets.',
+        'types' => [
+            'image'    => 'Bilder',
+            'video'    => 'Videos',
+            'audio'    => 'Audio',
+            'document' => 'Dokumente',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Zeile :row (:identifier), Spalte ":column": Unter dem Pfad ":path" wurde kein Asset gefunden. Das Asset wurde übersprungen, der Rest der Zeile wird trotzdem importiert.',
             'asset-tree-misnamed'        => 'Das Archiv enthält einen Ordner namens ":name" statt "assets", daher konnte keines seiner Assets importiert werden. Benennen Sie ihn in "assets" um und stellen Sie sicher, dass die Ordner darunter den Pfaden in Ihrer Datendatei entsprechen, z. B. "assets/Root/Seed/Tech Sheets/Cotton/". macOS speichert ein in einen Ordnernamen eingegebenes "/" als ":", was die übliche Ursache ist.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Die Spalte "directory" ist für jede Zeile erforderlich — der Zielordnerbaum, z. B. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Zeile :row übersprungen — unter ":path" existiert bereits ein Asset und die Konfliktstrategie ist "skip". Wählen Sie "overwrite" oder "update metadata", um dies zu ändern.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count Zeile(n) übersprungen, da bereits ein passendes Asset vorhanden ist.',
+                        'media-source-not-found'       => 'Keine Quelldatei gefunden: Geben Sie in "path" einen öffentlichen https-Link an oder eine Datei, die "path" im Bilderverzeichnis entspricht.',
+                        'url-invalid'                  => 'Der https-Link in "path" ist keine gültige http- oder https-Adresse.',
+                        'url-unreachable'              => 'Der https-Link in "path" konnte nicht heruntergeladen werden.',
+                        'url-blocked'                  => 'Der https-Link in "path" verweist auf einen blockierten Host.',
+                        'file-too-large'               => 'Die Mediendatei überschreitet die maximal zulässige Größe.',
+                        'forbidden-file'               => 'Der Mediendateityp ist nicht zulässig.',
+                        'import-failed'                => 'Die Zeile konnte aufgrund eines unerwarteten Fehlers nicht importiert werden.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Beispiel-ZIP (CSV + Mediendateien)',
+                    'media'  => 'Beispiel-ZIP (nur Mediendateien)',
+                ],
+                'options' => [
+                    'title' => 'Asset-Importoptionen',
+                    'conflict' => [
+                        'label'           => 'Wenn im Pfad bereits ein Asset vorhanden ist',
+                        'skip'            => 'Zeile überspringen',
+                        'overwrite'       => 'Datei und Metadaten überschreiben',
+                        'update-metadata' => 'Nur Metadaten aktualisieren',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Importierte Bilder automatisch taggen',
+                        'hint'  => 'KI-Auto-Tagging für jedes importierte Bild ausführen (erfordert eine konfigurierte Magic-AI-Plattform).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Asset-Filter',
+                ],
+            ],
+        ],
+
     ],
 ];

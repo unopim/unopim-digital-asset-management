@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Ресурс створено',
+            'updated' => 'Ресурс оновлено',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Огляд DAM',
+        'asset-analytics'   => 'Аналітика ресурсів',
+        'total-assets'      => 'Усього ресурсів',
+        'storage-used'      => 'Використано сховища',
+        'total-directories' => 'Каталоги',
+        'total-tags'        => 'Теги',
+        'assets-by-type'    => 'Ресурси за типом',
+        'recent-uploads'    => 'Останні завантаження',
+        'no-assets'         => 'Ресурсів ще немає.',
+        'types' => [
+            'image'    => 'Зображення',
+            'video'    => 'Відео',
+            'audio'    => 'Аудіо',
+            'document' => 'Документи',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Рядок :row (:identifier), стовпець ":column": за шляхом ":path" ресурс не знайдено. Ресурс пропущено, решта даних рядка все одно буде імпортована.',
             'asset-tree-misnamed'        => 'Архів містить теку з назвою ":name" замість "assets", тому жоден із її ресурсів не вдалося імпортувати. Перейменуйте її на "assets" і залиште вкладені теки відповідними шляхам у файлі даних, наприклад "assets/Root/Seed/Tech Sheets/Cotton/". macOS зберігає введений у назві теки символ "/" як ":", що і є звичайною причиною.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Стовпець "directory" обов’язковий для кожного рядка — дерево цільової папки, напр. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Рядок :row пропущено — ресурс уже існує за шляхом ":path", а стратегія конфлікту — "skip". Виберіть "overwrite" або "update metadata", щоб змінити це.',
+                        'asset-already-exists-summary' => 'Пакет #:batch — пропущено рядків: :count, оскільки відповідний ресурс уже існує.',
+                        'media-source-not-found'       => 'Вихідний файл не знайдено: вкажіть публічне https-посилання в "path" або файл, що відповідає "path", у каталозі зображень.',
+                        'url-invalid'                  => 'Посилання https у "path" не є дійсною http- або https-адресою.',
+                        'url-unreachable'              => 'Не вдалося завантажити посилання https із "path".',
+                        'url-blocked'                  => 'Посилання https у "path" веде до заблокованого хоста.',
+                        'file-too-large'               => 'Медіафайл перевищує максимально дозволений розмір.',
+                        'forbidden-file'               => 'Тип медіафайлу не дозволено.',
+                        'import-failed'                => 'Не вдалося імпортувати рядок через неочікувану помилку.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Приклад ZIP (CSV + медіафайли)',
+                    'media'  => 'Приклад ZIP (лише медіафайли)',
+                ],
+                'options' => [
+                    'title' => 'Параметри імпорту ресурсів',
+                    'conflict' => [
+                        'label'           => 'Коли ресурс уже існує за цим шляхом',
+                        'skip'            => 'Пропустити рядок',
+                        'overwrite'       => 'Перезаписати файл і метадані',
+                        'update-metadata' => 'Оновити лише метадані',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Автотегування імпортованих зображень',
+                        'hint'  => 'Запускати ШІ-автотегування для кожного імпортованого зображення (потрібна налаштована платформа Magic AI).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Фільтри ресурсів',
+                ],
+            ],
+        ],
+
     ],
 ];

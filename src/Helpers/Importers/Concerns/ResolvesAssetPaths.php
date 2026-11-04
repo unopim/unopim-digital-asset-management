@@ -5,14 +5,6 @@ namespace Webkul\DAM\Helpers\Importers\Concerns;
 use Webkul\DAM\Support\AssetPathStorage;
 use Webkul\DataTransfer\Helpers\Import;
 
-/**
- * Turns the comma-separated asset paths carried by a data file into DAM asset ids.
- *
- * A path that resolves to nothing never fails its row: the path is skipped and the row
- * imported. It is reported as a job-log warning while the file is validated, the only
- * stage that knows the row number and whose log outlives the import; a save batch has
- * neither, so anything it reported was lost.
- */
 trait ResolvesAssetPaths
 {
     protected ?AssetPathStorage $assetPathStorage = null;
@@ -45,9 +37,6 @@ trait ResolvesAssetPaths
     }
 
     /**
-     * Warn about each unresolvable path in the given columns of a row on its first
-     * validation; core re-validates rows it has already seen, which must not repeat it.
-     *
      * @param  iterable<string>  $columns
      */
     protected function warnAboutMissingAssets(array $rowData, int $rowNumber, bool $firstValidation, string $identifier, iterable $columns): void

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Recurs creat',
+            'updated' => 'Recurs actualitzat',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Resum del DAM',
+        'asset-analytics'   => 'Anàlisi de recursos',
+        'total-assets'      => 'Total de recursos',
+        'storage-used'      => 'Emmagatzematge utilitzat',
+        'total-directories' => 'Directoris',
+        'total-tags'        => 'Etiquetes',
+        'assets-by-type'    => 'Recursos per tipus',
+        'recent-uploads'    => 'Pujades recents',
+        'no-assets'         => 'Encara no hi ha recursos.',
+        'types' => [
+            'image'    => 'Imatges',
+            'video'    => 'Vídeos',
+            'audio'    => 'Àudio',
+            'document' => 'Documents',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Fila :row (:identifier), columna ":column": no s\'ha trobat cap recurs a la ruta ":path". S\'ha omès el recurs i la resta de la fila s\'importarà igualment.',
             'asset-tree-misnamed'        => 'L\'arxiu conté una carpeta anomenada ":name" en lloc de "assets", de manera que no s\'ha pogut importar cap dels seus actius. Canvieu-li el nom a "assets" i mantingueu les carpetes de sota coincidents amb les rutes del fitxer de dades, per exemple "assets/Root/Seed/Tech Sheets/Cotton/". macOS desa una "/" escrita en un nom de carpeta com a ":", que és la causa habitual.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'La columna "directory" és obligatòria a cada fila — l’arbre de la carpeta de destinació, p. ex. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Fila :row omesa — ja existeix un recurs a ":path" i l’estratègia de conflicte és "skip". Trieu "overwrite" o "update metadata" per canviar-ho.',
+                        'asset-already-exists-summary' => 'Lot #:batch — :count fila/es omesa/es perquè ja existeix un recurs coincident.',
+                        'media-source-not-found'       => 'No s’ha trobat cap fitxer d’origen: poseu un enllaç https públic a "path", o un fitxer que coincideixi amb "path" al directori d’imatges.',
+                        'url-invalid'                  => 'L’enllaç https de "path" no és una adreça http o https vàlida.',
+                        'url-unreachable'              => 'No s’ha pogut baixar l’enllaç https de "path".',
+                        'url-blocked'                  => 'L’enllaç https de "path" apunta a un amfitrió bloquejat.',
+                        'file-too-large'               => 'El fitxer multimèdia supera la mida màxima permesa.',
+                        'forbidden-file'               => 'El tipus de fitxer multimèdia no està permès.',
+                        'import-failed'                => 'No s’ha pogut importar la fila a causa d’un error inesperat.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP d’exemple (CSV + fitxers multimèdia)',
+                    'media'  => 'ZIP d’exemple (només fitxers multimèdia)',
+                ],
+                'options' => [
+                    'title' => 'Opcions d’importació de recursos',
+                    'conflict' => [
+                        'label'           => 'Quan ja existeix un recurs al camí',
+                        'skip'            => 'Omet la fila',
+                        'overwrite'       => 'Sobreescriu el fitxer i les metadades',
+                        'update-metadata' => 'Actualitza només les metadades',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Etiqueta automàticament les imatges importades',
+                        'hint'  => 'Executa l’etiquetatge automàtic amb IA a cada imatge importada (requereix una plataforma Magic AI configurada).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtres de recursos',
+                ],
+            ],
+        ],
+
     ],
 ];

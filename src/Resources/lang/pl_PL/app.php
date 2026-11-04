@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Zasób utworzony',
+            'updated' => 'Zasób zaktualizowany',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Przegląd DAM',
+        'asset-analytics'   => 'Analiza zasobów',
+        'total-assets'      => 'Łączna liczba zasobów',
+        'storage-used'      => 'Wykorzystane miejsce',
+        'total-directories' => 'Katalogi',
+        'total-tags'        => 'Tagi',
+        'assets-by-type'    => 'Zasoby według typu',
+        'recent-uploads'    => 'Ostatnie przesłane',
+        'no-assets'         => 'Brak zasobów.',
+        'types' => [
+            'image'    => 'Obrazy',
+            'video'    => 'Wideo',
+            'audio'    => 'Audio',
+            'document' => 'Dokumenty',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Wiersz :row (:identifier), kolumna ":column": nie znaleziono zasobu pod ścieżką ":path". Zasób został pominięty, a pozostała część wiersza nadal zostanie zaimportowana.',
             'asset-tree-misnamed'        => 'Archiwum zawiera folder o nazwie ":name" zamiast "assets", więc nie udało się zaimportować żadnego z jego zasobów. Zmień jego nazwę na "assets" i zachowaj foldery poniżej zgodne ze ścieżkami w pliku danych, np. "assets/Root/Seed/Tech Sheets/Cotton/". macOS zapisuje znak "/" wpisany w nazwie folderu jako ":", co jest typową przyczyną.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Kolumna "directory" jest wymagana w każdym wierszu — drzewo folderu docelowego, np. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Wiersz :row pominięty — zasób już istnieje w ":path", a strategia konfliktu to "skip". Wybierz "overwrite" lub "update metadata", aby to zmienić.',
+                        'asset-already-exists-summary' => 'Partia #:batch — pominięto wiersze: :count, ponieważ pasujący zasób już istnieje.',
+                        'media-source-not-found'       => 'Nie znaleziono pliku źródłowego: umieść publiczny link https w "path" lub plik pasujący do "path" w katalogu obrazów.',
+                        'url-invalid'                  => 'Link https w "path" nie jest prawidłowym adresem http lub https.',
+                        'url-unreachable'              => 'Nie udało się pobrać linku https z "path".',
+                        'url-blocked'                  => 'Link https w "path" wskazuje na zablokowany host.',
+                        'file-too-large'               => 'Plik multimedialny przekracza maksymalny dozwolony rozmiar.',
+                        'forbidden-file'               => 'Typ pliku multimedialnego jest niedozwolony.',
+                        'import-failed'                => 'Nie udało się zaimportować wiersza z powodu nieoczekiwanego błędu.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Przykładowy ZIP (CSV + pliki multimedialne)',
+                    'media'  => 'Przykładowy ZIP (tylko pliki multimedialne)',
+                ],
+                'options' => [
+                    'title' => 'Opcje importu zasobów',
+                    'conflict' => [
+                        'label'           => 'Gdy zasób już istnieje w tej ścieżce',
+                        'skip'            => 'Pomiń wiersz',
+                        'overwrite'       => 'Nadpisz plik i metadane',
+                        'update-metadata' => 'Zaktualizuj tylko metadane',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Automatycznie taguj zaimportowane obrazy',
+                        'hint'  => 'Uruchom automatyczne tagowanie AI dla każdego zaimportowanego obrazu (wymaga skonfigurowanej platformy Magic AI).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtry zasobów',
+                ],
+            ],
+        ],
+
     ],
 ];

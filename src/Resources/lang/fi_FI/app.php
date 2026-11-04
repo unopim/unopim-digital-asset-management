@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Resurssi luotu',
+            'updated' => 'Resurssi päivitetty',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-yleiskatsaus',
+        'asset-analytics'   => 'Resurssianalyysi',
+        'total-assets'      => 'Resursseja yhteensä',
+        'storage-used'      => 'Käytetty tallennustila',
+        'total-directories' => 'Hakemistot',
+        'total-tags'        => 'Tunnisteet',
+        'assets-by-type'    => 'Resurssit tyypeittäin',
+        'recent-uploads'    => 'Viimeisimmät lataukset',
+        'no-assets'         => 'Ei vielä resursseja.',
+        'types' => [
+            'image'    => 'Kuvat',
+            'video'    => 'Videot',
+            'audio'    => 'Ääni',
+            'document' => 'Asiakirjat',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Rivi :row (:identifier), sarake ":column": polusta ":path" ei löytynyt resurssia. Resurssi ohitettiin, ja rivin muut tiedot tuodaan silti.',
             'asset-tree-misnamed'        => 'Arkisto sisältää kansion nimeltä ":name" kansion "assets" sijaan, joten yhtään sen aineistoa ei voitu tuoda. Nimeä se uudelleen muotoon "assets" ja pidä sen alla olevat kansiot datatiedoston polkujen mukaisina, esimerkiksi "assets/Root/Seed/Tech Sheets/Cotton/". macOS tallentaa kansion nimeen kirjoitetun "/"-merkin muodossa ":", mikä on tavallisin syy.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Sarake "directory" vaaditaan jokaiselle riville — kohdekansion puu, esim. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Rivi :row ohitettu — resurssi on jo kohteessa ":path" ja ristiriitastrategia on "skip". Valitse "overwrite" tai "update metadata" muuttaaksesi sitä.',
+                        'asset-already-exists-summary' => 'Erä #:batch — :count rivi(ä) ohitettu, koska vastaava resurssi on jo olemassa.',
+                        'media-source-not-found'       => 'Lähdetiedostoa ei löytynyt: lisää julkinen https-linkki kenttään "path", tai kuvahakemistossa "path"-arvoa vastaava tiedosto.',
+                        'url-invalid'                  => 'Kentän "path" https-linkki ei ole kelvollinen http- tai https-osoite.',
+                        'url-unreachable'              => 'Kentän "path" https-linkkiä ei voitu ladata.',
+                        'url-blocked'                  => 'Kentän "path" https-linkki osoittaa estettyyn isäntään.',
+                        'file-too-large'               => 'Mediatiedosto ylittää suurimman sallitun koon.',
+                        'forbidden-file'               => 'Mediatiedostotyyppi ei ole sallittu.',
+                        'import-failed'                => 'Riviä ei voitu tuoda odottamattoman virheen vuoksi.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Esimerkki-ZIP (CSV + mediatiedostot)',
+                    'media'  => 'Esimerkki-ZIP (vain mediatiedostot)',
+                ],
+                'options' => [
+                    'title' => 'Resurssien tuontiasetukset',
+                    'conflict' => [
+                        'label'           => 'Kun polussa on jo resurssi',
+                        'skip'            => 'Ohita rivi',
+                        'overwrite'       => 'Korvaa tiedosto ja metatiedot',
+                        'update-metadata' => 'Päivitä vain metatiedot',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Merkitse tuodut kuvat automaattisesti',
+                        'hint'  => 'Suorita tekoälyn automaattinen tunnisteiden lisäys jokaiselle tuodulle kuvalle (vaatii määritetyn Magic AI -alustan).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Resurssisuodattimet',
+                ],
+            ],
+        ],
+
     ],
 ];

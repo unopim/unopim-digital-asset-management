@@ -66,6 +66,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
 
 ![Asset Assignment via Export / Import](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-assignment.png)
 
+- **Asset Import & Export**  
+  Export your DAM assets to a CSV or XLSX file, and import assets in bulk from one. Both run as queued jobs that you can track from the core Job Tracker page.
+
 - **Secure Asset Handling**  
   Uploads reject executable and HTML/script file types, and stored files are served with safe content types so they never execute inline in the browser. Bulk delete, property mass-delete, and folder uploads enforce the same per-directory permissions as their single-item counterparts.
 

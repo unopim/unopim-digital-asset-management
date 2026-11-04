@@ -662,7 +662,6 @@ class ImageEditController
         };
     }
 
-    /** Re-validates api_url/extras.* URLs from the persisted row (SSRF defense-in-depth); bad values are dropped, not applied. */
     private function configureAiProvider(AiProvider $aiProvider, MagicAIPlatform $platform): void
     {
         $configKey = $aiProvider->configKey();

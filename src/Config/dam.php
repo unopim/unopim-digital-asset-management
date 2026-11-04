@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 return [
 
-    /**
-     * Queues DAM jobs dispatch onto. Default to Laravel's 'default' queue so an
-     * existing worker that only runs `queue:work` (no --queue flag) keeps processing
-     * everything with no config change; set these to route DAM's own workload
-     * (fast DB housekeeping, filesystem/DB-tree bulk ops, CPU-heavy media processing)
-     * onto dedicated queues instead.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | PIM Integration
+    |--------------------------------------------------------------------------
+    |
+    | Auto-detected, not toggled: the integration is ON by default and only
+    | turns OFF when the catalog core is absent (the standalone DAM project).
+    | See Webkul\DAM\Support\PimIntegration::enabled().
+    |
+    */
+
+    'pim' => [
+        'enabled' => true,
+    ],
+
     'queues' => [
         'dam'   => env('DAM_QUEUE_DAM', 'default'),
         'bulk'  => env('DAM_QUEUE_BULK', 'default'),
@@ -42,11 +50,6 @@ return [
         'rate_limit_per_minute' => (int) env('DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE', 60),
     ],
 
-    /**
-     * Limits applied to an export archive uploaded to an import job. These are far wider
-     * than the product-images equivalent because a DAM bundle legitimately carries video
-     * and other large binaries; they exist to bound zip-bomb damage, not to size assets.
-     */
     'import_bundle' => [
         'max_entry_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_ENTRY_SIZE', 524288000),
         'max_total_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_TOTAL_SIZE', 5368709120),

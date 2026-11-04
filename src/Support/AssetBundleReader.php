@@ -4,6 +4,7 @@ namespace Webkul\DAM\Support;
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Models\Directory;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
 
 class AssetBundleReader
@@ -14,10 +15,10 @@ class AssetBundleReader
 
     protected const DATA_FILE_EXTENSIONS = ['csv', 'xlsx', 'xls'];
 
-    public function __construct(protected AssetTreeIngestor $assetTreeIngestor) {}
+    public const GENERATED_DATA_FILE = '__assets-bundle.csv';
 
     /**
-     * @throws \RuntimeException when the archive is unreadable, unsafe, or carries no data file
+     * @throws \RuntimeException when the archive is unreadable, unsafe, or carries no importable content
      */
     public function prepare(JobTrackContract $import): PreparedBundle
     {
@@ -28,11 +29,19 @@ class AssetBundleReader
 
         $dataFile = $this->locateDataFile($entries);
 
-        $this->assetTreeIngestor->ingest($extractPath);
+        $mediaDirectory = $this->stageMedia($entries, $dataFile, $extractPath, $import->id);
+
+        if ($dataFile === null) {
+            $dataFile = $this->synthesizeDataFile($entries, $extractPath);
+        }
+
+        if ($dataFile === null) {
+            throw new \RuntimeException(trans('dam::app.data-transfer.bundle.no-data-file'));
+        }
 
         return new PreparedBundle(
             $relativeRoot.'/'.$dataFile,
-            $this->stageMedia($entries, $dataFile, $extractPath, $import->id),
+            $mediaDirectory,
         );
     }
 
@@ -82,7 +91,7 @@ class AssetBundleReader
     /**
      * @param  list<string>  $entries
      */
-    protected function locateDataFile(array $entries): string
+    protected function locateDataFile(array $entries): ?string
     {
         foreach ($entries as $entry) {
             if (str_contains($entry, '/')) {
@@ -94,13 +103,47 @@ class AssetBundleReader
             }
         }
 
-        throw new \RuntimeException(trans('dam::app.data-transfer.bundle.no-data-file'));
+        return null;
     }
 
     /**
      * @param  list<string>  $entries
      */
-    protected function stageMedia(array $entries, string $dataFile, string $extractPath, int $trackId): ?string
+    protected function synthesizeDataFile(array $entries, string $extractPath): ?string
+    {
+        $rows = [];
+
+        foreach ($entries as $entry) {
+            $sourceFile = $extractPath.DIRECTORY_SEPARATOR.$entry;
+
+            if (! $this->isServableMedia($entry, $sourceFile)) {
+                continue;
+            }
+
+            $directory = $this->directoryTreeFor($entry);
+
+            if ($directory === '') {
+                continue;
+            }
+
+            $rows[] = '"'.str_replace('"', '""', $entry).'","'.str_replace('"', '""', $directory).'","'.str_replace('"', '""', basename($entry)).'"';
+        }
+
+        if ($rows === []) {
+            return null;
+        }
+
+        array_unshift($rows, 'path,directory,file_name');
+
+        file_put_contents($extractPath.DIRECTORY_SEPARATOR.self::GENERATED_DATA_FILE, implode("\n", $rows)."\n");
+
+        return self::GENERATED_DATA_FILE;
+    }
+
+    /**
+     * @param  list<string>  $entries
+     */
+    protected function stageMedia(array $entries, ?string $dataFile, string $extractPath, int $trackId): ?string
     {
         $directory = self::MEDIA_DIRECTORY_PREFIX.$trackId;
 
@@ -109,7 +152,7 @@ class AssetBundleReader
         $staged = 0;
 
         foreach ($entries as $entry) {
-            if ($entry === $dataFile || str_starts_with($entry, AssetTreeIngestor::ASSET_ENTRY_PREFIX)) {
+            if ($entry === $dataFile) {
                 continue;
             }
 
@@ -137,6 +180,21 @@ class AssetBundleReader
         }
 
         return $staged > 0 ? $directory : null;
+    }
+
+    protected function directoryTreeFor(string $entry): string
+    {
+        $normalized = trim(str_replace('\\', '/', $entry), '/');
+
+        $prefix = Directory::ASSETS_DIRECTORY.'/';
+
+        if (str_starts_with($normalized, $prefix)) {
+            $normalized = substr($normalized, strlen($prefix));
+        }
+
+        $directory = trim((string) pathinfo($normalized, PATHINFO_DIRNAME), '/');
+
+        return ($directory === '' || $directory === '.') ? '' : $directory;
     }
 
     protected function isServableMedia(string $relativePath, string $sourceFile): bool

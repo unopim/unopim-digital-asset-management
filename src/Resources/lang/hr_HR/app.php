@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Sredstvo stvoreno',
+            'updated' => 'Sredstvo ažurirano',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Pregled DAM-a',
+        'asset-analytics'   => 'Analitika sredstava',
+        'total-assets'      => 'Ukupno sredstava',
+        'storage-used'      => 'Iskorišteni prostor',
+        'total-directories' => 'Direktoriji',
+        'total-tags'        => 'Oznake',
+        'assets-by-type'    => 'Sredstva po vrsti',
+        'recent-uploads'    => 'Nedavne učitavanja',
+        'no-assets'         => 'Još nema sredstava.',
+        'types' => [
+            'image'    => 'Slike',
+            'video'    => 'Videozapisi',
+            'audio'    => 'Zvuk',
+            'document' => 'Dokumenti',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Redak :row (:identifier), stupac ":column": na putanji ":path" nije pronađen nijedan resurs. Resurs je preskočen, a ostatak retka i dalje će se uvesti.',
             'asset-tree-misnamed'        => 'Arhiva sadrži mapu naziva ":name" umjesto "assets", pa nijedan njezin sadržaj nije bilo moguće uvesti. Preimenujte je u "assets" i neka mape ispod nje odgovaraju putanjama u vašoj datoteci s podacima, na primjer "assets/Root/Seed/Tech Sheets/Cotton/". macOS sprema "/" upisan u naziv mape kao ":", što je uobičajeni uzrok.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Stupac "directory" obavezan je za svaki redak — stablo odredišne mape, npr. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Redak :row preskočen — sredstvo već postoji na ":path", a strategija sukoba je "skip". Odaberite "overwrite" ili "update metadata" za promjenu.',
+                        'asset-already-exists-summary' => 'Serija #:batch — preskočeno redaka: :count jer odgovarajuće sredstvo već postoji.',
+                        'media-source-not-found'       => 'Izvorna datoteka nije pronađena: stavite javnu https poveznicu u "path" ili datoteku koja odgovara "path" u direktoriju slika.',
+                        'url-invalid'                  => 'https poveznica u "path" nije valjana http ili https adresa.',
+                        'url-unreachable'              => 'https poveznicu u "path" nije bilo moguće preuzeti.',
+                        'url-blocked'                  => 'https poveznica u "path" upućuje na blokirano računalo.',
+                        'file-too-large'               => 'Medijska datoteka premašuje najveću dopuštenu veličinu.',
+                        'forbidden-file'               => 'Vrsta medijske datoteke nije dopuštena.',
+                        'import-failed'                => 'Redak nije bilo moguće uvesti zbog neočekivane pogreške.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Ogledni ZIP (CSV + medijske datoteke)',
+                    'media'  => 'Ogledni ZIP (samo medijske datoteke)',
+                ],
+                'options' => [
+                    'title' => 'Mogućnosti uvoza sredstava',
+                    'conflict' => [
+                        'label'           => 'Kada sredstvo već postoji na putanji',
+                        'skip'            => 'Preskoči redak',
+                        'overwrite'       => 'Prepiši datoteku i metapodatke',
+                        'update-metadata' => 'Ažuriraj samo metapodatke',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Automatski označi uvezene slike',
+                        'hint'  => 'Pokreni automatsko označavanje umjetnom inteligencijom na svakoj uvezenoj slici (zahtijeva konfiguriranu Magic AI platformu).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtri sredstava',
+                ],
+            ],
+        ],
+
     ],
 ];

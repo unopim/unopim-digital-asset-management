@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'تم إنشاء الأصل',
+            'updated' => 'تم تحديث الأصل',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'نظرة عامة على DAM',
+        'asset-analytics'   => 'تحليلات الأصول',
+        'total-assets'      => 'إجمالي الأصول',
+        'storage-used'      => 'المساحة المستخدمة',
+        'total-directories' => 'الأدلة',
+        'total-tags'        => 'الوسوم',
+        'assets-by-type'    => 'الأصول حسب النوع',
+        'recent-uploads'    => 'التحميلات الأخيرة',
+        'no-assets'         => 'لا توجد أصول بعد.',
+        'types' => [
+            'image'    => 'الصور',
+            'video'    => 'مقاطع الفيديو',
+            'audio'    => 'الصوت',
+            'document' => 'المستندات',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'الصف :row (:identifier)، العمود ":column": لم يتم العثور على أي أصل في المسار ":path". تم تخطي الأصل وسيستمر استيراد بقية الصف.',
             'asset-tree-misnamed'        => 'يحتوي الأرشيف على مجلد باسم ":name" بدلاً من "assets"، لذلك تعذر استيراد أي من أصوله. أعد تسميته إلى "assets" وأبقِ المجلدات الموجودة تحته مطابقة للمسارات في ملف البيانات، مثل "assets/Root/Seed/Tech Sheets/Cotton/". يخزن macOS الرمز "/" المكتوب في اسم مجلد على شكل ":"، وهذا هو السبب المعتاد.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'العمود "directory" مطلوب لكل صف — شجرة المجلد الوجهة، مثل "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'تم تخطّي الصف :row — يوجد أصل بالفعل في ":path" واستراتيجية التعارض هي "skip". اختر "overwrite" أو "update metadata" لتغيير ذلك.',
+                        'asset-already-exists-summary' => 'الدفعة #:batch — تم تخطّي :count صف/صفوف لوجود أصل مطابق بالفعل.',
+                        'media-source-not-found'       => 'لم يُعثر على ملف مصدر: ضع رابط https عامًا في "path"، أو ملفًا يطابق "path" ضمن دليل الصور.',
+                        'url-invalid'                  => 'رابط https في "path" ليس عنوان http أو https صالحًا.',
+                        'url-unreachable'              => 'تعذّر تنزيل رابط https في "path".',
+                        'url-blocked'                  => 'رابط https في "path" يشير إلى مضيف محظور.',
+                        'file-too-large'               => 'حجم ملف الوسائط يتجاوز الحد الأقصى المسموح به.',
+                        'forbidden-file'               => 'نوع ملف الوسائط غير مسموح به.',
+                        'import-failed'                => 'تعذّر استيراد الصف بسبب خطأ غير متوقع.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'نموذج ZIP (CSV + ملفات وسائط)',
+                    'media'  => 'نموذج ZIP (ملفات وسائط فقط)',
+                ],
+                'options' => [
+                    'title' => 'خيارات استيراد الأصول',
+                    'conflict' => [
+                        'label'           => 'عندما يوجد أصل بالفعل في المسار',
+                        'skip'            => 'تخطّي الصف',
+                        'overwrite'       => 'الكتابة فوق الملف والبيانات الوصفية',
+                        'update-metadata' => 'تحديث البيانات الوصفية فقط',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'الوسم التلقائي للصور المستوردة',
+                        'hint'  => 'تشغيل الوسم التلقائي بالذكاء الاصطناعي على كل صورة مستوردة (يتطلب منصة Magic AI مُهيّأة).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'عوامل تصفية الأصول',
+                ],
+            ],
+        ],
+
     ],
 ];

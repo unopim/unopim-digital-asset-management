@@ -4,6 +4,7 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Tag;
 
 beforeEach(function () {
+    $this->damResetAssetTables();
     $this->loginAsAdmin();
 });
 

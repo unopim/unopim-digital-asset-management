@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Tillgång skapad',
+            'updated' => 'Tillgång uppdaterad',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-översikt',
+        'asset-analytics'   => 'Tillgångsanalys',
+        'total-assets'      => 'Totalt antal tillgångar',
+        'storage-used'      => 'Använt lagringsutrymme',
+        'total-directories' => 'Kataloger',
+        'total-tags'        => 'Taggar',
+        'assets-by-type'    => 'Tillgångar efter typ',
+        'recent-uploads'    => 'Senaste uppladdningar',
+        'no-assets'         => 'Inga tillgångar ännu.',
+        'types' => [
+            'image'    => 'Bilder',
+            'video'    => 'Videor',
+            'audio'    => 'Ljud',
+            'document' => 'Dokument',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Rad :row (:identifier), kolumn ":column": ingen tillgång hittades på sökvägen ":path". Tillgången hoppades över och resten av raden importeras ändå.',
             'asset-tree-misnamed'        => 'Arkivet innehåller en mapp med namnet ":name" i stället för "assets", så inga av dess tillgångar kunde importeras. Byt namn till "assets" och låt mapparna under den motsvara sökvägarna i din datafil, till exempel "assets/Root/Seed/Tech Sheets/Cotton/". macOS sparar ett "/" som skrivs i ett mappnamn som ":", vilket är den vanliga orsaken.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'Kolumnen "directory" krävs för varje rad — målmappens träd, t.ex. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Rad :row hoppades över — en tillgång finns redan på ":path" och konfliktstrategin är "skip". Välj "overwrite" eller "update metadata" för att ändra det.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppades över eftersom en matchande tillgång redan finns.',
+                        'media-source-not-found'       => 'Ingen källfil hittades: ange en offentlig https-länk i "path", eller en fil som matchar "path" i bildkatalogen.',
+                        'url-invalid'                  => 'https-länken i "path" är inte en giltig http- eller https-adress.',
+                        'url-unreachable'              => 'https-länken i "path" kunde inte laddas ner.',
+                        'url-blocked'                  => 'https-länken i "path" pekar på en blockerad värd.',
+                        'file-too-large'               => 'Mediefilen överskrider den högsta tillåtna storleken.',
+                        'forbidden-file'               => 'Mediefiltypen är inte tillåten.',
+                        'import-failed'                => 'Raden kunde inte importeras på grund av ett oväntat fel.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Exempel-ZIP (CSV + mediefiler)',
+                    'media'  => 'Exempel-ZIP (endast mediefiler)',
+                ],
+                'options' => [
+                    'title' => 'Alternativ för tillgångsimport',
+                    'conflict' => [
+                        'label'           => 'När det redan finns en tillgång på sökvägen',
+                        'skip'            => 'Hoppa över raden',
+                        'overwrite'       => 'Skriv över filen och metadata',
+                        'update-metadata' => 'Uppdatera endast metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tagga importerade bilder automatiskt',
+                        'hint'  => 'Kör AI-autotaggning på varje importerad bild (kräver en konfigurerad Magic AI-plattform).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Tillgångsfilter',
+                ],
+            ],
+        ],
+
     ],
 ];

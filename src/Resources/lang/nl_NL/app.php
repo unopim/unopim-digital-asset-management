@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Asset aangemaakt',
+            'updated' => 'Asset bijgewerkt',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-overzicht',
+        'asset-analytics'   => 'Asset-analyse',
+        'total-assets'      => 'Totaal aantal assets',
+        'storage-used'      => 'Gebruikte opslag',
+        'total-directories' => 'Mappen',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Assets per type',
+        'recent-uploads'    => 'Recente uploads',
+        'no-assets'         => 'Nog geen assets.',
+        'types' => [
+            'image'    => 'Afbeeldingen',
+            'video'    => 'Video’s',
+            'audio'    => 'Audio',
+            'document' => 'Documenten',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -908,5 +932,64 @@ return [
             'asset-not-found'            => 'Rij :row (:identifier), kolom ":column": er is geen asset gevonden op pad ":path". De asset is overgeslagen en de rest van de rij wordt nog steeds geïmporteerd.',
             'asset-tree-misnamed'        => 'Het archief bevat een map met de naam ":name" in plaats van "assets", waardoor geen van de assets kon worden geïmporteerd. Hernoem de map naar "assets" en zorg dat de onderliggende mappen overeenkomen met de paden in uw gegevensbestand, bijvoorbeeld "assets/Root/Seed/Tech Sheets/Cotton/". macOS slaat een "/" in een mapnaam op als ":", wat de gebruikelijke oorzaak is.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'      => 'The "path" column is required for every row.',
+                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'directory-required'           => 'De kolom "directory" is voor elke rij verplicht — de doelmappenboom, bijv. "Root/Brand/Summer".',
+                        'asset-already-exists'         => 'Rij :row overgeslagen — er bestaat al een asset op ":path" en de conflictstrategie is "skip". Kies "overwrite" of "update metadata" om dit te wijzigen.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count rij(en) overgeslagen omdat er al een overeenkomende asset bestaat.',
+                        'media-source-not-found'       => 'Geen bronbestand gevonden: zet een openbare https-link in "path", of een bestand dat overeenkomt met "path" in de afbeeldingenmap.',
+                        'url-invalid'                  => 'De https-link in "path" is geen geldig http- of https-adres.',
+                        'url-unreachable'              => 'De https-link in "path" kon niet worden gedownload.',
+                        'url-blocked'                  => 'De https-link in "path" verwijst naar een geblokkeerde host.',
+                        'file-too-large'               => 'Het mediabestand overschrijdt de maximaal toegestane grootte.',
+                        'forbidden-file'               => 'Het type mediabestand is niet toegestaan.',
+                        'import-failed'                => 'De rij kon niet worden geïmporteerd vanwege een onverwachte fout.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Voorbeeld-ZIP (CSV + mediabestanden)',
+                    'media'  => 'Voorbeeld-ZIP (alleen mediabestanden)',
+                ],
+                'options' => [
+                    'title' => 'Importopties voor assets',
+                    'conflict' => [
+                        'label'           => 'Wanneer er al een asset op het pad bestaat',
+                        'skip'            => 'Rij overslaan',
+                        'overwrite'       => 'Bestand en metadata overschrijven',
+                        'update-metadata' => 'Alleen metadata bijwerken',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Geïmporteerde afbeeldingen automatisch taggen',
+                        'hint'  => 'AI-autotagging uitvoeren op elke geïmporteerde afbeelding (vereist een geconfigureerd Magic AI-platform).',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Asset-filters',
+                ],
+            ],
+        ],
+
     ],
 ];

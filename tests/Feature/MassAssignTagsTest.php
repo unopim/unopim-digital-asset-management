@@ -15,6 +15,7 @@ function assetInDirectory(Directory $directory): Asset
 }
 
 beforeEach(function () {
+    $this->damResetAssetTables();
     $this->loginAsAdmin();
 });
 

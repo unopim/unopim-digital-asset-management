@@ -60,13 +60,6 @@ class AssetTreeIngestor
         return $ingested;
     }
 
-    /**
-     * An archive compressed from a folder rather than from that folder's contents arrives
-     * with the whole tree one level down, which used to leave the asset tree unfound and
-     * the import silently ingesting nothing. The wrapping folder is looked through before
-     * the tree is declared absent, and whichever directory holds it becomes the root the
-     * entries are made relative to, so they still read as the asset paths the rows carry.
-     */
     protected function resolveAssetTreeRoot(string $sourceRoot): ?string
     {
         if (! is_dir($sourceRoot)) {
@@ -90,12 +83,6 @@ class AssetTreeIngestor
         return null;
     }
 
-    /**
-     * A tree the archive plainly meant to carry but named in a way the exact match
-     * never accepts, such as "assets:" (what macOS stores when a "/" is typed into a
-     * folder name), would otherwise ingest nothing and report success. Both levels
-     * resolveAssetTreeRoot() searches are mirrored so a wrapping folder cannot hide it.
-     */
     protected function findMisnamedAssetDirectory(string $sourceRoot): ?string
     {
         foreach ($this->childDirectories($sourceRoot) as $child) {
@@ -201,14 +188,6 @@ class AssetTreeIngestor
         return $asset->id;
     }
 
-    /**
-     * A path already held by an asset is that asset's, so a bundled binary that differs
-     * from the stored one is a new revision rather than a second asset: the row keeps its
-     * id and everything referencing it, and only the file behind it moves on.
-     *
-     * An identical binary is left alone, cached renders included, so re-running an import
-     * does not cost a re-render of the whole library.
-     */
     protected function refreshAsset(Asset $asset, string $entry, string $sourceFile): int
     {
         if (! $this->hasChanged($entry, $sourceFile)) {
@@ -262,11 +241,6 @@ class AssetTreeIngestor
         $this->purgeDerivatives($entry);
     }
 
-    /**
-     * Thumbnails and previews are cached under a path derived from the asset's own path
-     * and are served without consulting the binary they were rendered from, so dropping
-     * them is what makes a replaced image show up as the replacement.
-     */
     protected function purgeDerivatives(string $entry): void
     {
         $disk = Storage::disk(Directory::getAssetDisk());
