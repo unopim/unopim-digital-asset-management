@@ -262,7 +262,7 @@ This fetches the latest release of `unopim/unopim-digital-asset-management`,
 swaps `packages/Webkul/DAM` (code only — your DB and asset files are
 untouched), then runs `php artisan dam:update`, which backs up DAM tables +
 asset files, runs migrations, republishes assets, and verifies no data was
-lost. Back up first if you can.
+lost. Back up first.
 
 Restore a backup with:
 
