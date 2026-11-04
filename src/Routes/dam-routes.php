@@ -94,6 +94,7 @@ Route::group([
             Route::post('/bg-preview/{id}', 'bgPreview')->name('admin.dam.assets.image_edit.bg_preview')->where('id', '[0-9]+');
             Route::post('/bg-color-normal/{id}', 'bgColorNormal')->name('admin.dam.assets.image_edit.bg_color_normal')->where('id', '[0-9]+');
             Route::post('/filters/{id}', 'filters')->name('admin.dam.assets.image_edit.filters')->where('id', '[0-9]+');
+            Route::get('/platforms', 'platforms')->name('admin.dam.assets.image_edit.platforms');
         });
 
         Route::controller(LinkedResourcesController::class)->prefix('linked-resources')->group(function () {
@@ -170,6 +171,7 @@ Route::group([
             Route::get('/', 'index')->name('index');
             Route::post('/', 'update')->name('update');
             Route::get('/ai-tagging/platforms', 'aiTaggingPlatforms')->name('ai-tagging.platforms');
+            Route::get('/ai-tagging/models', 'aiTaggingModels')->name('ai-tagging.models');
         });
 
 });

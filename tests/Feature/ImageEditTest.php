@@ -2,6 +2,8 @@
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Image as AiImageFacade;
+use Laravel\Ai\Prompts\ImagePrompt;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\MagicAI\Models\MagicAIPlatform;
@@ -430,4 +432,81 @@ it('returns 422 (not 500) for every edit op when the asset file is missing on di
 
     $this->postJson(route('admin.dam.assets.image_edit.transform', $asset->id), ['rotation' => 90])
         ->assertStatus(422)->assertJson(['message' => $expected]);
+});
+
+function imageEditPlatform(string $provider, string $models, bool $status = true): MagicAIPlatform
+{
+    return MagicAIPlatform::create([
+        'label'    => ucfirst($provider).' Platform',
+        'provider' => $provider,
+        'api_key'  => 'test-key',
+        'models'   => $models,
+        'extras'   => [],
+        'status'   => $status,
+    ]);
+}
+
+it('lists every active image platform with the models core can use to edit images', function () {
+    $openai = imageEditPlatform('openai', 'gpt-4o,gpt-image-2.5-sunburst,dall-e-3');
+    $gemini = imageEditPlatform('gemini', 'gemini-2.5-pro,imagen-4.0-generate-001');
+    $anthropic = imageEditPlatform('anthropic', 'claude-3');
+    $inactive = imageEditPlatform('openai', 'gpt-image-1', status: false);
+
+    $platforms = collect($this->getJson(route('admin.dam.assets.image_edit.platforms'))
+        ->assertOk()
+        ->json('platforms'))->keyBy('id');
+
+    expect($platforms->get($openai->id)['models'])->toBe(['gpt-image-2.5-sunburst', 'dall-e-3'])
+        ->and($platforms->get($gemini->id)['models'])->toBe(['imagen-4.0-generate-001'])
+        ->and($platforms->has($anthropic->id))->toBeFalse()
+        ->and($platforms->has($inactive->id))->toBeFalse();
+});
+
+it('denies the image platform list to an admin without the asset edit permission', function () {
+    $this->loginWithPermissions('custom', ['dashboard']);
+
+    $this->getJson(route('admin.dam.assets.image_edit.platforms'))->assertForbidden();
+});
+
+it('rejects a background edit with a model the platform cannot use for images', function () {
+    AiImageFacade::fake();
+
+    $asset = imageAsset($this->disk);
+    $platform = imageEditPlatform('openai', 'gpt-4o,gpt-image-2.5-sunburst');
+
+    $this->postJson(route('admin.dam.assets.image_edit.bg_ai', $asset->id), [
+        'prompt'      => 'a beach',
+        'platform_id' => $platform->id,
+        'model'       => 'gpt-4o',
+    ])->assertStatus(422)
+        ->assertJson(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.error-model-no-images')]);
+
+    AiImageFacade::assertNothingGenerated();
+});
+
+it('edits the background with exactly the model that was selected', function () {
+    $result = UploadedFile::fake()->image('result.png', 200, 200);
+    $png = base64_encode(file_get_contents($result->getRealPath()));
+    AiImageFacade::fake([$png]);
+
+    $asset = imageAsset($this->disk);
+    $platform = imageEditPlatform('openai', 'gpt-image-1,dall-e-3');
+
+    $this->postJson(route('admin.dam.assets.image_edit.bg_ai', $asset->id), [
+        'prompt'      => 'a beach',
+        'platform_id' => $platform->id,
+        'model'       => 'dall-e-3',
+    ])->assertOk();
+
+    AiImageFacade::assertGenerated(fn (ImagePrompt $prompt) => $prompt->model === 'dall-e-3');
+});
+
+it('loads the AI platforms whenever the upload or AI background tab is opened', function () {
+    $script = file_get_contents(base_path('packages/Webkul/DAM/src/Resources/views/asset/preview-modal/image/image-viewer-script.blade.php'));
+
+    expect($script)
+        ->toContain("route('admin.dam.assets.image_edit.platforms')")
+        ->toContain("if (this.editTool === 'edit-bg' && tab !== 'color') this.loadBgPlatforms();")
+        ->not->toContain("['openai', 'gemini', 'xai'].includes(p.provider)")
+        ->not->toContain('imagePatterns');
 });

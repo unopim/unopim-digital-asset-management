@@ -188,3 +188,12 @@ it('leaves a pending flag owned by another tagging job untouched', function () {
 
     expect(aiTaggingPendingFlag($asset->id))->toBeTrue();
 });
+
+it('tells the editor when the AI tags arrive, or that none were added', function () {
+    $asset = liveRefreshImageAsset();
+
+    $this->get(route('admin.dam.assets.edit', $asset->id))
+        ->assertOk()
+        ->assertSee(json_encode(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')), false)
+        ->assertSee(json_encode(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')), false);
+});

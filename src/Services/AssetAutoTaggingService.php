@@ -15,6 +15,7 @@ use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\MagicAI\Contracts\MagicAIPlatform;
 use Webkul\MagicAI\Enums\AiProvider;
 use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
+use Webkul\MagicAI\Support\ModelRecommender;
 
 class AssetAutoTaggingService
 {
@@ -59,7 +60,7 @@ class AssetAutoTaggingService
                 return true;
             }
 
-            $model = $platform->model_list[0] ?? '';
+            $model = $this->modelFor($platform);
 
             $apiClient = app(AiApiClient::class);
             $apiClient->configure(new CredentialConfig(
@@ -100,17 +101,65 @@ class AssetAutoTaggingService
      */
     protected function resolvePlatform(): ?MagicAIPlatform
     {
-        $platformId = $this->platformId();
+        return $this->platformFor($this->platformId());
+    }
 
+    /**
+     * The given platform, or the active default when none is given, provided it is
+     * active, accepts images and has at least one model that can tag.
+     */
+    public function platformFor(?int $platformId): ?MagicAIPlatform
+    {
         $platform = $platformId
             ? $this->platformRepository->find($platformId)
             : $this->platformRepository->getActiveDefault();
 
-        if (! $platform || ! $platform->status) {
+        if (! $platform || ! $platform->status || ! AiProvider::from($platform->provider)->supportsImages()) {
             return null;
         }
 
-        return AiProvider::from($platform->provider)->supportsImages() ? $platform : null;
+        return $this->taggingModels($platform) === [] ? null : $platform;
+    }
+
+    /**
+     * The platform's configured models that support vision, in the order the platform
+     * lists them: core's chat-model filter drops embedding, speech, moderation and
+     * image-generation models, then only known vision families are kept.
+     *
+     * @return list<string>
+     */
+    public function taggingModels(MagicAIPlatform $platform): array
+    {
+        $models = array_values(array_filter($platform->model_list, fn (string $model): bool => $model !== ''));
+
+        $chatModels = array_intersect(ModelRecommender::chatCapable($models), ModelRecommender::textModels($models));
+
+        $patterns = (array) config('dam.ai_tagging.vision_model_patterns', []);
+
+        return array_values(array_filter(
+            $models,
+            fn (string $model): bool => in_array($model, $chatModels, true)
+                && array_any($patterns, fn (string $pattern): bool => preg_match($pattern, $model) === 1),
+        ));
+    }
+
+    /**
+     * The saved model while the platform still offers it for tagging, else the
+     * platform's first compatible model.
+     */
+    protected function modelFor(MagicAIPlatform $platform): string
+    {
+        $models = $this->taggingModels($platform);
+        $saved = $this->savedModel();
+
+        return $saved !== null && in_array($saved, $models, true) ? $saved : ($models[0] ?? '');
+    }
+
+    protected function savedModel(): ?string
+    {
+        $value = DamConfiguration::find('DAM_AI_TAGGING_MODEL')?->value ?? config('dam.ai_tagging.model');
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /**

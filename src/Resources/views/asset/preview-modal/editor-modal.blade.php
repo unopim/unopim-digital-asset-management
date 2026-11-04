@@ -168,7 +168,7 @@
                                 :class="bgSubTab === 'color'
                                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                @click="bgSubTab = 'color'"
+                                @click="selectBgSubTab('color')"
                             >{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-tab-color') }}</button>
                             <button
                                 type="button"
@@ -176,7 +176,7 @@
                                 :class="bgSubTab === 'upload'
                                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                @click="bgSubTab = 'upload'"
+                                @click="selectBgSubTab('upload')"
                             >{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-tab-upload') }}</button>
                             <button
                                 type="button"
@@ -184,7 +184,7 @@
                                 :class="bgSubTab === 'ai'
                                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                                @click="bgSubTab = 'ai'"
+                                @click="selectBgSubTab('ai')"
                             >{{ trans('dam::app.admin.dam.asset.edit.image-editor.bg-tab-ai') }}</button>
                         </div>
 

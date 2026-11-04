@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Storage;
+use Webkul\AiAgent\DTOs\CredentialConfig;
 use Webkul\AiAgent\Http\Client\AiApiClient;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\DamConfiguration;
@@ -255,7 +256,7 @@ it('sends the default temperature to openai reasoning models that reject any oth
 
     expect(app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk()))->toBeTrue()
         ->and($asset->refresh()->tags->pluck('name')->all())->toBe(['forest']);
-})->with(['gpt-6.1-terra', 'gpt-6-luna', 'gpt-5-mini', 'o3-mini']);
+})->with(['gpt-6.1-terra', 'gpt-6-luna', 'gpt-5-mini', 'o3']);
 
 it('keeps a low temperature for models that accept one', function () {
     makeVisionPlatform(models: 'gpt-4o');
@@ -268,4 +269,75 @@ it('keeps a low temperature for models that accept one', function () {
     app()->instance(AiApiClient::class, $client);
 
     expect(app(AssetAutoTaggingService::class)->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
+});
+
+it('lists only the configured platform models that support vision', function () {
+    $platform = makeVisionPlatform(models: 'gpt-4o,gpt-image-1,dall-e-3,text-embedding-3-small,whisper-1,tts-1,omni-moderation-latest,gpt-4o-transcribe,gpt-3.5-turbo,o3-mini,gpt-5-mini');
+
+    expect(app(AssetAutoTaggingService::class)->taggingModels($platform))->toBe(['gpt-4o', 'gpt-5-mini']);
+});
+
+it('recognises vision models across providers', function (string $model) {
+    expect(app(AssetAutoTaggingService::class)->taggingModels(makeVisionPlatform(models: $model)))->toBe([$model]);
+})->with([
+    'gpt-4o-mini', 'chatgpt-4o-latest', 'gpt-4.1-nano', 'gpt-4-turbo', 'gpt-5.1', 'gpt-6.1-terra', 'o1', 'o3', 'o4-mini',
+    'claude-3-5-sonnet-latest', 'claude-sonnet-4-5', 'claude-opus-4-1',
+    'gemini-2.5-flash', 'gemini-1.5-pro', 'gemma-3-27b-it',
+    'grok-2-vision-1212', 'grok-4',
+    'llama-3.2-11b-vision-instruct', 'meta-llama/llama-4-scout', 'llava:13b',
+    'pixtral-large-latest', 'mistral-medium-latest', 'qwen2.5-vl-72b-instruct', 'openai/gpt-4o',
+]);
+
+it('leaves out chat models without vision support', function (string $model) {
+    expect(app(AssetAutoTaggingService::class)->taggingModels(makeVisionPlatform(models: $model)))->toBe([]);
+})->with(['gpt-3.5-turbo', 'gpt-4', 'o1-mini', 'o3-mini', 'claude-2.1', 'gemini-1.0-pro', 'llama-3.1-8b-instant', 'mistral-large-latest', 'deepseek-chat', 'grok-3-mini']);
+
+it('tags with the model saved in the DAM configuration', function () {
+    makeVisionPlatform(models: 'gpt-4o,gpt-4.1-mini');
+    DamConfiguration::updateOrCreate(['key' => 'DAM_AI_TAGGING_ENABLED'], ['value' => '1']);
+    DamConfiguration::updateOrCreate(['key' => 'DAM_AI_TAGGING_MODEL'], ['value' => 'gpt-4.1-mini']);
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->withArgs(fn (CredentialConfig $config) => $config->model === 'gpt-4.1-mini')->andReturnSelf();
+    $client->shouldReceive('chat')->once()->andReturn(['content' => json_encode(['tags' => ['forest']])]);
+    app()->instance(AiApiClient::class, $client);
+
+    expect(app(AssetAutoTaggingService::class)->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
+});
+
+it('falls back to the first compatible model when none is saved', function () {
+    makeVisionPlatform(models: 'gpt-image-1,gpt-4o');
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->withArgs(fn (CredentialConfig $config) => $config->model === 'gpt-4o')->andReturnSelf();
+    $client->shouldReceive('chat')->once()->andReturn(['content' => json_encode(['tags' => ['forest']])]);
+    app()->instance(AiApiClient::class, $client);
+
+    expect(app(AssetAutoTaggingService::class)->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
+});
+
+it('falls back to the first compatible model when the saved one is no longer on the platform', function () {
+    makeVisionPlatform(models: 'gpt-4o');
+    DamConfiguration::updateOrCreate(['key' => 'DAM_AI_TAGGING_ENABLED'], ['value' => '1']);
+    DamConfiguration::updateOrCreate(['key' => 'DAM_AI_TAGGING_MODEL'], ['value' => 'gpt-4.1-mini']);
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->withArgs(fn (CredentialConfig $config) => $config->model === 'gpt-4o')->andReturnSelf();
+    $client->shouldReceive('chat')->once()->andReturn(['content' => json_encode(['tags' => ['forest']])]);
+    app()->instance(AiApiClient::class, $client);
+
+    expect(app(AssetAutoTaggingService::class)->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
+});
+
+it('does not call the AI when the platform has no model that can tag an image', function () {
+    makeVisionPlatform(models: 'gpt-image-1,dall-e-3');
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldNotReceive('chat');
+    app()->instance(AiApiClient::class, $client);
+
+    $service = app(AssetAutoTaggingService::class);
+
+    expect($service->isAvailable())->toBeFalse()
+        ->and($service->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
 });

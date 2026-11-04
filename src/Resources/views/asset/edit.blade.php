@@ -379,8 +379,20 @@
                             if (this.applyTags(data.tags ?? [])) {
                                 this.aiTagsGenerated  = true;
                                 this.aiTaggingPending = false;
+
+                                this.$emitter.emit('add-flash', {
+                                    type: 'success',
+                                    message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')),
+                                });
                             } else {
                                 this.aiTaggingPending = !! data.aiTaggingPending;
+
+                                if (! this.aiTaggingPending) {
+                                    this.$emitter.emit('add-flash', {
+                                        type: 'warning',
+                                        message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')),
+                                    });
+                                }
                             }
                         } catch (e) {
                             this.aiTaggingPending = false;

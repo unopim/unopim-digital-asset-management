@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Webkul\DAM\Http\Requests\ConfigurationRequest;
 use Webkul\DAM\Models\DamConfiguration;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\MagicAI\Enums\AiProvider;
 use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
 
@@ -19,6 +20,7 @@ class ConfigurationController extends Controller
 {
     public function __construct(
         protected MagicAIPlatformRepository $platformRepository,
+        protected AssetAutoTaggingService $taggingService,
     ) {}
 
     public function index(): View
@@ -37,6 +39,7 @@ class ConfigurationController extends Controller
                 'DAM_EXPLORER_SHOW_TREE'          => config('dam.explorer.show_tree'),
                 'DAM_AI_TAGGING_ENABLED'          => config('dam.ai_tagging.enabled'),
                 'DAM_AI_TAGGING_PLATFORM_ID'      => config('dam.ai_tagging.platform_id'),
+                'DAM_AI_TAGGING_MODEL'            => config('dam.ai_tagging.model'),
                 'DAM_AI_TAGGING_MAX_TAGS'         => config('dam.ai_tagging.max_tags', 8),
                 'DAM_AI_TAGGING_RATE_LIMIT'       => config('dam.ai_tagging.rate_limit_per_minute', 60),
             ],
@@ -75,6 +78,29 @@ class ConfigurationController extends Controller
     }
 
     /**
+     * Option source for the model select: the models of the given platform, or of
+     * the default one, that can tag an image.
+     */
+    public function aiTaggingModels(Request $request): JsonResponse
+    {
+        if (! bouncer()->hasPermission('dam.configuration.index')) {
+            abort(403);
+        }
+
+        $platform = $this->taggingService->platformFor($request->integer('platform_id') ?: null);
+
+        $options = $platform
+            ? array_map(fn (string $model): array => ['id' => $model, 'label' => $model], $this->taggingService->taggingModels($platform))
+            : [];
+
+        return new JsonResponse([
+            'options'  => $options,
+            'page'     => 1,
+            'lastPage' => 1,
+        ]);
+    }
+
+    /**
      * @return Collection<int, array<string, mixed>>
      */
     protected function visionCapablePlatforms()
@@ -98,6 +124,11 @@ class ConfigurationController extends Controller
         DamConfiguration::updateOrCreate(
             ['key' => 'DAM_AI_TAGGING_PLATFORM_ID'],
             ['value' => (string) $request->input('DAM_AI_TAGGING_PLATFORM_ID', '')]
+        );
+
+        DamConfiguration::updateOrCreate(
+            ['key' => 'DAM_AI_TAGGING_MODEL'],
+            ['value' => (string) $request->input('DAM_AI_TAGGING_MODEL', '')]
         );
 
         DamConfiguration::updateOrCreate(

@@ -185,32 +185,11 @@
                 </div>
 
                 <div id="ai-tagging-platform-row" class="grid gap-2 px-5 py-4 {{ $settings['DAM_AI_TAGGING_ENABLED'] ? '' : 'hidden' }}">
-                    <label for="dam_ai_tagging_platform_id" class="text-sm font-medium text-gray-800 dark:text-white">
-                        @lang('dam::app.admin.configuration.ai-tagging.platform.label')
-                    </label>
-
-                    <x-admin::form.control-group>
-                        <x-admin::form.control-group.control
-                            type="select"
-                            id="dam_ai_tagging_platform_id"
-                            name="DAM_AI_TAGGING_PLATFORM_ID"
-                            async="true"
-                            list-route="{{ route('admin.dam.configuration.ai-tagging.platforms') }}"
-                            track-by="id"
-                            label-by="label"
-                            :value="$selectedAiTaggingPlatform ? json_encode(['id' => (string) $selectedAiTaggingPlatform['id'], 'label' => $selectedAiTaggingPlatform['label']]) : ''"
-                            :placeholder="trans('dam::app.admin.configuration.ai-tagging.platform.use-default')"
-                            :disabled="! $hasAiTaggingPlatforms"
-                        />
-
-                        <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_PLATFORM_ID" />
-                    </x-admin::form.control-group>
-
-                    @unless ($hasAiTaggingPlatforms)
-                        <p class="text-xs text-primary-600 dark:text-primary-400 leading-relaxed">
-                            @lang('dam::app.admin.configuration.ai-tagging.platform.none-configured-hint')
-                        </p>
-                    @endunless
+                    <v-dam-ai-tagging-platform-model
+                        models-route="{{ route('admin.dam.configuration.ai-tagging.models') }}"
+                        platform-id="{{ $selectedAiTaggingPlatform['id'] ?? '' }}"
+                        model="{{ $settings['DAM_AI_TAGGING_MODEL'] }}"
+                    ></v-dam-ai-tagging-platform-model>
 
                     <label for="dam_ai_tagging_max_tags" class="text-sm font-medium text-gray-800 dark:text-white mt-2">
                         @lang('dam::app.admin.configuration.ai-tagging.max-tags.label')
@@ -256,6 +235,165 @@
         </div>
 
     </x-admin::form>
+
+    @pushOnce('scripts')
+        <script
+            type="text/x-template"
+            id="v-dam-ai-tagging-platform-model-template"
+        >
+            <div class="grid gap-2">
+                <label for="dam_ai_tagging_platform_id" class="text-sm font-medium text-gray-800 dark:text-white">
+                    @lang('dam::app.admin.configuration.ai-tagging.platform.label')
+                </label>
+
+                <x-admin::form.control-group>
+                    <x-admin::form.control-group.control
+                        type="select"
+                        id="dam_ai_tagging_platform_id"
+                        name="DAM_AI_TAGGING_PLATFORM_ID"
+                        async="true"
+                        list-route="{{ route('admin.dam.configuration.ai-tagging.platforms') }}"
+                        track-by="id"
+                        label-by="label"
+                        :value="$selectedAiTaggingPlatform ? json_encode(['id' => (string) $selectedAiTaggingPlatform['id'], 'label' => $selectedAiTaggingPlatform['label']]) : ''"
+                        :placeholder="trans('dam::app.admin.configuration.ai-tagging.platform.use-default')"
+                        :disabled="! $hasAiTaggingPlatforms"
+                        @input="onPlatformChange"
+                    />
+
+                    <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_PLATFORM_ID" />
+                </x-admin::form.control-group>
+
+                @unless ($hasAiTaggingPlatforms)
+                    <p class="text-xs text-primary-600 dark:text-primary-400 leading-relaxed">
+                        @lang('dam::app.admin.configuration.ai-tagging.platform.none-configured-hint')
+                    </p>
+                @endunless
+
+                <label for="dam_ai_tagging_model" class="text-sm font-medium text-gray-800 dark:text-white mt-2">
+                    @lang('dam::app.admin.configuration.ai-tagging.model.label')
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 -mt-1.5">
+                    @lang('dam::app.admin.configuration.ai-tagging.model.hint')
+                </p>
+
+                <x-admin::form.control-group>
+                    <x-admin::form.control-group.control
+                        type="select"
+                        id="dam_ai_tagging_model"
+                        name="DAM_AI_TAGGING_MODEL"
+                        v-model="selectedModel"
+                        ::key="modelSelectKey"
+                        ::options="JSON.stringify(models)"
+                        track-by="id"
+                        label-by="label"
+                        :placeholder="trans('dam::app.admin.configuration.ai-tagging.model.use-default')"
+                        ::disabled="isLoading || ! models.length"
+                    />
+
+                    <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_MODEL" />
+                </x-admin::form.control-group>
+
+                <p
+                    v-if="! isLoading && ! models.length"
+                    class="text-xs text-primary-600 dark:text-primary-400 leading-relaxed"
+                >
+                    @lang('dam::app.admin.configuration.ai-tagging.model.none-available')
+                </p>
+            </div>
+        </script>
+
+        <script type="module">
+            app.component('v-dam-ai-tagging-platform-model', {
+                template: '#v-dam-ai-tagging-platform-model-template',
+
+                props: {
+                    modelsRoute: {
+                        type: String,
+                        required: true,
+                    },
+
+                    platformId: {
+                        type: String,
+                        default: '',
+                    },
+
+                    model: {
+                        type: String,
+                        default: '',
+                    },
+                },
+
+                data() {
+                    return {
+                        currentPlatformId: this.platformId,
+                        selectedModel: this.model,
+                        models: [],
+                        isLoading: false,
+                        modelSelectKey: 0,
+                    };
+                },
+
+                mounted() {
+                    this.loadModels();
+                },
+
+                methods: {
+                    onPlatformChange(value) {
+                        const platformId = this.optionId(value);
+
+                        if (platformId === this.currentPlatformId) {
+                            return;
+                        }
+
+                        this.currentPlatformId = platformId;
+
+                        this.loadModels();
+                    },
+
+                    loadModels() {
+                        const platformId = this.currentPlatformId;
+
+                        this.isLoading = true;
+
+                        this.$axios.get(this.modelsRoute, { params: { platform_id: platformId || undefined } })
+                            .then(({ data }) => {
+                                if (platformId !== this.currentPlatformId) {
+                                    return;
+                                }
+
+                                this.models = data.options ?? [];
+
+                                if (! this.models.some((option) => option.id === this.optionId(this.selectedModel))) {
+                                    this.selectedModel = '';
+                                }
+                            })
+                            .catch(() => {
+                                this.models = [];
+                            })
+                            .finally(() => {
+                                this.isLoading = false;
+                                this.modelSelectKey += 1;
+                            });
+                    },
+
+                    optionId(value) {
+                        if (! value) {
+                            return '';
+                        }
+
+                        try {
+                            const parsed = JSON.parse(value);
+
+                            return parsed && typeof parsed === 'object' ? String(parsed.id ?? '') : String(parsed);
+                        } catch (error) {
+                            return String(value);
+                        }
+                    },
+                },
+            });
+        </script>
+    @endPushOnce
 
     @push('scripts')
     <script>
