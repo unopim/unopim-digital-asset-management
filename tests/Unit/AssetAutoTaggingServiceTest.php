@@ -28,14 +28,14 @@ function makeTaggableAsset(string $fileType = 'image'): Asset
     ]);
 }
 
-function makeVisionPlatform(bool $active = true): MagicAIPlatform
+function makeVisionPlatform(bool $active = true, string $models = 'gpt-4o'): MagicAIPlatform
 {
     return MagicAIPlatform::create([
         'label'      => 'Test OpenAI',
         'provider'   => 'openai',
         'api_url'    => 'https://api.openai.com/v1',
         'api_key'    => 'test-key',
-        'models'     => 'gpt-4o',
+        'models'     => $models,
         'extras'     => [],
         'is_default' => true,
         'status'     => $active,
@@ -239,4 +239,33 @@ it('applies no size limit when the limit is zero', function () {
     app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk());
 
     expect($asset->refresh()->tags->pluck('name')->all())->toBe(['forest']);
+});
+
+it('sends the default temperature to openai reasoning models that reject any other value', function (string $model) {
+    makeVisionPlatform(models: $model);
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->andReturnSelf();
+    $client->shouldReceive('chat')->once()->withArgs(fn ($messages, $maxTokens, $temperature) => $temperature === 1.0)->andReturn([
+        'content' => json_encode(['tags' => ['forest']]),
+    ]);
+    app()->instance(AiApiClient::class, $client);
+
+    $asset = makeTaggableAsset();
+
+    expect(app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk()))->toBeTrue()
+        ->and($asset->refresh()->tags->pluck('name')->all())->toBe(['forest']);
+})->with(['gpt-6.1-terra', 'gpt-6-luna', 'gpt-5-mini', 'o3-mini']);
+
+it('keeps a low temperature for models that accept one', function () {
+    makeVisionPlatform(models: 'gpt-4o');
+
+    $client = Mockery::mock(AiApiClient::class);
+    $client->shouldReceive('configure')->once()->andReturnSelf();
+    $client->shouldReceive('chat')->once()->withArgs(fn ($messages, $maxTokens, $temperature) => $temperature === 0.2)->andReturn([
+        'content' => json_encode(['tags' => ['forest']]),
+    ]);
+    app()->instance(AiApiClient::class, $client);
+
+    expect(app(AssetAutoTaggingService::class)->tagAsset(makeTaggableAsset(), Directory::getAssetDisk()))->toBeTrue();
 });

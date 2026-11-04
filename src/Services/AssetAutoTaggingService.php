@@ -59,6 +59,8 @@ class AssetAutoTaggingService
                 return true;
             }
 
+            $model = $platform->model_list[0] ?? '';
+
             $apiClient = app(AiApiClient::class);
             $apiClient->configure(new CredentialConfig(
                 id: $platform->id,
@@ -66,12 +68,12 @@ class AssetAutoTaggingService
                 provider: $platform->provider,
                 apiUrl: $platform->api_url ?: AiProvider::from($platform->provider)->defaultUrl(),
                 apiKey: $platform->api_key,
-                model: $platform->model_list[0] ?? '',
+                model: $model,
             ));
 
             $maxTags = $this->maxTags();
 
-            $response = $apiClient->chat($this->buildTaggingMessages($dataUri, $maxTags), maxTokens: 512, temperature: 0.2);
+            $response = $apiClient->chat($this->buildTaggingMessages($dataUri, $maxTags), maxTokens: 512, temperature: $this->temperatureFor($model));
 
             $tags = $this->parseTags((string) ($response['content'] ?? ''), $maxTags);
 
@@ -218,6 +220,15 @@ class AssetAutoTaggingService
         $raw = $storage->get($asset->path);
 
         return 'data:'.($asset->mime_type ?: 'image/jpeg').';base64,'.base64_encode($raw);
+    }
+
+    /**
+     * OpenAI reasoning models (o-series, gpt-5 and later) reject any temperature
+     * other than the default 1, so a low one is only sent to models that accept it.
+     */
+    protected function temperatureFor(string $model): float
+    {
+        return preg_match('/^(chat-latest|o[1-9]|gpt-([5-9]|\d{2,}))/i', $model) ? 1.0 : 0.2;
     }
 
     /**

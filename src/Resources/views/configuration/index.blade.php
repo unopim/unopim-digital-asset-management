@@ -189,7 +189,7 @@
                         @lang('dam::app.admin.configuration.ai-tagging.platform.label')
                     </label>
 
-                    <x-admin::form.control-group class="max-w-sm">
+                    <x-admin::form.control-group>
                         <x-admin::form.control-group.control
                             type="select"
                             id="dam_ai_tagging_platform_id"
@@ -202,6 +202,8 @@
                             :placeholder="trans('dam::app.admin.configuration.ai-tagging.platform.use-default')"
                             :disabled="! $hasAiTaggingPlatforms"
                         />
+
+                        <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_PLATFORM_ID" />
                     </x-admin::form.control-group>
 
                     @unless ($hasAiTaggingPlatforms)
@@ -217,7 +219,7 @@
                         @lang('dam::app.admin.configuration.ai-tagging.max-tags.hint')
                     </p>
 
-                    <x-admin::form.control-group class="max-w-[8rem]">
+                    <x-admin::form.control-group>
                         <x-admin::form.control-group.control
                             type="number"
                             id="dam_ai_tagging_max_tags"
@@ -226,6 +228,8 @@
                             max="20"
                             :value="$settings['DAM_AI_TAGGING_MAX_TAGS']"
                         />
+
+                        <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_MAX_TAGS" />
                     </x-admin::form.control-group>
 
                     <label for="dam_ai_tagging_rate_limit" class="text-sm font-medium text-gray-800 dark:text-white mt-2">
@@ -235,7 +239,7 @@
                         @lang('dam::app.admin.configuration.ai-tagging.rate-limit.hint')
                     </p>
 
-                    <x-admin::form.control-group class="max-w-[8rem]">
+                    <x-admin::form.control-group>
                         <x-admin::form.control-group.control
                             type="number"
                             id="dam_ai_tagging_rate_limit"
@@ -244,6 +248,8 @@
                             max="120"
                             :value="$settings['DAM_AI_TAGGING_RATE_LIMIT']"
                         />
+
+                        <x-admin::form.control-group.error control-name="DAM_AI_TAGGING_RATE_LIMIT" />
                     </x-admin::form.control-group>
                 </div>
             </div>
