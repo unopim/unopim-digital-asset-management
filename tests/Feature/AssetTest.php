@@ -349,7 +349,9 @@ it('should prevent deletion of an asset that has linked resources', function () 
     $response->assertStatus(404)
         ->assertJson([
             'success' => false,
-            'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+            'message' => trans('dam::app.admin.dam.asset.delete-failed-assigned-to-product', [
+                'assets' => $asset->file_name,
+            ]),
         ]);
 
     $this->assertDatabaseHas($this->getFullTableName(Asset::class), ['id' => $asset->id]);
