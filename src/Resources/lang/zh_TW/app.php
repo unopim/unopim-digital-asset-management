@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => '資產刪除成功',
                 'delete-failed-due-to-attached-resources' => '資產使用中，請先取消連結再刪除',
+                'delete-failed-assigned-to-product'       => '資源「:assets」已指派給某個產品，無法刪除。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '大量刪除成功。',
                     'mass-update-success'                 => '批量更新成功。',

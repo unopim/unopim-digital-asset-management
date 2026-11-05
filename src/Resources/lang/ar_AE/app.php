@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'تم حذف الأصل بنجاح',
                 'delete-failed-due-to-attached-resources' => 'الأصل قيد الاستخدام. يرجى فصله قبل الحذف',
+                'delete-failed-assigned-to-product'       => 'الأصل ":assets" معيَّن لمنتج ولا يمكن حذفه.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'تم الحذف الجماعي بنجاح.',
                     'mass-update-success'                 => 'تم التحديث الجماعي بنجاح.',

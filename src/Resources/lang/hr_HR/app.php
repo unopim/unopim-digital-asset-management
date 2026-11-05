@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Resurs je uspješno obrisan',
                 'delete-failed-due-to-attached-resources' => 'Resurs je u upotrebi. Odvojite ga prije brisanja',
+                'delete-failed-assigned-to-product'       => 'Resurs ":assets" dodijeljen je proizvodu i ne može se izbrisati.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masovno brisanje uspješno.',
                     'mass-update-success'                 => 'Masovno ažuriranje uspješno.',

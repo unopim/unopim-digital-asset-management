@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Activo eliminado con éxito',
                 'delete-failed-due-to-attached-resources' => 'El recurso está en uso. Desvincúlalo antes de eliminarlo',
+                'delete-failed-assigned-to-product'       => 'El recurso ":assets" está asignado a un producto y no se puede eliminar.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminación masiva realizada con éxito.',
                     'mass-update-success'                 => 'Actualización masiva realizada correctamente.',

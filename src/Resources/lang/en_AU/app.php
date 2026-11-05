@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
                 'delete-failed-due-to-attached-resources' => 'Asset in use, unlink before deleting',
+                'delete-failed-assigned-to-product'       => 'Asset ":assets" is assigned to a product and cannot be deleted.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Mass Deleted Successfully.',
                     'mass-update-success'                 => 'Mass Updated Successfully.',

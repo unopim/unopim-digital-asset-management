@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Resurssi poistettu onnistuneesti',
                 'delete-failed-due-to-attached-resources' => 'Resurssi on käytössä. Poista linkitys ennen poistamista',
+                'delete-failed-assigned-to-product'       => 'Resurssi ":assets" on liitetty tuotteeseen, eikä sitä voi poistaa.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Joukkopoisto onnistui.',
                     'mass-update-success'                 => 'Joukkomuutos onnistui.',

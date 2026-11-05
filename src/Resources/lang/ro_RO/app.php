@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Activ șters cu succes',
                 'delete-failed-due-to-attached-resources' => 'Activul este utilizat. Dezasociați-l înainte de ștergere',
+                'delete-failed-assigned-to-product'       => 'Resursa ":assets" este atribuită unui produs și nu poate fi ștearsă.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Ștergere în masă efectuată cu succes.',
                     'mass-update-success'                 => 'Actualizare în masă finalizată cu succes.',

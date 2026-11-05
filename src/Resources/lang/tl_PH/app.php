@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Matagumpay na natanggal ang asset',
                 'delete-failed-due-to-attached-resources' => 'Ginagamit ang asset. I-unlink bago tanggalin',
+                'delete-failed-assigned-to-product'       => 'Ang asset na ":assets" ay nakatalaga sa isang produkto at hindi maaaring tanggalin.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Matagumpay na Natanggal nang Maramihan.',
                     'mass-update-success'                 => 'Matagumpay na na-update ang lahat.',

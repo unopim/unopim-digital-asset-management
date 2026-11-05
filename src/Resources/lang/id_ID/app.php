@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Aset berhasil dihapus',
                 'delete-failed-due-to-attached-resources' => 'Aset sedang digunakan. Lepaskan tautan sebelum menghapus',
+                'delete-failed-assigned-to-product'       => 'Aset ":assets" ditetapkan ke suatu produk dan tidak dapat dihapus.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Penghapusan Massal Berhasil.',
                     'mass-update-success'                 => 'Pembaruan massal berhasil.',

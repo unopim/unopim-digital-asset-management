@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Đã xóa tài sản thành công',
                 'delete-failed-due-to-attached-resources' => 'Tài sản đang được sử dụng. Hủy liên kết trước khi xóa',
+                'delete-failed-assigned-to-product'       => 'Tài nguyên ":assets" đã được gán cho một sản phẩm và không thể xóa.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Đã xóa hàng loạt thành công.',
                     'mass-update-success'                 => 'Cập nhật hàng loạt thành công.',

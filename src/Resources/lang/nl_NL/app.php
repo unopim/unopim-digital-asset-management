@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Asset succesvol verwijderd',
                 'delete-failed-due-to-attached-resources' => 'Asset is in gebruik. Ontkoppel voordat je verwijdert',
+                'delete-failed-assigned-to-product'       => 'Asset ":assets" is toegewezen aan een product en kan niet worden verwijderd.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massa verwijdering succesvol.',
                     'mass-update-success'                 => 'Massa-update geslaagd.',

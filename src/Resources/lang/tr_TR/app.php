@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Varlık başarıyla silindi',
                 'delete-failed-due-to-attached-resources' => 'Varlık kullanımda. Silmeden önce bağlantıyı kaldırın',
+                'delete-failed-assigned-to-product'       => '":assets" varlığı bir ürüne atanmış ve silinemez.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Toplu silme başarıyla tamamlandı.',
                     'mass-update-success'                 => 'Toplu güncelleme başarılı.',

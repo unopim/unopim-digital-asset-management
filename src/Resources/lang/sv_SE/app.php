@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Tillgång borttagen',
                 'delete-failed-due-to-attached-resources' => 'Tillgången används. Koppla bort innan du tar bort',
+                'delete-failed-assigned-to-product'       => 'Tillgången ":assets" är kopplad till en produkt och kan inte tas bort.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massborttagning genomförd.',
                     'mass-update-success'                 => 'Massuppdatering slutförd.',

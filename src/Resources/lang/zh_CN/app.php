@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => '资产删除成功',
                 'delete-failed-due-to-attached-resources' => '资源正在使用中。删除前请先取消关联',
+                'delete-failed-assigned-to-product'       => '资源":assets"已分配给某个产品，无法删除。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '批量删除成功。',
                     'mass-update-success'                 => '批量更新成功。',

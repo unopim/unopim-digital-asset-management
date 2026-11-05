@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Actif supprimé avec succès',
                 'delete-failed-due-to-attached-resources' => 'La ressource est utilisée. Détachez-la avant de supprimer',
+                'delete-failed-assigned-to-product'       => 'La ressource ":assets" est affectée à un produit et ne peut pas être supprimée.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Suppression en masse réussie.',
                     'mass-update-success'                 => 'Mise à jour en masse réussie.',

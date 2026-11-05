@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'संपत्ति सफलतापूर्वक हटा दी गई',
                 'delete-failed-due-to-attached-resources' => 'एसेट उपयोग में है। हटाने से पहले अनलिंक करें',
+                'delete-failed-assigned-to-product'       => 'एसेट ":assets" किसी उत्पाद को असाइन किया गया है और इसे हटाया नहीं जा सकता।',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'संपत्ति समूह में सफलतापूर्वक हटा दी गई।',
                     'mass-update-success'                 => 'सामूहिक अपडेट सफलतापूर्वक हुआ.',

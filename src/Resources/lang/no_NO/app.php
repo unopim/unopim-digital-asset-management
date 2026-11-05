@@ -477,6 +477,7 @@ return [
                 ],
                 'delete-success'                          => 'Ressurs slettet',
                 'delete-failed-due-to-attached-resources' => 'Ressursen er i bruk. Fjern tilknytningen før du sletter',
+                'delete-failed-assigned-to-product'       => 'Ressursen ":assets" er tilordnet et produkt og kan ikke slettes.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masseslettet.',
                     'mass-update-success'                 => 'Masseoppдatering vellykket.',
