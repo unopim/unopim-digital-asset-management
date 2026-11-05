@@ -969,6 +969,10 @@ return [
                         'label' => 'Auto-tag imported images',
                         'hint'  => 'Run AI auto-tagging on each imported image (requires a configured Magic AI platform).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Destination directory (ZIP without a CSV)',
+                        'hint'  => 'For CSV-less ZIPs only. Media is placed here; ZIP folders nest beneath. Defaults to Root.',
+                    ],
                 ],
             ],
         ],

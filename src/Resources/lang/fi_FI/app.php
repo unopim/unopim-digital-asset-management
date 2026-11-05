@@ -969,6 +969,10 @@ return [
                         'label' => 'Merkitse tuodut kuvat automaattisesti',
                         'hint'  => 'Suorita tekoälyn automaattinen tunnisteiden lisäys jokaiselle tuodulle kuvalle (vaatii määritetyn Magic AI -alustan).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Kohdehakemisto (ZIP ilman CSV:tä)',
+                        'hint'  => 'Vain CSV:ttömille ZIP-tiedostoille. Media sijoitetaan tähän; ZIP-kansiot sijoittuvat sen alle. Oletuksena Root.',
+                    ],
                 ],
             ],
         ],

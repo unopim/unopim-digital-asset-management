@@ -32,7 +32,7 @@ class AssetBundleReader
         $mediaDirectory = $this->stageMedia($entries, $dataFile, $extractPath, $import->id);
 
         if ($dataFile === null) {
-            $dataFile = $this->synthesizeDataFile($entries, $extractPath);
+            $dataFile = $this->synthesizeDataFile($entries, $extractPath, $this->baseDirectoryPath($import));
         }
 
         if ($dataFile === null) {
@@ -79,8 +79,12 @@ class AssetBundleReader
 
     protected function isPermittedEntry(string $relativePath, string $extension, string $stagedPath): bool
     {
-        if (! str_contains($relativePath, '/')) {
-            return in_array($extension, self::DATA_FILE_EXTENSIONS, true);
+        // A top-level data file (the CSV manifest) is always permitted. Other top-level entries —
+        // media sitting at the archive root — were historically rejected; they are now allowed
+        // through the same forbidden-file guard as nested media so a CSV-less bundle can import
+        // files that are not tucked inside a sub-folder.
+        if (! str_contains($relativePath, '/') && in_array($extension, self::DATA_FILE_EXTENSIONS, true)) {
+            return true;
         }
 
         $mimeType = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($stagedPath);
@@ -107,9 +111,14 @@ class AssetBundleReader
     }
 
     /**
+     * A CSV-less bundle carries no destination tree, so every media file lands under a base
+     * directory: the directory chosen on the import form, or Root when none was picked. The
+     * file's own in-zip folder structure is preserved beneath that base; files sitting at the
+     * archive root go straight into the base directory instead of being dropped.
+     *
      * @param  list<string>  $entries
      */
-    protected function synthesizeDataFile(array $entries, string $extractPath): ?string
+    protected function synthesizeDataFile(array $entries, string $extractPath, string $basePath): ?string
     {
         $rows = [];
 
@@ -120,11 +129,9 @@ class AssetBundleReader
                 continue;
             }
 
-            $directory = $this->directoryTreeFor($entry);
+            $subTree = $this->directoryTreeFor($entry);
 
-            if ($directory === '') {
-                continue;
-            }
+            $directory = $subTree === '' ? $basePath : $basePath.'/'.$subTree;
 
             $rows[] = '"'.str_replace('"', '""', $entry).'","'.str_replace('"', '""', $directory).'","'.str_replace('"', '""', basename($entry)).'"';
         }
@@ -180,6 +187,25 @@ class AssetBundleReader
         }
 
         return $staged > 0 ? $directory : null;
+    }
+
+    /**
+     * The base destination directory for a CSV-less bundle, as a slash-joined name path from the
+     * tree root (e.g. "Root" or "Root/Brand"). Reads the directory chosen on the import form
+     * (`filters.import_directory`); falls back to the seeded Root when none was picked, the chosen
+     * directory no longer exists, or the job carries no filters.
+     */
+    protected function baseDirectoryPath(JobTrackContract $import): string
+    {
+        $filters = ($import->jobInstance ?? null)?->filters ?? [];
+
+        $chosenId = (int) ($filters['import_directory'] ?? 0);
+
+        $directory = $chosenId > 0 ? Directory::find($chosenId) : null;
+
+        $directory ??= Directory::whereNull('parent_id')->orderBy('id')->first();
+
+        return $directory ? $directory->generatePath() : 'Root';
     }
 
     protected function directoryTreeFor(string $entry): string

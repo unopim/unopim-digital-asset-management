@@ -86,12 +86,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
    ```
 - Start the queue to execute actions, such as job operations, by running the following command:
     ```bash
-      php artisan queue:work
-    ```
-- By default all DAM jobs run on the `default` queue, so the command above is all you need. To isolate DAM's workload (fast DB housekeeping, filesystem/DB-tree bulk operations, and CPU-heavy media processing) onto dedicated queues instead, set `DAM_QUEUE_DAM`, `DAM_QUEUE_BULK`, and `DAM_QUEUE_MEDIA` in `.env` (e.g. to `dam`, `dam-bulk`, `dam-media`) and point a worker at them:
-    ```bash
       php artisan queue:work --queue=default,dam,dam-bulk,dam-media
     ```
+    
 - If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
      sudo supervisorctl restart unopim-worker
@@ -262,7 +259,7 @@ This fetches the latest release of `unopim/unopim-digital-asset-management`,
 swaps `packages/Webkul/DAM` (code only — your DB and asset files are
 untouched), then runs `php artisan dam:update`, which backs up DAM tables +
 asset files, runs migrations, republishes assets, and verifies no data was
-lost. Back up first.
+lost. Back up first if you can.
 
 Restore a backup with:
 

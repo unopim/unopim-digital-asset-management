@@ -20,7 +20,7 @@ beforeEach(function (): void {
     Storage::fake('private');
     Storage::fake('public');
 
-    $this->bundle = function (array $entries, int $trackId = 41): object {
+    $this->bundle = function (array $entries, int $trackId = 41, ?array $filters = null): object {
         $archive = Storage::disk('private')->path('imports/bundle.zip');
 
         if (! is_dir(dirname($archive))) {
@@ -36,19 +36,28 @@ beforeEach(function (): void {
 
         $zip->close();
 
-        return new class($trackId) implements JobTrackContract
+        return new class($trackId, $filters) implements JobTrackContract
         {
             public string $file_path = 'imports/bundle.zip';
 
-            public function __construct(public int $id) {}
+            public ?object $jobInstance = null;
+
+            public function __construct(public int $id, ?array $filters = null)
+            {
+                if ($filters !== null) {
+                    $this->jobInstance = (object) ['filters' => $filters];
+                }
+            }
         };
     };
 });
 
-it('synthesizes a manifest with a directory column when the bundle has none', function () {
+it('synthesizes a manifest whose directories nest under the default Root base', function () {
+    Directory::create(['name' => 'Root', 'parent_id' => null]);
+
     $track = ($this->bundle)([
-        'assets/Root/Marketing/hero.png' => damBundlePng(),
-        'assets/Root/Docs/spec.png'      => damBundlePng(),
+        'Marketing/hero.png' => damBundlePng(),
+        'Docs/spec.png'      => damBundlePng(),
     ], 41);
 
     $prepared = app(AssetBundleReader::class)->prepare($track);
@@ -62,13 +71,52 @@ it('synthesizes a manifest with a directory column when the bundle has none', fu
 
     $byPath = collect(array_slice($lines, 1))->map(fn ($line) => str_getcsv($line))->keyBy(0);
 
-    expect($byPath->has('assets/Root/Marketing/hero.png'))->toBeTrue()
-        ->and($byPath['assets/Root/Marketing/hero.png'][1])->toBe('Root/Marketing')
-        ->and($byPath['assets/Root/Marketing/hero.png'][2])->toBe('hero.png')
-        ->and($byPath['assets/Root/Docs/spec.png'][1])->toBe('Root/Docs');
+    expect($byPath->has('Marketing/hero.png'))->toBeTrue()
+        ->and($byPath['Marketing/hero.png'][1])->toBe('Root/Marketing')
+        ->and($byPath['Marketing/hero.png'][2])->toBe('hero.png')
+        ->and($byPath['Docs/spec.png'][1])->toBe('Root/Docs');
 
-    expect(Asset::count())->toBe(0)
-        ->and(Directory::count())->toBe(0);
+    expect(Asset::count())->toBe(0);
+});
+
+it('places a root-level media entry directly under the base directory instead of dropping it', function () {
+    Directory::create(['name' => 'Root', 'parent_id' => null]);
+
+    $track = ($this->bundle)([
+        'cat.png'            => damBundlePng(),
+        'holidays/beach.png' => damBundlePng(),
+    ], 46);
+
+    $prepared = app(AssetBundleReader::class)->prepare($track);
+
+    $byPath = collect(array_filter(explode("\n", trim(Storage::disk('private')->get($prepared->dataFile))), 'strlen'))
+        ->slice(1)
+        ->map(fn ($line) => str_getcsv($line))
+        ->keyBy(0);
+
+    expect($byPath->has('cat.png'))->toBeTrue()
+        ->and($byPath['cat.png'][1])->toBe('Root')
+        ->and($byPath['holidays/beach.png'][1])->toBe('Root/holidays');
+});
+
+it('nests the synthesized directories under the chosen directory from filters', function () {
+    $root = Directory::create(['name' => 'Root', 'parent_id' => null]);
+    $marketing = Directory::create(['name' => 'Marketing', 'parent_id' => $root->id]);
+
+    $track = ($this->bundle)([
+        'logo.png'     => damBundlePng(),
+        'summer/a.png' => damBundlePng(),
+    ], 47, ['import_directory' => $marketing->id]);
+
+    $prepared = app(AssetBundleReader::class)->prepare($track);
+
+    $byPath = collect(array_filter(explode("\n", trim(Storage::disk('private')->get($prepared->dataFile))), 'strlen'))
+        ->slice(1)
+        ->map(fn ($line) => str_getcsv($line))
+        ->keyBy(0);
+
+    expect($byPath['logo.png'][1])->toBe('Root/Marketing')
+        ->and($byPath['summer/a.png'][1])->toBe('Root/Marketing/summer');
 });
 
 it('returns the bundled manifest and stages the media when a data file is present', function () {
@@ -82,21 +130,6 @@ it('returns the bundled manifest and stages the media when a data file is presen
     expect($prepared->dataFile)->toBe('imports/bundles/42/products.csv')
         ->and($prepared->mediaDirectory)->toBe(AssetBundleReader::MEDIA_DIRECTORY_PREFIX.'42')
         ->and(Storage::disk('public')->exists($prepared->mediaDirectory.'/assets/Root/Marketing/hero.png'))->toBeTrue();
-});
-
-it('omits a media entry that has no sub-directory from the synthesized manifest', function () {
-    $track = ($this->bundle)([
-        'assets/top.png'                 => damBundlePng(),
-        'assets/Root/Marketing/hero.png' => damBundlePng(),
-    ], 43);
-
-    $prepared = app(AssetBundleReader::class)->prepare($track);
-
-    $paths = collect(array_slice(array_filter(explode("\n", trim(Storage::disk('private')->get($prepared->dataFile))), 'strlen'), 1))
-        ->map(fn ($line) => str_getcsv($line)[0]);
-
-    expect($paths)->toContain('assets/Root/Marketing/hero.png')
-        ->and($paths)->not->toContain('assets/top.png');
 });
 
 it('reads the stored digest with the algorithm the local comparison is made in', function () {

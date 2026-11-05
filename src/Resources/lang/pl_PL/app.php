@@ -969,6 +969,10 @@ return [
                         'label' => 'Automatycznie taguj zaimportowane obrazy',
                         'hint'  => 'Uruchom automatyczne tagowanie AI dla każdego zaimportowanego obrazu (wymaga skonfigurowanej platformy Magic AI).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Katalog docelowy (ZIP bez CSV)',
+                        'hint'  => 'Tylko dla plików ZIP bez CSV. Multimedia są umieszczane tutaj; foldery z ZIP zagnieżdżają się poniżej. Domyślnie Root.',
+                    ],
                 ],
             ],
         ],

@@ -969,6 +969,10 @@ return [
                         'label' => '自動為匯入的圖片加上標籤',
                         'hint'  => '對每張匯入的圖片執行 AI 自動標籤（需要已設定的 Magic AI 平台）。',
                     ],
+                    'import-directory' => [
+                        'label' => '目標目錄（不含 CSV 的 ZIP）',
+                        'hint'  => '僅適用於不含 CSV 的 ZIP。媒體檔案放置於此，ZIP 中的資料夾巢狀置於其下。預設為 Root。',
+                    ],
                 ],
             ],
         ],

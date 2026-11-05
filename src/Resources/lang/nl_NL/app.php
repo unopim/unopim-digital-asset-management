@@ -969,6 +969,10 @@ return [
                         'label' => 'Geïmporteerde afbeeldingen automatisch taggen',
                         'hint'  => 'AI-autotagging uitvoeren op elke geïmporteerde afbeelding (vereist een geconfigureerd Magic AI-platform).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Doelmap (ZIP zonder CSV)',
+                        'hint'  => 'Alleen voor ZIP’s zonder CSV. Media wordt hier geplaatst; ZIP-mappen nestelen eronder. Standaard is Root.',
+                    ],
                 ],
             ],
         ],

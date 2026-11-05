@@ -969,6 +969,10 @@ return [
                         'label' => 'Tự động gắn thẻ hình ảnh đã nhập',
                         'hint'  => 'Chạy gắn thẻ tự động bằng AI trên mỗi hình ảnh đã nhập (yêu cầu nền tảng Magic AI đã được cấu hình).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Thư mục đích (ZIP không có CSV)',
+                        'hint'  => 'Chỉ dành cho ZIP không có CSV. Phương tiện được đặt ở đây; các thư mục trong ZIP lồng bên dưới. Mặc định là Root.',
+                    ],
                 ],
             ],
         ],

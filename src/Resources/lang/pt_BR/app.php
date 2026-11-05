@@ -969,6 +969,10 @@ return [
                         'label' => 'Marcar automaticamente as imagens importadas',
                         'hint'  => 'Executar a marcação automática por IA em cada imagem importada (requer uma plataforma Magic AI configurada).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Diretório de destino (ZIP sem CSV)',
+                        'hint'  => 'Apenas para ZIPs sem CSV. As mídias são colocadas aqui; as pastas do ZIP ficam aninhadas abaixo. O padrão é Root.',
+                    ],
                 ],
             ],
         ],

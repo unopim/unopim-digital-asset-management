@@ -969,6 +969,10 @@ return [
                         'label' => 'İçe aktarılan görselleri otomatik etiketle',
                         'hint'  => 'İçe aktarılan her görsele yapay zekâ otomatik etiketlemesi uygula (yapılandırılmış bir Magic AI platformu gerektirir).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Hedef dizin (CSV içermeyen ZIP)',
+                        'hint'  => 'Yalnızca CSV içermeyen ZIP’ler için. Medya buraya yerleştirilir; ZIP klasörleri altına yerleşir. Varsayılan: Root.',
+                    ],
                 ],
             ],
         ],

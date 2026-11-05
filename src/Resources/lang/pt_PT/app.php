@@ -969,6 +969,10 @@ return [
                         'label' => 'Etiquetar automaticamente as imagens importadas',
                         'hint'  => 'Executar a etiquetagem automática por IA em cada imagem importada (requer uma plataforma Magic AI configurada).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Diretório de destino (ZIP sem CSV)',
+                        'hint'  => 'Apenas para ZIP sem CSV. Os ficheiros são colocados aqui; as pastas do ZIP ficam aninhadas abaixo. A predefinição é Root.',
+                    ],
                 ],
             ],
         ],

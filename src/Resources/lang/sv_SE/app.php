@@ -969,6 +969,10 @@ return [
                         'label' => 'Tagga importerade bilder automatiskt',
                         'hint'  => 'Kör AI-autotaggning på varje importerad bild (kräver en konfigurerad Magic AI-plattform).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Målmapp (ZIP utan CSV)',
+                        'hint'  => 'Endast för ZIP-filer utan CSV. Media placeras här; ZIP-mappar kapslas nedanför. Standard är Root.',
+                    ],
                 ],
             ],
         ],

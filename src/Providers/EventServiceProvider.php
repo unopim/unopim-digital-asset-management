@@ -90,6 +90,14 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::style');
         });
 
+        Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            if (! auth()->guard('admin')->check()) {
+                return;
+            }
+
+            $viewRenderEventManager->addTemplate('dam::asset.upload-overlay-global');
+        });
+
         Event::listen('unopim.admin.dashboard.index.cards', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::dashboard.cards');
         });

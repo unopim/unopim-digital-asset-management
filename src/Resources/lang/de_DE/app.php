@@ -969,6 +969,10 @@ return [
                         'label' => 'Importierte Bilder automatisch taggen',
                         'hint'  => 'KI-Auto-Tagging für jedes importierte Bild ausführen (erfordert eine konfigurierte Magic-AI-Plattform).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Zielverzeichnis (ZIP ohne CSV)',
+                        'hint'  => 'Nur für ZIPs ohne CSV. Medien werden hier abgelegt; ZIP-Ordner werden darunter verschachtelt. Standard ist Root.',
+                    ],
                 ],
             ],
         ],

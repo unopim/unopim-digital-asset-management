@@ -969,6 +969,10 @@ return [
                         'label' => '自动为导入的图片打标签',
                         'hint'  => '对每张导入的图片运行 AI 自动打标签（需要已配置的 Magic AI 平台）。',
                     ],
+                    'import-directory' => [
+                        'label' => '目标目录（不含 CSV 的 ZIP）',
+                        'hint'  => '仅适用于不含 CSV 的 ZIP。媒体文件放置于此，ZIP 中的文件夹嵌套在其下。默认为 Root。',
+                    ],
                 ],
             ],
         ],

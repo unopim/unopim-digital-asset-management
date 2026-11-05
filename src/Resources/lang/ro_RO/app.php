@@ -969,6 +969,10 @@ return [
                         'label' => 'Etichetează automat imaginile importate',
                         'hint'  => 'Rulează etichetarea automată cu IA pe fiecare imagine importată (necesită o platformă Magic AI configurată).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Director de destinație (ZIP fără CSV)',
+                        'hint'  => 'Doar pentru ZIP-uri fără CSV. Fișierele media sunt plasate aici; folderele din ZIP se imbrică dedesubt. Implicit este Root.',
+                    ],
                 ],
             ],
         ],

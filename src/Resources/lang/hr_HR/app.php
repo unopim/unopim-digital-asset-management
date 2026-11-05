@@ -969,6 +969,10 @@ return [
                         'label' => 'Automatski označi uvezene slike',
                         'hint'  => 'Pokreni automatsko označavanje umjetnom inteligencijom na svakoj uvezenoj slici (zahtijeva konfiguriranu Magic AI platformu).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Odredišni direktorij (ZIP bez CSV-a)',
+                        'hint'  => 'Samo za ZIP bez CSV-a. Medijske datoteke smještaju se ovdje; mape iz ZIP-a ugniježđuju se ispod. Zadano je Root.',
+                    ],
                 ],
             ],
         ],

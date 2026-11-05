@@ -969,6 +969,10 @@ return [
                         'label' => 'Etiqueta automàticament les imatges importades',
                         'hint'  => 'Executa l’etiquetatge automàtic amb IA a cada imatge importada (requereix una plataforma Magic AI configurada).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Directori de destinació (ZIP sense CSV)',
+                        'hint'  => 'Només per a ZIP sense CSV. Els fitxers es col·loquen aquí; les carpetes del ZIP s’hi aniuen a sota. Per defecte, Root.',
+                    ],
                 ],
             ],
         ],

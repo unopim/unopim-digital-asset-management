@@ -969,6 +969,10 @@ return [
                         'label' => 'Beri tag otomatis pada gambar yang diimpor',
                         'hint'  => 'Jalankan pemberian tag otomatis AI pada setiap gambar yang diimpor (memerlukan platform Magic AI yang dikonfigurasi).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Direktori tujuan (ZIP tanpa CSV)',
+                        'hint'  => 'Hanya untuk ZIP tanpa CSV. Media ditempatkan di sini; folder ZIP bersarang di bawahnya. Default-nya Root.',
+                    ],
                 ],
             ],
         ],

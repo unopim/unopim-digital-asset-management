@@ -969,6 +969,10 @@ return [
                         'label' => 'Tagga automaticamente le immagini importate',
                         'hint'  => 'Esegui il tagging automatico con IA su ogni immagine importata (richiede una piattaforma Magic AI configurata).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Directory di destinazione (ZIP senza CSV)',
+                        'hint'  => 'Solo per ZIP senza CSV. I file multimediali vengono inseriti qui; le cartelle dello ZIP si annidano sotto. Il valore predefinito è Root.',
+                    ],
                 ],
             ],
         ],

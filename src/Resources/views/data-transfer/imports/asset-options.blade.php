@@ -22,6 +22,31 @@
         : null;
     $damEditIsAssets = $damImport && $damImport->entity_type === 'assets';
     $damEditFilters = $damImport->filters ?? [];
+
+    $damDirectories = \Webkul\DAM\Models\Directory::orderBy('_lft')->get(['id', 'name', 'parent_id']);
+    $damDirectoriesById = $damDirectories->keyBy('id');
+
+    $damDirectoryPath = function ($directory) use ($damDirectoriesById) {
+        $segments = [];
+        $current = $directory;
+        $guard = 0;
+
+        while ($current && $guard++ < 100) {
+            array_unshift($segments, $current->name);
+            $current = $current->parent_id ? $damDirectoriesById->get($current->parent_id) : null;
+        }
+
+        return implode('/', $segments);
+    };
+
+    $damDirectoryOptions = json_encode(
+        $damDirectories->map(fn ($directory) => [
+            'id'    => (string) $directory->id,
+            'label' => $damDirectoryPath($directory),
+        ])->values()
+    );
+
+    $damRootDirectoryId = (string) (optional($damDirectories->firstWhere('parent_id', null))->id ?? '');
 @endphp
 
 @if ($damIsEdit)
@@ -48,6 +73,27 @@
                 </x-admin::form.control-group.control>
 
                 <x-admin::form.control-group.error control-name="filters[conflict_strategy]" />
+            </x-admin::form.control-group>
+
+            <x-admin::form.control-group>
+                <x-admin::form.control-group.label>
+                    @lang('dam::app.data-transfer.importers.assets.options.import-directory.label')
+                </x-admin::form.control-group.label>
+
+                <x-admin::form.control-group.control
+                    type="select"
+                    name="filters[import_directory]"
+                    :value="old('filters.import_directory') ?? ($damEditFilters['import_directory'] ?? $damRootDirectoryId)"
+                    :label="trans('dam::app.data-transfer.importers.assets.options.import-directory.label')"
+                    :options="$damDirectoryOptions"
+                    track-by="id"
+                    label-by="label"
+                >
+                </x-admin::form.control-group.control>
+
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    @lang('dam::app.data-transfer.importers.assets.options.import-directory.hint')
+                </p>
             </x-admin::form.control-group>
 
             <x-admin::form.control-group>
@@ -95,6 +141,27 @@
             </x-admin::form.control-group.control>
 
             <x-admin::form.control-group.error control-name="filters[conflict_strategy]" />
+        </x-admin::form.control-group>
+
+        <x-admin::form.control-group>
+            <x-admin::form.control-group.label>
+                @lang('dam::app.data-transfer.importers.assets.options.import-directory.label')
+            </x-admin::form.control-group.label>
+
+            <x-admin::form.control-group.control
+                type="select"
+                name="filters[import_directory]"
+                :value="old('filters.import_directory') ?? $damRootDirectoryId"
+                :label="trans('dam::app.data-transfer.importers.assets.options.import-directory.label')"
+                :options="$damDirectoryOptions"
+                track-by="id"
+                label-by="label"
+            >
+            </x-admin::form.control-group.control>
+
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                @lang('dam::app.data-transfer.importers.assets.options.import-directory.hint')
+            </p>
         </x-admin::form.control-group>
 
         <x-admin::form.control-group>

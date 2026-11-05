@@ -20,9 +20,9 @@ return [
     ],
 
     'queues' => [
-        'dam'   => env('DAM_QUEUE_DAM', 'default'),
-        'bulk'  => env('DAM_QUEUE_BULK', 'default'),
-        'media' => env('DAM_QUEUE_MEDIA', 'default'),
+        'dam'   => env('DAM_QUEUE_DAM', 'dam'),
+        'bulk'  => env('DAM_QUEUE_BULK', 'dam-bulk'),
+        'media' => env('DAM_QUEUE_MEDIA', 'dam-media'),
     ],
 
     'tree' => [

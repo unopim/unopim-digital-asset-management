@@ -969,6 +969,10 @@ return [
                         'label' => 'Awtomatikong i-tag ang mga na-import na larawan',
                         'hint'  => 'Patakbuhin ang AI auto-tagging sa bawat na-import na larawan (kailangan ng naka-configure na Magic AI platform).',
                     ],
+                    'import-directory' => [
+                        'label' => 'Patutunguhang direktoryo (ZIP na walang CSV)',
+                        'hint'  => 'Para lamang sa mga ZIP na walang CSV. Dito inilalagay ang media; ang mga folder ng ZIP ay naka-nest sa ilalim. Default ay Root.',
+                    ],
                 ],
             ],
         ],
