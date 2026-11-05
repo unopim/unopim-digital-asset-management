@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => '유형별 자산',
         'recent-uploads'    => '최근 업로드',
         'no-assets'         => '아직 자산이 없습니다.',
-        'types' => [
+        'types'             => [
             'image'    => '이미지',
             'video'    => '동영상',
             'audio'    => '오디오',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '"directory" 열은 모든 행에 필수입니다 — 대상 폴더 트리, 예: "Root/Brand/Summer".',
                         'asset-already-exists'         => ':row 행을 건너뛰었습니다 — ":path"에 자산이 이미 있으며 충돌 전략이 "skip"입니다. 변경하려면 "overwrite" 또는 "update metadata"를 선택하세요.',
                         'asset-already-exists-summary' => '배치 #:batch — 일치하는 자산이 이미 있어 :count개 행을 건너뛰었습니다.',
@@ -958,7 +958,7 @@ return [
                     'media'  => '샘플 ZIP (미디어 파일만)',
                 ],
                 'options' => [
-                    'title' => '자산 가져오기 옵션',
+                    'title'    => '자산 가져오기 옵션',
                     'conflict' => [
                         'label'           => '경로에 자산이 이미 있는 경우',
                         'skip'            => '행 건너뛰기',

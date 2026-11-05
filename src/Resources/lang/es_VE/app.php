@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Recursos por tipo',
         'recent-uploads'    => 'Subidas recientes',
         'no-assets'         => 'Aún no hay recursos.',
-        'types' => [
+        'types'             => [
             'image'    => 'Imágenes',
             'video'    => 'Vídeos',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La columna "directory" es obligatoria en cada fila: el árbol de carpetas de destino, p. ej. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Fila :row omitida: ya existe un recurso en ":path" y la estrategia de conflicto es "skip". Elija "overwrite" o "update metadata" para cambiarlo.',
                         'asset-already-exists-summary' => 'Lote n.º :batch: :count fila(s) omitida(s) porque ya existe un recurso coincidente.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP de ejemplo (solo archivos multimedia)',
                 ],
                 'options' => [
-                    'title' => 'Opciones de importación de recursos',
+                    'title'    => 'Opciones de importación de recursos',
                     'conflict' => [
                         'label'           => 'Cuando ya existe un recurso en la ruta',
                         'skip'            => 'Omitir la fila',

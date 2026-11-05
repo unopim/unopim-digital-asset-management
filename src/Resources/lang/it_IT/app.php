@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Asset per tipo',
         'recent-uploads'    => 'Caricamenti recenti',
         'no-assets'         => 'Ancora nessun asset.',
-        'types' => [
+        'types'             => [
             'image'    => 'Immagini',
             'video'    => 'Video',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La colonna "directory" è obbligatoria per ogni riga — l’albero della cartella di destinazione, ad es. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Riga :row saltata — esiste già un asset in ":path" e la strategia di conflitto è "skip". Scegli "overwrite" o "update metadata" per modificarla.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count riga/e saltata/e perché esiste già un asset corrispondente.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP di esempio (solo file multimediali)',
                 ],
                 'options' => [
-                    'title' => 'Opzioni di importazione asset',
+                    'title'    => 'Opzioni di importazione asset',
                     'conflict' => [
                         'label'           => 'Quando esiste già un asset nel percorso',
                         'skip'            => 'Salta la riga',

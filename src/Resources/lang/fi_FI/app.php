@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Resurssit tyypeittäin',
         'recent-uploads'    => 'Viimeisimmät lataukset',
         'no-assets'         => 'Ei vielä resursseja.',
-        'types' => [
+        'types'             => [
             'image'    => 'Kuvat',
             'video'    => 'Videot',
             'audio'    => 'Ääni',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Sarake "directory" vaaditaan jokaiselle riville — kohdekansion puu, esim. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Rivi :row ohitettu — resurssi on jo kohteessa ":path" ja ristiriitastrategia on "skip". Valitse "overwrite" tai "update metadata" muuttaaksesi sitä.',
                         'asset-already-exists-summary' => 'Erä #:batch — :count rivi(ä) ohitettu, koska vastaava resurssi on jo olemassa.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Esimerkki-ZIP (vain mediatiedostot)',
                 ],
                 'options' => [
-                    'title' => 'Resurssien tuontiasetukset',
+                    'title'    => 'Resurssien tuontiasetukset',
                     'conflict' => [
                         'label'           => 'Kun polussa on jo resurssi',
                         'skip'            => 'Ohita rivi',

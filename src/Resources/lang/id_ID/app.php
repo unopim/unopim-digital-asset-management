@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Aset menurut Tipe',
         'recent-uploads'    => 'Unggahan Terbaru',
         'no-assets'         => 'Belum ada aset.',
-        'types' => [
+        'types'             => [
             'image'    => 'Gambar',
             'video'    => 'Video',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolom "directory" wajib untuk setiap baris — pohon folder tujuan, mis. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Baris :row dilewati — aset sudah ada di ":path" dan strategi konflik adalah "skip". Pilih "overwrite" atau "update metadata" untuk mengubahnya.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count baris dilewati karena aset yang cocok sudah ada.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Contoh ZIP (hanya berkas media)',
                 ],
                 'options' => [
-                    'title' => 'Opsi Impor Aset',
+                    'title'    => 'Opsi Impor Aset',
                     'conflict' => [
                         'label'           => 'Ketika aset sudah ada di jalur tersebut',
                         'skip'            => 'Lewati baris',

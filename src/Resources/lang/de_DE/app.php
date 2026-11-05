@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Assets nach Typ',
         'recent-uploads'    => 'Neueste Uploads',
         'no-assets'         => 'Noch keine Assets.',
-        'types' => [
+        'types'             => [
             'image'    => 'Bilder',
             'video'    => 'Videos',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Die Spalte "directory" ist für jede Zeile erforderlich — der Zielordnerbaum, z. B. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Zeile :row übersprungen — unter ":path" existiert bereits ein Asset und die Konfliktstrategie ist "skip". Wählen Sie "overwrite" oder "update metadata", um dies zu ändern.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count Zeile(n) übersprungen, da bereits ein passendes Asset vorhanden ist.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Beispiel-ZIP (nur Mediendateien)',
                 ],
                 'options' => [
-                    'title' => 'Asset-Importoptionen',
+                    'title'    => 'Asset-Importoptionen',
                     'conflict' => [
                         'label'           => 'Wenn im Pfad bereits ein Asset vorhanden ist',
                         'skip'            => 'Zeile überspringen',

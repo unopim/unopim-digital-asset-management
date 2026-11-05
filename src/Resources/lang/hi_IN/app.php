@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'प्रकार अनुसार एसेट',
         'recent-uploads'    => 'हाल के अपलोड',
         'no-assets'         => 'अभी तक कोई एसेट नहीं।',
-        'types' => [
+        'types'             => [
             'image'    => 'छवियाँ',
             'video'    => 'वीडियो',
             'audio'    => 'ऑडियो',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'प्रत्येक पंक्ति के लिए "directory" कॉलम आवश्यक है — गंतव्य फ़ोल्डर ट्री, उदा. "Root/Brand/Summer"।',
                         'asset-already-exists'         => 'पंक्ति :row छोड़ी गई — ":path" पर पहले से एक एसेट मौजूद है और टकराव रणनीति "skip" है। इसे बदलने के लिए "overwrite" या "update metadata" चुनें।',
                         'asset-already-exists-summary' => 'बैच #:batch — मिलान करने वाला एसेट पहले से मौजूद होने के कारण :count पंक्ति(याँ) छोड़ी गईं।',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'नमूना ZIP (केवल मीडिया फ़ाइलें)',
                 ],
                 'options' => [
-                    'title' => 'एसेट आयात विकल्प',
+                    'title'    => 'एसेट आयात विकल्प',
                     'conflict' => [
                         'label'           => 'जब पथ पर पहले से कोई एसेट मौजूद हो',
                         'skip'            => 'पंक्ति छोड़ें',

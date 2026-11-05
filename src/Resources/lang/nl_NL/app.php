@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Assets per type',
         'recent-uploads'    => 'Recente uploads',
         'no-assets'         => 'Nog geen assets.',
-        'types' => [
+        'types'             => [
             'image'    => 'Afbeeldingen',
             'video'    => 'Video’s',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'De kolom "directory" is voor elke rij verplicht — de doelmappenboom, bijv. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Rij :row overgeslagen — er bestaat al een asset op ":path" en de conflictstrategie is "skip". Kies "overwrite" of "update metadata" om dit te wijzigen.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rij(en) overgeslagen omdat er al een overeenkomende asset bestaat.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Voorbeeld-ZIP (alleen mediabestanden)',
                 ],
                 'options' => [
-                    'title' => 'Importopties voor assets',
+                    'title'    => 'Importopties voor assets',
                     'conflict' => [
                         'label'           => 'Wanneer er al een asset op het pad bestaat',
                         'skip'            => 'Rij overslaan',

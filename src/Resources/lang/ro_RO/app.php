@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Active după tip',
         'recent-uploads'    => 'Încărcări recente',
         'no-assets'         => 'Încă nu există active.',
-        'types' => [
+        'types'             => [
             'image'    => 'Imagini',
             'video'    => 'Videoclipuri',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Coloana "directory" este obligatorie pentru fiecare rând — arborele folderului de destinație, de ex. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Rândul :row a fost omis — există deja un activ la ":path", iar strategia de conflict este "skip". Alegeți "overwrite" sau "update metadata" pentru a o modifica.',
                         'asset-already-exists-summary' => 'Lotul #:batch — :count rând(uri) omise deoarece există deja un activ corespunzător.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP exemplu (doar fișiere media)',
                 ],
                 'options' => [
-                    'title' => 'Opțiuni de import active',
+                    'title'    => 'Opțiuni de import active',
                     'conflict' => [
                         'label'           => 'Când există deja un activ la această cale',
                         'skip'            => 'Omite rândul',

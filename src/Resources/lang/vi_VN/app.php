@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Tài sản theo loại',
         'recent-uploads'    => 'Tải lên gần đây',
         'no-assets'         => 'Chưa có tài sản nào.',
-        'types' => [
+        'types'             => [
             'image'    => 'Hình ảnh',
             'video'    => 'Video',
             'audio'    => 'Âm thanh',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Cột "directory" là bắt buộc cho mỗi hàng — cây thư mục đích, ví dụ "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Đã bỏ qua hàng :row — đã tồn tại tài sản tại ":path" và chiến lược xung đột là "skip". Chọn "overwrite" hoặc "update metadata" để thay đổi.',
                         'asset-already-exists-summary' => 'Lô #:batch — đã bỏ qua :count hàng vì đã tồn tại tài sản trùng khớp.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP mẫu (chỉ tệp phương tiện)',
                 ],
                 'options' => [
-                    'title' => 'Tùy chọn nhập tài sản',
+                    'title'    => 'Tùy chọn nhập tài sản',
                     'conflict' => [
                         'label'           => 'Khi đã tồn tại tài sản tại đường dẫn',
                         'skip'            => 'Bỏ qua hàng',

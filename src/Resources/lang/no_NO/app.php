@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Ressurser etter type',
         'recent-uploads'    => 'Nylige opplastinger',
         'no-assets'         => 'Ingen ressurser ennå.',
-        'types' => [
+        'types'             => [
             'image'    => 'Bilder',
             'video'    => 'Videoer',
             'audio'    => 'Lyd',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolonnen "directory" er påkrevd for hver rad — måldappens tre, f.eks. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Rad :row hoppet over — det finnes allerede en ressurs på ":path", og konfliktstrategien er "skip". Velg "overwrite" eller "update metadata" for å endre det.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppet over fordi en samsvarende ressurs allerede finnes.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Eksempel-ZIP (kun mediefiler)',
                 ],
                 'options' => [
-                    'title' => 'Alternativer for ressursimport',
+                    'title'    => 'Alternativer for ressursimport',
                     'conflict' => [
                         'label'           => 'Når det allerede finnes en ressurs på stien',
                         'skip'            => 'Hopp over raden',

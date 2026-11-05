@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => '依類型分類的資產',
         'recent-uploads'    => '最近上傳',
         'no-assets'         => '尚無資產。',
-        'types' => [
+        'types'             => [
             'image'    => '圖片',
             'video'    => '影片',
             'audio'    => '音訊',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '每列都必須填寫 "directory" 欄 — 目標資料夾樹狀結構，例如 "Root/Brand/Summer"。',
                         'asset-already-exists'         => '已略過第 :row 列 — ":path" 已存在資產，且衝突策略為 "skip"。請選擇 "overwrite" 或 "update metadata" 以變更。',
                         'asset-already-exists-summary' => '批次 #:batch — 因已存在相符的資產，略過了 :count 列。',
@@ -958,7 +958,7 @@ return [
                     'media'  => '範例 ZIP（僅媒體檔案）',
                 ],
                 'options' => [
-                    'title' => '資產匯入選項',
+                    'title'    => '資產匯入選項',
                     'conflict' => [
                         'label'           => '當該路徑已存在資產時',
                         'skip'            => '略過該列',

@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'الأصول حسب النوع',
         'recent-uploads'    => 'التحميلات الأخيرة',
         'no-assets'         => 'لا توجد أصول بعد.',
-        'types' => [
+        'types'             => [
             'image'    => 'الصور',
             'video'    => 'مقاطع الفيديو',
             'audio'    => 'الصوت',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'العمود "directory" مطلوب لكل صف — شجرة المجلد الوجهة، مثل "Root/Brand/Summer".',
                         'asset-already-exists'         => 'تم تخطّي الصف :row — يوجد أصل بالفعل في ":path" واستراتيجية التعارض هي "skip". اختر "overwrite" أو "update metadata" لتغيير ذلك.',
                         'asset-already-exists-summary' => 'الدفعة #:batch — تم تخطّي :count صف/صفوف لوجود أصل مطابق بالفعل.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'نموذج ZIP (ملفات وسائط فقط)',
                 ],
                 'options' => [
-                    'title' => 'خيارات استيراد الأصول',
+                    'title'    => 'خيارات استيراد الأصول',
                     'conflict' => [
                         'label'           => 'عندما يوجد أصل بالفعل في المسار',
                         'skip'            => 'تخطّي الصف',

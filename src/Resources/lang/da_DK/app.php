@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Aktiver efter type',
         'recent-uploads'    => 'Seneste uploads',
         'no-assets'         => 'Ingen aktiver endnu.',
-        'types' => [
+        'types'             => [
             'image'    => 'Billeder',
             'video'    => 'Videoer',
             'audio'    => 'Lyd',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolonnen "directory" er påkrævet for hver række — destinationsmappens træ, f.eks. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Række :row sprunget over — der findes allerede et aktiv på ":path", og konfliktstrategien er "skip". Vælg "overwrite" eller "update metadata" for at ændre det.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count række(r) sprunget over, fordi et matchende aktiv allerede findes.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Eksempel-ZIP (kun mediefiler)',
                 ],
                 'options' => [
-                    'title' => 'Indstillinger for aktivimport',
+                    'title'    => 'Indstillinger for aktivimport',
                     'conflict' => [
                         'label'           => 'Når der allerede findes et aktiv på stien',
                         'skip'            => 'Spring rækken over',

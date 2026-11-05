@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Төрлөөр нь нөөц',
         'recent-uploads'    => 'Сүүлийн байршуулалт',
         'no-assets'         => 'Одоогоор нөөц алга.',
-        'types' => [
+        'types'             => [
             'image'    => 'Зураг',
             'video'    => 'Видео',
             'audio'    => 'Аудио',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '"directory" багана мөр бүрд заавал байх ёстой — очих хавтасны мод, жишээ нь "Root/Brand/Summer".',
                         'asset-already-exists'         => ':row мөрийг алгаслаа — ":path" дээр нөөц аль хэдийн байгаа бөгөөд зөрчлийн стратеги нь "skip" байна. Үүнийг өөрчлөхийн тулд "overwrite" эсвэл "update metadata"-г сонгоно уу.',
                         'asset-already-exists-summary' => 'Багц #:batch — тохирох нөөц аль хэдийн байгаа тул :count мөрийг алгаслаа.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Жишээ ZIP (зөвхөн медиа файл)',
                 ],
                 'options' => [
-                    'title' => 'Нөөц импортын сонголт',
+                    'title'    => 'Нөөц импортын сонголт',
                     'conflict' => [
                         'label'           => 'Замд нөөц аль хэдийн байгаа үед',
                         'skip'            => 'Мөрийг алгасах',

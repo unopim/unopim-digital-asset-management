@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Ресурсы по типу',
         'recent-uploads'    => 'Недавние загрузки',
         'no-assets'         => 'Пока нет ресурсов.',
-        'types' => [
+        'types'             => [
             'image'    => 'Изображения',
             'video'    => 'Видео',
             'audio'    => 'Аудио',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Столбец "directory" обязателен для каждой строки — дерево целевой папки, например "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Строка :row пропущена — ресурс уже существует по пути ":path", а стратегия конфликта — "skip". Выберите "overwrite" или "update metadata", чтобы изменить это.',
                         'asset-already-exists-summary' => 'Пакет #:batch — пропущено строк: :count, так как соответствующий ресурс уже существует.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Пример ZIP (только медиафайлы)',
                 ],
                 'options' => [
-                    'title' => 'Параметры импорта ресурсов',
+                    'title'    => 'Параметры импорта ресурсов',
                     'conflict' => [
                         'label'           => 'Когда ресурс уже существует по этому пути',
                         'skip'            => 'Пропустить строку',

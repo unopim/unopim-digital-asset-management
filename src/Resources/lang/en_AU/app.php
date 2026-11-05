@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Assets by Type',
         'recent-uploads'    => 'Recent Uploads',
         'no-assets'         => 'No assets yet.',
-        'types' => [
+        'types'             => [
             'image'    => 'Images',
             'video'    => 'Videos',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'The "directory" column is required for every row — the destination folder tree, e.g. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Row :row skipped — an asset already exists at ":path" and the conflict strategy is "skip". Choose "overwrite" or "update metadata" to change it.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count row(s) skipped because a matching asset already exists.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Sample ZIP (media files only)',
                 ],
                 'options' => [
-                    'title' => 'Asset Import Options',
+                    'title'    => 'Asset Import Options',
                     'conflict' => [
                         'label'           => 'When an asset already exists at the path',
                         'skip'            => 'Skip the row',

@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Sredstva po vrsti',
         'recent-uploads'    => 'Nedavne učitavanja',
         'no-assets'         => 'Još nema sredstava.',
-        'types' => [
+        'types'             => [
             'image'    => 'Slike',
             'video'    => 'Videozapisi',
             'audio'    => 'Zvuk',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Stupac "directory" obavezan je za svaki redak — stablo odredišne mape, npr. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Redak :row preskočen — sredstvo već postoji na ":path", a strategija sukoba je "skip". Odaberite "overwrite" ili "update metadata" za promjenu.',
                         'asset-already-exists-summary' => 'Serija #:batch — preskočeno redaka: :count jer odgovarajuće sredstvo već postoji.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Ogledni ZIP (samo medijske datoteke)',
                 ],
                 'options' => [
-                    'title' => 'Mogućnosti uvoza sredstava',
+                    'title'    => 'Mogućnosti uvoza sredstava',
                     'conflict' => [
                         'label'           => 'Kada sredstvo već postoji na putanji',
                         'skip'            => 'Preskoči redak',

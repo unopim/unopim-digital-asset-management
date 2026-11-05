@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Ressources par type',
         'recent-uploads'    => 'Téléversements récents',
         'no-assets'         => 'Aucune ressource pour l’instant.',
-        'types' => [
+        'types'             => [
             'image'    => 'Images',
             'video'    => 'Vidéos',
             'audio'    => 'Audio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La colonne "directory" est requise pour chaque ligne — l’arborescence du dossier de destination, par ex. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Ligne :row ignorée — une ressource existe déjà à ":path" et la stratégie de conflit est "skip". Choisissez "overwrite" ou "update metadata" pour la modifier.',
                         'asset-already-exists-summary' => 'Lot #:batch — :count ligne(s) ignorée(s) car une ressource correspondante existe déjà.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP d’exemple (fichiers multimédias uniquement)',
                 ],
                 'options' => [
-                    'title' => 'Options d’import des ressources',
+                    'title'    => 'Options d’import des ressources',
                     'conflict' => [
                         'label'           => 'Lorsqu’une ressource existe déjà à ce chemin',
                         'skip'            => 'Ignorer la ligne',

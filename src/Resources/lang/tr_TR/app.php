@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Türe Göre Varlıklar',
         'recent-uploads'    => 'Son Yüklemeler',
         'no-assets'         => 'Henüz varlık yok.',
-        'types' => [
+        'types'             => [
             'image'    => 'Görseller',
             'video'    => 'Videolar',
             'audio'    => 'Ses',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '"directory" sütunu her satır için zorunludur — hedef klasör ağacı, örn. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Satır :row atlandı — ":path" konumunda zaten bir varlık var ve çakışma stratejisi "skip". Değiştirmek için "overwrite" veya "update metadata" seçin.',
                         'asset-already-exists-summary' => 'Toplu iş #:batch — eşleşen bir varlık zaten bulunduğundan :count satır atlandı.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Örnek ZIP (yalnızca medya dosyaları)',
                 ],
                 'options' => [
-                    'title' => 'Varlık İçe Aktarma Seçenekleri',
+                    'title'    => 'Varlık İçe Aktarma Seçenekleri',
                     'conflict' => [
                         'label'           => 'Yolda zaten bir varlık varsa',
                         'skip'            => 'Satırı atla',

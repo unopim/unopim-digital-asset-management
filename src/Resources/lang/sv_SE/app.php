@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Tillgångar efter typ',
         'recent-uploads'    => 'Senaste uppladdningar',
         'no-assets'         => 'Inga tillgångar ännu.',
-        'types' => [
+        'types'             => [
             'image'    => 'Bilder',
             'video'    => 'Videor',
             'audio'    => 'Ljud',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolumnen "directory" krävs för varje rad — målmappens träd, t.ex. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Rad :row hoppades över — en tillgång finns redan på ":path" och konfliktstrategin är "skip". Välj "overwrite" eller "update metadata" för att ändra det.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppades över eftersom en matchande tillgång redan finns.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'Exempel-ZIP (endast mediefiler)',
                 ],
                 'options' => [
-                    'title' => 'Alternativ för tillgångsimport',
+                    'title'    => 'Alternativ för tillgångsimport',
                     'conflict' => [
                         'label'           => 'När det redan finns en tillgång på sökvägen',
                         'skip'            => 'Hoppa över raden',

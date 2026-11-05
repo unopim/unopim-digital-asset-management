@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Ativos por tipo',
         'recent-uploads'    => 'Uploads recentes',
         'no-assets'         => 'Ainda não há ativos.',
-        'types' => [
+        'types'             => [
             'image'    => 'Imagens',
             'video'    => 'Vídeos',
             'audio'    => 'Áudio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'A coluna "directory" é obrigatória em cada linha — a árvore de pastas de destino, por ex. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Linha :row ignorada — já existe um ativo em ":path" e a estratégia de conflito é "skip". Escolha "overwrite" ou "update metadata" para alterá-la.',
                         'asset-already-exists-summary' => 'Lote #:batch — :count linha(s) ignorada(s) porque já existe um ativo correspondente.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP de exemplo (apenas arquivos de mídia)',
                 ],
                 'options' => [
-                    'title' => 'Opções de importação de ativos',
+                    'title'    => 'Opções de importação de ativos',
                     'conflict' => [
                         'label'           => 'Quando já existe um ativo no caminho',
                         'skip'            => 'Ignorar a linha',

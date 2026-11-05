@@ -17,7 +17,7 @@ return [
         'assets-by-type'    => 'Recursos per tipus',
         'recent-uploads'    => 'Pujades recents',
         'no-assets'         => 'Encara no hi ha recursos.',
-        'types' => [
+        'types'             => [
             'image'    => 'Imatges',
             'video'    => 'Vídeos',
             'audio'    => 'Àudio',
@@ -938,9 +938,9 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'      => 'The "path" column is required for every row.',
-                        'asset-not-found'     => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources' => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La columna "directory" és obligatòria a cada fila — l’arbre de la carpeta de destinació, p. ex. "Root/Brand/Summer".',
                         'asset-already-exists'         => 'Fila :row omesa — ja existeix un recurs a ":path" i l’estratègia de conflicte és "skip". Trieu "overwrite" o "update metadata" per canviar-ho.',
                         'asset-already-exists-summary' => 'Lot #:batch — :count fila/es omesa/es perquè ja existeix un recurs coincident.',
@@ -958,7 +958,7 @@ return [
                     'media'  => 'ZIP d’exemple (només fitxers multimèdia)',
                 ],
                 'options' => [
-                    'title' => 'Opcions d’importació de recursos',
+                    'title'    => 'Opcions d’importació de recursos',
                     'conflict' => [
                         'label'           => 'Quan ja existeix un recurs al camí',
                         'skip'            => 'Omet la fila',
