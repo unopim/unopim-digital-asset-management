@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
+use Webkul\DAM\Jobs\ProcessAssetUpload;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Support\AssetBundleReader;
@@ -14,13 +16,22 @@ function damBundlePng(): string
     );
 }
 
+/*
+ * Two bundle shapes share this reader. A product or category bundle (any entity other than
+ * `assets`) carries the source DAM tree under `assets/` and relies on it being recreated so the
+ * CSV's asset paths resolve to real rows — without duplicating a path it already holds. The
+ * `assets` entity instead creates its own rows from a (possibly synthesized) manifest, so the
+ * reader must not ingest the tree for it.
+ */
+
 beforeEach(function (): void {
     $this->damResetAssetTables();
 
     Storage::fake('private');
     Storage::fake('public');
+    Bus::fake();
 
-    $this->bundle = function (array $entries, int $trackId = 41, ?array $filters = null): object {
+    $this->bundle = function (array $entries, int $trackId = 41, ?array $filters = null, ?string $entityType = null): object {
         $archive = Storage::disk('private')->path('imports/bundle.zip');
 
         if (! is_dir(dirname($archive))) {
@@ -36,21 +47,25 @@ beforeEach(function (): void {
 
         $zip->close();
 
-        return new class($trackId, $filters) implements JobTrackContract
+        return new class($trackId, $filters, $entityType) implements JobTrackContract
         {
             public string $file_path = 'imports/bundle.zip';
 
             public ?object $jobInstance = null;
 
-            public function __construct(public int $id, ?array $filters = null)
+            public function __construct(public int $id, ?array $filters = null, ?string $entityType = null)
             {
-                if ($filters !== null) {
-                    $this->jobInstance = (object) ['filters' => $filters];
+                if ($filters !== null || $entityType !== null) {
+                    $this->jobInstance = (object) ['filters' => $filters ?? [], 'entity_type' => $entityType];
                 }
             }
         };
     };
 });
+
+/*
+ * Assets entity: CSV-less media bundles are synthesized into a manifest and no tree is ingested.
+ */
 
 it('synthesizes a manifest whose directories nest under the default Root base', function () {
     Directory::create(['name' => 'Root', 'parent_id' => null]);
@@ -58,7 +73,7 @@ it('synthesizes a manifest whose directories nest under the default Root base', 
     $track = ($this->bundle)([
         'Marketing/hero.png' => damBundlePng(),
         'Docs/spec.png'      => damBundlePng(),
-    ], 41);
+    ], 41, null, 'assets');
 
     $prepared = app(AssetBundleReader::class)->prepare($track);
 
@@ -85,7 +100,7 @@ it('places a root-level media entry directly under the base directory instead of
     $track = ($this->bundle)([
         'cat.png'            => damBundlePng(),
         'holidays/beach.png' => damBundlePng(),
-    ], 46);
+    ], 46, null, 'assets');
 
     $prepared = app(AssetBundleReader::class)->prepare($track);
 
@@ -106,7 +121,7 @@ it('nests the synthesized directories under the chosen directory from filters', 
     $track = ($this->bundle)([
         'logo.png'     => damBundlePng(),
         'summer/a.png' => damBundlePng(),
-    ], 47, ['import_directory' => $marketing->id]);
+    ], 47, ['import_directory' => $marketing->id], 'assets');
 
     $prepared = app(AssetBundleReader::class)->prepare($track);
 
@@ -119,17 +134,78 @@ it('nests the synthesized directories under the chosen directory from filters', 
         ->and($byPath['summer/a.png'][1])->toBe('Root/Marketing/summer');
 });
 
-it('returns the bundled manifest and stages the media when a data file is present', function () {
+/*
+ * Product / category entity: the bundled `assets/` tree is recreated as DAM rows and is not also
+ * staged into the images directory.
+ */
+
+it('returns the archive data file and recreates the asset tree', function () {
     $track = ($this->bundle)([
         'products.csv'                   => "sku,name\nsku-1,One",
-        'assets/Root/Marketing/hero.png' => damBundlePng(),
-    ], 42);
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+        'assets/Root/Docs/spec.pdf'      => 'spec-bytes',
+    ], 41);
 
     $prepared = app(AssetBundleReader::class)->prepare($track);
 
-    expect($prepared->dataFile)->toBe('imports/bundles/42/products.csv')
-        ->and($prepared->mediaDirectory)->toBe(AssetBundleReader::MEDIA_DIRECTORY_PREFIX.'42')
-        ->and(Storage::disk('public')->exists($prepared->mediaDirectory.'/assets/Root/Marketing/hero.png'))->toBeTrue();
+    expect($prepared->dataFile)->toBe('imports/bundles/41/products.csv')
+        ->and($prepared->mediaDirectory)->toBeNull();
+
+    $root = Directory::where('name', 'Root')->whereNull('parent_id')->first();
+
+    expect($root)->not->toBeNull()
+        ->and(Directory::where('name', 'Marketing')->where('parent_id', $root->id)->exists())->toBeTrue()
+        ->and(Directory::where('name', 'Docs')->where('parent_id', $root->id)->exists())->toBeTrue();
+
+    $hero = Asset::where('path', 'assets/Root/Marketing/hero.jpg')->first();
+
+    expect($hero)->not->toBeNull()
+        ->and($hero->file_name)->toBe('hero.jpg')
+        ->and($hero->extension)->toBe('jpg')
+        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
+});
+
+it('queues metadata extraction for each ingested asset', function () {
+    $track = ($this->bundle)([
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+    ], 42);
+
+    app(AssetBundleReader::class)->prepare($track);
+
+    Bus::assertDispatched(ProcessAssetUpload::class);
+});
+
+it('reuses the row and replaces the binary of an asset already present at the same path', function () {
+    $entries = [
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+    ];
+
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
+
+    $firstId = Asset::where('path', 'assets/Root/Marketing/hero.jpg')->value('id');
+
+    Storage::disk('private')->put('assets/Root/Marketing/hero.jpg', 'edited-in-the-explorer');
+
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
+
+    expect(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->count())->toBe(1)
+        ->and(Asset::where('path', 'assets/Root/Marketing/hero.jpg')->value('id'))->toBe($firstId)
+        ->and(Storage::disk('private')->get('assets/Root/Marketing/hero.jpg'))->toBe('hero-bytes');
+});
+
+it('does not duplicate directories across repeated imports', function () {
+    $entries = [
+        'products.csv'                   => "sku\nsku-1",
+        'assets/Root/Marketing/hero.jpg' => 'hero-bytes',
+    ];
+
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 41));
+    app(AssetBundleReader::class)->prepare(($this->bundle)($entries, 42));
+
+    expect(Directory::where('name', 'Root')->count())->toBe(1)
+        ->and(Directory::where('name', 'Marketing')->count())->toBe(1);
 });
 
 it('reads the stored digest with the algorithm the local comparison is made in', function () {
@@ -143,7 +219,7 @@ it('reads the stored digest with the algorithm the local comparison is made in',
 it('throws when the archive carries neither a manifest nor servable media', function () {
     $track = ($this->bundle)([
         'assets/Root/Docs/broken.png' => 'this is not an image',
-    ]);
+    ], 41, null, 'assets');
 
     expect(fn () => app(AssetBundleReader::class)->prepare($track))
         ->toThrow(RuntimeException::class);
@@ -158,5 +234,6 @@ it('refuses an executable disguised inside the asset tree', function () {
     $prepared = app(AssetBundleReader::class)->prepare($track);
 
     expect($prepared->dataFile)->toBe('imports/bundles/44/products.csv')
-        ->and($prepared->mediaDirectory)->toBeNull();
+        ->and($prepared->mediaDirectory)->toBeNull()
+        ->and(Asset::where('path', 'assets/Root/payload.php')->exists())->toBeFalse();
 });

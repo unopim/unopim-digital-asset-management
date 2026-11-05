@@ -17,6 +17,8 @@ class AssetBundleReader
 
     public const GENERATED_DATA_FILE = '__assets-bundle.csv';
 
+    public function __construct(protected AssetTreeIngestor $assetTreeIngestor) {}
+
     /**
      * @throws \RuntimeException when the archive is unreadable, unsafe, or carries no importable content
      */
@@ -29,7 +31,17 @@ class AssetBundleReader
 
         $dataFile = $this->locateDataFile($entries);
 
-        $mediaDirectory = $this->stageMedia($entries, $dataFile, $extractPath, $import->id);
+        // The assets entity creates its own rows from the (possibly synthesized) manifest, so it
+        // must not also ingest the `assets/` tree. Every other entity — product and category
+        // bundles exported "with media" — carries the source DAM tree and relies on it being
+        // recreated so the CSV's asset paths resolve to real rows.
+        $ingestAssetTree = ($import->jobInstance?->entity_type ?? null) !== 'assets';
+
+        if ($ingestAssetTree) {
+            $this->assetTreeIngestor->ingest($extractPath);
+        }
+
+        $mediaDirectory = $this->stageMedia($entries, $dataFile, $extractPath, $import->id, $ingestAssetTree);
 
         if ($dataFile === null) {
             $dataFile = $this->synthesizeDataFile($entries, $extractPath, $this->baseDirectoryPath($import));
@@ -150,7 +162,7 @@ class AssetBundleReader
     /**
      * @param  list<string>  $entries
      */
-    protected function stageMedia(array $entries, ?string $dataFile, string $extractPath, int $trackId): ?string
+    protected function stageMedia(array $entries, ?string $dataFile, string $extractPath, int $trackId, bool $skipAssetTree = false): ?string
     {
         $directory = self::MEDIA_DIRECTORY_PREFIX.$trackId;
 
@@ -160,6 +172,12 @@ class AssetBundleReader
 
         foreach ($entries as $entry) {
             if ($entry === $dataFile) {
+                continue;
+            }
+
+            // When the asset tree is ingested, its `assets/` files become DAM rows and must not
+            // be duplicated into the staged images directory as well.
+            if ($skipAssetTree && str_starts_with($entry, AssetTreeIngestor::ASSET_ENTRY_PREFIX)) {
                 continue;
             }
 
