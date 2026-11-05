@@ -402,9 +402,7 @@ class AssetController extends Controller
     }
 
     /**
-     * API requests authenticate on the 'api' guard via a personal API key, not the
-     * 'admin' guard bouncer() reads from — so this checks the key's own granted
-     * scopes instead of the web ACL, mirroring ScopeMiddleware's own permission check.
+     * API keys authenticate on the 'api' guard, so the key's scopes are checked instead of the admin ACL.
      */
     protected function autoTagEligible(): bool
     {
@@ -483,6 +481,33 @@ class AssetController extends Controller
                 'property' => $properties,
             ],
         ], 200);
+    }
+
+    /**
+     * Includes whether AI tagging is still queued, so API clients know when to stop polling.
+     */
+    public function tags(int $id): JsonResponse
+    {
+        $asset = $this->assetRepository->find($id);
+
+        if (! $asset) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.datagrid.not-found'),
+            ], 404);
+        }
+
+        $this->damAuthorizeAsset($id);
+
+        return response()->json([
+            'success'            => true,
+            'ai_tagging_pending' => $this->autoTaggingService->isPending($asset),
+            'data'               => $asset->tags()
+                ->orderBy('name')
+                ->get(['dam_tags.id', 'dam_tags.name'])
+                ->map(fn (Tag $tag): array => ['id' => $tag->id, 'name' => $tag->name])
+                ->values(),
+        ]);
     }
 
     public function metadata(int $id): JsonResponse

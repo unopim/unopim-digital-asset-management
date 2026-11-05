@@ -25,6 +25,7 @@ use Webkul\DAM\Traits\AssetAccessControl;
 use Webkul\MagicAI\Enums\AiProvider;
 use Webkul\MagicAI\Models\MagicAIPlatform;
 use Webkul\MagicAI\Repository\MagicAIPlatformRepository;
+use Webkul\MagicAI\Services\AIModel;
 use Webkul\Webhook\Validators\SafeWebhookUrl;
 
 class ImageEditController
@@ -238,7 +239,7 @@ class ImageEditController
             'model'       => 'required|string',
         ]);
 
-        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id']);
+        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id'], $validated['model']);
         if ($error) {
             return response()->json(['message' => $error], 422);
         }
@@ -262,7 +263,7 @@ class ImageEditController
             'model'       => 'required|string',
         ]);
 
-        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id']);
+        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id'], $validated['model']);
         if ($error) {
             return response()->json(['message' => $error], 422);
         }
@@ -287,7 +288,7 @@ class ImageEditController
             'model'       => 'required|string',
         ]);
 
-        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id']);
+        [$platform, $aiProvider, $error] = $this->resolveImagePlatform($validated['platform_id'], $validated['model']);
         if ($error) {
             return response()->json(['message' => $error], 422);
         }
@@ -547,13 +548,64 @@ class ImageEditController
         }
     }
 
-    private function resolveImagePlatform(int $platformId): array
+    public function platforms(): JsonResponse
+    {
+        abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
+
+        return response()->json(['platforms' => $this->imageEditPlatforms()]);
+    }
+
+    /**
+     * Image-capable active platforms with their editable models; platforms left with none are dropped.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function imageEditPlatforms(): array
+    {
+        return collect(resolve(MagicAIPlatformRepository::class)->getActivePlatformOptions())
+            ->filter(fn (array $platform): bool => (bool) AiProvider::tryFrom($platform['provider'])?->supportsImages())
+            ->map(fn (array $platform): array => [...$platform, 'models' => $this->imageEditModels($platform['models'], $platform['id'])])
+            ->filter(fn (array $platform): bool => $platform['models'] !== [])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Core's image models that can edit an attached image; core falls back to every model, chat ones included, when none look like image models.
+     *
+     * @param  array<int, string>  $models
+     * @return list<string>
+     */
+    private function imageEditModels(array $models, int $platformId): array
+    {
+        $editable = (array) config('dam.image_edit.edit_model_patterns', []);
+        $generationOnly = (array) config('dam.image_edit.generation_only_model_patterns', []);
+
+        return array_values(array_filter(
+            AIModel::filterImageModels($models, $platformId),
+            fn (string $model): bool => $this->matchesAny($editable, $model) && ! $this->matchesAny($generationOnly, $model),
+        ));
+    }
+
+    /**
+     * @param  array<int, string>  $patterns
+     */
+    private function matchesAny(array $patterns, string $model): bool
+    {
+        return array_any($patterns, fn (string $pattern): bool => preg_match($pattern, $model) === 1);
+    }
+
+    private function resolveImagePlatform(int $platformId, string $model): array
     {
         $platform = app(MagicAIPlatformRepository::class)->findOrFail($platformId);
         $aiProvider = AiProvider::from($platform->provider);
 
         if (! $aiProvider->supportsImages()) {
             return [$platform, $aiProvider, trans('dam::app.admin.dam.asset.edit.image-editor.error-provider-no-images')];
+        }
+
+        if (! in_array($model, $this->imageEditModels($platform->model_list, $platform->id), true)) {
+            return [$platform, $aiProvider, trans('dam::app.admin.dam.asset.edit.image-editor.error-model-no-images')];
         }
 
         return [$platform, $aiProvider, null];
@@ -569,7 +621,6 @@ class ImageEditController
     ): JsonResponse {
         $this->configureAiProvider($aiProvider, $platform);
 
-        $resolvedModel = $this->resolveImageModel($platform, $model);
         $assetTemp = $this->writeTempAsset($asset);
         $allTemps = array_merge([$assetTemp], $extraTempFiles);
 
@@ -591,7 +642,7 @@ class ImageEditController
                 ->attachments($attachments)
                 ->size($apiSize)
                 ->quality('high')
-                ->generate($aiProvider->toLab(), $resolvedModel);
+                ->generate($aiProvider->toLab(), $model);
         } finally {
             foreach ($allTemps as $tmp) {
                 @unlink($tmp);
@@ -614,52 +665,6 @@ class ImageEditController
         $this->clearCache($asset->path, $disk);
 
         return response()->json(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.success-updated')]);
-    }
-
-    private function resolveImageModel(MagicAIPlatform $platform, string $requestedModel): string
-    {
-        $provider = $platform->provider;
-
-        $patterns = match ($provider) {
-            'openai' => ['gpt-image'],
-            'gemini' => ['gemini-2', 'imagen'],
-            'xai'    => ['grok'],
-            default  => [],
-        };
-
-        foreach ($patterns as $pattern) {
-            if (stripos($requestedModel, $pattern) !== false) {
-                return $requestedModel;
-            }
-        }
-
-        $knownModels = match ($provider) {
-            'openai' => ['gpt-image-1', 'gpt-image-1-mini', 'gpt-image-1.5'],
-            'gemini' => ['gemini-2.0-flash-preview-image-generation', 'gemini-2.5-flash-image'],
-            'xai'    => ['grok-2-image'],
-            default  => [],
-        };
-
-        foreach ($knownModels as $known) {
-            if (in_array($known, $platform->model_list ?? [], true)) {
-                return $known;
-            }
-        }
-
-        foreach ($platform->model_list ?? [] as $model) {
-            foreach ($patterns as $pattern) {
-                if (stripos($model, $pattern) !== false) {
-                    return $model;
-                }
-            }
-        }
-
-        return match ($provider) {
-            'openai' => 'gpt-image-1',
-            'gemini' => 'gemini-2.0-flash-preview-image-generation',
-            'xai'    => 'grok-2-image',
-            default  => $requestedModel,
-        };
     }
 
     /** Re-validates api_url/extras.* URLs from the persisted row (SSRF defense-in-depth); bad values are dropped, not applied. */

@@ -62,6 +62,15 @@
                             </li>
                             @endif
 
+                            @if ($canAiTag)
+                            <li
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                                @click="performAiTag"
+                            >
+                                @lang('dam::app.admin.dam.tag.mass-action.ai-tag')
+                            </li>
+                            @endif
+
                             @if (bouncer()->hasPermission('dam.asset.mass_delete'))
                             <li
                                 class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-cherry-800 cursor-pointer text-sm text-gray-700 dark:text-gray-300"

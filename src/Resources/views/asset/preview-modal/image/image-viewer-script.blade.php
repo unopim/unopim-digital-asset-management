@@ -97,15 +97,8 @@ window._damImageViewer = {
         },
         bgCurrentPlatformModels() {
             const p = this.bgPlatforms.find(p => p.id === this.bgSelectedPlatformId);
-            if (!p) return [];
-            const imagePatterns = {
-                openai: ['gpt-image'],
-                gemini: ['gemini-2', 'imagen'],
-                xai:    ['grok'],
-            };
-            const patterns = imagePatterns[p.provider] || [];
-            if (!patterns.length) return p.models || [];
-            return (p.models || []).filter(m => patterns.some(pat => m.toLowerCase().includes(pat)));
+
+            return p ? (p.models || []) : [];
         },
         editPreviewFilter() {
             const parts = [];
@@ -345,9 +338,8 @@ window._damImageViewer = {
         async loadBgPlatforms() {
             if (this.bgPlatforms.length) return;
             try {
-                const { data } = await window.axios.get('{{ route('admin.magic_ai.platforms') }}');
-                const imagePlatforms = (data.platforms || []).filter(p => ['openai', 'gemini', 'xai'].includes(p.provider));
-                this.bgPlatforms = imagePlatforms;
+                const { data } = await window.axios.get('{{ route('admin.dam.assets.image_edit.platforms') }}');
+                this.bgPlatforms = data.platforms || [];
                 if (!this.bgPlatforms.length) {
                     this.bgPlatformError = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-no-image-platform'));
                     return;
@@ -363,6 +355,11 @@ window._damImageViewer = {
             } catch (e) {
                 this.bgPlatformError = @json(trans('dam::app.admin.dam.asset.edit.image-editor.error-platforms'));
             }
+        },
+
+        selectBgSubTab(tab) {
+            this.bgSubTab = tab;
+            if (this.editTool === 'edit-bg' && tab !== 'color') this.loadBgPlatforms();
         },
 
         onBgPlatformChange() {

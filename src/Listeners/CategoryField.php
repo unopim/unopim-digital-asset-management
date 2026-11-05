@@ -13,12 +13,7 @@ class CategoryField
     ) {}
 
     /**
-     * Drop the category mappings whose field no longer exists.
-     *
-     * The event carries the deleted field's id and fires once the row is gone, so the
-     * code `related_field` stores cannot be resolved from it. Matching against the live
-     * field codes instead also clears orphans left by earlier deletions, which kept
-     * assets undeletable with no screen left to unlink from.
+     * Matches live field codes, since the event fires after the row is gone; this also clears earlier orphans.
      */
     public function afterDelete(): void
     {

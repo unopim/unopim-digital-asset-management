@@ -29,14 +29,13 @@ use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Import;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
 use Webkul\DataTransfer\Validators\JobInstances\Import\CategoryJobValidator;
 use Webkul\DataTransfer\Validators\JobInstances\Import\ProductJobValidator;
-use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
-use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
 
@@ -46,6 +45,8 @@ class DAMServiceProvider extends ServiceProvider
         ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
         \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
         \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
+        Exporter::class                                                 => \Webkul\DAM\Helpers\Exporters\Product\Exporter::class,
+        Importer::class                                                 => \Webkul\DAM\Helpers\Importers\Product\Importer::class,
         Import::class                                                   => \Webkul\DAM\Helpers\Import::class,
         ImportController::class                                         => \Webkul\DAM\Http\Controllers\Settings\DataTransfer\ImportController::class,
         ProductJobValidator::class                                      => \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class,
@@ -56,23 +57,8 @@ class DAMServiceProvider extends ServiceProvider
         ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
     ];
 
-    /**
-     * Measurement binds the product exporter and importer inside register(), so a
-     * $bindings entry here loses to it. Every register() runs before any booted()
-     * callback fires, which makes these the bindings that survive.
-     */
     public function boot(Router $router)
     {
-        $this->app->booted(function (): void {
-            $this->app->bind(Exporter::class, class_exists(MeasurementExporter::class)
-                ? MeasurementAwareExporter::class
-                : \Webkul\DAM\Helpers\Exporters\Product\Exporter::class);
-
-            $this->app->bind(Importer::class, class_exists(MeasurementImporter::class)
-                ? MeasurementAwareImporter::class
-                : \Webkul\DAM\Helpers\Importers\Product\Importer::class);
-        });
-
         $router->aliasMiddleware('dam', DAM::class);
 
         RateLimiter::for('dam-share-thumb', function ($request) {
@@ -127,6 +113,12 @@ class DAMServiceProvider extends ServiceProvider
         }
 
         Blade::anonymousComponentPath(__DIR__.'/../Resources/views/components', 'dam');
+
+        view()->composer('dam::components.explorer.toolbar', function ($view) {
+            $view->with('canAiTag', bouncer()->hasPermission('dam.asset.update')
+                && bouncer()->hasPermission('dam.tags.create')
+                && app(AssetAutoTaggingService::class)->isAvailable());
+        });
 
         view()->composer('dam::admin.roles.dam-permissions-tab', function ($view) {
             $roleId = request()->route('id');
@@ -204,5 +196,23 @@ class DAMServiceProvider extends ServiceProvider
         $this->commands([
             MoveDamAssetsToS3::class,
         ]);
+
+        $this->bindMeasurementAwareProductHelpers();
+    }
+
+    /**
+     * Measurement on UnoPim 3.0.x rebinds the core product helpers in register(), so DAM rebinds them after boot.
+     */
+    protected function bindMeasurementAwareProductHelpers(): void
+    {
+        $this->app->booted(function (): void {
+            if (class_exists('Webkul\\Measurement\\Helpers\\Exporters\\ProductExporter')) {
+                $this->app->bind(Exporter::class, MeasurementAwareExporter::class);
+            }
+
+            if (class_exists('Webkul\\Measurement\\Helpers\\Importers\\Product\\Importer')) {
+                $this->app->bind(Importer::class, MeasurementAwareImporter::class);
+            }
+        });
     }
 }

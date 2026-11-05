@@ -61,11 +61,7 @@ class AssetTreeIngestor
     }
 
     /**
-     * An archive compressed from a folder rather than from that folder's contents arrives
-     * with the whole tree one level down, which used to leave the asset tree unfound and
-     * the import silently ingesting nothing. The wrapping folder is looked through before
-     * the tree is declared absent, and whichever directory holds it becomes the root the
-     * entries are made relative to, so they still read as the asset paths the rows carry.
+     * Looks one level down too, for archives compressed from the folder rather than its contents.
      */
     protected function resolveAssetTreeRoot(string $sourceRoot): ?string
     {
@@ -91,10 +87,7 @@ class AssetTreeIngestor
     }
 
     /**
-     * A tree the archive plainly meant to carry but named in a way the exact match
-     * never accepts, such as "assets:" (what macOS stores when a "/" is typed into a
-     * folder name), would otherwise ingest nothing and report success. Both levels
-     * resolveAssetTreeRoot() searches are mirrored so a wrapping folder cannot hide it.
+     * Finds a tree the exact match misses, such as macOS's "assets:", instead of silently ingesting nothing.
      */
     protected function findMisnamedAssetDirectory(string $sourceRoot): ?string
     {
@@ -202,12 +195,7 @@ class AssetTreeIngestor
     }
 
     /**
-     * A path already held by an asset is that asset's, so a bundled binary that differs
-     * from the stored one is a new revision rather than a second asset: the row keeps its
-     * id and everything referencing it, and only the file behind it moves on.
-     *
-     * An identical binary is left alone, cached renders included, so re-running an import
-     * does not cost a re-render of the whole library.
+     * A changed binary at a known path is a new revision of that asset; an identical one is left alone.
      */
     protected function refreshAsset(Asset $asset, string $entry, string $sourceFile): int
     {
@@ -263,9 +251,7 @@ class AssetTreeIngestor
     }
 
     /**
-     * Thumbnails and previews are cached under a path derived from the asset's own path
-     * and are served without consulting the binary they were rendered from, so dropping
-     * them is what makes a replaced image show up as the replacement.
+     * Cached renders ignore the binary, so they are dropped for a replaced image to show.
      */
     protected function purgeDerivatives(string $entry): void
     {

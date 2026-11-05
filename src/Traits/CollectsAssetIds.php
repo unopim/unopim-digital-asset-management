@@ -5,13 +5,7 @@ namespace Webkul\DAM\Traits;
 trait CollectsAssetIds
 {
     /**
-     * Collect an asset field's ids from every scope the values carry.
-     *
-     * A single requested channel and locale is right for an admin request but wrong on a
-     * queued import: there is no request, so those fall back to defaults that need not
-     * match the channel or locale the import wrote. Reading the union of
-     * `common`, `locale_specific`, `channel_specific` and `channel_locale_specific`
-     * keeps the result correct whichever scope the values target.
+     * Reads every scope because a queued import has no request channel or locale to narrow it to.
      *
      * @return list<int|string>
      */

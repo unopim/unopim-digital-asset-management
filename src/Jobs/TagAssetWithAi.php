@@ -10,18 +10,19 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\UploadBatch;
+use Webkul\DAM\Models\UploadTracker;
 use Webkul\DAM\Services\AiTaggingJobTrackerService;
 use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Traits\SettlesUploadBatch;
+use Webkul\DataTransfer\Helpers\AbstractJob;
 use Webkul\DataTransfer\Models\JobTrack;
 use Webkul\DataTransfer\Models\JobTrackBatch;
 
 /**
- * Runs the AI tagging call on its own queue lifecycle, separate from
- * ProcessAssetUpload, so a slow/failed AI call can't delay metadata
- * extraction, thumbnail generation, or upload-batch completion.
+ * Runs separately from ProcessAssetUpload so a slow AI call cannot delay upload finalisation.
  */
 class TagAssetWithAi implements ShouldQueue
 {
@@ -31,6 +32,10 @@ class TagAssetWithAi implements ShouldQueue
 
     public int $tries = 2;
 
+    protected const FAILURE_MESSAGE = 'AI tagging failed.';
+
+    protected ?string $pendingClaim = null;
+
     public function __construct(
         protected int $assetId,
         protected string $disk,
@@ -39,6 +44,8 @@ class TagAssetWithAi implements ShouldQueue
         protected ?int $trackBatchId = null,
     ) {
         $this->queue = config('dam.queues.media');
+
+        $this->pendingClaim = app(AssetAutoTaggingService::class)->markPending($assetId);
     }
 
     /**
@@ -57,6 +64,8 @@ class TagAssetWithAi implements ShouldQueue
         $asset = Asset::find($this->assetId);
 
         if (! $asset) {
+            $service->clearPending($this->assetId, $this->pendingClaim);
+
             $this->settleBatch($batch, $tracker, failed: false);
 
             return;
@@ -64,16 +73,11 @@ class TagAssetWithAi implements ShouldQueue
 
         $batch?->update(['state' => UploadBatch::STATE_PROCESSING]);
 
-        // No tracker session to aggregate under (e.g. an API upload) — track this run on its own.
-        $jobTrack = $tracker
-            ? ($tracker->job_track_id ? JobTrack::find($tracker->job_track_id) : null)
-            : $jobTracker->startStandaloneJob($this->userId);
-
-        $trackBatch = $this->trackBatchId
-            ? JobTrackBatch::find($this->trackBatchId)
-            : ($jobTrack ? $jobTracker->startBatch($jobTrack) : null);
+        [$jobTrack, $trackBatch] = $this->resolveTracking($tracker, $jobTracker);
 
         $success = $service->tagAsset($asset, $this->disk);
+
+        $service->clearPending($this->assetId, $this->pendingClaim);
 
         if ($jobTrack) {
             $jobTracker->recordProgress($jobTrack, $success);
@@ -83,7 +87,7 @@ class TagAssetWithAi implements ShouldQueue
             }
 
             if (! $success) {
-                $jobTracker->logFailure($jobTrack, $this->assetId, $service->lastError() ?? 'AI tagging failed.');
+                $jobTracker->logFailure($jobTrack, $this->assetId, $service->lastError() ?? self::FAILURE_MESSAGE);
             }
 
             if (! $tracker) {
@@ -91,6 +95,123 @@ class TagAssetWithAi implements ShouldQueue
             }
         }
 
-        $this->settleBatch($batch, $tracker, failed: ! $success, error: $success ? null : 'AI tagging failed.');
+        $this->settleBatch($batch, $tracker, failed: ! $success, error: $success ? null : self::FAILURE_MESSAGE);
+
+        $this->forgetCreatedTracking();
+    }
+
+    /**
+     * Settles what handle() left open after a timeout or exhausted retries; records already settled are left alone.
+     */
+    public function failed(?\Throwable $exception): void
+    {
+        app(AssetAutoTaggingService::class)->clearPending($this->assetId, $this->pendingClaim);
+
+        $error = $exception?->getMessage() ?: self::FAILURE_MESSAGE;
+
+        $created = $this->createdTracking();
+
+        $this->failOpenTrackBatch($this->trackBatchId ?? $created['track_batch_id'] ?? null, $error);
+        $this->failOpenStandaloneJob($created['job_track_id'] ?? null, $error);
+
+        $batch = $this->batchId ? UploadBatch::find($this->batchId) : null;
+
+        if ($batch && in_array($batch->state, [UploadBatch::STATE_PENDING, UploadBatch::STATE_PROCESSING], true)) {
+            $this->settleBatch($batch, $batch->tracker, failed: true, error: $error);
+        }
+
+        $this->forgetCreatedTracking();
+    }
+
+    /**
+     * Tracking created here is cached under the claim token, so a retry reuses it and failed() can settle it.
+     *
+     * @return array{0: ?JobTrack, 1: ?JobTrackBatch}
+     */
+    protected function resolveTracking(?UploadTracker $tracker, AiTaggingJobTrackerService $jobTracker): array
+    {
+        $created = $this->createdTracking();
+
+        if ($tracker) {
+            $jobTrack = $tracker->job_track_id ? JobTrack::find($tracker->job_track_id) : null;
+        } else {
+            $jobTrack = (isset($created['job_track_id']) ? JobTrack::find($created['job_track_id']) : null)
+                ?? $jobTracker->startStandaloneJob($this->userId);
+        }
+
+        if ($this->trackBatchId) {
+            $trackBatch = JobTrackBatch::find($this->trackBatchId);
+        } else {
+            $trackBatch = (isset($created['track_batch_id']) ? JobTrackBatch::find($created['track_batch_id']) : null)
+                ?? ($jobTrack ? $jobTracker->startBatch($jobTrack) : null);
+        }
+
+        $this->rememberCreatedTracking([
+            'job_track_id'   => $tracker ? null : $jobTrack?->id,
+            'track_batch_id' => $this->trackBatchId ? null : $trackBatch?->id,
+        ]);
+
+        return [$jobTrack, $trackBatch];
+    }
+
+    protected function failOpenStandaloneJob(?int $jobTrackId, string $error): void
+    {
+        $jobTrack = $jobTrackId ? JobTrack::find($jobTrackId) : null;
+
+        if (! $jobTrack || in_array($jobTrack->state, [AbstractJob::STATE_COMPLETED, AbstractJob::STATE_FAILED], true)) {
+            return;
+        }
+
+        app(AiTaggingJobTrackerService::class)->complete($jobTrack, failed: true, errorMessage: $error);
+    }
+
+    protected function failOpenTrackBatch(?int $trackBatchId, string $error): void
+    {
+        $trackBatch = $trackBatchId ? JobTrackBatch::find($trackBatchId) : null;
+
+        if (! $trackBatch || ! in_array($trackBatch->state, [AbstractJob::STATE_PENDING, AbstractJob::STATE_PROCESSING], true)) {
+            return;
+        }
+
+        $jobTracker = app(AiTaggingJobTrackerService::class);
+
+        $jobTracker->completeBatch($trackBatch, false);
+
+        if ($jobTrack = JobTrack::find($trackBatch->job_track_id)) {
+            $jobTracker->recordProgress($jobTrack, false);
+            $jobTracker->logFailure($jobTrack, $this->assetId, $error);
+        }
+    }
+
+    /**
+     * @return array{job_track_id?: ?int, track_batch_id?: ?int}
+     */
+    protected function createdTracking(): array
+    {
+        $key = $this->createdTrackingKey();
+
+        return $key ? (array) Cache::get($key, []) : [];
+    }
+
+    /**
+     * @param  array{job_track_id: ?int, track_batch_id: ?int}  $tracking
+     */
+    protected function rememberCreatedTracking(array $tracking): void
+    {
+        if (($key = $this->createdTrackingKey()) && array_filter($tracking) !== []) {
+            Cache::put($key, $tracking, now()->addDay());
+        }
+    }
+
+    protected function forgetCreatedTracking(): void
+    {
+        if ($key = $this->createdTrackingKey()) {
+            Cache::forget($key);
+        }
+    }
+
+    protected function createdTrackingKey(): ?string
+    {
+        return $this->pendingClaim ? "dam.ai_tagging.tracking.{$this->pendingClaim}" : null;
     }
 }

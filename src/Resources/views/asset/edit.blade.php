@@ -204,16 +204,11 @@
                                 <x-slot:content class="gap-4">
                                     <div :key="tagComponentKey">
                                         <x-admin::form.control-group>
-
-                                            @php
-                                                $options = json_encode($tags->toArray());
-                                            @endphp
-
                                             <x-admin::form.control-group.control
                                                 type="tagging"
                                                 id="tags"
                                                 name="tags"
-                                                :options="$options"
+                                                ::options="tagOptions"
                                                 v-model="tagValues"
                                                 :label="trans('dam::app.admin.dam.asset.edit.tags')"
                                                 :placeholder="trans('dam::app.admin.dam.asset.edit.select-tags')"
@@ -228,6 +223,19 @@
 
                                         </x-admin::form.control-group>
                                     </div>
+
+                                    @if ($canAiTag)
+                                        <button
+                                            v-if="asset.file_type === 'image' && ! aiTagsGenerated"
+                                            type="button"
+                                            class="secondary-button w-full justify-center"
+                                            :disabled="aiTaggingPending || aiTagRequesting"
+                                            @click="generateAiTags"
+                                        >
+                                            <span v-if="aiTaggingPending || aiTagRequesting">@lang('dam::app.admin.dam.tag.mass-action.ai-tag-in-progress')</span>
+                                            <span v-else>@lang('dam::app.admin.dam.tag.mass-action.ai-tag')</span>
+                                        </button>
+                                    @endif
                                 </x-slot>
                             </x-admin::accordion>
 
@@ -329,10 +337,111 @@
                         displayTags:      @json($asset->tags ?? []),
                         tagValues:        @js(json_encode($asset->tags->pluck('id')->values()->all())),
                         tagComponentKey:  0,
+                        tagOptions:       @json($tags),
+                        aiTaggingPending: @json($aiTaggingPending),
+                        aiTaggingTimer:   null,
+                        aiTagRequesting:  false,
+                        aiTagsGenerated:  false,
+                        aiTagsChanged:    false,
                     };
                 },
 
+                mounted() {
+                    this.scheduleAiTagRefresh();
+                },
+
+                beforeUnmount() {
+                    clearTimeout(this.aiTaggingTimer);
+                },
+
                 methods: {
+                    scheduleAiTagRefresh() {
+                        clearTimeout(this.aiTaggingTimer);
+
+                        if (! this.aiTaggingPending) {
+                            return;
+                        }
+
+                        this.aiTaggingTimer = setTimeout(() => this.refreshAiTags(), 5000);
+                    },
+
+                    async refreshAiTags() {
+                        const assetId = this.asset.id;
+
+                        try {
+                            const { data } = await this.$axios.get(
+                                `{{ route('admin.dam.assets.show', ':id') }}`.replace(':id', assetId)
+                            );
+
+                            if (assetId !== this.asset.id || ! data.success) {
+                                return;
+                            }
+
+                            if (this.applyTags(data.tags ?? [])) {
+                                this.aiTagsChanged = true;
+                            }
+
+                            this.aiTaggingPending = !! data.aiTaggingPending;
+
+                            if (! this.aiTaggingPending) {
+                                this.aiTagsGenerated = this.aiTagsChanged;
+
+                                this.$emitter.emit('add-flash', this.aiTagsChanged
+                                    ? { type: 'success', message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')) }
+                                    : { type: 'warning', message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')) });
+
+                                this.aiTagsChanged = false;
+                            }
+                        } catch (e) {
+                            this.aiTaggingPending = false;
+                        }
+
+                        this.scheduleAiTagRefresh();
+                    },
+
+                    generateAiTags() {
+                        this.aiTagRequesting = true;
+
+                        this.$axios.post("{{ route('admin.dam.assets.mass_ai_tag') }}", { indices: [this.asset.id] })
+                            .then((response) => {
+                                this.$emitter.emit('add-flash', { type: 'success', message: response.data.message });
+                                this.aiTaggingPending = true;
+                                this.aiTagsChanged    = false;
+                                this.scheduleAiTagRefresh();
+                            })
+                            .catch((error) => {
+                                this.$emitter.emit('add-flash', { type: 'error', message: error.response?.data?.message });
+                            })
+                            .finally(() => {
+                                this.aiTagRequesting = false;
+                            });
+                    },
+
+                    mergeTagOptions(tags) {
+                        tags.forEach((tag) => {
+                            if (! this.tagOptions.some(option => option.id === tag.id)) {
+                                this.tagOptions.push(tag);
+                            }
+                        });
+                    },
+
+                    applyTags(tags) {
+                        const ids = tags.map(t => t.id);
+                        const currentIds = this.displayTags.map(t => t.id);
+
+                        this.mergeTagOptions(tags);
+
+                        if (ids.length === currentIds.length && ids.every(id => currentIds.includes(id))) {
+                            return false;
+                        }
+
+                        this.displayTags     = tags;
+                        this.tagValues       = JSON.stringify(ids);
+                        this.tagComponentKey += 1;
+
+                        return true;
+                    },
+
                     async navigateTo(id) {
                         if (!id || this.isNavigating) return;
                         this.isNavigating = true;
@@ -355,9 +464,14 @@
                             this.displayCreatedAt = data.createdAtFormatted ?? '';
                             this.displayUpdatedAt = data.updatedAtFormatted ?? '';
                             this.displayAssetPath = data.assetPath ?? '';
+                            this.mergeTagOptions(data.tags ?? []);
                             this.displayTags      = data.tags ?? [];
                             this.tagValues        = JSON.stringify((data.tags ?? []).map(t => t.id ?? t));
                             this.tagComponentKey  += 1;
+                            this.aiTaggingPending = !! data.aiTaggingPending;
+                            this.aiTagsGenerated  = false;
+                            this.aiTagsChanged    = false;
+                            this.scheduleAiTagRefresh();
                         } catch (e) {
                             this.$emitter.emit('add-flash', {
                                 type: 'error',

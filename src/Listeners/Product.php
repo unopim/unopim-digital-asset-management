@@ -17,20 +17,7 @@ class Product
     ) {}
 
     /**
-     * Map asset attributes to their products after a bulk import batch.
-     *
-     * The product importer writes through `DB::table()->upsert()` for speed and never
-     * reaches `ProductRepository`, so `catalog.product.create.after` and
-     * `catalog.product.update.after` — the events `afterCreateOrupdate()` listens on —
-     * are never dispatched for imported rows. Without this handler an imported asset
-     * is attached to the product but has no `dam_asset_resource_mappings` row, so the
-     * asset's Linked Resources grid comes back empty.
-     *
-     * The payload carries ids only, never models. `Event::dispatch()` spreads an array
-     * payload across the listener's arguments, so the importer's
-     * `['product_id' => $ids]` arrives here as `$ids` — the same shape
-     * `Webkul\Webhook\Listeners\Product::afterBulkCreate()` receives. The wrapper form
-     * is still accepted so a direct call with the documented payload also works.
+     * Maps asset attributes after an import batch, whose bulk upsert fires no product events; accepts ids or a `product_id` wrapper.
      */
     public function afterImportBatch(array $payload): void
     {

@@ -612,6 +612,34 @@ app.component('v-dam-tab', {
             });
         },
 
+        performAiTag() {
+            const assetIds = this.selection.ids.filter(i => i.type === 'asset').map(i => i.id);
+
+            if (! assetIds.length) {
+                this.$emitter.emit('add-flash', {
+                    type: 'warning',
+                    message: "@lang('dam::app.admin.dam.tag.mass-action.no-assets')",
+                });
+                return;
+            }
+
+            this.$emitter.emit('open-confirm-modal', {
+                message: "@lang('dam::app.admin.dam.tag.mass-action.ai-tag-confirm')".replace(':count', assetIds.length),
+                agree: async () => {
+                    try {
+                        const { data } = await this.$axios.post('{{ route("admin.dam.assets.mass_ai_tag") }}', { indices: assetIds });
+                        this.$emitter.emit('add-flash', { type: 'success', message: data.message });
+                        this.clearSelection();
+                    } catch (e) {
+                        this.$emitter.emit('add-flash', {
+                            type: 'warning',
+                            message: e?.response?.data?.message ?? "@lang('dam::app.admin.dam.index.directory.error-operation')",
+                        });
+                    }
+                },
+            });
+        },
+
         performMassDelete() {
             const count = this.selection.ids.length;
 
@@ -935,18 +963,10 @@ app.component('v-dam-tab', {
             }).catch(err => {
                 const status = err?.response?.status;
 
-                /**
-                 * A directory that no longer exists fails the endpoint's `exists` validation rule,
-                 * which responds 422 — 404 only covers the narrow window where the row disappears
-                 * between validation and lookup. Because 422 was not recovered from, a stale
-                 * `dam_explorer_active_dir` (or a restored tab pointing at a removed folder) left
-                 * the explorer empty on every visit instead of falling back to root.
-                 */
                 if (! [400, 403, 404, 422].includes(status)) {
                     return;
                 }
 
-                // Recover once. If root itself cannot be loaded, stop rather than loop.
                 if (this._recoveringToRoot) {
                     return;
                 }

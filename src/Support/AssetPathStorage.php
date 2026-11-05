@@ -6,11 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 
 /**
- * Resolves DAM asset paths to ids for an import batch.
- *
- * Importers previously queried once per asset value per row; a batch referencing the
- * same asset a thousand times issued a thousand queries. Paths are collected up front
- * and resolved in chunks instead, and lookups afterwards are in-memory.
+ * Resolves asset paths to ids in chunks up front, so repeated paths cost no extra queries.
  */
 class AssetPathStorage
 {

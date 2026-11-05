@@ -3,8 +3,7 @@
 namespace Webkul\DAM\Validators\JobInstances\Import\Concerns;
 
 /**
- * Widens the core file rule so an export archive can be uploaded in place of a bare
- * data file. Core validators keep their narrower rule for installs without the DAM.
+ * Widens the core file rule to accept an export archive as well as a bare data file.
  */
 trait AcceptsAssetBundle
 {

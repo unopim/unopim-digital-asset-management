@@ -13,7 +13,7 @@ it('finds an asset by its tag name via the explorer global search', function () 
 
     $tagged = Asset::factory()->create(['file_name' => 'IMG_001.jpg']);
     $tagged->directories()->attach($dir->id);
-    $tagged->tags()->attach(Tag::create(['name' => 'sunset'])->id);
+    $tagged->tags()->attach(Tag::firstOrCreate(['name' => 'sunset'])->id);
 
     $untagged = Asset::factory()->create(['file_name' => 'IMG_002.jpg']);
     $untagged->directories()->attach($dir->id);
@@ -34,7 +34,7 @@ it('matches tags case-insensitively and on partial terms', function () {
 
     $asset = Asset::factory()->create(['file_name' => 'IMG_010.jpg']);
     $asset->directories()->attach($dir->id);
-    $asset->tags()->attach(Tag::create(['name' => 'Summer Sale'])->id);
+    $asset->tags()->attach(Tag::firstOrCreate(['name' => 'Summer Sale'])->id);
 
     $response = $this->getJson(route('admin.dam.explorer.index', [
         'directory_id' => $dir->id,
@@ -67,8 +67,8 @@ it('returns each asset once even when multiple of its tags match the term', func
 
     $asset = Asset::factory()->create(['file_name' => 'IMG_020.jpg']);
     $asset->directories()->attach($dir->id);
-    $asset->tags()->attach(Tag::create(['name' => 'travel'])->id);
-    $asset->tags()->attach(Tag::create(['name' => 'travel-blog'])->id);
+    $asset->tags()->attach(Tag::firstOrCreate(['name' => 'travel'])->id);
+    $asset->tags()->attach(Tag::firstOrCreate(['name' => 'travel-blog'])->id);
 
     $response = $this->getJson(route('admin.dam.explorer.index', [
         'directory_id' => $dir->id,

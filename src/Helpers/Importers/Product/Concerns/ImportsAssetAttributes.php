@@ -7,11 +7,7 @@ use Webkul\DAM\Helpers\Importers\Concerns\ResolvesAssetPaths;
 use Webkul\DAM\Models\Asset;
 
 /**
- * Resolves the asset paths a data file carries into asset ids on the imported product.
- *
- * Asset columns are stripped from the row before it is handed upward, so the importer
- * being extended never sees a path it has no branch for and would otherwise store
- * verbatim. Its own value handling is left to run untouched.
+ * Asset columns are stripped before delegating, so the parent importer never stores a raw path.
  */
 trait ImportsAssetAttributes
 {

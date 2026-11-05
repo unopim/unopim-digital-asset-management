@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    /**
-     * Queues DAM jobs dispatch onto. Default to Laravel's 'default' queue so an
-     * existing worker that only runs `queue:work` (no --queue flag) keeps processing
-     * everything with no config change; set these to route DAM's own workload
-     * (fast DB housekeeping, filesystem/DB-tree bulk ops, CPU-heavy media processing)
-     * onto dedicated queues instead.
-     */
     'queues' => [
         'dam'   => env('DAM_QUEUE_DAM', 'default'),
         'bulk'  => env('DAM_QUEUE_BULK', 'default'),
@@ -37,16 +30,46 @@ return [
     'ai_tagging' => [
         'enabled'               => env('DAM_AI_TAGGING_ENABLED', false),
         'platform_id'           => env('DAM_AI_TAGGING_PLATFORM_ID'),
+        'model'                 => env('DAM_AI_TAGGING_MODEL'),
         'max_tags'              => (int) env('DAM_AI_TAGGING_MAX_TAGS', 8),
         'max_file_size'         => (int) env('DAM_AI_TAGGING_MAX_FILE_SIZE', 10 * 1024 * 1024),
         'rate_limit_per_minute' => (int) env('DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE', 60),
+
+        'vision_model_patterns' => [
+            '/^(?:.*\/)?(?:chat)?gpt-4o/i',
+            '/^(?:.*\/)?gpt-4\.(?:1|5)/i',
+            '/^(?:.*\/)?gpt-4-(?:turbo|vision)/i',
+            '/^(?:.*\/)?gpt-(?:[5-9]|\d{2,})/i',
+            '/^(?:.*\/)?o(?:1|3)(?!-mini)(?:-|$)/i',
+            '/^(?:.*\/)?o4-mini/i',
+            '/claude-(?:3|[4-9]|haiku-[4-9]|sonnet-[4-9]|opus-[4-9])/i',
+            '/gemini-(?!1\.0)/i',
+            '/gemma-3/i',
+            '/grok-(?:[4-9]|\d{2,})/i',
+            '/llama-4/i',
+            '/llava/i',
+            '/pixtral/i',
+            '/mistral-medium/i',
+            '/mistral-small-(?:latest|3\.[1-9]|25\d\d)/i',
+            '/qwen.*-vl/i',
+            '/qvq/i',
+            '/vision/i',
+        ],
     ],
 
-    /**
-     * Limits applied to an export archive uploaded to an import job. These are far wider
-     * than the product-images equivalent because a DAM bundle legitimately carries video
-     * and other large binaries; they exist to bound zip-bomb damage, not to size assets.
-     */
+    'image_edit' => [
+        'edit_model_patterns' => [
+            '/image/i',
+            '/dall-e-2/i',
+        ],
+
+        'generation_only_model_patterns' => [
+            '/dall-e-3/i',
+            '/imagen/i',
+            '/grok-2-image/i',
+        ],
+    ],
+
     'import_bundle' => [
         'max_entry_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_ENTRY_SIZE', 524288000),
         'max_total_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_TOTAL_SIZE', 5368709120),
