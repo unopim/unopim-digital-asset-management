@@ -4,21 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | PIM Integration
-    |--------------------------------------------------------------------------
-    |
-    | Auto-detected, not toggled: the integration is ON by default and only
-    | turns OFF when the catalog core is absent (the standalone DAM project).
-    | See Webkul\DAM\Support\PimIntegration::enabled().
-    |
-    */
-
-    'pim' => [
-        'enabled' => true,
-    ],
-
     'queues' => [
         'dam'   => env('DAM_QUEUE_DAM', 'default'),
         'bulk'  => env('DAM_QUEUE_BULK', 'default'),
