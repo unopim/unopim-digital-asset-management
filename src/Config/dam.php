@@ -58,6 +58,11 @@ return [
     ],
 
     'image_edit' => [
+        'edit_model_patterns' => [
+            '/image/i',
+            '/dall-e-2/i',
+        ],
+
         'generation_only_model_patterns' => [
             '/dall-e-3/i',
             '/imagen/i',

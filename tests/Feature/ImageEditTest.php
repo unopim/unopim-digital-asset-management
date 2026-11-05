@@ -531,3 +531,29 @@ it('rejects a generation-only model for a background edit', function (string $pr
     ['openai', 'dall-e-3'],
     ['gemini', 'imagen-4.0-generate-001'],
 ]);
+
+it('hides a platform that has only chat models from the image editor', function () {
+    $chatOnly = imageEditPlatform('openai', 'gpt-4o,gpt-5-mini');
+
+    $platforms = collect($this->getJson(route('admin.dam.assets.image_edit.platforms'))
+        ->assertOk()
+        ->json('platforms'))->keyBy('id');
+
+    expect($platforms->has($chatOnly->id))->toBeFalse();
+});
+
+it('rejects a chat model for a background edit on a platform without image models', function () {
+    AiImageFacade::fake();
+
+    $asset = imageAsset($this->disk);
+    $platform = imageEditPlatform('openai', 'gpt-4o,gpt-5-mini');
+
+    $this->postJson(route('admin.dam.assets.image_edit.bg_ai', $asset->id), [
+        'prompt'      => 'Change the background to red',
+        'platform_id' => $platform->id,
+        'model'       => 'gpt-4o',
+    ])->assertStatus(422)
+        ->assertJson(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.error-model-no-images')]);
+
+    AiImageFacade::assertNothingGenerated();
+});

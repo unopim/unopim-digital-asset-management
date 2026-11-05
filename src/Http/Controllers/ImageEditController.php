@@ -571,19 +571,28 @@ class ImageEditController
     }
 
     /**
-     * Core's image models for the platform, minus those that cannot edit an attached image.
+     * Core's image models that can edit an attached image; core falls back to every model, chat ones included, when none look like image models.
      *
      * @param  array<int, string>  $models
      * @return list<string>
      */
     private function imageEditModels(array $models, int $platformId): array
     {
+        $editable = (array) config('dam.image_edit.edit_model_patterns', []);
         $generationOnly = (array) config('dam.image_edit.generation_only_model_patterns', []);
 
         return array_values(array_filter(
             AIModel::filterImageModels($models, $platformId),
-            fn (string $model): bool => ! array_any($generationOnly, fn (string $pattern): bool => preg_match($pattern, $model) === 1),
+            fn (string $model): bool => $this->matchesAny($editable, $model) && ! $this->matchesAny($generationOnly, $model),
         ));
+    }
+
+    /**
+     * @param  array<int, string>  $patterns
+     */
+    private function matchesAny(array $patterns, string $model): bool
+    {
+        return array_any($patterns, fn (string $pattern): bool => preg_match($pattern, $model) === 1);
     }
 
     private function resolveImagePlatform(int $platformId, string $model): array
