@@ -10,15 +10,12 @@ use Webkul\DAM\Services\AiTaggingDispatcher;
 use Webkul\DAM\Services\AssetAutoTaggingService;
 
 /**
- * Shared by the admin mass action and the REST API so both queue AI tagging
- * for existing assets identically. Requires the AssetAccessControl trait.
+ * Shared by the admin mass action and the REST API; requires the AssetAccessControl trait.
  */
 trait QueuesAiTagging
 {
     /**
-     * Queues AI tagging for the accessible image assets among $assetIds. Generated
-     * tags are added alongside each asset's current tags; non-image assets and
-     * assets outside the user's directories are reported as skipped.
+     * Queues AI tagging for the accessible image assets among $assetIds.
      *
      * @param  array<int, int|string>  $assetIds
      */

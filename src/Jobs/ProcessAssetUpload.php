@@ -24,6 +24,8 @@ class ProcessAssetUpload implements ShouldQueue
 
     public int $timeout = 300;
 
+    protected ?string $pendingClaim = null;
+
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
@@ -35,13 +37,12 @@ class ProcessAssetUpload implements ShouldQueue
         $this->queue = config('dam.queues.media');
 
         if ($this->flagsAiTaggingPending()) {
-            app(AssetAutoTaggingService::class)->markPending($assetId);
+            $this->pendingClaim = app(AssetAutoTaggingService::class)->markPending($assetId);
         }
     }
 
     /**
-     * Clears the pending AI tagging flag this job raised when the worker dies
-     * outside handle(), such as on a timeout, so the edit page stops polling.
+     * Releases this job's pending claim when the worker dies outside handle(), such as on a timeout.
      */
     public function failed(?\Throwable $exception = null): void
     {
@@ -88,9 +89,9 @@ class ProcessAssetUpload implements ShouldQueue
                 TagAssetWithAi::dispatch($asset->id, $disk, $this->tagBatchId, userId: $this->userId, trackBatchId: $this->trackBatchId);
             } elseif ($this->autoTagEligible && $asset->file_type === 'image' && $taggingService->isEnabled()) {
                 $this->dispatchTaggingJob($asset, $disk, $tracker, $jobTracker);
-            } else {
-                $this->releaseAiTaggingPending($taggingService);
             }
+
+            $this->releaseAiTaggingPending($taggingService);
 
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {
@@ -112,13 +113,13 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * Only a flag this job raised is cleared, so a tagging job queued for the same
-     * asset from elsewhere keeps the edit page polling.
+     * Only the claim this job raised is released; a tagging job it handed off to holds
+     * its own claim, so the edit page keeps polling until that job settles too.
      */
     protected function releaseAiTaggingPending(AssetAutoTaggingService $taggingService): void
     {
         if ($this->flagsAiTaggingPending()) {
-            $taggingService->clearPending($this->assetId);
+            $taggingService->clearPending($this->assetId, $this->pendingClaim);
         }
     }
 
@@ -190,14 +191,7 @@ class ProcessAssetUpload implements ShouldQueue
     }
 
     /**
-     * A tagging batch is only created once tagging is actually queued (not upfront
-     * with the upload batch), so total_files stays accurate for files that never
-     * become tagging-eligible. It joins the same tracker session as the upload.
-     *
-     * The job_track_batches row is created here too — at dispatch time, not when
-     * the (rate-limited, possibly much later) TagAssetWithAi job actually runs —
-     * so the live tracker view's total reflects every queued image immediately
-     * instead of growing one row at a time as each tagging job starts.
+     * Creates the tag batch and its job-track batch at dispatch, so the tracker's total covers every queued image immediately.
      */
     protected function dispatchTaggingJob(Asset $asset, string $disk, ?UploadTracker $tracker, AiTaggingJobTrackerService $jobTracker): void
     {

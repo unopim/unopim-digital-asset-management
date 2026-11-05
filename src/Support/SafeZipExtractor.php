@@ -3,15 +3,7 @@
 namespace Webkul\DAM\Support;
 
 /**
- * Hardened ZIP extraction for the asset bundle an import job may receive.
- *
- * Archive-level limits (entry count, total size, compression ratio) guard against
- * zip bombs; per-entry handling guards against zip-slip and oversized entries. What
- * counts as an acceptable file is left to the caller, so bundle ingestion can apply
- * the same file-type policy a UI upload does.
- *
- * This lives in the DAM rather than leaning on a core equivalent so the package runs
- * against a released UnoPim, where no such class exists.
+ * Zip-bomb and zip-slip hardened extraction for import bundles; file-type policy is left to the caller.
  */
 class SafeZipExtractor
 {
@@ -85,11 +77,7 @@ class SafeZipExtractor
     }
 
     /**
-     * Extract every acceptable entry beneath $extractPath.
-     *
-     * Entries are streamed to a temporary file rather than buffered, so a large asset
-     * costs bounded memory. $accepts receives the staged file and decides whether it
-     * is kept; returning false discards it and extraction continues.
+     * Streams each acceptable entry beneath $extractPath; $accepts decides whether a staged file is kept.
      *
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
      * @return list<string> relative paths actually extracted
@@ -174,8 +162,7 @@ class SafeZipExtractor
     }
 
     /**
-     * Create the entry's directory and confirm it resolves inside the extraction root,
-     * which catches traversal achieved through symlinks rather than through the name.
+     * Confirms the directory resolves inside the root, catching traversal through symlinks.
      */
     protected function prepareTargetDirectory(string $targetPath, string $realBase): bool
     {

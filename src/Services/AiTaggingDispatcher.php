@@ -19,9 +19,7 @@ class AiTaggingDispatcher
     ) {}
 
     /**
-     * Queues AI tagging for the image assets among $assets and returns how many
-     * were queued. A multi-asset run shares one upload tracker so the job tracker
-     * shows it as a single job that completes once every asset has settled.
+     * Queues AI tagging for the image assets and returns how many were queued; a multi-asset run shares one tracker.
      *
      * @param  Collection<int, Asset>  $assets
      */

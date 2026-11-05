@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Event;
 use Webkul\Admin\Http\Controllers\Controller;
 use Webkul\DAM\Http\Controllers\Concerns\QueuesAiTagging;
 use Webkul\DAM\Http\Requests\MassAiTagRequest;
-use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
@@ -26,8 +25,7 @@ class TagController extends Controller
     ) {}
 
     /**
-     * Queues AI tagging for existing assets — one or many. Generated tags are
-     * added alongside the asset's current tags; non-image assets are skipped.
+     * Queues AI tagging for the selected assets; non-image assets are skipped.
      */
     public function massAiTag(MassAiTagRequest $request): JsonResponse
     {

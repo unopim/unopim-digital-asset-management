@@ -48,8 +48,7 @@ trait AssetAccessControl
     }
 
     /**
-     * Narrows $assetIds to the assets whose directory the current user may access,
-     * resolving every directory in one query instead of one lookup per asset.
+     * Narrows $assetIds to the accessible assets in one query.
      *
      * @param  array<int, int>  $assetIds
      * @return array<int, int>

@@ -448,7 +448,8 @@ function imageEditPlatform(string $provider, string $models, bool $status = true
 
 it('lists every active image platform with the models core can use to edit images', function () {
     $openai = imageEditPlatform('openai', 'gpt-4o,gpt-image-2.5-sunburst,dall-e-3');
-    $gemini = imageEditPlatform('gemini', 'gemini-2.5-pro,imagen-4.0-generate-001');
+    $gemini = imageEditPlatform('gemini', 'gemini-2.5-pro,imagen-4.0-generate-001,gemini-2.5-flash-image');
+    $generationOnly = imageEditPlatform('openai', 'dall-e-3');
     $anthropic = imageEditPlatform('anthropic', 'claude-3');
     $inactive = imageEditPlatform('openai', 'gpt-image-1', status: false);
 
@@ -456,8 +457,9 @@ it('lists every active image platform with the models core can use to edit image
         ->assertOk()
         ->json('platforms'))->keyBy('id');
 
-    expect($platforms->get($openai->id)['models'])->toBe(['gpt-image-2.5-sunburst', 'dall-e-3'])
-        ->and($platforms->get($gemini->id)['models'])->toBe(['imagen-4.0-generate-001'])
+    expect($platforms->get($openai->id)['models'])->toBe(['gpt-image-2.5-sunburst'])
+        ->and($platforms->get($gemini->id)['models'])->toBe(['gemini-2.5-flash-image'])
+        ->and($platforms->has($generationOnly->id))->toBeFalse()
         ->and($platforms->has($anthropic->id))->toBeFalse()
         ->and($platforms->has($inactive->id))->toBeFalse();
 });
@@ -490,15 +492,15 @@ it('edits the background with exactly the model that was selected', function () 
     AiImageFacade::fake([$png]);
 
     $asset = imageAsset($this->disk);
-    $platform = imageEditPlatform('openai', 'gpt-image-1,dall-e-3');
+    $platform = imageEditPlatform('openai', 'gpt-image-1,gpt-image-1-mini');
 
     $this->postJson(route('admin.dam.assets.image_edit.bg_ai', $asset->id), [
         'prompt'      => 'a beach',
         'platform_id' => $platform->id,
-        'model'       => 'dall-e-3',
+        'model'       => 'gpt-image-1-mini',
     ])->assertOk();
 
-    AiImageFacade::assertGenerated(fn (ImagePrompt $prompt) => $prompt->model === 'dall-e-3');
+    AiImageFacade::assertGenerated(fn (ImagePrompt $prompt) => $prompt->model === 'gpt-image-1-mini');
 });
 
 it('loads the AI platforms whenever the upload or AI background tab is opened', function () {
@@ -510,3 +512,22 @@ it('loads the AI platforms whenever the upload or AI background tab is opened', 
         ->not->toContain("['openai', 'gemini', 'xai'].includes(p.provider)")
         ->not->toContain('imagePatterns');
 });
+
+it('rejects a generation-only model for a background edit', function (string $provider, string $model) {
+    AiImageFacade::fake();
+
+    $asset = imageAsset($this->disk);
+    $platform = imageEditPlatform($provider, "{$model},gpt-image-1,gemini-2.5-flash-image");
+
+    $this->postJson(route('admin.dam.assets.image_edit.bg_color', $asset->id), [
+        'color'       => '#ff0000',
+        'platform_id' => $platform->id,
+        'model'       => $model,
+    ])->assertStatus(422)
+        ->assertJson(['message' => trans('dam::app.admin.dam.asset.edit.image-editor.error-model-no-images')]);
+
+    AiImageFacade::assertNothingGenerated();
+})->with([
+    ['openai', 'dall-e-3'],
+    ['gemini', 'imagen-4.0-generate-001'],
+]);

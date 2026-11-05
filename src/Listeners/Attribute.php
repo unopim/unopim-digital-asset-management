@@ -13,13 +13,7 @@ class Attribute
     ) {}
 
     /**
-     * Drop the product mappings whose attribute no longer exists.
-     *
-     * Mirrors `Listeners\CategoryField@afterDelete` for the product side: the event
-     * carries the deleted attribute's id and fires once the row is gone, so the code
-     * `related_field` stores cannot be resolved from it. Matching against the live
-     * attribute codes instead also clears orphans left by earlier deletions, which kept
-     * assets undeletable with no screen left to unlink from.
+     * Matches live attribute codes, since the event fires after the row is gone; this also clears earlier orphans.
      */
     public function afterDelete(): void
     {

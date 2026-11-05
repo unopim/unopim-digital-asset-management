@@ -331,6 +331,7 @@
                         models: [],
                         isLoading: false,
                         modelSelectKey: 0,
+                        modelsRequest: 0,
                     };
                 },
 
@@ -352,13 +353,14 @@
                     },
 
                     loadModels() {
-                        const platformId = this.currentPlatformId;
+                        const request = ++this.modelsRequest;
+                        const isCurrent = () => request === this.modelsRequest;
 
                         this.isLoading = true;
 
-                        this.$axios.get(this.modelsRoute, { params: { platform_id: platformId || undefined } })
+                        this.$axios.get(this.modelsRoute, { params: { platform_id: this.currentPlatformId || undefined } })
                             .then(({ data }) => {
-                                if (platformId !== this.currentPlatformId) {
+                                if (! isCurrent()) {
                                     return;
                                 }
 
@@ -369,9 +371,15 @@
                                 }
                             })
                             .catch(() => {
-                                this.models = [];
+                                if (isCurrent()) {
+                                    this.models = [];
+                                }
                             })
                             .finally(() => {
+                                if (! isCurrent()) {
+                                    return;
+                                }
+
                                 this.isLoading = false;
                                 this.modelSelectKey += 1;
                             });

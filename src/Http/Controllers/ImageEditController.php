@@ -548,9 +548,6 @@ class ImageEditController
         }
     }
 
-    /**
-     * Platforms and models the background editor can offer.
-     */
     public function platforms(): JsonResponse
     {
         abort_unless(bouncer()->hasPermission('dam.asset.edit'), 403, trans('dam::app.admin.permissions.unauthorized'));
@@ -559,8 +556,7 @@ class ImageEditController
     }
 
     /**
-     * Active platforms whose provider core can generate images with, each limited to
-     * the models core picks for image work; platforms left with none are dropped.
+     * Image-capable active platforms with their editable models; platforms left with none are dropped.
      *
      * @return list<array<string, mixed>>
      */
@@ -568,10 +564,26 @@ class ImageEditController
     {
         return collect(resolve(MagicAIPlatformRepository::class)->getActivePlatformOptions())
             ->filter(fn (array $platform): bool => (bool) AiProvider::tryFrom($platform['provider'])?->supportsImages())
-            ->map(fn (array $platform): array => [...$platform, 'models' => AIModel::filterImageModels($platform['models'], $platform['id'])])
+            ->map(fn (array $platform): array => [...$platform, 'models' => $this->imageEditModels($platform['models'], $platform['id'])])
             ->filter(fn (array $platform): bool => $platform['models'] !== [])
             ->values()
             ->all();
+    }
+
+    /**
+     * Core's image models for the platform, minus those that cannot edit an attached image.
+     *
+     * @param  array<int, string>  $models
+     * @return list<string>
+     */
+    private function imageEditModels(array $models, int $platformId): array
+    {
+        $generationOnly = (array) config('dam.image_edit.generation_only_model_patterns', []);
+
+        return array_values(array_filter(
+            AIModel::filterImageModels($models, $platformId),
+            fn (string $model): bool => ! array_any($generationOnly, fn (string $pattern): bool => preg_match($pattern, $model) === 1),
+        ));
     }
 
     private function resolveImagePlatform(int $platformId, string $model): array
@@ -583,7 +595,7 @@ class ImageEditController
             return [$platform, $aiProvider, trans('dam::app.admin.dam.asset.edit.image-editor.error-provider-no-images')];
         }
 
-        if (! in_array($model, AIModel::filterImageModels($platform->model_list, $platform->id), true)) {
+        if (! in_array($model, $this->imageEditModels($platform->model_list, $platform->id), true)) {
             return [$platform, $aiProvider, trans('dam::app.admin.dam.asset.edit.image-editor.error-model-no-images')];
         }
 

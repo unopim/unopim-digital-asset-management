@@ -11,20 +11,7 @@ use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Product\Type\AbstractType;
 
 /**
- * Drops asset values a product does not own at its own structure level.
- *
- * An asset attribute placed at the common level belongs to the ancestor sitting at
- * that level. A descendant reads it back through the resolved value chain and renders
- * the control locked, so a submission carrying such a value can only come from a stale
- * or hand-crafted form. Storing it would put a copy on the descendant, and a
- * descendant's own value wins the merge — the ancestor would quietly stop being the
- * source of truth for every child that ever saved.
- *
- * Ownership is decided by {@see VariantStructurePlanner::ownsAtOwnLevel()}, the rule
- * the bulk product update job already applies, so no second notion of inheritance is
- * introduced. Only asset attributes are filtered, and only on this request, which the
- * admin product update is the sole consumer of: no other attribute type and no other
- * write path changes behaviour.
+ * Drops asset values an ancestor owns, so a stale or crafted form cannot store a copy that overrides inheritance.
  */
 class ProductForm extends BaseProductForm
 {
@@ -73,8 +60,7 @@ class ProductForm extends BaseProductForm
     }
 
     /**
-     * Asset attributes on the product's family that an ancestor owns rather than this
-     * product. Products outside a variant structure own everything, so this is empty.
+     * Asset attribute codes an ancestor owns; empty outside a variant structure.
      *
      * @return list<string>
      */

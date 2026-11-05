@@ -6,35 +6,24 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Models\Directory;
 
 /**
- * Streams DAM asset binaries into the folder an export job is assembling.
- *
- * Assets live on the DAM disk while the export folder is built on the export disk, so
- * this cannot use a same-disk copy. Destination paths are the asset paths verbatim,
- * which is what makes the resulting archive self-describing on import.
+ * Streams DAM asset binaries into an export folder on another disk, keeping asset paths verbatim for import.
  */
 class AssetBundleWriter
 {
     /**
-     * The disk the tracker builds and zips an export folder on. Named here rather than
-     * read from core so the package runs against a released UnoPim, where the exporters
-     * reach for this disk literally.
+     * Named here because released UnoPim exporters use this disk literally.
      */
     public const EXPORT_DISK = 'private';
 
     /**
-     * Destinations already written by this instance. An asset referenced by many rows
-     * resolves to one destination, so it is streamed once rather than once per reference.
+     * Destinations already written, so an asset referenced by many rows is streamed once.
      *
      * @var array<string, bool>
      */
     protected array $written = [];
 
     /**
-     * Copy one asset into the export folder, skipping work already done.
-     *
-     * Destination existence is checked as well as the in-memory set: batches run as
-     * separate queued jobs, so the set alone cannot dedupe an asset a sibling batch
-     * of the same export has already written.
+     * Also checks the destination exists, since sibling batches run as separate jobs.
      *
      * @return bool whether this call wrote the file
      */

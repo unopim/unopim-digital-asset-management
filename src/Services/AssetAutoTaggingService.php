@@ -7,6 +7,7 @@ namespace Webkul\DAM\Services;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Webkul\AiAgent\DTOs\CredentialConfig;
 use Webkul\AiAgent\Http\Client\AiApiClient;
 use Webkul\DAM\Models\Asset;
@@ -27,8 +28,7 @@ class AssetAutoTaggingService
     ) {}
 
     /**
-     * The message from the most recent failed tagAsset() call, if any —
-     * lets a caller (e.g. the job tracker) surface why a run failed.
+     * Message from the most recent failed tagAsset() call.
      */
     public function lastError(): ?string
     {
@@ -36,10 +36,7 @@ class AssetAutoTaggingService
     }
 
     /**
-     * Best-effort: swallows every failure so a broken AI call never fails the upload.
-     * Returns false only on a genuine error (caller uses this to mark its tracking
-     * batch failed vs processed) — a disabled feature or an empty tag suggestion
-     * still count as a successful, if uneventful, run.
+     * Swallows every failure; returns false only on a genuine error, not when disabled or no tags were suggested.
      */
     public function tagAsset(Asset $asset, string $disk): bool
     {
@@ -96,8 +93,7 @@ class AssetAutoTaggingService
     }
 
     /**
-     * Configured platform id, else the active default; null when nothing
-     * usable is resolvable so tagging can silently no-op.
+     * Configured platform, else the active default; null lets tagging no-op.
      */
     protected function resolvePlatform(): ?MagicAIPlatform
     {
@@ -122,9 +118,7 @@ class AssetAutoTaggingService
     }
 
     /**
-     * The platform's configured models that support vision, in the order the platform
-     * lists them: core's chat-model filter drops embedding, speech, moderation and
-     * image-generation models, then only known vision families are kept.
+     * The platform's vision-capable chat models, in its own order.
      *
      * @return list<string>
      */
@@ -163,10 +157,7 @@ class AssetAutoTaggingService
     }
 
     /**
-     * Reads DAM_AI_TAGGING_ENABLED straight from the DB. config('dam.ai_tagging.*')
-     * is only populated by the DAM HTTP middleware, which a queue worker never runs.
-     * Public so callers can decide whether tagging is worth tracking (e.g. a
-     * tracking batch) before dispatching, not just whether the admin may do it.
+     * Reads the DB directly, because queue workers never run the middleware that fills config('dam.ai_tagging.*').
      */
     public function isEnabled(): bool
     {
@@ -195,23 +186,47 @@ class AssetAutoTaggingService
     }
 
     /**
-     * Flags an asset as having AI tags on the way so an open edit page knows to
-     * poll for them. The TTL bounds polling if a job dies without clearing it.
+     * Adds a pending claim; the asset stays pending until every claim is released, bounded by the TTL.
+     *
+     * @return string the claim token for clearPending()
      */
-    public function markPending(int $assetId): void
+    public function markPending(int $assetId): string
     {
-        Cache::put($this->pendingCacheKey($assetId), true, now()->addHour());
+        $key = $this->pendingCacheKey($assetId);
+
+        Cache::add($key, 0, now()->addHour());
+
+        $count = Cache::increment($key);
+
+        if ($count === false || $count < 1) {
+            Cache::put($key, 1, now()->addHour());
+        }
+
+        return (string) Str::uuid();
     }
 
-    public function clearPending(int $assetId): void
+    /**
+     * Releases one claim; a token is released at most once so a retried job cannot drop another job's claim.
+     */
+    public function clearPending(int $assetId, ?string $claim = null): void
     {
-        Cache::forget($this->pendingCacheKey($assetId));
+        if ($claim !== null && ! Cache::add("dam.ai_tagging.released.{$claim}", true, now()->addHour())) {
+            return;
+        }
+
+        $key = $this->pendingCacheKey($assetId);
+
+        $count = Cache::decrement($key);
+
+        if ($count !== false && $count < 0) {
+            Cache::put($key, 0, now()->addHour());
+        }
     }
 
     public function isPending(Asset $asset): bool
     {
         return $asset->file_type === 'image'
-            && Cache::has($this->pendingCacheKey($asset->id))
+            && (int) Cache::get($this->pendingCacheKey($asset->id), 0) > 0
             && $this->isEnabled();
     }
 
@@ -243,9 +258,7 @@ class AssetAutoTaggingService
     }
 
     /**
-     * The whole binary has to be resident to be base64-encoded, and the encoding adds
-     * another third on top, so an oversized image is skipped before it is read rather
-     * than after — a single unbounded read is enough to exhaust a queue worker.
+     * Skips oversized images before reading, since base64 needs the whole binary resident.
      */
     protected function readAsDataUri(Asset $asset, string $disk): ?string
     {
@@ -272,12 +285,11 @@ class AssetAutoTaggingService
     }
 
     /**
-     * OpenAI reasoning models (o-series, gpt-5 and later) reject any temperature
-     * other than the default 1, so a low one is only sent to models that accept it.
+     * OpenAI reasoning models reject any temperature but 1; a provider prefix such as "openai/" is ignored.
      */
     protected function temperatureFor(string $model): float
     {
-        return preg_match('/^(chat-latest|o[1-9]|gpt-([5-9]|\d{2,}))/i', $model) ? 1.0 : 0.2;
+        return preg_match('/^(?:.*\/)?(chat-latest|o[1-9]|gpt-([5-9]|\d{2,}))/i', $model) ? 1.0 : 0.2;
     }
 
     /**

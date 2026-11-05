@@ -740,12 +740,7 @@ class AssetController extends Controller
     }
 
     /**
-     * Tagging eligibility (file_type, permission, feature flag) is fully known
-     * here already, synchronously, before any job runs — so the tag batch and
-     * its job_track_batches row are created right now too, not lazily inside
-     * the queued job. That keeps the live tracker's batch total fixed at the
-     * true count for the whole session instead of growing as each queued job
-     * happens to execute.
+     * Creates the tag batch now rather than in the queued job, so the tracker's total stays fixed for the session.
      */
     protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
     {

@@ -6,12 +6,7 @@ use Webkul\DAM\Support\AssetPathStorage;
 use Webkul\DataTransfer\Helpers\Import;
 
 /**
- * Turns the comma-separated asset paths carried by a data file into DAM asset ids.
- *
- * A path that resolves to nothing never fails its row: the path is skipped and the row
- * imported. It is reported as a job-log warning while the file is validated, the only
- * stage that knows the row number and whose log outlives the import; a save batch has
- * neither, so anything it reported was lost.
+ * Unresolved paths are skipped and warned about at validation, the only stage that knows the row number.
  */
 trait ResolvesAssetPaths
 {
@@ -45,8 +40,7 @@ trait ResolvesAssetPaths
     }
 
     /**
-     * Warn about each unresolvable path in the given columns of a row on its first
-     * validation; core re-validates rows it has already seen, which must not repeat it.
+     * Warns once per row, since core re-validates rows it has already seen.
      *
      * @param  iterable<string>  $columns
      */

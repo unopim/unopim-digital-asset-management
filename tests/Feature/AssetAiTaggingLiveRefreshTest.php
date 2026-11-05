@@ -120,7 +120,7 @@ it('binds the tag options reactively so newly created AI tags can render', funct
 
 function aiTaggingPendingFlag(int $assetId): bool
 {
-    return Cache::has("dam.ai_tagging.pending.{$assetId}");
+    return (int) Cache::get("dam.ai_tagging.pending.{$assetId}", 0) > 0;
 }
 
 function runAssetFinalisation(ProcessAssetUpload $job): void
@@ -196,4 +196,43 @@ it('tells the editor when the AI tags arrive, or that none were added', function
         ->assertOk()
         ->assertSee(json_encode(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')), false)
         ->assertSee(json_encode(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')), false);
+});
+
+it('keeps the asset pending until every overlapping tagging job has settled', function () {
+    $asset = liveRefreshImageAsset();
+    $disk = Directory::getAssetDisk();
+
+    $first = new TagAssetWithAi($asset->id, $disk);
+    $second = new TagAssetWithAi($asset->id, $disk);
+
+    $first->failed(new RuntimeException('boom'));
+    $first->failed(new RuntimeException('boom'));
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeTrue();
+
+    $second->failed(new RuntimeException('boom'));
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeFalse();
+});
+
+it('keeps the asset pending when upload finalisation hands off to the tagging job', function () {
+    Queue::fake();
+
+    $asset = Asset::factory()->create([
+        'file_type' => 'image',
+        'path'      => tap('assets/Root/handoff-'.uniqid().'.png', fn (string $path) => Storage::disk(Directory::getAssetDisk())
+            ->put($path, UploadedFile::fake()->image('handoff.png', 10, 10)->getContent())),
+        'mime_type' => 'image/png',
+        'extension' => 'png',
+    ]);
+
+    $upload = new ProcessAssetUpload($asset->id, autoTagEligible: true);
+    $manual = new TagAssetWithAi($asset->id, Directory::getAssetDisk());
+
+    runAssetFinalisation($upload);
+    $manual->failed(new RuntimeException('boom'));
+
+    Queue::assertPushed(TagAssetWithAi::class);
+
+    expect(aiTaggingPendingFlag($asset->id))->toBeTrue();
 });

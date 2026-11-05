@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    /**
-     * Queues DAM jobs dispatch onto. Default to Laravel's 'default' queue so an
-     * existing worker that only runs `queue:work` (no --queue flag) keeps processing
-     * everything with no config change; set these to route DAM's own workload
-     * (fast DB housekeeping, filesystem/DB-tree bulk ops, CPU-heavy media processing)
-     * onto dedicated queues instead.
-     */
     'queues' => [
         'dam'   => env('DAM_QUEUE_DAM', 'default'),
         'bulk'  => env('DAM_QUEUE_BULK', 'default'),
@@ -42,11 +35,6 @@ return [
         'max_file_size'         => (int) env('DAM_AI_TAGGING_MAX_FILE_SIZE', 10 * 1024 * 1024),
         'rate_limit_per_minute' => (int) env('DAM_AI_TAGGING_RATE_LIMIT_PER_MINUTE', 60),
 
-        /**
-         * Model families known to accept image input. A platform's configured model is
-         * offered for tagging only when it matches one of these; add a pattern here when
-         * a provider ships a new vision family.
-         */
         'vision_model_patterns' => [
             '/^(?:.*\/)?(?:chat)?gpt-4o/i',
             '/^(?:.*\/)?gpt-4\.(?:1|5)/i',
@@ -69,11 +57,14 @@ return [
         ],
     ],
 
-    /**
-     * Limits applied to an export archive uploaded to an import job. These are far wider
-     * than the product-images equivalent because a DAM bundle legitimately carries video
-     * and other large binaries; they exist to bound zip-bomb damage, not to size assets.
-     */
+    'image_edit' => [
+        'generation_only_model_patterns' => [
+            '/dall-e-3/i',
+            '/imagen/i',
+            '/grok-2-image/i',
+        ],
+    ],
+
     'import_bundle' => [
         'max_entry_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_ENTRY_SIZE', 524288000),
         'max_total_size'        => (int) env('DAM_IMPORT_BUNDLE_MAX_TOTAL_SIZE', 5368709120),

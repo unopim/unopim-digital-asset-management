@@ -232,8 +232,7 @@ class TagController extends Controller
     }
 
     /**
-     * Queues AI tagging for existing image assets. Tags are generated in the
-     * background and added alongside each asset's current tags.
+     * Queues AI tagging for existing image assets.
      */
     public function aiTag(ApiAiTagRequest $request): JsonResponse
     {

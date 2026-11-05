@@ -3,6 +3,7 @@
 use Webkul\DAM\Helpers\Exporters\Category\Exporter as DamCategoryExporter;
 use Webkul\DAM\Helpers\Exporters\Product\Concerns\ExportsAssetAttributes;
 use Webkul\DAM\Helpers\Exporters\Product\Exporter as DamProductExporter;
+use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
 use Webkul\DAM\Models\Asset;
 use Webkul\DataTransfer\Helpers\Exporters\Category\Exporter as CoreCategoryExporter;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter as CoreProductExporter;
@@ -69,7 +70,11 @@ it('resolves the core product exporter to an exporter carrying the DAM asset beh
 });
 
 it('resolves the core product exporter to the DAM exporter', function () {
-    expect(app(CoreProductExporter::class))->toBeInstanceOf(DamProductExporter::class);
+    $expected = class_exists('Webkul\\Measurement\\Helpers\\Exporters\\ProductExporter')
+        ? MeasurementAwareExporter::class
+        : DamProductExporter::class;
+
+    expect(app(CoreProductExporter::class))->toBeInstanceOf($expected);
 });
 
 it('exports asset attribute values as stored paths rather than raw asset ids', function () {

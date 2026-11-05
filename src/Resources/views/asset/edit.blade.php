@@ -342,6 +342,7 @@
                         aiTaggingTimer:   null,
                         aiTagRequesting:  false,
                         aiTagsGenerated:  false,
+                        aiTagsChanged:    false,
                     };
                 },
 
@@ -377,22 +378,19 @@
                             }
 
                             if (this.applyTags(data.tags ?? [])) {
-                                this.aiTagsGenerated  = true;
-                                this.aiTaggingPending = false;
+                                this.aiTagsChanged = true;
+                            }
 
-                                this.$emitter.emit('add-flash', {
-                                    type: 'success',
-                                    message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')),
-                                });
-                            } else {
-                                this.aiTaggingPending = !! data.aiTaggingPending;
+                            this.aiTaggingPending = !! data.aiTaggingPending;
 
-                                if (! this.aiTaggingPending) {
-                                    this.$emitter.emit('add-flash', {
-                                        type: 'warning',
-                                        message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')),
-                                    });
-                                }
+                            if (! this.aiTaggingPending) {
+                                this.aiTagsGenerated = this.aiTagsChanged;
+
+                                this.$emitter.emit('add-flash', this.aiTagsChanged
+                                    ? { type: 'success', message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-success')) }
+                                    : { type: 'warning', message: @json(trans('dam::app.admin.dam.tag.mass-action.ai-tag-no-new-tags')) });
+
+                                this.aiTagsChanged = false;
                             }
                         } catch (e) {
                             this.aiTaggingPending = false;
@@ -408,6 +406,7 @@
                             .then((response) => {
                                 this.$emitter.emit('add-flash', { type: 'success', message: response.data.message });
                                 this.aiTaggingPending = true;
+                                this.aiTagsChanged    = false;
                                 this.scheduleAiTagRefresh();
                             })
                             .catch((error) => {
@@ -471,6 +470,7 @@
                             this.tagComponentKey  += 1;
                             this.aiTaggingPending = !! data.aiTaggingPending;
                             this.aiTagsGenerated  = false;
+                            this.aiTagsChanged    = false;
                             this.scheduleAiTagRefresh();
                         } catch (e) {
                             this.$emitter.emit('add-flash', {

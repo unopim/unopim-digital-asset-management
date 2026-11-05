@@ -9,19 +9,12 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 return new class extends Migration
 {
     /**
-     * Laravel wraps a migration in one transaction on PostgreSQL by default, which would
-     * hold every batch's rows locked (and grow the transaction/WAL) until up() finishes -
-     * exactly what the batching below is meant to avoid. Disabling it lets each batch's
-     * DELETE commit on its own.
+     * Each batch commits on its own; PostgreSQL would otherwise hold every row lock until up() finishes.
      */
     public $withinTransaction = false;
 
     /**
-     * Clear mapping rows left behind by a category field or product attribute deleted
-     * before `Listeners\CategoryField` (`catalog.category_field.delete.after`) and
-     * `Listeners\Attribute` (`catalog.attribute.delete.after`) existed to auto-clean them.
-     * Orphan rows keep referencing a `related_field` code that no longer exists, which
-     * blocks the asset from ever being deleted ("Asset in use. Unlink before deleting").
+     * Clears mapping rows orphaned by field or attribute deletes made before the cleanup listeners existed.
      */
     public function up(): void
     {
@@ -45,11 +38,7 @@ return new class extends Migration
     }
 
     /**
-     * Delete in bounded batches, each its own committed transaction (see
-     * $withinTransaction above), so a mapping table with millions of rows never holds
-     * one giant lock - a handful of orphans shouldn't block concurrent asset
-     * reads/writes while this runs. `DELETE ... LIMIT` isn't portable to PostgreSQL,
-     * so batch by id instead.
+     * Batches by id because `DELETE ... LIMIT` is not portable to PostgreSQL.
      */
     protected function dropOrphans(string $type, Collection $liveFieldCodes): void
     {

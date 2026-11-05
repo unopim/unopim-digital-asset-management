@@ -14,11 +14,7 @@ use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 /**
- * Drop asset-resource mapping rows whose `related_field` no longer matches any live
- * category field or product attribute. Both category-field and attribute deletes are
- * auto-cleaned going forward (`Listeners\CategoryField`, `Listeners\Attribute`);
- * installs that deleted a field/attribute before those listeners existed still have
- * orphans blocking asset deletion, which this job sweeps up on demand.
+ * Sweeps mapping rows orphaned by field or attribute deletes made before the cleanup listeners existed.
  */
 class CleanupOrphanedAssetResourceMappings implements ShouldQueue
 {

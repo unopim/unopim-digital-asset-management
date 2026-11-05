@@ -256,7 +256,7 @@ it('sends the default temperature to openai reasoning models that reject any oth
 
     expect(app(AssetAutoTaggingService::class)->tagAsset($asset, Directory::getAssetDisk()))->toBeTrue()
         ->and($asset->refresh()->tags->pluck('name')->all())->toBe(['forest']);
-})->with(['gpt-6.1-terra', 'gpt-6-luna', 'gpt-5-mini', 'o3']);
+})->with(['gpt-6.1-terra', 'gpt-6-luna', 'gpt-5-mini', 'o3', 'openai/gpt-5-mini', 'openai/o3']);
 
 it('keeps a low temperature for models that accept one', function () {
     makeVisionPlatform(models: 'gpt-4o');

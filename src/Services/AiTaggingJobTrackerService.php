@@ -15,9 +15,7 @@ use Webkul\DataTransfer\Repositories\JobTrackRepository;
 use Webkul\DataTransfer\Services\JobLogger;
 
 /**
- * Surfaces AI tagging activity on the core "Job Tracker" admin page
- * (data_transfer job_track/job_instances) as a 'system'-type job, entirely
- * from DAM — it only calls DataTransfer's existing repositories/models.
+ * Surfaces AI tagging on the core Job Tracker page as a 'system' job.
  */
 class AiTaggingJobTrackerService
 {
@@ -30,9 +28,7 @@ class AiTaggingJobTrackerService
     ) {}
 
     /**
-     * One job_track row aggregates every image tagged during an upload
-     * session, created lazily on the first tagging batch. Race-safe across
-     * concurrent ProcessAssetUpload jobs in the same session.
+     * Race-safe: concurrent jobs in one upload session share a single job_track row.
      */
     public function ensureSessionJob(UploadTracker $tracker): ?JobTrack
     {
@@ -58,8 +54,7 @@ class AiTaggingJobTrackerService
     }
 
     /**
-     * A tagging run outside any upload session (e.g. an API upload) gets its
-     * own standalone job_track, created and completed within the same job.
+     * Job track for a tagging run outside any upload session, such as an API upload.
      */
     public function startStandaloneJob(?int $userId): JobTrack
     {
@@ -67,9 +62,7 @@ class AiTaggingJobTrackerService
     }
 
     /**
-     * One job_track_batches row per tagged image — the live "processing" view
-     * (Import::stats()) is driven entirely by this table's row count/state,
-     * with no fallback to job_track.processed_rows_count.
+     * The tracker's live view counts these rows, so one is created per tagged image.
      */
     public function startBatch(JobTrack $jobTrack): JobTrackBatch
     {
@@ -89,12 +82,7 @@ class AiTaggingJobTrackerService
     }
 
     /**
-     * Session jobs never fail as a whole (a few bad images shouldn't red-flag
-     * a 20-image upload), so a per-image failure would otherwise vanish behind
-     * invalid_rows_count with no detail. This writes it to the same downloadable
-     * job log BulkProductUpdate uses — the tracker's "Download Log" button
-     * already renders for any job in the completed/failed state, gated only
-     * on state, not job type, so no view change is needed to expose it.
+     * Writes to the downloadable job log, since a session job never flips to failed.
      */
     public function logFailure(JobTrack $jobTrack, int $assetId, string $message): void
     {
@@ -111,15 +99,7 @@ class AiTaggingJobTrackerService
     }
 
     /**
-     * $failed flips the whole job to the tracker's dedicated failed state (its
-     * own view, distinct from "completed") — only meaningful for a standalone,
-     * single-asset job, where the run's outcome IS the job's outcome. A
-     * session job stays "completed" even with some invalid_rows_count, same
-     * as a real import completing with a few invalid rows.
-     *
-     * The tracker's completed-state view only reads summary.created/updated/
-     * deleted (shared with import/export jobs) — tagged assets are reported
-     * as "updated"; failures stay visible via invalid_rows_count on the grid.
+     * Only a standalone run is marked failed; a session job completes with its invalid rows counted.
      */
     public function complete(JobTrack $jobTrack, bool $failed = false, ?string $errorMessage = null): void
     {

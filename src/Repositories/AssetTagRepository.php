@@ -40,9 +40,7 @@ class AssetTagRepository extends Repository
     }
 
     /**
-     * Find-or-create the given tag names and attach them to the asset,
-     * leaving any existing tags on it untouched. Idempotent: safe to
-     * call repeatedly with the same names.
+     * Find-or-create the tag names and attach them, leaving existing tags untouched.
      *
      * @param  array<int, string>  $tagNames
      */

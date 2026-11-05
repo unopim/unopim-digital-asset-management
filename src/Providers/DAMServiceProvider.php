@@ -201,10 +201,7 @@ class DAMServiceProvider extends ServiceProvider
     }
 
     /**
-     * UnoPim 3.0.x's Measurement package binds the core product exporter and importer
-     * in its own register(), overriding $bindings, so DAM re-binds them once every
-     * provider has registered. The guard is on the Measurement parent classes, which
-     * later cores no longer ship.
+     * Measurement on UnoPim 3.0.x rebinds the core product helpers in register(), so DAM rebinds them after boot.
      */
     protected function bindMeasurementAwareProductHelpers(): void
     {

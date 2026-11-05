@@ -963,18 +963,10 @@ app.component('v-dam-tab', {
             }).catch(err => {
                 const status = err?.response?.status;
 
-                /**
-                 * A directory that no longer exists fails the endpoint's `exists` validation rule,
-                 * which responds 422 — 404 only covers the narrow window where the row disappears
-                 * between validation and lookup. Because 422 was not recovered from, a stale
-                 * `dam_explorer_active_dir` (or a restored tab pointing at a removed folder) left
-                 * the explorer empty on every visit instead of falling back to root.
-                 */
                 if (! [400, 403, 404, 422].includes(status)) {
                     return;
                 }
 
-                // Recover once. If root itself cannot be loaded, stop rather than loop.
                 if (this._recoveringToRoot) {
                     return;
                 }

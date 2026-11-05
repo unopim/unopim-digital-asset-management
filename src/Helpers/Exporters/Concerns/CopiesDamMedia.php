@@ -6,10 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Support\AssetBundleWriter;
 
 /**
- * Media handling shared by the DAM product and category exporters.
- *
- * Asset-type values are backed by the DAM disk and need streaming; every other media
- * type is left to the core exporter.
+ * Streams DAM asset media for the product and category exporters; other media types are left to core.
  */
 trait CopiesDamMedia
 {

@@ -402,9 +402,7 @@ class AssetController extends Controller
     }
 
     /**
-     * API requests authenticate on the 'api' guard via a personal API key, not the
-     * 'admin' guard bouncer() reads from — so this checks the key's own granted
-     * scopes instead of the web ACL, mirroring ScopeMiddleware's own permission check.
+     * API keys authenticate on the 'api' guard, so the key's scopes are checked instead of the admin ACL.
      */
     protected function autoTagEligible(): bool
     {
@@ -486,8 +484,7 @@ class AssetController extends Controller
     }
 
     /**
-     * The asset's tags, with whether AI tagging is still queued for it so a
-     * client that called POST /tags/ai knows when to stop polling.
+     * Includes whether AI tagging is still queued, so API clients know when to stop polling.
      */
     public function tags(int $id): JsonResponse
     {

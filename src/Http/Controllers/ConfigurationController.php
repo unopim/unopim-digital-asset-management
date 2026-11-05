@@ -49,8 +49,7 @@ class ConfigurationController extends Controller
     }
 
     /**
-     * Paginated option source for the async platform select, in the shape
-     * the shared v-async-select-handler component expects.
+     * Paginated platform options in the shape v-async-select-handler expects.
      */
     public function aiTaggingPlatforms(Request $request): JsonResponse
     {
