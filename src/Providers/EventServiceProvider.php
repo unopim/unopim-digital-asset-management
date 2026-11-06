@@ -53,12 +53,12 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    public function listens()
+    public function listens(): array
     {
         return PimIntegration::enabled() ? $this->listen : [];
     }
 
-    public function boot()
+    public function boot(): void
     {
         Asset::created(static function (Asset $asset): void {
             app(AssetWebhookDispatcher::class)->created($asset);
@@ -134,7 +134,7 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::data-transfer.imports.asset-options');
         });
 
-        $syncDirectoryGrants = static function ($role) {
+        $syncDirectoryGrants = static function ($role): void {
             if (! $role) {
                 return;
             }

@@ -7,6 +7,7 @@ namespace Webkul\DAM\Helpers;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 class DashboardStats
 {
@@ -30,7 +31,7 @@ class DashboardStats
      */
     public function all(): array
     {
-        return Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function (): array {
+        $aggregate = Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function (): array {
             $byType = DB::table('dam_assets')
                 ->select('file_type', DB::raw('COUNT(*) as count'), DB::raw('COALESCE(SUM(file_size), 0) as size'))
                 ->groupBy('file_type')
@@ -51,16 +52,39 @@ class DashboardStats
                 'size'  => (int) ($byType[$type]->size ?? 0),
             ], self::TYPES);
 
-            $recent = DB::table('dam_assets')
-                ->select('id', 'file_name', 'file_type', 'file_size', 'extension', 'created_at')
-                ->orderByDesc('created_at')
-                ->orderByDesc('id')
-                ->limit(6)
-                ->get()
-                ->all();
-
-            return compact('totals', 'types', 'recent');
+            return compact('totals', 'types');
         });
+
+        return $aggregate + ['recent' => $this->recentUploads()];
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    protected function recentUploads(): array
+    {
+        $query = DB::table('dam_assets')
+            ->select('id', 'file_name', 'file_type', 'file_size', 'extension', 'created_at')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+
+        $permissions = app(DirectoryPermissionService::class);
+
+        if (! $permissions->bypass()) {
+            $directoryIds = $permissions->directlyGrantedIds();
+
+            if (empty($directoryIds)) {
+                return [];
+            }
+
+            $query->whereIn('id', function ($sub) use ($directoryIds): void {
+                $sub->select('asset_id')
+                    ->from('dam_asset_directory')
+                    ->whereIn('directory_id', $directoryIds);
+            });
+        }
+
+        return $query->limit(6)->get()->all();
     }
 
     public static function humanBytes(int|float $bytes): string
