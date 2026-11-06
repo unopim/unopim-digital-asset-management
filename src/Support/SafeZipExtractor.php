@@ -73,7 +73,7 @@ class SafeZipExtractor
 
     /**
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
-     * @return list<string> 
+     * @return list<string>
      */
     public function extract(\ZipArchive $zip, string $extractPath, ?callable $accepts = null): array
     {

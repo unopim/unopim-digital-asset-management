@@ -14,9 +14,6 @@ class AssetBundleWriter
      */
     protected array $written = [];
 
-    /**
-     * @return bool
-     */
     public function write(string $sourcePath, string $destinationPath): bool
     {
         if (isset($this->written[$destinationPath])) {
