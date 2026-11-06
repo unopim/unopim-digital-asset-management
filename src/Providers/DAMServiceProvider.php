@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -66,17 +67,11 @@ class DAMServiceProvider extends ServiceProvider
      */
     protected function bindPimAwareHandler(string $coreClass, callable $damClass): void
     {
-        $this->app->bind($coreClass, fn ($app) => $this->pimEnabled()
+        $this->app->bind($coreClass, fn (Application $app): object => $this->pimEnabled()
             ? $app->make($damClass())
             : $app->build($coreClass));
     }
 
-    /**
-     * Expose the asset lifecycle events (asset.created / asset.updated) to the
-     * webhook subscribable-event registry so they can be chosen in the webhook
-     * form — mirroring how products register theirs. Guarded so the DAM
-     * package stays usable when the webhook package is not installed.
-     */
     protected function registerAssetWebhookEvents(): void
     {
         if (
@@ -95,11 +90,11 @@ class DAMServiceProvider extends ServiceProvider
     public function boot(Router $router)
     {
         $this->app->booted(function (): void {
-            $this->bindPimAwareHandler(Exporter::class, fn () => class_exists(MeasurementExporter::class)
+            $this->bindPimAwareHandler(Exporter::class, fn (): string => class_exists(MeasurementExporter::class)
                 ? MeasurementAwareExporter::class
                 : DamProductExporter::class);
 
-            $this->bindPimAwareHandler(Importer::class, fn () => class_exists(MeasurementImporter::class)
+            $this->bindPimAwareHandler(Importer::class, fn (): string => class_exists(MeasurementImporter::class)
                 ? MeasurementAwareImporter::class
                 : DamProductImporter::class);
 
@@ -216,15 +211,15 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->app->scoped(DirectoryPermissionService::class);
 
-        $this->app->bind(ProductResolver::class, fn () => $this->pimEnabled()
+        $this->app->bind(ProductResolver::class, fn (): ProductResolver => $this->pimEnabled()
             ? new PimProductResolver
             : new NullProductResolver);
 
-        $this->app->bind(CategoryResolver::class, fn () => $this->pimEnabled()
+        $this->app->bind(CategoryResolver::class, fn (): CategoryResolver => $this->pimEnabled()
             ? new PimCategoryResolver
             : new NullCategoryResolver);
 
-        $this->app->bind(RoleResolver::class, fn () => PimIntegration::rolePresent()
+        $this->app->bind(RoleResolver::class, fn (): RoleResolver => PimIntegration::rolePresent()
             ? new PimRoleResolver
             : new DamRoleResolver);
 
