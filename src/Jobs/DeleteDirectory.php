@@ -76,7 +76,7 @@ class DeleteDirectory implements ShouldQueue
                         ->pluck('file_name')
                         ->implode(', ');
 
-                    throw new \Exception(trans('dam::app.admin.dam.asset.delete-failed-assigned-to-product', [
+                    throw new \Exception(trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', [
                         'assets' => $names,
                     ]));
                 }

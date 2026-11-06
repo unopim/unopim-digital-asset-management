@@ -476,8 +476,7 @@ return [
                     'delete-success' => '자산 태그가 성공적으로 제거되었습니다',
                 ],
                 'delete-success'                          => '자산이 성공적으로 삭제되었습니다',
-                'delete-failed-due-to-attached-resources' => '자산이 사용 중입니다. 삭제 전에 연결을 해제하세요',
-                'delete-failed-assigned-to-product'       => '애셋 ":assets"은(는) 제품에 할당되어 있어 삭제할 수 없습니다.',
+                'delete-failed-due-to-attached-resources' => '애셋 ":assets"이(가) 제품 또는 카테고리에 연결되어 있습니다. 삭제하기 전에 연결을 해제하세요.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '대량 삭제가 성공적으로 완료되었습니다.',
                     'mass-update-success'                 => '대량 업데이트 완료.',

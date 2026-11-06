@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Теги активу успішно видалено',
                 ],
                 'delete-success'                          => 'Актив успішно видалено',
-                'delete-failed-due-to-attached-resources' => 'Актив використовується. Від\'єднайте перед видаленням',
-                'delete-failed-assigned-to-product'       => 'Ресурс ":assets" призначено товару й не може бути видалений.',
+                'delete-failed-due-to-attached-resources' => 'Ресурс ":assets" пов\'язаний із товаром або категорією. Відв\'яжіть перед видаленням.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Масове видалення пройшло успішно.',
                     'mass-update-success'                 => 'Масове оновлення успішно виконано.',

@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Etiquetas del recurso eliminadas con éxito',
                 ],
                 'delete-success'                          => 'Activo eliminado con éxito',
-                'delete-failed-due-to-attached-resources' => 'El recurso está en uso. Desvincúlalo antes de eliminarlo',
-                'delete-failed-assigned-to-product'       => 'El recurso ":assets" está asignado a un producto y no se puede eliminar.',
+                'delete-failed-due-to-attached-resources' => 'El recurso ":assets" está vinculado a un producto o categoría. Desvincúlalo antes de eliminarlo.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminación masiva realizada con éxito.',
                     'mass-update-success'                 => 'Actualización masiva realizada correctamente.',

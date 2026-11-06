@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Tagi zasobu zostały pomyślnie usunięte',
                 ],
                 'delete-success'                          => 'Zasób został pomyślnie usunięty',
-                'delete-failed-due-to-attached-resources' => 'Zasób jest w użyciu. Odłącz przed usunięciem',
-                'delete-failed-assigned-to-product'       => 'Zasób ":assets" jest przypisany do produktu i nie można go usunąć.',
+                'delete-failed-due-to-attached-resources' => 'Zasób ":assets" jest powiązany z produktem lub kategorią. Odłącz przed usunięciem.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masowe usuwanie zakończone pomyślnie.',
                     'mass-update-success'                 => 'Aktualizacja zbiorcza zakończona pomyślnie.',

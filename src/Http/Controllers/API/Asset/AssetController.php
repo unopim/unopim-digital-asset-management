@@ -627,7 +627,7 @@ class AssetController extends Controller
         if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assets' => $asset->file_name]),
             ], 404);
         }
 

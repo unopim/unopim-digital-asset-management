@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Теги ресурса успешно удалены',
                 ],
                 'delete-success'                          => 'Актив успешно удален',
-                'delete-failed-due-to-attached-resources' => 'Ресурс используется. Отвяжите перед удалением',
-                'delete-failed-assigned-to-product'       => 'Ресурс ":assets" назначен товару и не может быть удалён.',
+                'delete-failed-due-to-attached-resources' => 'Ресурс ":assets" связан с товаром или категорией. Отвяжите перед удалением.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Массовое удаление прошло успешно.',
                     'mass-update-success'                 => 'Массовое обновление выполнено успешно.',

@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Tag dell\'Asset rimossi con successo',
                 ],
                 'delete-success'                          => 'Asset eliminato con successo',
-                'delete-failed-due-to-attached-resources' => 'Asset in uso. Scollegalo prima di eliminarlo',
-                'delete-failed-assigned-to-product'       => 'La risorsa ":assets" è assegnata a un prodotto e non può essere eliminata.',
+                'delete-failed-due-to-attached-resources' => 'La risorsa ":assets" è collegata a un prodotto o a una categoria. Scollegala prima di eliminarla.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminazione di massa completata con successo.',
                     'mass-update-success'                 => 'Aggiornamento di massa completato con successo.',

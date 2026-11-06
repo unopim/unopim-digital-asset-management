@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Etiquetes de l\'Actiu eliminades correctament',
                 ],
                 'delete-success'                          => 'Actiu eliminat correctament',
-                'delete-failed-due-to-attached-resources' => 'Actiu en ús. Desvinculeu-lo abans d\'eliminar-lo',
-                'delete-failed-assigned-to-product'       => 'L’actiu ":assets" està assignat a un producte i no es pot eliminar.',
+                'delete-failed-due-to-attached-resources' => 'L\'actiu ":assets" està vinculat a un producte o una categoria. Desvinculeu-lo abans d\'eliminar-lo.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminació massiva realitzada correctament.',
                     'mass-update-success'                 => 'Actualització massiva realitzada correctament.',

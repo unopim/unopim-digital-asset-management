@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Эзэмшигчийн шошгууд амжилттай устгагдлаа',
                 ],
                 'delete-success'                          => 'Хэрэглэгдэхүүн амжилттай устгагдлаа',
-                'delete-failed-due-to-attached-resources' => 'Хөрөнгө ашиглагдаж байна. Устгахаас өмнө салгана уу',
-                'delete-failed-assigned-to-product'       => '":assets" хөрөнгө бүтээгдэхүүнд оноогдсон тул устгах боломжгүй.',
+                'delete-failed-due-to-attached-resources' => '":assets" хөрөнгө бүтээгдэхүүн эсвэл ангилалтай холбогдсон байна. Устгахаас өмнө салгана уу.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Олон Файлууд Амжилттай Устгагдлаа.',
                     'mass-update-success'                 => 'Бөөнөөр шинэчлэх амжилттай.',

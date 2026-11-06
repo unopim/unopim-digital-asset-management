@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Aktivtags fjernet',
                 ],
                 'delete-success'                          => 'Aktiv slettet',
-                'delete-failed-due-to-attached-resources' => 'Aktivet er i brug. Fjern tilknytningen før sletning',
-                'delete-failed-assigned-to-product'       => 'Aktivet ":assets" er tildelt et produkt og kan ikke slettes.',
+                'delete-failed-due-to-attached-resources' => 'Aktivet ":assets" er knyttet til et produkt eller en kategori. Fjern tilknytningen før sletning.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masseslettet.',
                     'mass-update-success'                 => 'Masseopdatering fuldført.',

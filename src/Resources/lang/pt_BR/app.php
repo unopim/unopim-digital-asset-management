@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Etiquetas do Ativo removidas com sucesso',
                 ],
                 'delete-success'                          => 'Ativo excluído com sucesso',
-                'delete-failed-due-to-attached-resources' => 'Ativo em uso. Desvincule antes de excluir',
-                'delete-failed-assigned-to-product'       => 'O recurso ":assets" está atribuído a um produto e não pode ser excluído.',
+                'delete-failed-due-to-attached-resources' => 'O ativo ":assets" está vinculado a um produto ou categoria. Desvincule antes de excluir.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Exclusão em massa realizada com sucesso.',
                     'mass-update-success'                 => 'Atualização em massa concluída com sucesso.',

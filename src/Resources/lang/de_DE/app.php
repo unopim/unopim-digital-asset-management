@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'Asset-Tags erfolgreich gelöscht',
                 ],
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
-                'delete-failed-due-to-attached-resources' => 'Asset wird verwendet. Vor dem Löschen bitte trennen',
-                'delete-failed-assigned-to-product'       => 'Das Asset ":assets" ist einem Produkt zugewiesen und kann nicht gelöscht werden.',
+                'delete-failed-due-to-attached-resources' => 'Das Asset ":assets" ist mit einem Produkt oder einer Kategorie verknüpft. Vor dem Löschen bitte trennen.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massenlöschung erfolgreich.',
                     'mass-update-success'                 => 'Massenaktualisierung erfolgreich.',

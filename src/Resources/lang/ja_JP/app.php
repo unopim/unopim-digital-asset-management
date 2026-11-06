@@ -476,8 +476,7 @@ return [
                     'delete-success' => 'アセットのタグが正常に削除されました',
                 ],
                 'delete-success'                          => 'アセットが正常に削除されました',
-                'delete-failed-due-to-attached-resources' => 'アセットは使用中です。削除する前にリンクを解除してください',
-                'delete-failed-assigned-to-product'       => 'アセット「:assets」は製品に割り当てられているため、削除できません。',
+                'delete-failed-due-to-attached-resources' => 'アセット「:assets」は製品またはカテゴリーにリンクされています。削除する前にリンクを解除してください。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '一括削除が正常に完了しました。',
                     'mass-update-success'                 => '一括更新が正常に完了しました。',
