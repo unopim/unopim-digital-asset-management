@@ -117,11 +117,11 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::asset.upload-overlay-global');
         });
 
-        Event::listen('unopim.admin.dashboard.index.cards', static function (ViewRenderEventManager $viewRenderEventManager) {
+        Event::listen('unopim.admin.dashboard.index.cards.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::dashboard.cards');
         });
 
-        Event::listen('unopim.admin.dashboard.index.stats', static function (ViewRenderEventManager $viewRenderEventManager) {
+        Event::listen('unopim.admin.dashboard.index.product-stats.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::dashboard.stats');
         });
 
