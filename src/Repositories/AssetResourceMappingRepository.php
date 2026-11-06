@@ -102,13 +102,6 @@ class AssetResourceMappingRepository extends Repository
             ->delete();
     }
 
-    /**
-     * Drop mapping rows of the given type whose `related_field` isn't among the live
-     * codes, in bounded batches so a mapping table with millions of rows never holds
-     * one giant lock - a single field/attribute delete shouldn't be able to stall
-     * concurrent asset reads/writes. `DELETE ... LIMIT` isn't portable to PostgreSQL,
-     * so batch by id instead.
-     */
     public function deleteOrphanedMappings(string $type, array $liveCodes): void
     {
         do {

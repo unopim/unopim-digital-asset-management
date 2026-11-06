@@ -15,7 +15,7 @@ class AssetBundleWriter
     protected array $written = [];
 
     /**
-     * @return bool whether this call wrote the file
+     * @return bool
      */
     public function write(string $sourcePath, string $destinationPath): bool
     {

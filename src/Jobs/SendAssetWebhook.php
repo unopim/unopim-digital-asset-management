@@ -20,15 +20,6 @@ use Webkul\Webhook\Repositories\LogsRepository;
 use Webkul\Webhook\Repositories\WebhookRepository;
 use Webkul\Webhook\Validators\SafeWebhookUrl;
 
-/**
- * Deliver an asset lifecycle event (asset.created / asset.updated) to every
- * active webhook subscribed to it, recording a per-webhook delivery log.
- *
- * Unlike the catalog product webhook, this job does not depend on the PIM
- * core (no ProductRepository): it reuses only the entity-agnostic webhook
- * primitives (model, repositories, SSRF guard) so it works in the standalone
- * DAM project and alongside the PIM alike.
- */
 class SendAssetWebhook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -93,8 +84,6 @@ class SendAssetWebhook implements ShouldQueue
     }
 
     /**
-     * SSRF-guard, sign, send, and log a single delivery.
-     *
      * @param  array<string, mixed>  $payload
      */
     protected function deliver(Webhook $webhook, array $payload, Asset $asset, LogsRepository $logsRepository): void
@@ -176,9 +165,6 @@ class SendAssetWebhook implements ShouldQueue
     }
 
     /**
-     * Expose the event keys this job can deliver (shared with the dispatcher
-     * and the event registry).
-     *
      * @return array<int, string>
      */
     public static function events(): array

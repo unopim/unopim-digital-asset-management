@@ -126,10 +126,6 @@ class Exporter extends AbstractExporter
             : $fallback;
     }
 
-    /**
-     * Properties round-trip as a JSON array so the metadata importer can re-apply them
-     * losslessly (name/type/language/value/is_filterable/sort_order).
-     */
     protected function propertiesFor(array $rowData): string
     {
         $properties = array_map(fn (array $property) => [
@@ -170,9 +166,6 @@ class Exporter extends AbstractExporter
     }
 
     /**
-     * Each selected directory is widened to its whole subtree so a parent folder
-     * exports everything beneath it.
-     *
      * @param  array<int, int|string>  $directoryIds
      * @return array<int, int>
      */

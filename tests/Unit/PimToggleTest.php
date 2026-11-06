@@ -19,10 +19,6 @@ use Webkul\User\Models\Role;
 
 uses(DatabaseTransactions::class);
 
-/**
- * PIM integration is auto-detected from the presence of the catalog core and
- * has no user-facing toggle. Tests drive the two states with fake().
- */
 function rebindResolvers(): void
 {
     app()->forgetInstance(ProductResolver::class);

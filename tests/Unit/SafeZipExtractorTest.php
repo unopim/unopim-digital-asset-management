@@ -2,11 +2,6 @@
 
 use Webkul\DAM\Support\SafeZipExtractor;
 
-/*
- * The extractor is the only thing standing between an uploaded archive and the
- * filesystem, so each guard is asserted against an archive built to defeat it.
- */
-
 beforeEach(function (): void {
     $this->workDir = sys_get_temp_dir().'/dam-safe-zip-'.getmypid().'-'.uniqid();
 

@@ -46,8 +46,6 @@ class AssetPathResolver
     }
 
     /**
-     * The validated directory segments (root first, file removed) of `$damPath`.
-     *
      * @return array<int, string>
      */
     protected function directorySegments(string $damPath): array

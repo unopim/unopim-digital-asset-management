@@ -5,14 +5,6 @@ use Webkul\Category\Models\CategoryField;
 use Webkul\DAM\Helpers\Exporters\Category\Exporter;
 use Webkul\DAM\Models\Asset;
 
-/*
- * The importer's "blank cell unlinks" fix (Importer::resolveAssetFieldValue) stores an
- * empty string for an unlinked asset field. The exporter never learned about that
- * value: it fed it straight into `findWhereIn('id', [''])`, which PostgreSQL rejects
- * outright (`invalid input syntax for type bigint: ""`), breaking every export batch
- * that reaches an unlinked category.
- */
-
 function damCategoryExporter(): Exporter
 {
     return app(Exporter::class);

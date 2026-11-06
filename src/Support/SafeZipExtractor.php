@@ -25,7 +25,7 @@ class SafeZipExtractor
     }
 
     /**
-     * @return array{key: string, replace: array<string, mixed>}|null null when the archive is acceptable
+     * @return array{key: string, replace: array<string, mixed>}|null
      */
     public function rejectionReason(\ZipArchive $zip): ?array
     {
@@ -73,7 +73,7 @@ class SafeZipExtractor
 
     /**
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
-     * @return list<string> relative paths actually extracted
+     * @return list<string> 
      */
     public function extract(\ZipArchive $zip, string $extractPath, ?callable $accepts = null): array
     {

@@ -10,7 +10,7 @@ trait ResolvesAssetPaths
     protected ?AssetPathStorage $assetPathStorage = null;
 
     /**
-     * @return list<int> ids for the paths that exist, in the order given
+     * @return list<int> 
      */
     protected function resolveAssetIds(string $rawValue): array
     {

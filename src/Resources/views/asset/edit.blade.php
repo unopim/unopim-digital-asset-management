@@ -104,10 +104,8 @@
 
     <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
 
-    @if (dam_pim_enabled())
-        {!! view_render_event('unopim.dam.admin.asset.edit.before') !!}
-    @endif
-
+    {!! view_render_event('unopim.dam.admin.asset.edit.before') !!}
+    
     <v-edit-asset></v-edit-asset>
 
     <x-slot:properties>

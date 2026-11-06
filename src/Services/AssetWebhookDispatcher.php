@@ -9,13 +9,6 @@ use Webkul\DAM\Jobs\SendAssetWebhook;
 use Webkul\DAM\Models\Asset;
 use Webkul\Webhook\Repositories\WebhookRepository;
 
-/**
- * Bridges DAM asset lifecycle events to the webhook delivery core.
- *
- * It fires only when the webhook package is installed and a webhook is
- * actually subscribed to the event, so an asset save costs nothing extra
- * when webhooks are unused. Queued delivery lives in {@see SendAssetWebhook}.
- */
 class AssetWebhookDispatcher
 {
     public const EVENT_ASSET_CREATED = 'asset.created';
@@ -49,11 +42,6 @@ class AssetWebhookDispatcher
         SendAssetWebhook::dispatch($asset->id, $event, $userId)->onQueue('webhooks');
     }
 
-    /**
-     * Whether the webhook package is installed and migrated. The result is
-     * cached for the request so repeated asset saves pay the schema check
-     * only once.
-     */
     public static function webhooksAvailable(): bool
     {
         if (self::$available !== null) {
@@ -71,9 +59,6 @@ class AssetWebhookDispatcher
         }
     }
 
-    /**
-     * Reset the cached availability flag (tests).
-     */
     public static function flushAvailability(): void
     {
         self::$available = null;

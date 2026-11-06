@@ -5,11 +5,6 @@ use Webkul\DAM\Helpers\Importers\Product\MeasurementAwareImporter;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer as CoreImporter;
 use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 
-/*
- * Measurement binds the core product importer inside register(); a plain $bindings
- * entry on the DAM provider loses that race and the asset branch never runs.
- */
-
 it('resolves the product importer to one that imports asset attributes', function () {
     $importer = app(config('importers.products.importer'));
 
