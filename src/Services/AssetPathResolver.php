@@ -66,7 +66,7 @@ class AssetPathResolver
      */
     protected function splitAndValidate(string $relative): array
     {
-        $parts = array_values(array_filter(explode('/', str_replace('\\', '/', $relative)), fn ($p) => $p !== ''));
+        $parts = array_values(array_filter(explode('/', str_replace('\\', '/', $relative)), fn ($p): bool => $p !== ''));
 
         foreach ($parts as $segment) {
             if ($segment === '.' || $segment === '..' || mb_strlen($segment) > 255 || preg_match(self::FORBIDDEN_SEGMENT, $segment)) {
