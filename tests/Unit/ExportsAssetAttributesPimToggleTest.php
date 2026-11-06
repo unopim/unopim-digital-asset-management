@@ -23,8 +23,6 @@ it('dam_pim_enabled reflects the PIM state when disabled', function () {
 it('product exporter uses ExportsAssetAttributes when pim is enabled', function () {
     PimIntegration::fake(true);
 
-    // The binding is lazy, so flipping PIM state and resolving is enough — no
-    // reboot and no manual rebinding.
     $exporter = app(config('exporters.products.exporter'));
 
     expect(class_uses_recursive($exporter))

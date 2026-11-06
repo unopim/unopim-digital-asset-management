@@ -16,14 +16,6 @@ function damBundlePng(): string
     );
 }
 
-/*
- * Two bundle shapes share this reader. A product or category bundle (any entity other than
- * `assets`) carries the source DAM tree under `assets/` and relies on it being recreated so the
- * CSV's asset paths resolve to real rows — without duplicating a path it already holds. The
- * `assets` entity instead creates its own rows from a (possibly synthesized) manifest, so the
- * reader must not ingest the tree for it.
- */
-
 beforeEach(function (): void {
     $this->damResetAssetTables();
 
@@ -62,10 +54,6 @@ beforeEach(function (): void {
         };
     };
 });
-
-/*
- * Assets entity: CSV-less media bundles are synthesized into a manifest and no tree is ingested.
- */
 
 it('synthesizes a manifest whose directories nest under the default Root base', function () {
     Directory::create(['name' => 'Root', 'parent_id' => null]);
@@ -133,11 +121,6 @@ it('nests the synthesized directories under the chosen directory from filters', 
     expect($byPath['logo.png'][1])->toBe('Root/Marketing')
         ->and($byPath['summer/a.png'][1])->toBe('Root/Marketing/summer');
 });
-
-/*
- * Product / category entity: the bundled `assets/` tree is recreated as DAM rows and is not also
- * staged into the images directory.
- */
 
 it('returns the archive data file and recreates the asset tree', function () {
     $track = ($this->bundle)([

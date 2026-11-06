@@ -20,7 +20,7 @@ class AssetBundleReader
     public function __construct(protected AssetTreeIngestor $assetTreeIngestor) {}
 
     /**
-     * @throws \RuntimeException when the archive is unreadable, unsafe, or carries no importable content
+     * @throws \RuntimeException
      */
     public function prepare(JobTrackContract $import): PreparedBundle
     {
@@ -31,10 +31,6 @@ class AssetBundleReader
 
         $dataFile = $this->locateDataFile($entries);
 
-        // The assets entity creates its own rows from the (possibly synthesized) manifest, so it
-        // must not also ingest the `assets/` tree. Every other entity — product and category
-        // bundles exported "with media" — carries the source DAM tree and relies on it being
-        // recreated so the CSV's asset paths resolve to real rows.
         $ingestAssetTree = ($import->jobInstance?->entity_type ?? null) !== 'assets';
 
         if ($ingestAssetTree) {
@@ -91,10 +87,6 @@ class AssetBundleReader
 
     protected function isPermittedEntry(string $relativePath, string $extension, string $stagedPath): bool
     {
-        // A top-level data file (the CSV manifest) is always permitted. Other top-level entries —
-        // media sitting at the archive root — were historically rejected; they are now allowed
-        // through the same forbidden-file guard as nested media so a CSV-less bundle can import
-        // files that are not tucked inside a sub-folder.
         if (! str_contains($relativePath, '/') && in_array($extension, self::DATA_FILE_EXTENSIONS, true)) {
             return true;
         }
@@ -123,11 +115,6 @@ class AssetBundleReader
     }
 
     /**
-     * A CSV-less bundle carries no destination tree, so every media file lands under a base
-     * directory: the directory chosen on the import form, or Root when none was picked. The
-     * file's own in-zip folder structure is preserved beneath that base; files sitting at the
-     * archive root go straight into the base directory instead of being dropped.
-     *
      * @param  list<string>  $entries
      */
     protected function synthesizeDataFile(array $entries, string $extractPath, string $basePath): ?string
@@ -175,8 +162,6 @@ class AssetBundleReader
                 continue;
             }
 
-            // When the asset tree is ingested, its `assets/` files become DAM rows and must not
-            // be duplicated into the staged images directory as well.
             if ($skipAssetTree && str_starts_with($entry, AssetTreeIngestor::ASSET_ENTRY_PREFIX)) {
                 continue;
             }
@@ -207,12 +192,6 @@ class AssetBundleReader
         return $staged > 0 ? $directory : null;
     }
 
-    /**
-     * The base destination directory for a CSV-less bundle, as a slash-joined name path from the
-     * tree root (e.g. "Root" or "Root/Brand"). Reads the directory chosen on the import form
-     * (`filters.import_directory`); falls back to the seeded Root when none was picked, the chosen
-     * directory no longer exists, or the job carries no filters.
-     */
     protected function baseDirectoryPath(JobTrackContract $import): string
     {
         $filters = ($import->jobInstance ?? null)?->filters ?? [];

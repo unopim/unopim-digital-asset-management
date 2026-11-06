@@ -187,8 +187,6 @@ class Importer extends AbstractImporter
             $temporary = false;
 
             try {
-                // Decide the conflict outcome before fetching any binary: an existing asset under
-                // `skip` is a no-op (no download), and `update_metadata` never needs the file.
                 $destination = $this->pathResolver->destinationPath($damPath, $fileName);
                 $existing = Asset::where('path', $destination)->first();
 
@@ -320,10 +318,6 @@ class Importer extends AbstractImporter
     }
 
     /**
-     * The directory column holds the destination tree(s). The first entry is the asset's
-     * home folder (built, segment by segment); any further comma-separated entries are
-     * extra memberships.
-     *
      * @return array<int, string>
      */
     protected function directoryNames(array $rowData): array

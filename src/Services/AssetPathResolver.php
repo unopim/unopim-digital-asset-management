@@ -58,7 +58,7 @@ class AssetPathResolver
 
         $parts = $this->splitAndValidate($relative);
 
-        array_pop($parts); // remove the file segment
+        array_pop($parts);
 
         return $parts;
     }

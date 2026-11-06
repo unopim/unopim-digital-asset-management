@@ -35,11 +35,6 @@ class Import extends BaseImport
         $this->setImport($this->jobTrackRepository->update($attributes, $this->import->id));
     }
 
-    /**
-     * A non-bundle import (a plain CSV paired with a separately uploaded asset tree) still has to
-     * recreate that tree so the manifest's asset paths resolve. The assets entity is excluded: it
-     * creates its own rows from the CSV and would otherwise double-ingest the staged directory.
-     */
     protected function ingestUploadedAssetTree(): void
     {
         $directory = trim((string) $this->import->images_directory_path, '/');
