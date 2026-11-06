@@ -4,7 +4,19 @@
 
 ### Features & Enhancements
 
-* **Asset Import & Export** — Added queued import and export jobs for DAM assets, so asset data can be bulk exported to and imported from CSV/XLSX files and tracked from the core Job Tracker page.
+* **Asset Import & Export** - Added queued import and export jobs for DAM assets, so asset data can be bulk exported to and imported from CSV/XLSX files and tracked from the core Job Tracker page.
+
+### Security
+
+* Asset import now respects folder permissions: a user can only import into folders their role is allowed to use, and all imported folders are placed under the main Root folder.
+* Asset export now scopes results (and, with media, their binaries) to the user's viewable directories, and the export filter option lists are permission-scoped.
+* Hardened the server-file import source against path traversal.
+
+### Bug Fixes
+
+* Fixed the asset import validator so the `action` and `validation_strategy` rules are enforced (a malformed rule was skipping the `in:` check).
+* Delete-action import rows that match no asset, or an asset with linked resources, are now reported instead of being skipped silently.
+* Asset export now streams records instead of loading the whole library into memory.
 
 ## Version 3.1.1
 
