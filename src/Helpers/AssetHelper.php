@@ -8,6 +8,33 @@ use Webkul\DAM\Models\Directory;
 
 class AssetHelper
 {
+    public const THUMBNAIL_DIRECTORY = 'thumbnails';
+
+    public const PREVIEW_DIRECTORY = 'preview';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function previewSizeDirectories(string $disk): array
+    {
+        return Storage::disk($disk)->directories(self::PREVIEW_DIRECTORY);
+    }
+
+    /**
+     * @param  array<int, string>|null  $previewDirectories
+     */
+    public static function clearDerivatives(string $path, string $disk, ?array $previewDirectories = null): void
+    {
+        $storage = Storage::disk($disk);
+
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path);
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path.'.jpg');
+
+        foreach ($previewDirectories ?? self::previewSizeDirectories($disk) as $sizeDirectory) {
+            $storage->delete($sizeDirectory.'/'.$path);
+        }
+    }
+
     public static function getMaxUploadSizeKb(): int
     {
         $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));

@@ -2,11 +2,13 @@
 
 namespace Webkul\DAM\Helpers\Exporters\Asset;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Event;
 use Webkul\DAM\Helpers\Exporters\Concerns\CopiesDamMedia;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\DirectoryRepository;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DataTransfer\Contracts\JobTrackBatch as JobTrackBatchContract;
 use Webkul\DataTransfer\Helpers\Export;
 use Webkul\DataTransfer\Helpers\Exporters\AbstractExporter;
@@ -38,7 +40,8 @@ class Exporter extends AbstractExporter
         protected JobTrackBatchRepository $exportBatchRepository,
         protected FlatItemBuffer $exportFileBuffer,
         protected AssetRepository $assetRepository,
-        protected DirectoryRepository $directoryRepository
+        protected DirectoryRepository $directoryRepository,
+        protected DirectoryPermissionService $directoryPermissionService,
     ) {
         parent::__construct($exportBatchRepository, $exportFileBuffer);
     }
@@ -153,16 +156,22 @@ class Exporter extends AbstractExporter
         if (! empty($filters['tags'])) {
             $tags = (array) $filters['tags'];
 
-            $query->whereHas('tags', fn ($q) => $q->whereIn('dam_tags.name', $tags));
+            $query->whereHas('tags', fn (Builder $q): Builder => $q->whereIn('dam_tags.name', $tags));
         }
 
         if (! empty($filters['directories'])) {
             $directoryIds = $this->expandDirectoryIds((array) $filters['directories']);
 
-            $query->whereHas('directories', fn ($q) => $q->whereIn('dam_directories.id', $directoryIds));
+            $query->whereHas('directories', fn (Builder $q): Builder => $q->whereIn('dam_directories.id', $directoryIds));
         }
 
-        return $query->get()->getIterator();
+        if (! $this->directoryPermissionService->bypass()) {
+            $allowedIds = $this->directoryPermissionService->viewableIds();
+
+            $query->whereHas('directories', fn (Builder $q): Builder => $q->whereIn('dam_directories.id', $allowedIds));
+        }
+
+        return $query->lazyById(500)->getIterator();
     }
 
     /**

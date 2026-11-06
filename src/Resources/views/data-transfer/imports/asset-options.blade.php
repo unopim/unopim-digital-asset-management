@@ -12,7 +12,16 @@
     $damEditIsAssets = $damImport && $damImport->entity_type === \Webkul\DAM\Helpers\Importers\Asset\Importer::ENTITY_TYPE;
     $damEditFilters = $damImport->filters ?? [];
 
-    $damDirectories = \Webkul\DAM\Models\Directory::orderBy('_lft')->get(['id', 'name', 'parent_id']);
+    $damPermissions = app(\Webkul\DAM\Services\DirectoryPermissionService::class);
+    $damBypass = $damPermissions->bypass();
+
+    $damDirectoryQuery = \Webkul\DAM\Models\Directory::orderBy('_lft');
+
+    if (! $damBypass) {
+        $damDirectoryQuery->whereIn('id', $damPermissions->viewableIds());
+    }
+
+    $damDirectories = $damDirectoryQuery->get(['id', 'name', 'parent_id']);
     $damDirectoriesById = $damDirectories->keyBy('id');
 
     $damDirectoryPath = function ($directory) use ($damDirectoriesById) {
@@ -28,80 +37,30 @@
         return implode('/', $segments);
     };
 
+    $damGrantedLookup = $damBypass ? null : array_flip($damPermissions->directlyGrantedIds());
+
+    $damSelectableDirectories = $damDirectories->filter(
+        fn ($directory) => $damBypass || isset($damGrantedLookup[$directory->id])
+    );
+
     $damDirectoryOptions = json_encode(
-        $damDirectories->map(fn ($directory) => [
+        $damSelectableDirectories->map(fn ($directory) => [
             'id'    => (string) $directory->id,
             'label' => $damDirectoryPath($directory),
         ])->values()
     );
 
-    $damRootDirectoryId = (string) (optional($damDirectories->firstWhere('parent_id', null))->id ?? '');
+    $damDefaultDirectoryId = (string) (
+        optional($damSelectableDirectories->firstWhere('parent_id', null))->id
+        ?? optional($damSelectableDirectories->first())->id
+        ?? ''
+    );
 @endphp
 
 @if ($damIsEdit)
     @if ($damEditIsAssets)
         <div class="p-4 bg-white dark:bg-cherry-900 rounded box-shadow">
-            <p class="text-base text-gray-800 dark:text-white font-semibold mb-4">
-                @lang('dam::app.data-transfer.importers.assets.options.title')
-            </p>
-
-            <x-admin::form.control-group>
-                <x-admin::form.control-group.label>
-                    @lang('dam::app.data-transfer.importers.assets.options.conflict.label')
-                </x-admin::form.control-group.label>
-
-                <x-admin::form.control-group.control
-                    type="select"
-                    name="filters[conflict_strategy]"
-                    :value="old('filters.conflict_strategy') ?? ($damEditFilters['conflict_strategy'] ?? 'skip')"
-                    :label="trans('dam::app.data-transfer.importers.assets.options.conflict.label')"
-                    :options="$conflictOptions"
-                    track-by="id"
-                    label-by="label"
-                >
-                </x-admin::form.control-group.control>
-
-                <x-admin::form.control-group.error control-name="filters[conflict_strategy]" />
-            </x-admin::form.control-group>
-
-            <x-admin::form.control-group>
-                <x-admin::form.control-group.label>
-                    @lang('dam::app.data-transfer.importers.assets.options.import-directory.label')
-                </x-admin::form.control-group.label>
-
-                <x-admin::form.control-group.control
-                    type="select"
-                    name="filters[import_directory]"
-                    :value="old('filters.import_directory') ?? ($damEditFilters['import_directory'] ?? $damRootDirectoryId)"
-                    :label="trans('dam::app.data-transfer.importers.assets.options.import-directory.label')"
-                    :options="$damDirectoryOptions"
-                    track-by="id"
-                    label-by="label"
-                >
-                </x-admin::form.control-group.control>
-
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    @lang('dam::app.data-transfer.importers.assets.options.import-directory.hint')
-                </p>
-            </x-admin::form.control-group>
-
-            <x-admin::form.control-group>
-                <x-admin::form.control-group.label>
-                    @lang('dam::app.data-transfer.importers.assets.options.auto-tag.label')
-                </x-admin::form.control-group.label>
-
-                <x-admin::form.control-group.control
-                    type="switch"
-                    name="filters[auto_tag]"
-                    value="1"
-                    :label="trans('dam::app.data-transfer.importers.assets.options.auto-tag.label')"
-                    :checked="(bool) old('filters.auto_tag', $damEditFilters['auto_tag'] ?? false)"
-                />
-
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    @lang('dam::app.data-transfer.importers.assets.options.auto-tag.hint')
-                </p>
-            </x-admin::form.control-group>
+            @include('dam::data-transfer.imports.asset-options-fields')
         </div>
     @endif
 @else
@@ -109,66 +68,6 @@
         v-if="(parseValue(entityType)?.id ?? entityType) === 'assets'"
         class="p-4 bg-white dark:bg-cherry-900 rounded box-shadow"
     >
-        <p class="text-base text-gray-800 dark:text-white font-semibold mb-4">
-            @lang('dam::app.data-transfer.importers.assets.options.title')
-        </p>
-
-        <x-admin::form.control-group>
-            <x-admin::form.control-group.label>
-                @lang('dam::app.data-transfer.importers.assets.options.conflict.label')
-            </x-admin::form.control-group.label>
-
-            <x-admin::form.control-group.control
-                type="select"
-                name="filters[conflict_strategy]"
-                :value="old('filters.conflict_strategy') ?? 'skip'"
-                :label="trans('dam::app.data-transfer.importers.assets.options.conflict.label')"
-                :options="$conflictOptions"
-                track-by="id"
-                label-by="label"
-            >
-            </x-admin::form.control-group.control>
-
-            <x-admin::form.control-group.error control-name="filters[conflict_strategy]" />
-        </x-admin::form.control-group>
-
-        <x-admin::form.control-group>
-            <x-admin::form.control-group.label>
-                @lang('dam::app.data-transfer.importers.assets.options.import-directory.label')
-            </x-admin::form.control-group.label>
-
-            <x-admin::form.control-group.control
-                type="select"
-                name="filters[import_directory]"
-                :value="old('filters.import_directory') ?? $damRootDirectoryId"
-                :label="trans('dam::app.data-transfer.importers.assets.options.import-directory.label')"
-                :options="$damDirectoryOptions"
-                track-by="id"
-                label-by="label"
-            >
-            </x-admin::form.control-group.control>
-
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                @lang('dam::app.data-transfer.importers.assets.options.import-directory.hint')
-            </p>
-        </x-admin::form.control-group>
-
-        <x-admin::form.control-group>
-            <x-admin::form.control-group.label>
-                @lang('dam::app.data-transfer.importers.assets.options.auto-tag.label')
-            </x-admin::form.control-group.label>
-
-            <x-admin::form.control-group.control
-                type="switch"
-                name="filters[auto_tag]"
-                value="1"
-                :label="trans('dam::app.data-transfer.importers.assets.options.auto-tag.label')"
-                :checked="(bool) old('filters.auto_tag', false)"
-            />
-
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                @lang('dam::app.data-transfer.importers.assets.options.auto-tag.hint')
-            </p>
-        </x-admin::form.control-group>
+        @include('dam::data-transfer.imports.asset-options-fields')
     </div>
 @endif

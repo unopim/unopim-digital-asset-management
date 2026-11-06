@@ -19,11 +19,36 @@ class AssetPathResolver
             throw new InvalidPathException('Asset path is missing the root anchor: '.$damPath);
         }
 
+        return $this->resolveSegments($segments);
+    }
+
+    public function resolveDirectory(string $treePath): int
+    {
+        $segments = $this->splitAndValidate($this->stripPrefix($treePath));
+
+        if ($segments === []) {
+            throw new InvalidPathException('Directory path is empty: '.$treePath);
+        }
+
+        return $this->resolveSegments($segments);
+    }
+
+    /**
+     * @param  array<int, string>  $segments
+     */
+    protected function resolveSegments(array $segments): int
+    {
         $rootName = array_shift($segments);
 
-        $rootId = $this->resolveRoot($rootName);
+        return $this->resolveChildren($this->resolveRoot($rootName), $segments);
+    }
 
-        return $this->resolveChildren($rootId, $segments);
+    protected function stripPrefix(string $damPath): string
+    {
+        $prefix = Directory::ASSETS_DIRECTORY.'/';
+        $trimmed = ltrim(trim($damPath));
+
+        return str_starts_with($trimmed, $prefix) ? substr($trimmed, strlen($prefix)) : $trimmed;
     }
 
     public function destinationPath(string $damPath, ?string $fileName): string

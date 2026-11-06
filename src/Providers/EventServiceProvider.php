@@ -5,6 +5,7 @@ namespace Webkul\DAM\Providers;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Webkul\DAM\Helpers\Importers\Asset\Importer as AssetImporter;
 use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
@@ -68,6 +69,20 @@ class EventServiceProvider extends ServiceProvider
             app(AssetWebhookDispatcher::class)->updated($asset);
         });
 
+        Event::listen('data_transfer.imports.batch.import.before', static function ($batch): void {
+            if (($batch->jobTrack?->jobInstance?->entity_type ?? null) === AssetImporter::ENTITY_TYPE) {
+                AssetWebhookDispatcher::beginBatch();
+            }
+        });
+
+        Event::listen('data_transfer.imports.batch.import.after', static function ($batch): void {
+            if (($batch->jobTrack?->jobInstance?->entity_type ?? null) !== AssetImporter::ENTITY_TYPE) {
+                return;
+            }
+
+            AssetWebhookDispatcher::flushBatch(auth('admin')->id() ?? auth('api')->id());
+        });
+
         if (PimIntegration::enabled()) {
             Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
                 $viewRenderEventManager->addTemplate('dam::asset.catalog.categories.dynamic-fields.asset-control');
@@ -92,6 +107,10 @@ class EventServiceProvider extends ServiceProvider
 
         Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
             if (! auth()->guard('admin')->check()) {
+                return;
+            }
+
+            if (! bouncer()->hasPermission('dam.asset.upload')) {
                 return;
             }
 

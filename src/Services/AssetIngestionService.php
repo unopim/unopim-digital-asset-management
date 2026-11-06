@@ -14,10 +14,6 @@ use Webkul\DAM\Models\Directory;
 
 class AssetIngestionService
 {
-    protected const THUMBNAIL_DIRECTORY = 'thumbnails';
-
-    protected const PREVIEW_DIRECTORY = 'preview';
-
     public function __construct(
         protected AssetPathResolver $pathResolver,
         protected FileStorer $fileStorer,
@@ -58,7 +54,7 @@ class AssetIngestionService
 
         if ($existing && $conflictStrategy === 'overwrite') {
             Storage::disk($disk)->delete($existing->path);
-            $this->clearDerivatives($existing->path, $disk);
+            AssetHelper::clearDerivatives($existing->path, $disk);
         }
 
         $storedPath = $this->fileStorer->store(
@@ -114,35 +110,22 @@ class AssetIngestionService
     }
 
     /**
-     * @param  array<int, string>  $extraDirectoryNames
+     * @param  array<int, string>  $extraDirectoryPaths
      */
-    protected function mapDirectories(Asset $asset, int $directoryId, array $extraDirectoryNames): void
+    protected function mapDirectories(Asset $asset, int $directoryId, array $extraDirectoryPaths): void
     {
         $ids = [$directoryId];
 
-        foreach ($extraDirectoryNames as $name) {
-            $name = trim((string) $name);
+        foreach ($extraDirectoryPaths as $path) {
+            $path = trim((string) $path);
 
-            if ($name === '') {
+            if ($path === '') {
                 continue;
             }
 
-            $match = Directory::where('name', $name)->first();
-
-            if ($match) {
-                $ids[] = $match->id;
-            }
+            $ids[] = $this->pathResolver->resolveDirectory($path);
         }
 
         $asset->directories()->syncWithoutDetaching(array_unique($ids));
-    }
-
-    protected function clearDerivatives(string $path, string $disk): void
-    {
-        Storage::disk($disk)->delete(self::THUMBNAIL_DIRECTORY.'/'.$path);
-
-        foreach (Storage::disk($disk)->directories(self::PREVIEW_DIRECTORY) as $sizeDirectory) {
-            Storage::disk($disk)->delete($sizeDirectory.'/'.$path);
-        }
     }
 }

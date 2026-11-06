@@ -4,60 +4,90 @@ declare(strict_types=1);
 
 namespace Webkul\DAM\Http\Controllers\DataTransfer;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Collection;
+use Webkul\DAM\Http\Requests\DataTransfer\ExportFilterOptionsRequest;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
+use Webkul\DAM\Services\DirectoryPermissionService;
 
 class AssetExportFilterController extends Controller
 {
-    const PER_PAGE = 20;
+    protected const PER_PAGE = 20;
 
-    const DEFAULT_PAGE = 1;
+    protected const DEFAULT_PAGE = 1;
 
-    public function directories(): JsonResponse
+    public function __construct(
+        protected DirectoryPermissionService $directoryPermissionService,
+    ) {}
+
+    public function directories(ExportFilterOptionsRequest $request): JsonResponse
     {
         $this->ensureExportPermission();
 
-        $options = Directory::query()
-            ->whereNotNull('parent_id')
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn (Directory $directory) => [
+        $query = Directory::query()->whereNotNull('parent_id');
+
+        if (! $this->directoryPermissionService->bypass()) {
+            $query->whereIn('id', $this->directoryPermissionService->viewableIds());
+        }
+
+        return $this->paginateOptions(
+            $request,
+            $query,
+            searchColumn: 'name',
+            identifierColumn: 'id',
+            columns: ['id', 'name'],
+            mapper: fn (Directory $directory): array => [
                 'id'    => (string) $directory->id,
                 'label' => $directory->name,
-            ]);
-
-        return $this->respondWithOptions($options, 'id');
+            ],
+        );
     }
 
-    public function fileTypes(): JsonResponse
+    public function tags(ExportFilterOptionsRequest $request): JsonResponse
+    {
+        $this->ensureExportPermission();
+
+        return $this->paginateOptions(
+            $request,
+            Tag::query(),
+            searchColumn: 'name',
+            identifierColumn: 'name',
+            columns: ['name'],
+            mapper: fn (Tag $tag): array => [
+                'name'  => $tag->name,
+                'label' => $tag->name,
+            ],
+        );
+    }
+
+    public function fileTypes(ExportFilterOptionsRequest $request): JsonResponse
     {
         $this->ensureExportPermission();
 
         $options = collect(['image', 'video', 'audio', 'document'])
-            ->map(fn (string $type) => [
+            ->map(fn (string $type): array => [
                 'value' => $type,
                 'label' => trans('dam::app.data-transfer.exporters.assets.filters.file-types.'.$type),
             ]);
 
-        return $this->respondWithOptions($options, 'value');
-    }
+        $identifiers = $request->identifierValues();
 
-    public function tags(): JsonResponse
-    {
-        $this->ensureExportPermission();
+        if ($identifiers !== null) {
+            $options = $options->whereIn('value', $identifiers)->values();
+        } elseif (($search = $request->searchTerm()) !== '') {
+            $options = $options->filter(
+                fn (array $option): bool => stripos((string) $option['label'], $search) !== false
+            )->values();
+        }
 
-        $options = Tag::query()
-            ->orderBy('name')
-            ->get(['name'])
-            ->map(fn (Tag $tag) => [
-                'name'  => $tag->name,
-                'label' => $tag->name,
-            ]);
-
-        return $this->respondWithOptions($options, 'name');
+        return new JsonResponse([
+            'options'  => $options->values(),
+            'page'     => self::DEFAULT_PAGE,
+            'lastPage' => self::DEFAULT_PAGE,
+        ]);
     }
 
     protected function ensureExportPermission(): void
@@ -67,37 +97,54 @@ class AssetExportFilterController extends Controller
         }
     }
 
-    protected function respondWithOptions(Collection $options, string $trackBy): JsonResponse
-    {
-        $identifiers = request('identifiers');
+    /**
+     * Search, scope and paginate an option source entirely in SQL.
+     *
+     * @param  Builder<Model>  $query
+     * @param  array<int, string>  $columns
+     * @param  callable(Model): array<string, string>  $mapper
+     */
+    protected function paginateOptions(
+        ExportFilterOptionsRequest $request,
+        Builder $query,
+        string $searchColumn,
+        string $identifierColumn,
+        array $columns,
+        callable $mapper,
+    ): JsonResponse {
+        $identifiers = $request->identifierValues();
 
-        if (! empty($identifiers['values'])) {
-            $values = is_array($identifiers['values'])
-                ? $identifiers['values']
-                : explode(',', (string) $identifiers['values']);
+        if ($identifiers !== null) {
+            $options = $query->whereIn($identifierColumn, $identifiers)
+                ->orderBy($searchColumn)
+                ->get($columns)
+                ->map($mapper)
+                ->values();
 
             return new JsonResponse([
-                'options'  => $options->whereIn($trackBy, $values)->values(),
+                'options'  => $options,
                 'page'     => self::DEFAULT_PAGE,
                 'lastPage' => self::DEFAULT_PAGE,
             ]);
         }
 
-        $search = trim((string) request('query', ''));
+        $search = $request->searchTerm();
 
         if ($search !== '') {
-            $options = $options->filter(
-                fn (array $option) => stripos((string) $option['label'], $search) !== false
-            )->values();
+            $query->where($searchColumn, 'like', '%'.$search.'%');
         }
 
-        $page = max(self::DEFAULT_PAGE, (int) request('page', self::DEFAULT_PAGE));
-        $lastPage = max(self::DEFAULT_PAGE, (int) ceil($options->count() / self::PER_PAGE));
+        $paginator = $query->orderBy($searchColumn)->paginate(
+            self::PER_PAGE,
+            $columns,
+            'page',
+            $request->pageNumber(),
+        );
 
         return new JsonResponse([
-            'options'  => $options->forPage($page, self::PER_PAGE)->values(),
-            'page'     => $page,
-            'lastPage' => $lastPage,
+            'options'  => $paginator->getCollection()->map($mapper)->values(),
+            'page'     => $paginator->currentPage(),
+            'lastPage' => max(self::DEFAULT_PAGE, $paginator->lastPage()),
         ]);
     }
 }

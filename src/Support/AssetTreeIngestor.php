@@ -14,10 +14,6 @@ class AssetTreeIngestor
 
     protected const STORED_FILE_TYPES = ['image', 'video', 'audio', 'document'];
 
-    protected const THUMBNAIL_DIRECTORY = 'thumbnails';
-
-    protected const PREVIEW_DIRECTORY = 'preview';
-
     /**
      * @return array<string, int>
      */
@@ -243,14 +239,7 @@ class AssetTreeIngestor
 
     protected function purgeDerivatives(string $entry): void
     {
-        $disk = Storage::disk(Directory::getAssetDisk());
-
-        $disk->delete(self::THUMBNAIL_DIRECTORY.'/'.$entry);
-        $disk->delete(self::THUMBNAIL_DIRECTORY.'/'.$entry.'.jpg');
-
-        foreach ($disk->directories(self::PREVIEW_DIRECTORY) as $sizeDirectory) {
-            $disk->delete($sizeDirectory.'/'.$entry);
-        }
+        AssetHelper::clearDerivatives($entry, Directory::getAssetDisk());
     }
 
     /**

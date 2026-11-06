@@ -2,6 +2,7 @@
 
 namespace Webkul\DAM\Helpers\Importers\Asset;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -53,10 +54,6 @@ class Importer extends AbstractImporter
     public const ERROR_FORBIDDEN_FILE = 'forbidden_file';
 
     public const ERROR_IMPORT_FAILED = 'import_failed';
-
-    protected const THUMBNAIL_DIRECTORY = 'thumbnails';
-
-    protected const PREVIEW_DIRECTORY = 'preview';
 
     protected ?string $defaultPropertyLocale = null;
 
@@ -172,6 +169,8 @@ class Importer extends AbstractImporter
 
         $maxBytes = AssetHelper::getMaxUploadSizeKb() * 1024;
 
+        $existingByPath = $this->prefetchExistingAssets($batch->data);
+
         $rowNumber = 0;
         $skippedCount = 0;
 
@@ -182,7 +181,7 @@ class Importer extends AbstractImporter
             $directories = $this->directoryNames($rowData);
             $fileName = trim((string) ($rowData['file_name'] ?? '')) ?: $this->leafName($source);
             $damPath = $this->buildDamPath($directories[0] ?? '', $fileName);
-            $extraDirectories = array_map('basename', array_slice($directories, 1));
+            $extraDirectories = array_slice($directories, 1);
             $isUrl = $this->isHttpUrl($source);
 
             $localPath = null;
@@ -190,7 +189,7 @@ class Importer extends AbstractImporter
 
             try {
                 $destination = $this->pathResolver->destinationPath($damPath, $fileName);
-                $existing = Asset::where('path', $destination)->first();
+                $existing = $existingByPath->get($destination);
 
                 if ($existing && $conflictStrategy === 'skip') {
                     $skippedCount++;
@@ -280,6 +279,30 @@ class Importer extends AbstractImporter
         }
     }
 
+    /**
+     * @param  iterable<int, array<string, mixed>>  $rows
+     * @return Collection<string, Asset>
+     */
+    protected function prefetchExistingAssets(iterable $rows): Collection
+    {
+        $destinations = [];
+
+        foreach ($rows as $rowData) {
+            try {
+                $fileName = trim((string) ($rowData['file_name'] ?? '')) ?: $this->leafName(trim((string) ($rowData['path'] ?? '')));
+                $directories = $this->directoryNames($rowData);
+                $damPath = $this->buildDamPath($directories[0] ?? '', $fileName);
+                $destinations[] = $this->pathResolver->destinationPath($damPath, $fileName);
+            } catch (\Throwable) {}
+        }
+
+        if ($destinations === []) {
+            return collect();
+        }
+
+        return Asset::whereIn('path', array_values(array_unique($destinations)))->get()->keyBy('path');
+    }
+
     protected function logSkip(int $rowNumber, string $damPath): void
     {
         $this->jobLogger?->info(trans($this->messages[self::ERROR_ASSET_EXISTS], ['row' => $rowNumber, 'path' => $damPath]));
@@ -297,22 +320,29 @@ class Importer extends AbstractImporter
         return in_array($scheme, ['http', 'https'], true) && parse_url($value, PHP_URL_HOST);
     }
 
-    protected function resolveServerFile(string $imagesDir, string $damPath, ?string $fileName): ?string
+    protected function resolveServerFile(string $imagesDir, string $source, ?string $fileName): ?string
     {
-        $base = trim($imagesDir, '/');
+        $base = realpath(Storage::disk('local')->path('public/'.trim($imagesDir, '/')));
+
+        if ($base === false) {
+            return null;
+        }
 
         $candidates = array_values(array_filter([
-            ltrim($damPath, '/'),
+            ltrim($source, '/'),
             $fileName !== null ? ltrim($fileName, '/') : null,
-            basename($damPath),
+            basename($source),
         ]));
 
         foreach ($candidates as $candidate) {
-            $relative = $base === '' ? $candidate : $base.'/'.$candidate;
-            $storagePath = 'public/'.$relative;
+            if (str_contains($candidate, '..')) {
+                continue;
+            }
 
-            if (Storage::disk('local')->fileExists($storagePath)) {
-                return Storage::disk('local')->path($storagePath);
+            $real = realpath($base.DIRECTORY_SEPARATOR.$candidate);
+
+            if ($real !== false && str_starts_with($real, $base.DIRECTORY_SEPARATOR) && is_file($real)) {
+                return $real;
             }
         }
 
@@ -374,6 +404,11 @@ class Importer extends AbstractImporter
             return;
         }
 
+        $existingProperties = AssetProperty::query()
+            ->where('dam_asset_id', $asset->id)
+            ->get()
+            ->keyBy(fn (AssetProperty $property): string => $property->name.'|'.$property->language);
+
         foreach ($properties as $property) {
             $name = trim((string) ($property['name'] ?? ''));
 
@@ -383,11 +418,7 @@ class Importer extends AbstractImporter
 
             $language = trim((string) ($property['language'] ?? '')) ?: $this->defaultPropertyLocale();
 
-            $existing = AssetProperty::query()
-                ->where('dam_asset_id', $asset->id)
-                ->where('name', $name)
-                ->where('language', $language)
-                ->first();
+            $existing = $existingProperties->get($name.'|'.$language);
 
             $payload = [
                 'dam_asset_id'  => $asset->id,
@@ -416,7 +447,13 @@ class Importer extends AbstractImporter
     {
         $disk = Directory::getAssetDisk();
 
+        $previewDirectories = AssetHelper::previewSizeDirectories($disk);
+
+        $rowNumber = 0;
+
         foreach ($batch->data as $rowData) {
+            $rowNumber++;
+
             $directories = $this->directoryNames($rowData);
             $fileName = trim((string) ($rowData['file_name'] ?? '')) ?: $this->leafName(trim((string) $rowData['path']));
 
@@ -426,26 +463,25 @@ class Importer extends AbstractImporter
 
             $asset = $this->assetRepository->findOneByField('path', $target);
 
-            if (! $asset || $asset->resources()->exists()) {
+            if (! $asset) {
+                $this->skipRow($rowNumber, self::ERROR_ASSET_NOT_FOUND, 'path', trans($this->messages[self::ERROR_ASSET_NOT_FOUND]));
+
+                continue;
+            }
+
+            if ($asset->resources()->exists()) {
+                $this->skipRow($rowNumber, self::ERROR_ASSET_HAS_RESOURCES, 'path', trans($this->messages[self::ERROR_ASSET_HAS_RESOURCES]));
+
                 continue;
             }
 
             Storage::disk($disk)->delete($asset->path);
 
-            $this->clearDerivatives($asset->path, $disk);
+            AssetHelper::clearDerivatives($asset->path, $disk, $previewDirectories);
 
             $this->assetRepository->delete($asset->id);
 
             $this->deletedItemsCount++;
-        }
-    }
-
-    protected function clearDerivatives(string $path, string $disk): void
-    {
-        Storage::disk($disk)->delete(self::THUMBNAIL_DIRECTORY.'/'.$path);
-
-        foreach (Storage::disk($disk)->directories(self::PREVIEW_DIRECTORY) as $sizeDirectory) {
-            Storage::disk($disk)->delete($sizeDirectory.'/'.$path);
         }
     }
 
