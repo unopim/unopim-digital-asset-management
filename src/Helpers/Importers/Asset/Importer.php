@@ -28,6 +28,8 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 
 class Importer extends AbstractImporter
 {
+    public const ENTITY_TYPE = 'assets';
+
     public const ERROR_PATH_NOT_FOUND = 'asset_path_not_found';
 
     public const ERROR_ASSET_NOT_FOUND = 'asset_not_found';

@@ -6,12 +6,6 @@
     @push('styles')
         @unoPimVite(['src/Resources/assets/css/app.css'], 'dam')
     <style>
-        {{--
-            Pin the document to the viewport so the viewer never scrolls. The wrapper is sized
-            against the body's content box rather than the viewport directly, so any padding an
-            injected bar adds to the body (the Debugbar adds ~33px in local dev) is subtracted
-            from the available height instead of pushing the footer off-screen.
-        --}}
         html,
         body {
             height: 100vh;
@@ -22,13 +16,11 @@
             overflow: hidden;
         }
 
-        {{-- The layout nests the page inside #app, so the percentage chain has to run through it. --}}
         #app,
         .dam-share-viewport {
             height: 100%;
         }
 
-        {{-- Touch devices never fire :hover, so keep the navigation permanently visible there. --}}
         @media (hover: none) {
             .dam-share-nav { opacity: 1; }
         }

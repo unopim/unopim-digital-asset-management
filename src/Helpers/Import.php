@@ -4,6 +4,7 @@ namespace Webkul\DAM\Helpers;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Webkul\DAM\Helpers\Importers\Asset\Importer as AssetImporter;
 use Webkul\DAM\Support\AssetBundleReader;
 use Webkul\DAM\Support\AssetTreeIngestor;
 use Webkul\DataTransfer\Helpers\Import as BaseImport;
@@ -53,7 +54,7 @@ class Import extends BaseImport
 
     protected function isAssetEntity(): bool
     {
-        return ($this->import->jobInstance?->entity_type ?? null) === 'assets';
+        return ($this->import->jobInstance?->entity_type ?? null) === AssetImporter::ENTITY_TYPE;
     }
 
     public function completed(): void

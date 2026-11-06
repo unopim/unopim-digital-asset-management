@@ -1,11 +1,12 @@
 <?php
 
 use Webkul\DAM\Helpers\Exporters\Asset\Exporter;
+use Webkul\DAM\Helpers\Importers\Asset\Importer;
 use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Validators\JobInstances\Export\AssetJobValidator;
 
 return [
-    'assets' => [
+    Importer::ENTITY_TYPE => [
         'title'       => 'dam::app.data-transfer.exporters.assets.title',
         'exporter'    => Exporter::class,
         'source'      => AssetRepository::class,

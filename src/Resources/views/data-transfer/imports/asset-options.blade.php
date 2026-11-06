@@ -1,14 +1,3 @@
-{{--
-    Injected via `unopim.admin.settings.data_transfer.imports.create.card.accordion.settings.after`.
-    The import edit blade reuses that same event name, so this one template serves both forms and
-    branches on the route:
-      - create: rendered inside the `v-import-profile` Vue scope, guarded by its `entityType`/
-        `parseValue()` so it shows only when the assets importer is selected.
-      - edit: no Vue component, so the import is resolved from the route and the card is guarded
-        server-side on `entity_type === 'assets'`, pre-filled from the stored `filters`.
-    Both post `filters[conflict_strategy]` and `filters[auto_tag]`, which the import controller
-    already persists.
---}}
 @php
     $conflictOptions = json_encode([
         ['id' => 'skip', 'label' => trans('dam::app.data-transfer.importers.assets.options.conflict.skip')],
@@ -20,7 +9,7 @@
     $damImport = $damIsEdit
         ? app(\Webkul\DataTransfer\Repositories\JobInstancesRepository::class)->find(request()->route('id'))
         : null;
-    $damEditIsAssets = $damImport && $damImport->entity_type === 'assets';
+    $damEditIsAssets = $damImport && $damImport->entity_type === \Webkul\DAM\Helpers\Importers\Asset\Importer::ENTITY_TYPE;
     $damEditFilters = $damImport->filters ?? [];
 
     $damDirectories = \Webkul\DAM\Models\Directory::orderBy('_lft')->get(['id', 'name', 'parent_id']);

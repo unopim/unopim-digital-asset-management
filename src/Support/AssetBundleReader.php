@@ -4,6 +4,7 @@ namespace Webkul\DAM\Support;
 
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Helpers\AssetHelper;
+use Webkul\DAM\Helpers\Importers\Asset\Importer as AssetImporter;
 use Webkul\DAM\Models\Directory;
 use Webkul\DataTransfer\Contracts\JobTrack as JobTrackContract;
 
@@ -31,7 +32,7 @@ class AssetBundleReader
 
         $dataFile = $this->locateDataFile($entries);
 
-        $ingestAssetTree = ($import->jobInstance?->entity_type ?? null) !== 'assets';
+        $ingestAssetTree = ($import->jobInstance?->entity_type ?? null) !== AssetImporter::ENTITY_TYPE;
 
         if ($ingestAssetTree) {
             $this->assetTreeIngestor->ingest($extractPath);

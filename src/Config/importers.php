@@ -4,7 +4,7 @@ use Webkul\DAM\Helpers\Importers\Asset\Importer;
 use Webkul\DAM\Validators\JobInstances\Import\AssetJobValidator;
 
 return [
-    'assets' => [
+    Importer::ENTITY_TYPE => [
         'title'            => 'dam::app.data-transfer.importers.assets.title',
         'importer'         => Importer::class,
         'sample_path'      => 'data-transfer/samples/import/assets.csv',

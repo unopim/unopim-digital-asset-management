@@ -1,10 +1,3 @@
-{{--
-    Injected via `unopim.admin.settings.data_transfer.exports.edit.card.general.after`.
-    The render event passes no parent data, so the export record is resolved from the
-    route. The `general.after` hook is used (not `scope.after`) because the core scope
-    card — and its `scope.after` event — is skipped for exporters without scope fields,
-    which is exactly the asset exporter's case.
---}}
 @php
     $damExporterConfig = config('exporters');
     $damExport = app(\Webkul\DataTransfer\Repositories\JobInstancesRepository::class)->find(request()->route('id'));
