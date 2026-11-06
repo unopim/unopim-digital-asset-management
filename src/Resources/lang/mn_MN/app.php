@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '"directory" багана мөр бүрд заавал байх ёстой — очих хавтасны мод, жишээ нь "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => ':row мөрийг алгаслаа — ":path" дээр нөөц аль хэдийн байгаа бөгөөд зөрчлийн стратеги нь "skip" байна. Үүнийг өөрчлөхийн тулд "overwrite" эсвэл "update metadata"-г сонгоно уу.',
                         'asset-already-exists-summary' => 'Багц #:batch — тохирох нөөц аль хэдийн байгаа тул :count мөрийг алгаслаа.',
                         'media-source-not-found'       => 'Эх файл олдсонгүй: "path"-д нийтийн https холбоос, эсвэл зургийн санд "path"-тай тохирох файл байрлуулна уу.',

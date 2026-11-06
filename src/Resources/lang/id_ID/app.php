@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolom "directory" wajib untuk setiap baris — pohon folder tujuan, mis. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Baris :row dilewati — aset sudah ada di ":path" dan strategi konflik adalah "skip". Pilih "overwrite" atau "update metadata" untuk mengubahnya.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count baris dilewati karena aset yang cocok sudah ada.',
                         'media-source-not-found'       => 'Berkas sumber tidak ditemukan: masukkan tautan https publik di "path", atau berkas yang cocok dengan "path" di direktori gambar.',

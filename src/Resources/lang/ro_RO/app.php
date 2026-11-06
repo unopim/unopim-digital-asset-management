@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Coloana "directory" este obligatorie pentru fiecare rând — arborele folderului de destinație, de ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Rândul :row a fost omis — există deja un activ la ":path", iar strategia de conflict este "skip". Alegeți "overwrite" sau "update metadata" pentru a o modifica.',
                         'asset-already-exists-summary' => 'Lotul #:batch — :count rând(uri) omise deoarece există deja un activ corespunzător.',
                         'media-source-not-found'       => 'Niciun fișier sursă găsit: puneți un link https public în "path" sau un fișier care corespunde cu "path" în directorul de imagini.',

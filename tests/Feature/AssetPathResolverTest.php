@@ -40,15 +40,28 @@ it('computes the destination path from the dam path and optional file name', fun
         ->toBe('assets/Root/A/x.mp3');
 });
 
-it('creates a root matching the path segment instead of aliasing an existing root', function () {
-    Directory::create(['name' => 'Root', 'parent_id' => null]);
+it('anchors a non-matching first segment under the seeded root instead of creating a new root', function () {
+    $root = Directory::create(['name' => 'Root', 'parent_id' => null]);
 
     $id = $this->resolver->resolveDirectoryForPath('assets/Other/x.png');
 
     $dir = Directory::find($id);
 
     expect($dir->name)->toBe('Other')
-        ->and($dir->parent_id)->toBeNull();
+        ->and($dir->parent_id)->toBe($root->id)
+        ->and(Directory::whereNull('parent_id')->count())->toBe(1);
+});
+
+it('treats a leading segment that names the seeded root as the root itself', function () {
+    $root = Directory::create(['name' => 'Root', 'parent_id' => null]);
+
+    $id = $this->resolver->resolveDirectoryForPath('assets/Root/Brand/x.png');
+
+    $brand = Directory::find($id);
+
+    expect($brand->name)->toBe('Brand')
+        ->and($brand->parent_id)->toBe($root->id)
+        ->and(Directory::whereNull('parent_id')->count())->toBe(1);
 });
 
 it('rejects a path with traversal or forbidden segments', function () {

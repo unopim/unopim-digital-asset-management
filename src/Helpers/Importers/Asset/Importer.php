@@ -3,10 +3,12 @@
 namespace Webkul\DAM\Helpers\Importers\Asset;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Webkul\DAM\Exceptions\BlockedMediaHostException;
+use Webkul\DAM\Exceptions\DirectoryAccessDeniedException;
 use Webkul\DAM\Exceptions\ForbiddenMediaException;
 use Webkul\DAM\Exceptions\InvalidMediaUrlException;
 use Webkul\DAM\Exceptions\InvalidPathException;
@@ -21,6 +23,7 @@ use Webkul\DAM\Repositories\AssetRepository;
 use Webkul\DAM\Repositories\AssetTagRepository;
 use Webkul\DAM\Services\AssetIngestionService;
 use Webkul\DAM\Services\AssetPathResolver;
+use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Services\RemoteMediaDownloader;
 use Webkul\DataTransfer\Contracts\JobTrackBatch as JobTrackBatchContract;
 use Webkul\DataTransfer\Helpers\Import;
@@ -38,6 +41,8 @@ class Importer extends AbstractImporter
     public const ERROR_ASSET_EXISTS = 'asset_already_exists';
 
     public const ERROR_DIRECTORY_REQUIRED = 'directory_required';
+
+    public const ERROR_DIRECTORY_FORBIDDEN = 'directory_forbidden';
 
     public const ERROR_ASSET_HAS_RESOURCES = 'asset_has_resources';
 
@@ -78,6 +83,7 @@ class Importer extends AbstractImporter
         self::ERROR_ASSET_NOT_FOUND         => 'dam::app.data-transfer.importers.assets.validation.errors.asset-not-found',
         self::ERROR_ASSET_EXISTS            => 'dam::app.data-transfer.importers.assets.validation.errors.asset-already-exists',
         self::ERROR_DIRECTORY_REQUIRED      => 'dam::app.data-transfer.importers.assets.validation.errors.directory-required',
+        self::ERROR_DIRECTORY_FORBIDDEN     => 'dam::app.data-transfer.importers.assets.validation.errors.directory-forbidden',
         self::ERROR_ASSET_HAS_RESOURCES     => 'dam::app.data-transfer.importers.assets.validation.errors.asset-has-resources',
         self::ERROR_MEDIA_SOURCE_NOT_FOUND  => 'dam::app.data-transfer.importers.assets.validation.errors.media-source-not-found',
         self::ERROR_URL_INVALID             => 'dam::app.data-transfer.importers.assets.validation.errors.url-invalid',
@@ -96,6 +102,7 @@ class Importer extends AbstractImporter
         protected AssetPathResolver $pathResolver,
         protected AssetIngestionService $ingestionService,
         protected RemoteMediaDownloader $remoteMediaDownloader,
+        protected DirectoryPermissionService $permissionService,
     ) {
         parent::__construct($importBatchRepository);
     }
@@ -140,11 +147,13 @@ class Importer extends AbstractImporter
     {
         Event::dispatch('data_transfer.imports.batch.import.before', $batch);
 
-        if ($batch->jobTrack->action == Import::ACTION_DELETE) {
-            $this->deleteAssets($batch);
-        } else {
-            $this->saveAssets($batch);
-        }
+        $this->runAsImportUser(function () use ($batch): void {
+            if ($batch->jobTrack->action == Import::ACTION_DELETE) {
+                $this->deleteAssets($batch);
+            } else {
+                $this->saveAssets($batch);
+            }
+        });
 
         $batch = $this->importBatchRepository->update([
             'state'   => Import::STATE_PROCESSED,
@@ -158,6 +167,36 @@ class Importer extends AbstractImporter
         Event::dispatch('data_transfer.imports.batch.import.after', $batch);
 
         return true;
+    }
+
+    /**
+     * Run the batch as the admin who started the import so the directory
+     * permission service resolves their grants. A queued worker has no
+     * authenticated admin otherwise, which would make every permission check
+     * silently pass. No-op when the job has no user (CLI/system imports).
+     */
+    protected function runAsImportUser(callable $callback): void
+    {
+        $userId = $this->import->user_id ?? null;
+
+        if (! $userId) {
+            $callback();
+
+            return;
+        }
+
+        $guard = Auth::guard('admin');
+        $previous = $guard->user();
+
+        $guard->onceUsingId($userId);
+        app(DirectoryPermissionService::class)->flush();
+
+        try {
+            $callback();
+        } finally {
+            $guard->setUser($previous);
+            app(DirectoryPermissionService::class)->flush();
+        }
     }
 
     protected function saveAssets(JobTrackBatchContract $batch): void
@@ -263,6 +302,8 @@ class Importer extends AbstractImporter
                 $this->skipRow($rowNumber, self::ERROR_FORBIDDEN_FILE, 'path', trans($this->messages[self::ERROR_FORBIDDEN_FILE]));
             } catch (InvalidPathException) {
                 $this->skipRow($rowNumber, self::ERROR_PATH_NOT_FOUND, 'path', trans($this->messages[self::ERROR_PATH_NOT_FOUND]));
+            } catch (DirectoryAccessDeniedException) {
+                $this->skipRow($rowNumber, self::ERROR_DIRECTORY_FORBIDDEN, 'directory', trans($this->messages[self::ERROR_DIRECTORY_FORBIDDEN]));
             } catch (\Throwable $e) {
                 report($e);
 
@@ -293,7 +334,8 @@ class Importer extends AbstractImporter
                 $directories = $this->directoryNames($rowData);
                 $damPath = $this->buildDamPath($directories[0] ?? '', $fileName);
                 $destinations[] = $this->pathResolver->destinationPath($damPath, $fileName);
-            } catch (\Throwable) {}
+            } catch (\Throwable) {
+            }
         }
 
         if ($destinations === []) {
@@ -475,6 +517,12 @@ class Importer extends AbstractImporter
                 continue;
             }
 
+            if (! $this->canWriteAsset($asset)) {
+                $this->skipRow($rowNumber, self::ERROR_DIRECTORY_FORBIDDEN, 'directory', trans($this->messages[self::ERROR_DIRECTORY_FORBIDDEN]));
+
+                continue;
+            }
+
             Storage::disk($disk)->delete($asset->path);
 
             AssetHelper::clearDerivatives($asset->path, $disk, $previewDirectories);
@@ -492,5 +540,25 @@ class Importer extends AbstractImporter
         $prefix = Directory::ASSETS_DIRECTORY.'/';
 
         return str_starts_with($path, $prefix) ? $path : $prefix.$path;
+    }
+
+    /**
+     * The importing user may delete an asset only when they have write access to
+     * at least one directory it lives in. Bypass roles (all-directories) and
+     * system imports with no user are always allowed.
+     */
+    protected function canWriteAsset(Asset $asset): bool
+    {
+        if ($this->permissionService->bypass()) {
+            return true;
+        }
+
+        foreach ($asset->directories()->pluck('dam_directories.id') as $directoryId) {
+            if ($this->permissionService->canAccess((int) $directoryId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

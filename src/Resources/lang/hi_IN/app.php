@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'प्रत्येक पंक्ति के लिए "directory" कॉलम आवश्यक है — गंतव्य फ़ोल्डर ट्री, उदा. "Root/Brand/Summer"।',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'पंक्ति :row छोड़ी गई — ":path" पर पहले से एक एसेट मौजूद है और टकराव रणनीति "skip" है। इसे बदलने के लिए "overwrite" या "update metadata" चुनें।',
                         'asset-already-exists-summary' => 'बैच #:batch — मिलान करने वाला एसेट पहले से मौजूद होने के कारण :count पंक्ति(याँ) छोड़ी गईं।',
                         'media-source-not-found'       => 'कोई स्रोत फ़ाइल नहीं मिली: "path" में एक सार्वजनिक https लिंक डालें, या छवि निर्देशिका में "path" से मेल खाती फ़ाइल रखें।',

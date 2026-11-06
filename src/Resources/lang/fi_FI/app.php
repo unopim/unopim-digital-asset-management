@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Sarake "directory" vaaditaan jokaiselle riville — kohdekansion puu, esim. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Rivi :row ohitettu — resurssi on jo kohteessa ":path" ja ristiriitastrategia on "skip". Valitse "overwrite" tai "update metadata" muuttaaksesi sitä.',
                         'asset-already-exists-summary' => 'Erä #:batch — :count rivi(ä) ohitettu, koska vastaava resurssi on jo olemassa.',
                         'media-source-not-found'       => 'Lähdetiedostoa ei löytynyt: lisää julkinen https-linkki kenttään "path", tai kuvahakemistossa "path"-arvoa vastaava tiedosto.',

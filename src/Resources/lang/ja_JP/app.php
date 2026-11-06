@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '"directory" 列はすべての行で必須です — 宛先フォルダーツリー（例: "Root/Brand/Summer"）。',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => '行 :row をスキップしました — ":path" にアセットが既に存在し、競合方針が "skip" です。変更するには "overwrite" または "update metadata" を選択してください。',
                         'asset-already-exists-summary' => 'バッチ #:batch — 一致するアセットが既に存在するため、:count 行をスキップしました。',
                         'media-source-not-found'       => 'ソースファイルが見つかりません: "path" に公開 https リンクを指定するか、画像ディレクトリ内の "path" に一致するファイルを配置してください。',

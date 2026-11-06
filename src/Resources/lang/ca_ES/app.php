@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La columna "directory" és obligatòria a cada fila — l’arbre de la carpeta de destinació, p. ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Fila :row omesa — ja existeix un recurs a ":path" i l’estratègia de conflicte és "skip". Trieu "overwrite" o "update metadata" per canviar-ho.',
                         'asset-already-exists-summary' => 'Lot #:batch — :count fila/es omesa/es perquè ja existeix un recurs coincident.',
                         'media-source-not-found'       => 'No s’ha trobat cap fitxer d’origen: poseu un enllaç https públic a "path", o un fitxer que coincideixi amb "path" al directori d’imatges.',

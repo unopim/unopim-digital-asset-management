@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kolumnen "directory" krävs för varje rad — målmappens träd, t.ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Rad :row hoppades över — en tillgång finns redan på ":path" och konfliktstrategin är "skip". Välj "overwrite" eller "update metadata" för att ändra det.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppades över eftersom en matchande tillgång redan finns.',
                         'media-source-not-found'       => 'Ingen källfil hittades: ange en offentlig https-länk i "path", eller en fil som matchar "path" i bildkatalogen.',

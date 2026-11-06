@@ -963,6 +963,7 @@ return [
                     'errors' => [
                         'path-not-found'               => 'The "path" column is required for every row — the source file location or a public https link.',
                         'directory-required'           => 'The "directory" column is required for every row — the destination folder tree, e.g. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-already-exists'         => 'Row :row skipped — an asset already exists at ":path" and the conflict strategy is "skip". Choose "overwrite" or "update metadata" to change it.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count row(s) skipped because a matching asset already exists.',

@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'La colonne "directory" est requise pour chaque ligne — l’arborescence du dossier de destination, par ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Ligne :row ignorée — une ressource existe déjà à ":path" et la stratégie de conflit est "skip". Choisissez "overwrite" ou "update metadata" pour la modifier.',
                         'asset-already-exists-summary' => 'Lot #:batch — :count ligne(s) ignorée(s) car une ressource correspondante existe déjà.',
                         'media-source-not-found'       => 'Aucun fichier source trouvé : indiquez un lien https public dans "path", ou un fichier correspondant à "path" dans le répertoire des images.',

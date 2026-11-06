@@ -2,14 +2,34 @@
 
 namespace Webkul\DAM\Services;
 
+use Webkul\DAM\Exceptions\DirectoryAccessDeniedException;
 use Webkul\DAM\Exceptions\InvalidPathException;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Repositories\DirectoryRepository;
 
 class AssetPathResolver
 {
     protected const FORBIDDEN_SEGMENT = '/[\\\\\/\:\*\?\"\<\>\|]/u';
 
     protected array $cache = [];
+
+    /**
+     * Ids of directories this resolver created during the current run. A freshly
+     * created directory is writable by whoever created it (its parent was already
+     * permission-checked), so the leaf write-check skips these.
+     *
+     * @var array<int, true>
+     */
+    protected array $createdDirectoryIds = [];
+
+    protected ?Directory $baseDirectory = null;
+
+    protected bool $baseResolved = false;
+
+    public function __construct(
+        protected DirectoryRepository $directoryRepository,
+        protected DirectoryPermissionService $permissionService,
+    ) {}
 
     public function resolveDirectoryForPath(string $damPath): int
     {
@@ -22,6 +42,12 @@ class AssetPathResolver
         return $this->resolveSegments($segments);
     }
 
+    /**
+     * Resolve a directory tree path (e.g. "Root/Brand/Summer") to the id of its
+     * leaf directory, creating missing segments along the way. Unlike matching a
+     * bare directory name, this anchors the lookup by full path so duplicate names
+     * in different branches are unambiguous.
+     */
     public function resolveDirectory(string $treePath): int
     {
         $segments = $this->splitAndValidate($this->stripPrefix($treePath));
@@ -34,28 +60,75 @@ class AssetPathResolver
     }
 
     /**
+     * Whether the given directory id was created during this run.
+     */
+    public function wasCreated(int $directoryId): bool
+    {
+        return isset($this->createdDirectoryIds[$directoryId]);
+    }
+
+    /**
+     * Anchor the segments under the single seeded Root instead of creating new
+     * top-level directories. When the tree is empty (fresh install / tests) the
+     * first segment bootstraps the root.
+     *
      * @param  array<int, string>  $segments
      */
     protected function resolveSegments(array $segments): int
     {
-        $rootName = array_shift($segments);
+        $base = $this->baseDirectory();
 
-        return $this->resolveChildren($this->resolveRoot($rootName), $segments);
+        if ($base === null) {
+            $rootName = array_shift($segments);
+
+            return $this->resolveChildren($this->bootstrapRoot($rootName), $segments);
+        }
+
+        // A leading segment that already names the seeded root is the base itself,
+        // not a child to create beneath it.
+        if ($segments !== [] && $segments[0] === $base->name) {
+            array_shift($segments);
+        }
+
+        return $this->resolveChildren($base->id, $segments);
     }
 
-    protected function stripPrefix(string $damPath): string
+    protected function baseDirectory(): ?Directory
     {
-        $prefix = Directory::ASSETS_DIRECTORY.'/';
-        $trimmed = ltrim(trim($damPath));
+        if (! $this->baseResolved) {
+            $this->baseDirectory = Directory::whereNull('parent_id')->orderBy('id')->first();
+            $this->baseResolved = true;
+        }
 
-        return str_starts_with($trimmed, $prefix) ? substr($trimmed, strlen($prefix)) : $trimmed;
+        return $this->baseDirectory;
+    }
+
+    /**
+     * Create the top-level root when none exists yet (fresh install / tests).
+     */
+    protected function bootstrapRoot(string $name): int
+    {
+        $cacheKey = 'root/'.$name;
+
+        if (isset($this->cache[$cacheKey])) {
+            return $this->cache[$cacheKey];
+        }
+
+        $root = Directory::create(['name' => $name, 'parent_id' => null]);
+
+        $this->directoryRepository->createDirectoryWithStorage($root->generatePath());
+
+        $this->createdDirectoryIds[$root->id] = true;
+        $this->baseDirectory = $root;
+        $this->baseResolved = true;
+
+        return $this->cache[$cacheKey] = $root->id;
     }
 
     public function destinationPath(string $damPath, ?string $fileName): string
     {
         $prefix = Directory::ASSETS_DIRECTORY.'/';
-        $trimmed = ltrim(trim($damPath));
-        $relative = str_starts_with($trimmed, $prefix) ? substr($trimmed, strlen($prefix)) : $trimmed;
+        $relative = $this->stripPrefix($damPath);
 
         $parts = $this->splitAndValidate($relative);
 
@@ -75,15 +148,19 @@ class AssetPathResolver
      */
     protected function directorySegments(string $damPath): array
     {
-        $prefix = Directory::ASSETS_DIRECTORY.'/';
-        $trimmed = ltrim(trim($damPath));
-        $relative = str_starts_with($trimmed, $prefix) ? substr($trimmed, strlen($prefix)) : $trimmed;
-
-        $parts = $this->splitAndValidate($relative);
+        $parts = $this->splitAndValidate($this->stripPrefix($damPath));
 
         array_pop($parts);
 
         return $parts;
+    }
+
+    protected function stripPrefix(string $damPath): string
+    {
+        $prefix = Directory::ASSETS_DIRECTORY.'/';
+        $trimmed = ltrim(trim($damPath));
+
+        return str_starts_with($trimmed, $prefix) ? substr($trimmed, strlen($prefix)) : $trimmed;
     }
 
     /**
@@ -102,23 +179,6 @@ class AssetPathResolver
         return $parts;
     }
 
-    protected function resolveRoot(string $name): int
-    {
-        $cacheKey = 'root/'.$name;
-
-        if (isset($this->cache[$cacheKey])) {
-            return $this->cache[$cacheKey];
-        }
-
-        $existing = Directory::whereNull('parent_id')->where('name', $name)->first();
-
-        $id = $existing
-            ? $existing->id
-            : Directory::create(['name' => $name, 'parent_id' => null])->id;
-
-        return $this->cache[$cacheKey] = $id;
-    }
-
     /**
      * @param  array<int, string>  $segments
      */
@@ -132,12 +192,33 @@ class AssetPathResolver
 
                 $this->cache[$cacheKey] = $existing
                     ? $existing->id
-                    : Directory::create(['name' => $segment, 'parent_id' => $parentId])->id;
+                    : $this->createChild($parentId, $segment);
             }
 
             $parentId = $this->cache[$cacheKey];
         }
 
         return $parentId;
+    }
+
+    /**
+     * Create a child directory, enforcing the same write permission the admin UI
+     * requires (write access to the parent), and through DirectoryRepository so
+     * the storage folder and filesystem-writability check happen.
+     */
+    protected function createChild(int $parentId, string $segment): int
+    {
+        if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($parentId)) {
+            throw new DirectoryAccessDeniedException('No permission to create a directory under id '.$parentId);
+        }
+
+        $directory = $this->directoryRepository->create([
+            'name'      => $segment,
+            'parent_id' => $parentId,
+        ]);
+
+        $this->createdDirectoryIds[$directory->id] = true;
+
+        return $directory->id;
     }
 }

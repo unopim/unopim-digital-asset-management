@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => '每行都必须填写 "directory" 列 — 目标文件夹树，例如 "Root/Brand/Summer"。',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => '已跳过第 :row 行 — ":path" 处已存在资产，且冲突策略为 "skip"。请选择 "overwrite" 或 "update metadata" 以更改。',
                         'asset-already-exists-summary' => '批次 #:batch — 因已存在匹配的资产，跳过了 :count 行。',
                         'media-source-not-found'       => '未找到源文件：请在 "path" 中填写公开的 https 链接，或在图片目录中放置与 "path" 匹配的文件。',

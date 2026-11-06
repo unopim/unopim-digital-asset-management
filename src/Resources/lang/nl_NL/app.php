@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'De kolom "directory" is voor elke rij verplicht — de doelmappenboom, bijv. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Rij :row overgeslagen — er bestaat al een asset op ":path" en de conflictstrategie is "skip". Kies "overwrite" of "update metadata" om dit te wijzigen.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rij(en) overgeslagen omdat er al een overeenkomende asset bestaat.',
                         'media-source-not-found'       => 'Geen bronbestand gevonden: zet een openbare https-link in "path", of een bestand dat overeenkomt met "path" in de afbeeldingenmap.',

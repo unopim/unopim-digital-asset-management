@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Stupac "directory" obavezan je za svaki redak — stablo odredišne mape, npr. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Redak :row preskočen — sredstvo već postoji na ":path", a strategija sukoba je "skip". Odaberite "overwrite" ili "update metadata" za promjenu.',
                         'asset-already-exists-summary' => 'Serija #:batch — preskočeno redaka: :count jer odgovarajuće sredstvo već postoji.',
                         'media-source-not-found'       => 'Izvorna datoteka nije pronađena: stavite javnu https poveznicu u "path" ili datoteku koja odgovara "path" u direktoriju slika.',

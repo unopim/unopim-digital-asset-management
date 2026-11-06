@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'العمود "directory" مطلوب لكل صف — شجرة المجلد الوجهة، مثل "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'تم تخطّي الصف :row — يوجد أصل بالفعل في ":path" واستراتيجية التعارض هي "skip". اختر "overwrite" أو "update metadata" لتغيير ذلك.',
                         'asset-already-exists-summary' => 'الدفعة #:batch — تم تخطّي :count صف/صفوف لوجود أصل مطابق بالفعل.',
                         'media-source-not-found'       => 'لم يُعثر على ملف مصدر: ضع رابط https عامًا في "path"، أو ملفًا يطابق "path" ضمن دليل الصور.',

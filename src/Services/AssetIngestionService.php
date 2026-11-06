@@ -4,6 +4,7 @@ namespace Webkul\DAM\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Webkul\DAM\Exceptions\DirectoryAccessDeniedException;
 use Webkul\DAM\Exceptions\ForbiddenMediaException;
 use Webkul\DAM\Exceptions\MediaTooLargeException;
 use Webkul\DAM\Filesystem\FileStorer;
@@ -17,6 +18,7 @@ class AssetIngestionService
     public function __construct(
         protected AssetPathResolver $pathResolver,
         protected FileStorer $fileStorer,
+        protected DirectoryPermissionService $permissionService,
     ) {}
 
     /**
@@ -41,6 +43,8 @@ class AssetIngestionService
         }
 
         $directoryId = $this->pathResolver->resolveDirectoryForPath($damPath);
+
+        $this->assertDirectoryWritable($directoryId);
 
         if ($existing && $conflictStrategy === 'update_metadata') {
             $this->mapDirectories($existing, $directoryId, $extraDirectoryNames);
@@ -123,9 +127,39 @@ class AssetIngestionService
                 continue;
             }
 
-            $ids[] = $this->pathResolver->resolveDirectory($path);
+            try {
+                $extraId = $this->pathResolver->resolveDirectory($path);
+
+                $this->assertDirectoryWritable($extraId);
+
+                $ids[] = $extraId;
+            } catch (DirectoryAccessDeniedException) {
+                // Skip secondary directories the importing user may not write to;
+                // the asset still lands in its primary directory.
+                continue;
+            }
         }
 
         $asset->directories()->syncWithoutDetaching(array_unique($ids));
+    }
+
+    /**
+     * Enforce the importing user's write access to a target directory, mirroring
+     * the admin UI (DirectoryController). A directory created during this run is
+     * allowed (its parent was already checked when it was created).
+     */
+    protected function assertDirectoryWritable(int $directoryId): void
+    {
+        if ($this->permissionService->bypass()) {
+            return;
+        }
+
+        if ($this->pathResolver->wasCreated($directoryId)) {
+            return;
+        }
+
+        if (! $this->permissionService->canAccess($directoryId)) {
+            throw new DirectoryAccessDeniedException('No permission to write into directory id '.$directoryId);
+        }
     }
 }

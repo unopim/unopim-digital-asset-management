@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Kinakailangan ang column na "directory" sa bawat row — ang puno ng destination folder, hal. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Nilaktawan ang row :row — may asset nang umiiral sa ":path" at ang conflict strategy ay "skip". Piliin ang "overwrite" o "update metadata" upang baguhin ito.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count (na) row ang nilaktawan dahil may tugmang asset nang umiiral.',
                         'media-source-not-found'       => 'Walang nakitang source file: maglagay ng pampublikong https link sa "path", o isang file na tumutugma sa "path" sa ilalim ng images directory.',

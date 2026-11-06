@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Cột "directory" là bắt buộc cho mỗi hàng — cây thư mục đích, ví dụ "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Đã bỏ qua hàng :row — đã tồn tại tài sản tại ":path" và chiến lược xung đột là "skip". Chọn "overwrite" hoặc "update metadata" để thay đổi.',
                         'asset-already-exists-summary' => 'Lô #:batch — đã bỏ qua :count hàng vì đã tồn tại tài sản trùng khớp.',
                         'media-source-not-found'       => 'Không tìm thấy tệp nguồn: đặt một liên kết https công khai trong "path", hoặc một tệp khớp với "path" trong thư mục hình ảnh.',

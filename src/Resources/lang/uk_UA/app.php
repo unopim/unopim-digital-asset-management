@@ -942,6 +942,7 @@ return [
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'Стовпець "directory" обов’язковий для кожного рядка — дерево цільової папки, напр. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
                         'asset-already-exists'         => 'Рядок :row пропущено — ресурс уже існує за шляхом ":path", а стратегія конфлікту — "skip". Виберіть "overwrite" або "update metadata", щоб змінити це.',
                         'asset-already-exists-summary' => 'Пакет #:batch — пропущено рядків: :count, оскільки відповідний ресурс уже існує.',
                         'media-source-not-found'       => 'Вихідний файл не знайдено: вкажіть публічне https-посилання в "path" або файл, що відповідає "path", у каталозі зображень.',
