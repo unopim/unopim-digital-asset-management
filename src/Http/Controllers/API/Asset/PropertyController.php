@@ -45,6 +45,15 @@ class PropertyController extends Controller
 
     public function addProperty(int $id)
     {
+        $asset = $this->assetRepository->find($id);
+
+        if (! $asset) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.properties.index.asset-not-found', ['id' => $id]),
+            ], 404);
+        }
+
         $this->damAuthorizeAsset($id);
 
         $messages = [
@@ -83,13 +92,21 @@ class PropertyController extends Controller
             ], 400);
         }
 
-        $property = $this->assetPropertyRepository->create([
-            'name'         => request('name'),
-            'type'         => request('type'),
-            'language'     => $locale->id,
-            'value'        => request('value'),
-            'dam_asset_id' => $id,
-        ]);
+        try {
+            $property = $this->assetPropertyRepository->create([
+                'name'         => request('name'),
+                'type'         => request('type'),
+                'language'     => $locale->id,
+                'value'        => request('value'),
+                'dam_asset_id' => $id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('dam::app.admin.dam.asset.properties.index.update-failure'),
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
 
         return response()->json([
             'success'  => true,
