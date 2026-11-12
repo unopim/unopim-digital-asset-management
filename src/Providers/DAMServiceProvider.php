@@ -26,7 +26,6 @@ use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
 use Webkul\DAM\Contracts\Adapters\CategoryResolver;
 use Webkul\DAM\Contracts\Adapters\ProductResolver;
-use Webkul\DAM\Contracts\Adapters\RoleResolver;
 use Webkul\DAM\Helpers\Exporters\Product\Exporter as DamProductExporter;
 use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
 use Webkul\DAM\Helpers\Importers\Product\Importer as DamProductImporter;
@@ -35,8 +34,6 @@ use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
 use Webkul\DAM\Integrations\Pim\PimCategoryResolver;
 use Webkul\DAM\Integrations\Pim\PimProductResolver;
-use Webkul\DAM\Integrations\Pim\PimRoleResolver;
-use Webkul\DAM\Integrations\Standalone\DamRoleResolver;
 use Webkul\DAM\Integrations\Standalone\NullCategoryResolver;
 use Webkul\DAM\Integrations\Standalone\NullProductResolver;
 use Webkul\DAM\Models\DamConfiguration;
@@ -52,6 +49,7 @@ use Webkul\DataTransfer\Validators\JobInstances\Import\ProductJobValidator;
 use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
+use Webkul\User\Models\Role;
 use Webkul\Webhook\Registry\EventRegistry;
 
 class DAMServiceProvider extends ServiceProvider
@@ -163,7 +161,7 @@ class DAMServiceProvider extends ServiceProvider
 
         view()->composer('dam::admin.roles.dam-permissions-tab', function ($view) {
             $roleId = request()->route('id');
-            $role = $roleId ? app(RoleResolver::class)->find($roleId) : null;
+            $role = $roleId ? Role::find($roleId) : null;
 
             $settings = $role
                 ? DB::table('dam_role_settings')->where('role_id', $role->id)->first()
@@ -218,10 +216,6 @@ class DAMServiceProvider extends ServiceProvider
         $this->app->bind(CategoryResolver::class, fn (): CategoryResolver => $this->pimEnabled()
             ? new PimCategoryResolver
             : new NullCategoryResolver);
-
-        $this->app->bind(RoleResolver::class, fn (): RoleResolver => PimIntegration::rolePresent()
-            ? new PimRoleResolver
-            : new DamRoleResolver);
 
         $this->app->bind(Import::class, \Webkul\DAM\Helpers\Import::class);
 

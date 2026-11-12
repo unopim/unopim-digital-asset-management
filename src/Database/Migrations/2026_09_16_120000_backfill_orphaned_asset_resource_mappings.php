@@ -8,8 +8,17 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
 return new class extends Migration
 {
+    /**
+     * Disable PostgreSQL's default single-transaction wrap so each batch's DELETE
+     * commits on its own instead of locking every row until up() finishes.
+     */
     public $withinTransaction = false;
 
+    /**
+     * Clear mapping rows orphaned by a category field or product attribute deleted
+     * before the auto-clean listeners existed. The stale `related_field` code blocks
+     * the asset from ever being deleted ("Asset in use. Unlink before deleting").
+     */
     public function up(): void
     {
         if (! Schema::hasTable('dam_asset_resource_mappings')) {
@@ -31,6 +40,13 @@ return new class extends Migration
         }
     }
 
+    /**
+     * Delete in bounded batches, each its own committed transaction (see
+     * $withinTransaction above), so a mapping table with millions of rows never holds
+     * one giant lock - a handful of orphans shouldn't block concurrent asset
+     * reads/writes while this runs. `DELETE ... LIMIT` isn't portable to PostgreSQL,
+     * so batch by id instead.
+     */
     protected function dropOrphans(string $type, Collection $liveFieldCodes): void
     {
         do {
@@ -48,5 +64,9 @@ return new class extends Migration
         } while (true);
     }
 
+    /**
+     * Irreversible: the deleted rows were already orphans (no live field/attribute),
+     * nothing to restore.
+     */
     public function down(): void {}
 };

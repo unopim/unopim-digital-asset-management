@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * The original path-collation migration only matched the `mysql` driver, so
+     * MariaDB installs never got the case-sensitive collation.
+     */
     public function up(): void
     {
         if (DB::getDriverName() !== 'mariadb' || ! Schema::hasTable('dam_assets')) {

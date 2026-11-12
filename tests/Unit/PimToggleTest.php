@@ -3,11 +3,8 @@
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Webkul\DAM\Contracts\Adapters\CategoryResolver;
 use Webkul\DAM\Contracts\Adapters\ProductResolver;
-use Webkul\DAM\Contracts\Adapters\RoleResolver;
 use Webkul\DAM\Integrations\Pim\PimCategoryResolver;
 use Webkul\DAM\Integrations\Pim\PimProductResolver;
-use Webkul\DAM\Integrations\Pim\PimRoleResolver;
-use Webkul\DAM\Integrations\Standalone\DamRoleResolver;
 use Webkul\DAM\Integrations\Standalone\NullCategoryResolver;
 use Webkul\DAM\Integrations\Standalone\NullProductResolver;
 use Webkul\DAM\Models\Asset;
@@ -15,7 +12,6 @@ use Webkul\DAM\Models\AssetResourceMapping;
 use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Providers\EventServiceProvider;
 use Webkul\DAM\Support\PimIntegration;
-use Webkul\User\Models\Role;
 
 uses(DatabaseTransactions::class);
 
@@ -80,23 +76,6 @@ it('registers the catalog event listeners only when pim is enabled', function ()
 
     PimIntegration::fake(false);
     expect($provider->listens())->toBe([]);
-});
-
-it('binds the pim role resolver when the user role model is present', function () {
-    app()->forgetInstance(RoleResolver::class);
-
-    $resolver = app(RoleResolver::class);
-
-    expect($resolver)->toBeInstanceOf(PimRoleResolver::class)
-        ->and($resolver->isAvailable())->toBeTrue()
-        ->and($resolver->modelClass())->toBe(Role::class);
-});
-
-it('resolves roles through the dam-native pim-free model in standalone mode', function () {
-    $resolver = new DamRoleResolver;
-
-    expect($resolver->modelClass())->toBe(Webkul\DAM\Models\Role::class)
-        ->and(is_subclass_of(Webkul\DAM\Models\Role::class, Role::class))->toBeFalse();
 });
 
 it('resolves asset mapping relations without a fatal when pim is off', function () {

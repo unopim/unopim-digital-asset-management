@@ -46,7 +46,7 @@ class Exporter extends AbstractExporter
         parent::__construct($exportBatchRepository, $exportFileBuffer);
     }
 
-    public function initilize(): void
+    public function initialize(): void
     {
         $this->initializeFileBuffer();
     }
@@ -55,7 +55,7 @@ class Exporter extends AbstractExporter
     {
         Event::dispatch('data_transfer.exports.batch.export.before', $batch);
 
-        $this->initilize();
+        $this->initialize();
 
         $assets = $this->prepareAssets($batch, $filePath);
 
