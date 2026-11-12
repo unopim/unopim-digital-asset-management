@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Ressurs opprettet',
+            'updated' => 'Ressurs oppdatert',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-oversikt',
+        'asset-analytics'   => 'Ressursanalyse',
+        'total-assets'      => 'Totalt antall ressurser',
+        'storage-used'      => 'Brukt lagringsplass',
+        'total-directories' => 'Kataloger',
+        'total-tags'        => 'Tagger',
+        'assets-by-type'    => 'Ressurser etter type',
+        'recent-uploads'    => 'Nylige opplastinger',
+        'no-assets'         => 'Ingen ressurser ennå.',
+        'types'             => [
+            'image'    => 'Bilder',
+            'video'    => 'Videoer',
+            'audio'    => 'Lyd',
+            'document' => 'Dokumenter',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dra filer eller mapper hit',
                         'upload-or'                 => 'eller bla:',
                         'copy-directory-structured' => 'Kopier mappestruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hent',
                         'get-by-id'                 => 'Hent etter ID',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Del mappe',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Rediger egenskap',
                         ],
-                        'delete-success' => 'Ressursegenskap slettet',
-                        'delete-failed'  => 'Sletting av aktivaegenskap mislyktes',
-                        'create-success' => 'Ressursegenskap opprettet',
-                        'update-success' => 'Ressursegenskap oppdatert',
-                        'update-failure' => 'Oppdatering av aktivaegenskap mislyktes',
-                        'not-found'      => 'Egenskap ikke funnet',
-                        'found-success'  => 'Egenskap funnet',
+                        'delete-success'  => 'Ressursegenskap slettet',
+                        'delete-failed'   => 'Sletting av aktivaegenskap mislyktes',
+                        'create-success'  => 'Ressursegenskap opprettet',
+                        'update-success'  => 'Ressursegenskap oppdatert',
+                        'update-failure'  => 'Oppdatering av aktivaegenskap mislyktes',
+                        'not-found'       => 'Egenskap ikke funnet',
+                        'asset-not-found' => 'Aktiv med ID :id ikke funnet',
+                        'found-success'   => 'Egenskap funnet',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Ressurstagger fjernet',
                 ],
                 'delete-success'                          => 'Ressurs slettet',
-                'delete-failed-due-to-attached-resources' => 'Ressursen er i bruk. Fjern tilknytningen før du sletter',
+                'delete-failed-due-to-attached-resources' => 'Ressursen ":assets" er koblet til et produkt eller en kategori. Koble fra før du sletter.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masseslettet.',
                     'mass-update-success'                 => 'Masseoppдatering vellykket.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopier',
                     'copied'             => 'Lenke kopiert til utklippstavlen',
                     'revoke'             => 'Tilbakekall',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Slett',
                     'revoked'            => 'Delingslenke tilbakekalt',
                     'revoke-failed'      => 'Kunne ikke tilbakekalle delingslenken.',
                     'expires-on'         => 'Utløper den',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Opprett',
             'edit'             => 'Rediger',
             'update'           => 'Oppdater',
-            'delete'           => 'Delete',
+            'delete'           => 'Slett',
             'list'             => 'Liste',
             'view'             => 'Vis',
             'upload'           => 'Last opp',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Rad :row (:identifier), kolonne ":column": fant ingen ressurs på banen ":path". Ressursen ble hoppet over, og resten av raden importeres fortsatt.',
             'asset-tree-misnamed'        => 'Arkivet inneholder en mappe med navnet ":name" i stedet for "assets", så ingen av ressursene kunne importeres. Gi den nytt navn til "assets" og sørg for at mappene under samsvarer med stiene i datafilen din, for eksempel "assets/Root/Seed/Tech Sheets/Cotton/". macOS lagrer en "/" skrevet i et mappenavn som ":", noe som er den vanlige årsaken.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Ressurser',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Kolonnen "stien" er påkrevd på hver rad — kildens filplassering eller en offentlig HTTPS-lenke.',
+                        'asset-not-found'              => 'Det finnes ingen ressurs på den angitte banen. Last opp ressursen først, og importer deretter metadataene.',
+                        'asset-has-resources'          => 'Ressursen er lenket til andre poster og ble ikke slettet.',
+                        'directory-required'           => 'Kolonnen "directory" er påkrevd for hver rad — måldappens tre, f.eks. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Du har ikke tillatelse til å skrive til destinasjonsmappen. Raden ble hoppet over.',
+                        'asset-already-exists'         => 'Rad :row hoppet over — det finnes allerede en ressurs på ":path", og konfliktstrategien er "skip". Velg "overwrite" eller "update metadata" for å endre det.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppet over fordi en samsvarende ressurs allerede finnes.',
+                        'media-source-not-found'       => 'Ingen kildefil funnet: legg inn en offentlig https-lenke i "path", eller en fil som samsvarer med "path" i bildekatalogen.',
+                        'url-invalid'                  => 'https-lenken i "path" er ikke en gyldig http- eller https-adresse.',
+                        'url-unreachable'              => 'https-lenken i "path" kunne ikke lastes ned.',
+                        'url-blocked'                  => 'https-lenken i "path" peker til en blokkert vert.',
+                        'file-too-large'               => 'Mediefilen overskrider den maksimalt tillatte størrelsen.',
+                        'forbidden-file'               => 'Mediefiltypen er ikke tillatt.',
+                        'import-failed'                => 'Raden kunne ikke importeres på grunn av en uventet feil.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Eksempel-ZIP (CSV + mediefiler)',
+                    'media'  => 'Eksempel-ZIP (kun mediefiler)',
+                ],
+                'options' => [
+                    'title'    => 'Alternativer for ressursimport',
+                    'conflict' => [
+                        'label'           => 'Når det allerede finnes en ressurs på stien',
+                        'skip'            => 'Hopp over raden',
+                        'overwrite'       => 'Overskriv filen og metadataene',
+                        'update-metadata' => 'Oppdater bare metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tagg importerte bilder automatisk',
+                        'hint'  => 'Kjør AI-autotagging på hvert importerte bilde (krever en konfigurert Magic AI-plattform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Målmappe (ZIP uten CSV)',
+                        'hint'  => 'Kun for ZIP-filer uten CSV. Medier plasseres her; ZIP-mapper nestes under. Standard er Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Ressurser',
+                'filters' => [
+                    'file-type'   => 'Filtype',
+                    'directories' => 'Kataloger',
+                    'tags'        => 'Tagger',
+                    'file-types'  => [
+                        'image'    => 'Bilde',
+                        'video'    => 'Video',
+                        'audio'    => 'Lyd',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Ressursfiltre',
+                ],
+            ],
+        ],
+
     ],
 ];

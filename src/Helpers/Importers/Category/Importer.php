@@ -131,14 +131,6 @@ class Importer extends CategoryImporter
         }
     }
 
-    /**
-     * Resolve an asset column into the ids the category stores.
-     *
-     * A blank cell unlinks the field; skipping it instead left the old ids in place, so
-     * an asset could never be unlinked by import. A path that resolves to nothing keeps
-     * the current value — validation already warned about it, and a typo should
-     * not wipe a working association.
-     */
     protected function resolveAssetFieldValue(string $rawValue, string $currentValue): string
     {
         if (trim($rawValue) === '') {
@@ -150,13 +142,6 @@ class Importer extends CategoryImporter
         return $assets === [] ? $currentValue : implode(',', $assets);
     }
 
-    /**
-     * Keep every imported category's Linked Resources in step with its asset fields.
-     *
-     * The category importer bulk-upserts and dispatches no per-category event, so
-     * `Listeners\Category` never runs and stale mapping rows survive an import. This is
-     * the category counterpart of `Listeners\Product::afterImportBatch()`.
-     */
     public function saveCategories(array $categories): void
     {
         parent::saveCategories($categories);
@@ -224,12 +209,6 @@ class Importer extends CategoryImporter
     }
 
     /**
-     * Read the field from every scope the category carries.
-     *
-     * `prepareCategories()` writes asset ids to `common`, but a locale-scoped field
-     * imported before this class existed can still hold values under `locale_specific`,
-     * and a queued import has no request to resolve a single locale from.
-     *
      * @return list<string>
      */
     protected function collectAssetIdsAcrossScopes(array $additionalData, string $fieldCode): array

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Zasób utworzony',
+            'updated' => 'Zasób zaktualizowany',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Przegląd DAM',
+        'asset-analytics'   => 'Analiza zasobów',
+        'total-assets'      => 'Łączna liczba zasobów',
+        'storage-used'      => 'Wykorzystane miejsce',
+        'total-directories' => 'Katalogi',
+        'total-tags'        => 'Tagi',
+        'assets-by-type'    => 'Zasoby według typu',
+        'recent-uploads'    => 'Ostatnie przesłane',
+        'no-assets'         => 'Brak zasobów.',
+        'types'             => [
+            'image'    => 'Obrazy',
+            'video'    => 'Wideo',
+            'audio'    => 'Audio',
+            'document' => 'Dokumenty',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Przeciągnij pliki lub foldery tutaj',
                         'upload-or'                 => 'lub przeglądaj:',
                         'copy-directory-structured' => 'Kopiuj strukturę katalogu',
-                        'get'                       => 'Get',
+                        'get'                       => 'Pobierz',
                         'get-by-id'                 => 'Pobierz według ID',
                         'comment'                   => 'Komentarz',
                         'share'                     => 'Udostępnij katalog',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Edytuj właściwość',
                         ],
-                        'delete-success' => 'Właściwość zasobu została pomyślnie usunięta',
-                        'delete-failed'  => 'Usunięcie właściwości zasobu nie powiodło się',
-                        'create-success' => 'Właściwość zasobu została pomyślnie utworzona',
-                        'update-success' => 'Właściwość zasobu została pomyślnie zaktualizowana',
-                        'update-failure' => 'Aktualizacja właściwości zasobu nie powiodła się',
-                        'not-found'      => 'Nie znaleziono właściwości',
-                        'found-success'  => 'Właściwość została pomyślnie znaleziona',
+                        'delete-success'  => 'Właściwość zasobu została pomyślnie usunięta',
+                        'delete-failed'   => 'Usunięcie właściwości zasobu nie powiodło się',
+                        'create-success'  => 'Właściwość zasobu została pomyślnie utworzona',
+                        'update-success'  => 'Właściwość zasobu została pomyślnie zaktualizowana',
+                        'update-failure'  => 'Aktualizacja właściwości zasobu nie powiodła się',
+                        'not-found'       => 'Nie znaleziono właściwości',
+                        'asset-not-found' => 'Nie znaleziono zasobu o ID :id',
+                        'found-success'   => 'Właściwość została pomyślnie znaleziona',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Tagi zasobu zostały pomyślnie usunięte',
                 ],
                 'delete-success'                          => 'Zasób został pomyślnie usunięty',
-                'delete-failed-due-to-attached-resources' => 'Zasób jest w użyciu. Odłącz przed usunięciem',
+                'delete-failed-due-to-attached-resources' => 'Zasób ":assets" jest powiązany z produktem lub kategorią. Odłącz przed usunięciem.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masowe usuwanie zakończone pomyślnie.',
                     'mass-update-success'                 => 'Aktualizacja zbiorcza zakończona pomyślnie.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopiuj',
                     'copied'             => 'Link skopiowany do schowka',
                     'revoke'             => 'Unieważnij',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Usuń',
                     'revoked'            => 'Link udostępniania unieważniony',
                     'revoke-failed'      => 'Nie udało się unieważnić linku udostępniania.',
                     'expires-on'         => 'Wygasa',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Utwórz',
             'edit'             => 'Edytuj',
             'update'           => 'Aktualizuj',
-            'delete'           => 'Delete',
+            'delete'           => 'Usuń',
             'list'             => 'Lista',
             'view'             => 'Podgląd',
             'upload'           => 'Prześlij',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Wiersz :row (:identifier), kolumna ":column": nie znaleziono zasobu pod ścieżką ":path". Zasób został pominięty, a pozostała część wiersza nadal zostanie zaimportowana.',
             'asset-tree-misnamed'        => 'Archiwum zawiera folder o nazwie ":name" zamiast "assets", więc nie udało się zaimportować żadnego z jego zasobów. Zmień jego nazwę na "assets" i zachowaj foldery poniżej zgodne ze ścieżkami w pliku danych, np. "assets/Root/Seed/Tech Sheets/Cotton/". macOS zapisuje znak "/" wpisany w nazwie folderu jako ":", co jest typową przyczyną.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Zasoby',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Kolumna "ścieżka" jest wymagana w każdym wierszu — lokalizacja pliku źródłowego lub publiczny link HTTPS.',
+                        'asset-not-found'              => 'Pod podaną ścieżką nie istnieje żaden zasób. Najpierw wyślij zasób, a następnie zaimportuj jego metadane.',
+                        'asset-has-resources'          => 'Zasób jest powiązany z innymi rekordami i nie został usunięty.',
+                        'directory-required'           => 'Kolumna "directory" jest wymagana w każdym wierszu — drzewo folderu docelowego, np. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Nie masz uprawnień do zapisu w katalogu docelowym. Wiersz został pominięty.',
+                        'asset-already-exists'         => 'Wiersz :row pominięty — zasób już istnieje w ":path", a strategia konfliktu to "skip". Wybierz "overwrite" lub "update metadata", aby to zmienić.',
+                        'asset-already-exists-summary' => 'Partia #:batch — pominięto wiersze: :count, ponieważ pasujący zasób już istnieje.',
+                        'media-source-not-found'       => 'Nie znaleziono pliku źródłowego: umieść publiczny link https w "path" lub plik pasujący do "path" w katalogu obrazów.',
+                        'url-invalid'                  => 'Link https w "path" nie jest prawidłowym adresem http lub https.',
+                        'url-unreachable'              => 'Nie udało się pobrać linku https z "path".',
+                        'url-blocked'                  => 'Link https w "path" wskazuje na zablokowany host.',
+                        'file-too-large'               => 'Plik multimedialny przekracza maksymalny dozwolony rozmiar.',
+                        'forbidden-file'               => 'Typ pliku multimedialnego jest niedozwolony.',
+                        'import-failed'                => 'Nie udało się zaimportować wiersza z powodu nieoczekiwanego błędu.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Przykładowy ZIP (CSV + pliki multimedialne)',
+                    'media'  => 'Przykładowy ZIP (tylko pliki multimedialne)',
+                ],
+                'options' => [
+                    'title'    => 'Opcje importu zasobów',
+                    'conflict' => [
+                        'label'           => 'Gdy zasób już istnieje w tej ścieżce',
+                        'skip'            => 'Pomiń wiersz',
+                        'overwrite'       => 'Nadpisz plik i metadane',
+                        'update-metadata' => 'Zaktualizuj tylko metadane',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Automatycznie taguj zaimportowane obrazy',
+                        'hint'  => 'Uruchom automatyczne tagowanie AI dla każdego zaimportowanego obrazu (wymaga skonfigurowanej platformy Magic AI).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Katalog docelowy (ZIP bez CSV)',
+                        'hint'  => 'Tylko dla plików ZIP bez CSV. Multimedia są umieszczane tutaj; foldery z ZIP zagnieżdżają się poniżej. Domyślnie Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Zasoby',
+                'filters' => [
+                    'file-type'   => 'Typ pliku',
+                    'directories' => 'Katalogi',
+                    'tags'        => 'Tagi',
+                    'file-types'  => [
+                        'image'    => 'Obraz',
+                        'video'    => 'Wideo',
+                        'audio'    => 'Audio',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Filtry zasobów',
+                ],
+            ],
+        ],
+
     ],
 ];

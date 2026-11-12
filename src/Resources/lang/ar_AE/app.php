@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'تم إنشاء الأصل',
+            'updated' => 'تم تحديث الأصل',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'نظرة عامة على DAM',
+        'asset-analytics'   => 'تحليلات الأصول',
+        'total-assets'      => 'إجمالي الأصول',
+        'storage-used'      => 'المساحة المستخدمة',
+        'total-directories' => 'الأدلة',
+        'total-tags'        => 'الوسوم',
+        'assets-by-type'    => 'الأصول حسب النوع',
+        'recent-uploads'    => 'التحميلات الأخيرة',
+        'no-assets'         => 'لا توجد أصول بعد.',
+        'types'             => [
+            'image'    => 'الصور',
+            'video'    => 'مقاطع الفيديو',
+            'audio'    => 'الصوت',
+            'document' => 'المستندات',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'اسحب الملفات أو المجلدات هنا',
                         'upload-or'                 => 'أو تصفح:',
                         'copy-directory-structured' => 'نسخ الدليل مع الهيكلية',
-                        'get'                       => 'Get',
+                        'get'                       => 'جلب',
                         'get-by-id'                 => 'الحصول على معرف',
                         'comment'                   => 'تعليق',
                         'share'                     => 'مشاركة الدليل',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'تعديل الخاصية',
                         ],
-                        'delete-success' => 'تم حذف خاصية الأصل بنجاح',
-                        'delete-failed'  => 'فشل حذف خاصية الأصل',
-                        'create-success' => 'تم إنشاء خاصية الأصل بنجاح',
-                        'update-success' => 'تم تحديث خاصية الأصل بنجاح',
-                        'update-failure' => 'فشل تحديث خاصية الأصل',
-                        'not-found'      => 'الخاصية غير موجودة',
-                        'found-success'  => 'تم العثور على الخاصية بنجاح',
+                        'delete-success'  => 'تم حذف خاصية الأصل بنجاح',
+                        'delete-failed'   => 'فشل حذف خاصية الأصل',
+                        'create-success'  => 'تم إنشاء خاصية الأصل بنجاح',
+                        'update-success'  => 'تم تحديث خاصية الأصل بنجاح',
+                        'update-failure'  => 'فشل تحديث خاصية الأصل',
+                        'not-found'       => 'الخاصية غير موجودة',
+                        'asset-not-found' => 'الأصل بالمعرف :id غير موجود',
+                        'found-success'   => 'تم العثور على الخاصية بنجاح',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'تم حذف وسوم الأصل بنجاح',
                 ],
                 'delete-success'                          => 'تم حذف الأصل بنجاح',
-                'delete-failed-due-to-attached-resources' => 'الأصل قيد الاستخدام. يرجى فصله قبل الحذف',
+                'delete-failed-due-to-attached-resources' => 'الأصل ":assets" مرتبط بمنتج أو فئة. يرجى فصله قبل الحذف.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'تم الحذف الجماعي بنجاح.',
                     'mass-update-success'                 => 'تم التحديث الجماعي بنجاح.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'نسخ',
                     'copied'             => 'تم نسخ الرابط إلى الحافظة',
                     'revoke'             => 'إلغاء',
-                    'delete'             => 'Delete',
+                    'delete'             => 'حذف',
                     'revoked'            => 'تم إلغاء رابط المشاركة',
                     'revoke-failed'      => 'فشل إلغاء رابط المشاركة.',
                     'expires-on'         => 'ينتهي في',
@@ -639,7 +664,7 @@ return [
             'create'           => 'إنشاء',
             'edit'             => 'تحرير',
             'update'           => 'تحديث',
-            'delete'           => 'Delete',
+            'delete'           => 'حذف',
             'list'             => 'قائمة',
             'view'             => 'عرض',
             'upload'           => 'تحميل',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'الصف :row (:identifier)، العمود ":column": لم يتم العثور على أي أصل في المسار ":path". تم تخطي الأصل وسيستمر استيراد بقية الصف.',
             'asset-tree-misnamed'        => 'يحتوي الأرشيف على مجلد باسم ":name" بدلاً من "assets"، لذلك تعذر استيراد أي من أصوله. أعد تسميته إلى "assets" وأبقِ المجلدات الموجودة تحته مطابقة للمسارات في ملف البيانات، مثل "assets/Root/Seed/Tech Sheets/Cotton/". يخزن macOS الرمز "/" المكتوب في اسم مجلد على شكل ":"، وهذا هو السبب المعتاد.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'الأصول',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'عمود "المسار" مطلوب في كل صف — موقع الملف المصدر أو رابط عام عبر HTTPS.',
+                        'asset-not-found'              => 'لا يوجد أصل على المسار المحدد. قم برفع الأصل أولاً ثم استورد بياناته الوصفية.',
+                        'asset-has-resources'          => 'الأصل مرتبط بسجلات أخرى ولم يتم حذفه.',
+                        'directory-required'           => 'العمود "directory" مطلوب لكل صف — شجرة المجلد الوجهة، مثل "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'لا تملك إذنًا للكتابة في دليل الوجهة. تم تخطي الصف.',
+                        'asset-already-exists'         => 'تم تخطّي الصف :row — يوجد أصل بالفعل في ":path" واستراتيجية التعارض هي "skip". اختر "overwrite" أو "update metadata" لتغيير ذلك.',
+                        'asset-already-exists-summary' => 'الدفعة #:batch — تم تخطّي :count صف/صفوف لوجود أصل مطابق بالفعل.',
+                        'media-source-not-found'       => 'لم يُعثر على ملف مصدر: ضع رابط https عامًا في "path"، أو ملفًا يطابق "path" ضمن دليل الصور.',
+                        'url-invalid'                  => 'رابط https في "path" ليس عنوان http أو https صالحًا.',
+                        'url-unreachable'              => 'تعذّر تنزيل رابط https في "path".',
+                        'url-blocked'                  => 'رابط https في "path" يشير إلى مضيف محظور.',
+                        'file-too-large'               => 'حجم ملف الوسائط يتجاوز الحد الأقصى المسموح به.',
+                        'forbidden-file'               => 'نوع ملف الوسائط غير مسموح به.',
+                        'import-failed'                => 'تعذّر استيراد الصف بسبب خطأ غير متوقع.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'نموذج ZIP (CSV + ملفات وسائط)',
+                    'media'  => 'نموذج ZIP (ملفات وسائط فقط)',
+                ],
+                'options' => [
+                    'title'    => 'خيارات استيراد الأصول',
+                    'conflict' => [
+                        'label'           => 'عندما يوجد أصل بالفعل في المسار',
+                        'skip'            => 'تخطّي الصف',
+                        'overwrite'       => 'الكتابة فوق الملف والبيانات الوصفية',
+                        'update-metadata' => 'تحديث البيانات الوصفية فقط',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'الوسم التلقائي للصور المستوردة',
+                        'hint'  => 'تشغيل الوسم التلقائي بالذكاء الاصطناعي على كل صورة مستوردة (يتطلب منصة Magic AI مُهيّأة).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'المجلد الوجهة (ملف ZIP بدون CSV)',
+                        'hint'  => 'لملفات ZIP التي لا تحتوي على CSV فقط. تُوضع الوسائط هنا، وتتداخل مجلدات ZIP تحتها. القيمة الافتراضية هي Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'الأصول',
+                'filters' => [
+                    'file-type'   => 'نوع الملف',
+                    'directories' => 'الأدلة',
+                    'tags'        => 'الوسوم',
+                    'file-types'  => [
+                        'image'    => 'صورة',
+                        'video'    => 'فيديو',
+                        'audio'    => 'الصوت',
+                        'document' => 'مستند',
+                    ],
+                    'title' => 'عوامل تصفية الأصول',
+                ],
+            ],
+        ],
+
     ],
 ];

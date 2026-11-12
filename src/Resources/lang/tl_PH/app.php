@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Nalikha ang asset',
+            'updated' => 'Na-update ang asset',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM Overview',
+        'asset-analytics'   => 'Analytics ng Asset',
+        'total-assets'      => 'Kabuuang Asset',
+        'storage-used'      => 'Nagamit na Storage',
+        'total-directories' => 'Mga Direktoryo',
+        'total-tags'        => 'Mga Tag',
+        'assets-by-type'    => 'Mga Asset ayon sa Uri',
+        'recent-uploads'    => 'Mga Kamakailang Upload',
+        'no-assets'         => 'Wala pang asset.',
+        'types'             => [
+            'image'    => 'Mga Larawan',
+            'video'    => 'Mga Video',
+            'audio'    => 'Audio',
+            'document' => 'Mga Dokumento',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'I-drag ang mga file o folder dito',
                         'upload-or'                 => 'o mag-browse:',
                         'copy-directory-structured' => 'Kopyahin ang Istruktura ng Direktoryo',
-                        'get'                       => 'Get',
+                        'get'                       => 'Kunin',
                         'get-by-id'                 => 'Kunin sa pamamagitan ng Id',
                         'comment'                   => 'Komento',
                         'share'                     => 'Ibahagi ang Direktoryo',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'I-edit ang Property',
                         ],
-                        'delete-success' => 'Matagumpay na Natanggal ang Asset Property',
-                        'delete-failed'  => 'Nabigo ang pagtanggal ng property ng asset',
-                        'create-success' => 'Matagumpay na Nagawa ang Asset Property',
-                        'update-success' => 'Matagumpay na Na-update ang Asset Property',
-                        'update-failure' => 'Nabigo ang pag-update ng property ng asset',
-                        'not-found'      => 'Walang Nahanap na Property',
-                        'found-success'  => 'Matagumpay na Nahanap ang Property',
+                        'delete-success'  => 'Matagumpay na Natanggal ang Asset Property',
+                        'delete-failed'   => 'Nabigo ang pagtanggal ng property ng asset',
+                        'create-success'  => 'Matagumpay na Nagawa ang Asset Property',
+                        'update-success'  => 'Matagumpay na Na-update ang Asset Property',
+                        'update-failure'  => 'Nabigo ang pag-update ng property ng asset',
+                        'not-found'       => 'Walang Nahanap na Property',
+                        'asset-not-found' => 'Walang nakitang asset na may ID :id',
+                        'found-success'   => 'Matagumpay na Nahanap ang Property',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Matagumpay na Naalis ang mga Tag ng Asset',
                 ],
                 'delete-success'                          => 'Matagumpay na natanggal ang asset',
-                'delete-failed-due-to-attached-resources' => 'Ginagamit ang asset. I-unlink bago tanggalin',
+                'delete-failed-due-to-attached-resources' => 'Ang asset na ":assets" ay naka-link sa isang produkto o kategorya. I-unlink bago tanggalin.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Matagumpay na Natanggal nang Maramihan.',
                     'mass-update-success'                 => 'Matagumpay na na-update ang lahat.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopyahin',
                     'copied'             => 'Nakopya ang link sa clipboard',
                     'revoke'             => 'Bawiin',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Tanggalin',
                     'revoked'            => 'Binawi ang share link',
                     'revoke-failed'      => 'Nabigo ang pag-bawi ng share link.',
                     'expires-on'         => 'Mag-e-expire sa',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Gumawa',
             'edit'             => 'I-edit',
             'update'           => 'I-update',
-            'delete'           => 'Delete',
+            'delete'           => 'Tanggalin',
             'list'             => 'Listahan',
             'view'             => 'Tingnan',
             'upload'           => 'Mag-upload',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Hanay :row (:identifier), kolum ":column": walang asset na nakita sa path na ":path". Nilaktawan ang asset at ii-import pa rin ang natitirang bahagi ng hanay.',
             'asset-tree-misnamed'        => 'Naglalaman ang archive ng folder na pinangalanang ":name" sa halip na "assets", kaya wala sa mga asset nito ang na-import. Palitan ang pangalan nito ng "assets" at panatilihing tugma ang mga folder sa ilalim nito sa mga path sa iyong data file, halimbawa "assets/Root/Seed/Tech Sheets/Cotton/". Sine-save ng macOS ang "/" na itinipa sa pangalan ng folder bilang ":", na siyang karaniwang dahilan.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Mga Asset',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Ang katawan ng "daan" ay kinakailangan sa bawat linya — ang lokasyon ng source file o pampublikong HTTPS link.',
+                        'asset-not-found'              => 'Wala nasentrong asset sa binigyang daan. I-upload muna ang asset bago i-import ang metadata nito.',
+                        'asset-has-resources'          => 'Ang asset ay nakaugnay sa iba pang rekord at hindi na-delete.',
+                        'directory-required'           => 'Kinakailangan ang column na "directory" sa bawat row — ang puno ng destination folder, hal. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Wala kang pahintulot na sumulat sa direktoriyo ng tuonan. Ang linya ay iniskip.',
+                        'asset-already-exists'         => 'Nilaktawan ang row :row — may asset nang umiiral sa ":path" at ang conflict strategy ay "skip". Piliin ang "overwrite" o "update metadata" upang baguhin ito.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count (na) row ang nilaktawan dahil may tugmang asset nang umiiral.',
+                        'media-source-not-found'       => 'Walang nakitang source file: maglagay ng pampublikong https link sa "path", o isang file na tumutugma sa "path" sa ilalim ng images directory.',
+                        'url-invalid'                  => 'Ang https link sa "path" ay hindi wastong http o https address.',
+                        'url-unreachable'              => 'Hindi ma-download ang https link sa "path".',
+                        'url-blocked'                  => 'Ang https link sa "path" ay tumuturo sa isang na-block na host.',
+                        'file-too-large'               => 'Lumampas ang media file sa pinakamataas na pinapayagang laki.',
+                        'forbidden-file'               => 'Hindi pinapayagan ang uri ng media file.',
+                        'import-failed'                => 'Hindi ma-import ang row dahil sa hindi inaasahang error.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Halimbawang ZIP (CSV + media files)',
+                    'media'  => 'Halimbawang ZIP (media files lamang)',
+                ],
+                'options' => [
+                    'title'    => 'Mga Opsyon sa Pag-import ng Asset',
+                    'conflict' => [
+                        'label'           => 'Kapag may asset nang umiiral sa path',
+                        'skip'            => 'Laktawan ang row',
+                        'overwrite'       => 'I-overwrite ang file at metadata',
+                        'update-metadata' => 'I-update lang ang metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Awtomatikong i-tag ang mga na-import na larawan',
+                        'hint'  => 'Patakbuhin ang AI auto-tagging sa bawat na-import na larawan (kailangan ng naka-configure na Magic AI platform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Patutunguhang direktoryo (ZIP na walang CSV)',
+                        'hint'  => 'Para lamang sa mga ZIP na walang CSV. Dito inilalagay ang media; ang mga folder ng ZIP ay naka-nest sa ilalim. Default ay Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Mga Asset',
+                'filters' => [
+                    'file-type'   => 'Uri ng file',
+                    'directories' => 'Mga Direktoryo',
+                    'tags'        => 'Mga Tag',
+                    'file-types'  => [
+                        'image'    => 'Larawan',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Dokumento',
+                    ],
+                    'title' => 'Mga Filter ng Asset',
+                ],
+            ],
+        ],
+
     ],
 ];

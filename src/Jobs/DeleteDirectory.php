@@ -65,6 +65,22 @@ class DeleteDirectory implements ShouldQueue
                 ->pluck('asset_id');
 
             if ($assetIds->isNotEmpty()) {
+                $mappedAssetIds = DB::table('dam_asset_resource_mappings')
+                    ->whereIn('dam_asset_id', $assetIds)
+                    ->distinct()
+                    ->pluck('dam_asset_id');
+
+                if ($mappedAssetIds->isNotEmpty()) {
+                    $names = Asset::whereIn('id', $mappedAssetIds)
+                        ->orderBy('id')
+                        ->pluck('file_name')
+                        ->implode(', ');
+
+                    throw new \Exception(trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', [
+                        'assets' => $names,
+                    ]));
+                }
+
                 Asset::whereIn('id', $assetIds)->delete();
             }
 

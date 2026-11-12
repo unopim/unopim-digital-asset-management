@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Recurso criado',
+            'updated' => 'Recurso atualizado',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Visão geral do DAM',
+        'asset-analytics'   => 'Análise de recursos',
+        'total-assets'      => 'Total de recursos',
+        'storage-used'      => 'Armazenamento utilizado',
+        'total-directories' => 'Diretórios',
+        'total-tags'        => 'Etiquetas',
+        'assets-by-type'    => 'Recursos por tipo',
+        'recent-uploads'    => 'Carregamentos recentes',
+        'no-assets'         => 'Ainda não há recursos.',
+        'types'             => [
+            'image'    => 'Imagens',
+            'video'    => 'Vídeos',
+            'audio'    => 'Áudio',
+            'document' => 'Documentos',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Arraste ficheiros ou pastas para aqui',
                         'upload-or'                 => 'ou navegar:',
                         'copy-directory-structured' => 'Copiar Estrutura do Diretório',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obter',
                         'get-by-id'                 => 'Obter por Id',
                         'comment'                   => 'Comentário',
                         'share'                     => 'Partilhar diretório',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Editar Propriedade',
                         ],
-                        'delete-success' => 'Propriedade do Ativo eliminada com sucesso',
-                        'delete-failed'  => 'Falha ao eliminar propriedade do ativo',
-                        'create-success' => 'Propriedade do Ativo criada com sucesso',
-                        'update-success' => 'Propriedade do Ativo atualizada com sucesso',
-                        'update-failure' => 'Falha ao atualizar propriedade do ativo',
-                        'not-found'      => 'Propriedade não encontrada',
-                        'found-success'  => 'Propriedade encontrada com sucesso',
+                        'delete-success'  => 'Propriedade do Ativo eliminada com sucesso',
+                        'delete-failed'   => 'Falha ao eliminar propriedade do ativo',
+                        'create-success'  => 'Propriedade do Ativo criada com sucesso',
+                        'update-success'  => 'Propriedade do Ativo atualizada com sucesso',
+                        'update-failure'  => 'Falha ao atualizar propriedade do ativo',
+                        'not-found'       => 'Propriedade não encontrada',
+                        'asset-not-found' => 'Ativo com ID :id não encontrado',
+                        'found-success'   => 'Propriedade encontrada com sucesso',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Etiquetas do Ativo removidas com sucesso',
                 ],
                 'delete-success'                          => 'Ativo eliminado com sucesso',
-                'delete-failed-due-to-attached-resources' => 'Ativo em utilização. Desassocie antes de eliminar',
+                'delete-failed-due-to-attached-resources' => 'O recurso ":assets" está associado a um produto ou categoria. Desassocie antes de eliminar.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Eliminação em massa realizada com sucesso.',
                     'mass-update-success'                 => 'Atualização em massa concluída com sucesso.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Copiar',
                     'copied'             => 'Ligação copiada para a área de transferência',
                     'revoke'             => 'Revogar',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Eliminar',
                     'revoked'            => 'Ligação de partilha revogada',
                     'revoke-failed'      => 'Falha ao revogar a ligação de partilha.',
                     'expires-on'         => 'Expira em',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Criar',
             'edit'             => 'Editar',
             'update'           => 'Atualizar',
-            'delete'           => 'Delete',
+            'delete'           => 'Eliminar',
             'list'             => 'Listar',
             'view'             => 'Ver',
             'upload'           => 'Carregar',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Linha :row (:identifier), coluna ":column": não foi encontrado nenhum recurso no caminho ":path". O recurso foi ignorado e o resto da linha continuará a ser importado.',
             'asset-tree-misnamed'        => 'O arquivo contém uma pasta chamada ":name" em vez de "assets", pelo que nenhum dos seus ativos pôde ser importado. Mude o nome para "assets" e mantenha as pastas abaixo a corresponder aos caminhos do seu ficheiro de dados, por exemplo "assets/Root/Seed/Tech Sheets/Cotton/". O macOS guarda uma "/" escrita no nome de uma pasta como ":", que é a causa habitual.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Recursos',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'A coluna "caminho" é obrigatória em cada linha — a localização do ficheiro de origem ou uma ligação HTTPS pública.',
+                        'asset-not-found'              => 'Não existe nenhum ativo no caminho indicado. Carregue o ativo primeiro e, em seguida, importe os seus metadados.',
+                        'asset-has-resources'          => 'O ativo está vinculado a outros registos e não foi eliminado.',
+                        'directory-required'           => 'A coluna "directory" é obrigatória em cada linha — a árvore de pastas de destino, por ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Não tem permissão para escrever no diretório de destino. A linha foi ignorada.',
+                        'asset-already-exists'         => 'Linha :row ignorada — já existe um recurso em ":path" e a estratégia de conflito é "skip". Escolha "overwrite" ou "update metadata" para o alterar.',
+                        'asset-already-exists-summary' => 'Lote #:batch — :count linha(s) ignorada(s) porque já existe um recurso correspondente.',
+                        'media-source-not-found'       => 'Nenhum ficheiro de origem encontrado: coloque um link https público em "path" ou um ficheiro correspondente a "path" no diretório de imagens.',
+                        'url-invalid'                  => 'O link https em "path" não é um endereço http ou https válido.',
+                        'url-unreachable'              => 'Não foi possível transferir o link https em "path".',
+                        'url-blocked'                  => 'O link https em "path" aponta para um anfitrião bloqueado.',
+                        'file-too-large'               => 'O ficheiro multimédia excede o tamanho máximo permitido.',
+                        'forbidden-file'               => 'O tipo de ficheiro multimédia não é permitido.',
+                        'import-failed'                => 'Não foi possível importar a linha devido a um erro inesperado.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP de exemplo (CSV + ficheiros multimédia)',
+                    'media'  => 'ZIP de exemplo (apenas ficheiros multimédia)',
+                ],
+                'options' => [
+                    'title'    => 'Opções de importação de recursos',
+                    'conflict' => [
+                        'label'           => 'Quando já existe um recurso no caminho',
+                        'skip'            => 'Ignorar a linha',
+                        'overwrite'       => 'Substituir o ficheiro e os metadados',
+                        'update-metadata' => 'Atualizar apenas os metadados',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Etiquetar automaticamente as imagens importadas',
+                        'hint'  => 'Executar a etiquetagem automática por IA em cada imagem importada (requer uma plataforma Magic AI configurada).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Diretório de destino (ZIP sem CSV)',
+                        'hint'  => 'Apenas para ZIP sem CSV. Os ficheiros são colocados aqui; as pastas do ZIP ficam aninhadas abaixo. A predefinição é Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Recursos',
+                'filters' => [
+                    'file-type'   => 'Tipo de ficheiro',
+                    'directories' => 'Diretórios',
+                    'tags'        => 'Etiquetas',
+                    'file-types'  => [
+                        'image'    => 'Imagem',
+                        'video'    => 'Vídeo',
+                        'audio'    => 'Áudio',
+                        'document' => 'Documento',
+                    ],
+                    'title' => 'Filtros de recursos',
+                ],
+            ],
+        ],
+
     ],
 ];

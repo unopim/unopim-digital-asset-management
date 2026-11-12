@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Aset dibuat',
+            'updated' => 'Aset diperbarui',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Ikhtisar DAM',
+        'asset-analytics'   => 'Analitik Aset',
+        'total-assets'      => 'Total Aset',
+        'storage-used'      => 'Penyimpanan Terpakai',
+        'total-directories' => 'Direktori',
+        'total-tags'        => 'Tag',
+        'assets-by-type'    => 'Aset menurut Tipe',
+        'recent-uploads'    => 'Unggahan Terbaru',
+        'no-assets'         => 'Belum ada aset.',
+        'types'             => [
+            'image'    => 'Gambar',
+            'video'    => 'Video',
+            'audio'    => 'Audio',
+            'document' => 'Dokumen',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Seret file atau folder ke sini',
                         'upload-or'                 => 'atau jelajahi:',
                         'copy-directory-structured' => 'Salin Struktur Direktori',
-                        'get'                       => 'Get',
+                        'get'                       => 'Ambil',
                         'get-by-id'                 => 'Dapatkan Berdasarkan Id',
                         'comment'                   => 'Komentar',
                         'share'                     => 'Bagikan Direktori',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Edit Properti',
                         ],
-                        'delete-success' => 'Properti Aset Berhasil Dihapus',
-                        'delete-failed'  => 'Gagal menghapus properti aset',
-                        'create-success' => 'Properti Aset Berhasil Dibuat',
-                        'update-success' => 'Properti Aset Berhasil Diperbarui',
-                        'update-failure' => 'Gagal memperbarui properti aset',
-                        'not-found'      => 'Properti Tidak Ditemukan',
-                        'found-success'  => 'Properti Berhasil Ditemukan',
+                        'delete-success'  => 'Properti Aset Berhasil Dihapus',
+                        'delete-failed'   => 'Gagal menghapus properti aset',
+                        'create-success'  => 'Properti Aset Berhasil Dibuat',
+                        'update-success'  => 'Properti Aset Berhasil Diperbarui',
+                        'update-failure'  => 'Gagal memperbarui properti aset',
+                        'not-found'       => 'Properti Tidak Ditemukan',
+                        'asset-not-found' => 'Aset dengan ID :id tidak ditemukan',
+                        'found-success'   => 'Properti Berhasil Ditemukan',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Tag aset berhasil dihapus',
                 ],
                 'delete-success'                          => 'Aset berhasil dihapus',
-                'delete-failed-due-to-attached-resources' => 'Aset sedang digunakan. Lepaskan tautan sebelum menghapus',
+                'delete-failed-due-to-attached-resources' => 'Aset ":assets" tertaut ke suatu produk atau kategori. Lepaskan tautan sebelum menghapus.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Penghapusan Massal Berhasil.',
                     'mass-update-success'                 => 'Pembaruan massal berhasil.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Salin',
                     'copied'             => 'Tautan disalin ke clipboard',
                     'revoke'             => 'Cabut',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Hapus',
                     'revoked'            => 'Tautan berbagi telah dicabut',
                     'revoke-failed'      => 'Gagal mencabut tautan berbagi.',
                     'expires-on'         => 'Kadaluarsa pada',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Buat',
             'edit'             => 'Ubah',
             'update'           => 'Perbarui',
-            'delete'           => 'Delete',
+            'delete'           => 'Hapus',
             'list'             => 'Daftar',
             'view'             => 'Lihat',
             'upload'           => 'Unggah',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Baris :row (:identifier), kolom ":column": tidak ada aset yang ditemukan di jalur ":path". Aset dilewati dan sisa baris tetap akan diimpor.',
             'asset-tree-misnamed'        => 'Arsip berisi folder bernama ":name" alih-alih "assets", sehingga tidak ada asetnya yang dapat diimpor. Ubah namanya menjadi "assets" dan pastikan folder di bawahnya sesuai dengan jalur di file data Anda, misalnya "assets/Root/Seed/Tech Sheets/Cotton/". macOS menyimpan "/" yang diketik pada nama folder sebagai ":", yang merupakan penyebab umumnya.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Aset',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Kolom "path" wajib ada pada setiap baris — lokasi file sumber atau tautan HTTPS publik.',
+                        'asset-not-found'              => 'Tidak ada aset yang ada di jalur yang diberikan. Unggah aset terlebih dahulu, lalu impor metadatanya.',
+                        'asset-has-resources'          => 'Aset terkait dengan catatan lain dan tidak dihapus.',
+                        'directory-required'           => 'Kolom "directory" wajib untuk setiap baris — pohon folder tujuan, mis. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Anda tidak memiliki izin untuk menulis ke direktori tujuan. Baris dilewati.',
+                        'asset-already-exists'         => 'Baris :row dilewati — aset sudah ada di ":path" dan strategi konflik adalah "skip". Pilih "overwrite" atau "update metadata" untuk mengubahnya.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count baris dilewati karena aset yang cocok sudah ada.',
+                        'media-source-not-found'       => 'Berkas sumber tidak ditemukan: masukkan tautan https publik di "path", atau berkas yang cocok dengan "path" di direktori gambar.',
+                        'url-invalid'                  => 'Tautan https di "path" bukan alamat http atau https yang valid.',
+                        'url-unreachable'              => 'Tautan https di "path" tidak dapat diunduh.',
+                        'url-blocked'                  => 'Tautan https di "path" mengarah ke host yang diblokir.',
+                        'file-too-large'               => 'Berkas media melebihi ukuran maksimum yang diizinkan.',
+                        'forbidden-file'               => 'Tipe berkas media tidak diizinkan.',
+                        'import-failed'                => 'Baris tidak dapat diimpor karena kesalahan tak terduga.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Contoh ZIP (CSV + berkas media)',
+                    'media'  => 'Contoh ZIP (hanya berkas media)',
+                ],
+                'options' => [
+                    'title'    => 'Opsi Impor Aset',
+                    'conflict' => [
+                        'label'           => 'Ketika aset sudah ada di jalur tersebut',
+                        'skip'            => 'Lewati baris',
+                        'overwrite'       => 'Timpa berkas dan metadata',
+                        'update-metadata' => 'Perbarui metadata saja',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Beri tag otomatis pada gambar yang diimpor',
+                        'hint'  => 'Jalankan pemberian tag otomatis AI pada setiap gambar yang diimpor (memerlukan platform Magic AI yang dikonfigurasi).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Direktori tujuan (ZIP tanpa CSV)',
+                        'hint'  => 'Hanya untuk ZIP tanpa CSV. Media ditempatkan di sini; folder ZIP bersarang di bawahnya. Default-nya Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Aset',
+                'filters' => [
+                    'file-type'   => 'Tipe file',
+                    'directories' => 'Direktori',
+                    'tags'        => 'Tag',
+                    'file-types'  => [
+                        'image'    => 'Gambar',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Dokumen',
+                    ],
+                    'title' => 'Filter Aset',
+                ],
+            ],
+        ],
+
     ],
 ];

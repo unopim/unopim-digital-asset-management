@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Activ creat',
+            'updated' => 'Activ actualizat',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Prezentare generală DAM',
+        'asset-analytics'   => 'Analiză active',
+        'total-assets'      => 'Total active',
+        'storage-used'      => 'Spațiu utilizat',
+        'total-directories' => 'Directoare',
+        'total-tags'        => 'Etichete',
+        'assets-by-type'    => 'Active după tip',
+        'recent-uploads'    => 'Încărcări recente',
+        'no-assets'         => 'Încă nu există active.',
+        'types'             => [
+            'image'    => 'Imagini',
+            'video'    => 'Videoclipuri',
+            'audio'    => 'Audio',
+            'document' => 'Documente',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Trageți fișiere sau foldere aici',
                         'upload-or'                 => 'sau răsfoiți:',
                         'copy-directory-structured' => 'Copiază Structura Directorului',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obține',
                         'get-by-id'                 => 'Obține după Id',
                         'comment'                   => 'Comentariu',
                         'share'                     => 'Partajează directorul',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Editează Proprietatea',
                         ],
-                        'delete-success' => 'Proprietatea Activului a fost ștearsă cu succes',
-                        'delete-failed'  => 'Ștergerea proprietății activului a eșuat',
-                        'create-success' => 'Proprietatea Activului a fost creată cu succes',
-                        'update-success' => 'Proprietatea Activului a fost actualizată cu succes',
-                        'update-failure' => 'Actualizarea proprietății activului a eșuat',
-                        'not-found'      => 'Proprietatea nu a fost găsită',
-                        'found-success'  => 'Proprietatea a fost găsită cu succes',
+                        'delete-success'  => 'Proprietatea Activului a fost ștearsă cu succes',
+                        'delete-failed'   => 'Ștergerea proprietății activului a eșuat',
+                        'create-success'  => 'Proprietatea Activului a fost creată cu succes',
+                        'update-success'  => 'Proprietatea Activului a fost actualizată cu succes',
+                        'update-failure'  => 'Actualizarea proprietății activului a eșuat',
+                        'not-found'       => 'Proprietatea nu a fost găsită',
+                        'asset-not-found' => 'Activul cu ID :id nu a fost găsit',
+                        'found-success'   => 'Proprietatea a fost găsită cu succes',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Etichetele Activului au fost eliminate cu succes',
                 ],
                 'delete-success'                          => 'Activ șters cu succes',
-                'delete-failed-due-to-attached-resources' => 'Activul este utilizat. Dezasociați-l înainte de ștergere',
+                'delete-failed-due-to-attached-resources' => 'Activul ":assets" este asociat unui produs sau unei categorii. Dezasociați-l înainte de ștergere.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Ștergere în masă efectuată cu succes.',
                     'mass-update-success'                 => 'Actualizare în masă finalizată cu succes.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Copiază',
                     'copied'             => 'Link copiat în clipboard',
                     'revoke'             => 'Revocă',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Șterge',
                     'revoked'            => 'Linkul de partajare a fost revocat',
                     'revoke-failed'      => 'Revocarea linkului de partajare a eșuat.',
                     'expires-on'         => 'Expiră la',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Creează',
             'edit'             => 'Editează',
             'update'           => 'Actualizează',
-            'delete'           => 'Delete',
+            'delete'           => 'Șterge',
             'list'             => 'Listă',
             'view'             => 'Vizualizează',
             'upload'           => 'Încarcă',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Rândul :row (:identifier), coloana ":column": nu a fost găsit niciun activ la calea ":path". Activul a fost omis, iar restul rândului va fi importat în continuare.',
             'asset-tree-misnamed'        => 'Arhiva conține un folder numit ":name" în loc de "assets", așa că niciunul dintre activele sale nu a putut fi importat. Redenumiți-l în "assets" și păstrați folderele de sub el potrivite cu căile din fișierul de date, de exemplu "assets/Root/Seed/Tech Sheets/Cotton/". macOS salvează un "/" tastat în numele unui folder ca ":", ceea ce este cauza obișnuită.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Resurse',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Coloana "calea" este obligatorie pentru fiecare rând — locația fișierului sursă sau un link HTTPS public.',
+                        'asset-not-found'              => 'Nu există niciun activ la calea indicată. Încărcați activul mai întâi, apoi importați metadatele sale.',
+                        'asset-has-resources'          => 'Activul este legat de alte înregistrări și nu a fost șters.',
+                        'directory-required'           => 'Coloana "directory" este obligatorie pentru fiecare rând — arborele folderului de destinație, de ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Nu aveți permisiune de a scrie în directorul de destinație. Rândul a fost omis.',
+                        'asset-already-exists'         => 'Rândul :row a fost omis — există deja un activ la ":path", iar strategia de conflict este "skip". Alegeți "overwrite" sau "update metadata" pentru a o modifica.',
+                        'asset-already-exists-summary' => 'Lotul #:batch — :count rând(uri) omise deoarece există deja un activ corespunzător.',
+                        'media-source-not-found'       => 'Niciun fișier sursă găsit: puneți un link https public în "path" sau un fișier care corespunde cu "path" în directorul de imagini.',
+                        'url-invalid'                  => 'Linkul https din "path" nu este o adresă http sau https validă.',
+                        'url-unreachable'              => 'Linkul https din "path" nu a putut fi descărcat.',
+                        'url-blocked'                  => 'Linkul https din "path" indică o gazdă blocată.',
+                        'file-too-large'               => 'Fișierul media depășește dimensiunea maximă permisă.',
+                        'forbidden-file'               => 'Tipul de fișier media nu este permis.',
+                        'import-failed'                => 'Rândul nu a putut fi importat din cauza unei erori neașteptate.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP exemplu (CSV + fișiere media)',
+                    'media'  => 'ZIP exemplu (doar fișiere media)',
+                ],
+                'options' => [
+                    'title'    => 'Opțiuni de import active',
+                    'conflict' => [
+                        'label'           => 'Când există deja un activ la această cale',
+                        'skip'            => 'Omite rândul',
+                        'overwrite'       => 'Suprascrie fișierul și metadatele',
+                        'update-metadata' => 'Actualizează doar metadatele',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Etichetează automat imaginile importate',
+                        'hint'  => 'Rulează etichetarea automată cu IA pe fiecare imagine importată (necesită o platformă Magic AI configurată).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Director de destinație (ZIP fără CSV)',
+                        'hint'  => 'Doar pentru ZIP-uri fără CSV. Fișierele media sunt plasate aici; folderele din ZIP se imbrică dedesubt. Implicit este Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Resurse',
+                'filters' => [
+                    'file-type'   => 'Tip fișier',
+                    'directories' => 'Directoare',
+                    'tags'        => 'Etichete',
+                    'file-types'  => [
+                        'image'    => 'Imagine',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                    'title' => 'Filtre active',
+                ],
+            ],
+        ],
+
     ],
 ];

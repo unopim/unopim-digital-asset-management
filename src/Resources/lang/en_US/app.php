@@ -1,6 +1,32 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Asset Created',
+            'updated' => 'Asset Updated',
+        ],
+    ],
+
+    'dashboard' => [
+        'overview'          => 'DAM Overview',
+        'asset-analytics'   => 'Asset Analytics',
+        'total-assets'      => 'Total Assets',
+        'storage-used'      => 'Storage Used',
+        'total-directories' => 'Directories',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Assets by Type',
+        'recent-uploads'    => 'Recent Uploads',
+        'no-assets'         => 'No assets yet.',
+
+        'types' => [
+            'image'    => 'Images',
+            'video'    => 'Videos',
+            'audio'    => 'Audio',
+            'document' => 'Documents',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -197,13 +223,14 @@ return [
                         'edit' => [
                             'title' => 'Edit Property',
                         ],
-                        'delete-success' => 'Asset Property Deleted Successfully',
-                        'delete-failed'  => 'Asset Property failed to delete',
-                        'create-success' => 'Asset Property Created Successfully',
-                        'update-success' => 'Asset Property Updated Successfully',
-                        'update-failure' => 'Asset Property failed to update',
-                        'not-found'      => 'Property Not Found',
-                        'found-success'  => 'Property Found Successfully',
+                        'delete-success'  => 'Asset Property Deleted Successfully',
+                        'delete-failed'   => 'Asset Property failed to delete',
+                        'create-success'  => 'Asset Property Created Successfully',
+                        'update-success'  => 'Asset Property Updated Successfully',
+                        'update-failure'  => 'Asset Property failed to update',
+                        'not-found'       => 'Property Not Found',
+                        'asset-not-found' => 'Asset with ID :id not found',
+                        'found-success'   => 'Property Found Successfully',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +479,7 @@ return [
                     'delete-success' => 'Asset Tags Removed Successfully',
                 ],
                 'delete-success'                          => 'Asset deleted successfully',
-                'delete-failed-due-to-attached-resources' => 'Asset in use. Unlink before deleting',
+                'delete-failed-due-to-attached-resources' => 'Asset ":assets" is linked to a product or category. Unlink before deleting.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Mass Deleted Successfully.',
                     'mass-update-success'                 => 'Mass Updated Successfully.',
@@ -907,6 +934,69 @@ return [
             'zip-compression-suspicious' => 'The entry ":entry" is compressed far beyond a normal ratio and was rejected.',
             'asset-not-found'            => 'Row :row (:identifier), column ":column": no asset was found at path ":path". The asset was skipped and the rest of the row will still be imported.',
             'asset-tree-misnamed'        => 'The archive contains a folder named ":name" instead of "assets", so none of its assets could be imported. Rename it to "assets" and keep the folders beneath it matching the paths in your data file, for example "assets/Root/Seed/Tech Sheets/Cotton/". macOS stores a "/" typed into a folder name as ":", which is the usual cause.',
+        ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Assets',
+                'samples'    => [
+                    'bundle' => 'Sample ZIP (CSV + media files)',
+                    'media'  => 'Sample ZIP (media files only)',
+                ],
+                'options'    => [
+                    'title'    => 'Asset Import Options',
+                    'conflict' => [
+                        'label'           => 'When an asset already exists at the path',
+                        'skip'            => 'Skip the row',
+                        'overwrite'       => 'Overwrite the file and metadata',
+                        'update-metadata' => 'Update metadata only',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Auto-tag imported images',
+                        'hint'  => 'Run AI auto-tagging on each imported image (requires a configured Magic AI platform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Destination directory (ZIP without a CSV)',
+                        'hint'  => 'For CSV-less ZIPs only. Media is placed here; ZIP folders nest beneath. Defaults to Root.',
+                    ],
+                ],
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'The "path" column is required for every row — the source file location or a public https link.',
+                        'directory-required'           => 'The "directory" column is required for every row — the destination folder tree, e.g. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
+                        'asset-already-exists'         => 'Row :row skipped — an asset already exists at ":path" and the conflict strategy is "skip". Choose "overwrite" or "update metadata" to change it.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count row(s) skipped because a matching asset already exists.',
+                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'media-source-not-found'       => 'No source file found: put a public https link in "path", or a file matching "path" under the images directory.',
+                        'url-invalid'                  => 'The https link in "path" is not a valid http or https address.',
+                        'url-unreachable'              => 'The https link in "path" could not be downloaded.',
+                        'url-blocked'                  => 'The https link in "path" resolves to a blocked host.',
+                        'file-too-large'               => 'The media file exceeds the maximum allowed size.',
+                        'forbidden-file'               => 'The media file type is not allowed.',
+                        'import-failed'                => 'The row could not be imported due to an unexpected error.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Assets',
+                'filters' => [
+                    'title'       => 'Asset Filters',
+                    'file-type'   => 'File Type',
+                    'directories' => 'Directories',
+                    'tags'        => 'Tags',
+                    'file-types'  => [
+                        'image'    => 'Image',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Document',
+                    ],
+                ],
+            ],
         ],
     ],
 ];

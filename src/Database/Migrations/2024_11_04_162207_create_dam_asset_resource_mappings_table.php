@@ -14,11 +14,15 @@ return new class extends Migration
             $table->string('related_field');
             $table->foreignId('dam_asset_id')->constrained('dam_assets');
 
-            $table->unsignedInteger('product_id')->nullable();
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            if (Schema::hasTable('products')) {
+                $table->unsignedInteger('product_id')->nullable();
+                $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            }
 
-            $table->unsignedInteger('category_id')->nullable();
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            if (Schema::hasTable('categories')) {
+                $table->unsignedInteger('category_id')->nullable();
+                $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            }
 
             $table->index('dam_asset_id');
 

@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Sredstvo stvoreno',
+            'updated' => 'Sredstvo ažurirano',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Pregled DAM-a',
+        'asset-analytics'   => 'Analitika sredstava',
+        'total-assets'      => 'Ukupno sredstava',
+        'storage-used'      => 'Iskorišteni prostor',
+        'total-directories' => 'Direktoriji',
+        'total-tags'        => 'Oznake',
+        'assets-by-type'    => 'Sredstva po vrsti',
+        'recent-uploads'    => 'Nedavne učitavanja',
+        'no-assets'         => 'Još nema sredstava.',
+        'types'             => [
+            'image'    => 'Slike',
+            'video'    => 'Videozapisi',
+            'audio'    => 'Zvuk',
+            'document' => 'Dokumenti',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Ovdje povucite datoteke ili mape',
                         'upload-or'                 => 'ili pregledajte:',
                         'copy-directory-structured' => 'Kopiraj strukturu direktorija',
-                        'get'                       => 'Get',
+                        'get'                       => 'Dohvati',
                         'get-by-id'                 => 'Dohvati po ID-u',
                         'comment'                   => 'Komentar',
                         'share'                     => 'Dijeli direktorij',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Uredi svojstvo',
                         ],
-                        'delete-success' => 'Svojstvo resursa uspješno obrisano',
-                        'delete-failed'  => 'Brisanje svojstva resursa nije uspjelo',
-                        'create-success' => 'Svojstvo resursa uspješno stvoreno',
-                        'update-success' => 'Svojstvo resursa uspješno ažurirano',
-                        'update-failure' => 'Ažuriranje svojstva resursa nije uspjelo',
-                        'not-found'      => 'Svojstvo nije pronađeno',
-                        'found-success'  => 'Svojstvo uspješno pronađeno',
+                        'delete-success'  => 'Svojstvo resursa uspješno obrisano',
+                        'delete-failed'   => 'Brisanje svojstva resursa nije uspjelo',
+                        'create-success'  => 'Svojstvo resursa uspješno stvoreno',
+                        'update-success'  => 'Svojstvo resursa uspješno ažurirano',
+                        'update-failure'  => 'Ažuriranje svojstva resursa nije uspjelo',
+                        'not-found'       => 'Svojstvo nije pronađeno',
+                        'asset-not-found' => 'Vlasnik s ID-om :id nije pronađen',
+                        'found-success'   => 'Svojstvo uspješno pronađeno',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Oznake resursa uspješno uklonjene',
                 ],
                 'delete-success'                          => 'Resurs je uspješno obrisan',
-                'delete-failed-due-to-attached-resources' => 'Resurs je u upotrebi. Odvojite ga prije brisanja',
+                'delete-failed-due-to-attached-resources' => 'Resurs ":assets" povezan je s proizvodom ili kategorijom. Odvojite ga prije brisanja.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masovno brisanje uspješno.',
                     'mass-update-success'                 => 'Masovno ažuriranje uspješno.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopiraj',
                     'copied'             => 'Veza kopirana u međuspremnik',
                     'revoke'             => 'Opozovi',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Obriši',
                     'revoked'            => 'Veza za dijeljenje opozvana',
                     'revoke-failed'      => 'Opoziv veze za dijeljenje nije uspio.',
                     'expires-on'         => 'Ističe',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Stvori',
             'edit'             => 'Uredi',
             'update'           => 'Ažuriraj',
-            'delete'           => 'Delete',
+            'delete'           => 'Obriši',
             'list'             => 'Popis',
             'view'             => 'Pregled',
             'upload'           => 'Prenesi',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Redak :row (:identifier), stupac ":column": na putanji ":path" nije pronađen nijedan resurs. Resurs je preskočen, a ostatak retka i dalje će se uvesti.',
             'asset-tree-misnamed'        => 'Arhiva sadrži mapu naziva ":name" umjesto "assets", pa nijedan njezin sadržaj nije bilo moguće uvesti. Preimenujte je u "assets" i neka mape ispod nje odgovaraju putanjama u vašoj datoteci s podacima, na primjer "assets/Root/Seed/Tech Sheets/Cotton/". macOS sprema "/" upisan u naziv mape kao ":", što je uobičajeni uzrok.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Resursi',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Stupac "put" je obavezno za svaki redak — lokacija izvorne datoteke ili javna HTTPS veza.',
+                        'asset-not-found'              => 'Na navedenoj putanji ne postoji nijedan resurs. Prvo preuzmite resurs, a zatim uvezite njegove metapodatke.',
+                        'asset-has-resources'          => 'Resurs je povezan s drugim zapisima i nije obrisan.',
+                        'directory-required'           => 'Stupac "directory" obavezan je za svaki redak — stablo odredišne mape, npr. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Nemate dozvolu za pisanje u odredišni direktorij. Redak je preskočen.',
+                        'asset-already-exists'         => 'Redak :row preskočen — sredstvo već postoji na ":path", a strategija sukoba je "skip". Odaberite "overwrite" ili "update metadata" za promjenu.',
+                        'asset-already-exists-summary' => 'Serija #:batch — preskočeno redaka: :count jer odgovarajuće sredstvo već postoji.',
+                        'media-source-not-found'       => 'Izvorna datoteka nije pronađena: stavite javnu https poveznicu u "path" ili datoteku koja odgovara "path" u direktoriju slika.',
+                        'url-invalid'                  => 'https poveznica u "path" nije valjana http ili https adresa.',
+                        'url-unreachable'              => 'https poveznicu u "path" nije bilo moguće preuzeti.',
+                        'url-blocked'                  => 'https poveznica u "path" upućuje na blokirano računalo.',
+                        'file-too-large'               => 'Medijska datoteka premašuje najveću dopuštenu veličinu.',
+                        'forbidden-file'               => 'Vrsta medijske datoteke nije dopuštena.',
+                        'import-failed'                => 'Redak nije bilo moguće uvesti zbog neočekivane pogreške.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Ogledni ZIP (CSV + medijske datoteke)',
+                    'media'  => 'Ogledni ZIP (samo medijske datoteke)',
+                ],
+                'options' => [
+                    'title'    => 'Mogućnosti uvoza sredstava',
+                    'conflict' => [
+                        'label'           => 'Kada sredstvo već postoji na putanji',
+                        'skip'            => 'Preskoči redak',
+                        'overwrite'       => 'Prepiši datoteku i metapodatke',
+                        'update-metadata' => 'Ažuriraj samo metapodatke',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Automatski označi uvezene slike',
+                        'hint'  => 'Pokreni automatsko označavanje umjetnom inteligencijom na svakoj uvezenoj slici (zahtijeva konfiguriranu Magic AI platformu).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Odredišni direktorij (ZIP bez CSV-a)',
+                        'hint'  => 'Samo za ZIP bez CSV-a. Medijske datoteke smještaju se ovdje; mape iz ZIP-a ugniježđuju se ispod. Zadano je Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Resursi',
+                'filters' => [
+                    'file-type'   => 'Vrsta datoteke',
+                    'directories' => 'Direktoriji',
+                    'tags'        => 'Oznake',
+                    'file-types'  => [
+                        'image'    => 'Slika',
+                        'video'    => 'Video',
+                        'audio'    => 'Zvuk',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Filtri sredstava',
+                ],
+            ],
+        ],
+
     ],
 ];

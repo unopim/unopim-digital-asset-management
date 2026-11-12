@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Varlık oluşturuldu',
+            'updated' => 'Varlık güncellendi',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM Genel Bakış',
+        'asset-analytics'   => 'Varlık Analizi',
+        'total-assets'      => 'Toplam Varlık',
+        'storage-used'      => 'Kullanılan Depolama',
+        'total-directories' => 'Dizinler',
+        'total-tags'        => 'Etiketler',
+        'assets-by-type'    => 'Türe Göre Varlıklar',
+        'recent-uploads'    => 'Son Yüklemeler',
+        'no-assets'         => 'Henüz varlık yok.',
+        'types'             => [
+            'image'    => 'Görseller',
+            'video'    => 'Videolar',
+            'audio'    => 'Ses',
+            'document' => 'Belgeler',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dosya veya klasörleri buraya sürükleyin',
                         'upload-or'                 => 'veya gözat:',
                         'copy-directory-structured' => 'Dizin yapısını kopyala',
-                        'get'                       => 'Get',
+                        'get'                       => 'Al',
                         'get-by-id'                 => 'Kimliğe göre al',
                         'comment'                   => 'Yorum',
                         'share'                     => 'Dizini paylaş',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Özelliği düzenle',
                         ],
-                        'delete-success' => 'Varlık özelliği başarıyla silindi',
-                        'delete-failed'  => 'Varlık özelliği silinemedi',
-                        'create-success' => 'Varlık özelliği başarıyla oluşturuldu',
-                        'update-success' => 'Varlık özelliği başarıyla güncellendi',
-                        'update-failure' => 'Varlık özelliği güncellenemedi',
-                        'not-found'      => 'Özellik bulunamadı',
-                        'found-success'  => 'Özellik başarıyla bulundu',
+                        'delete-success'  => 'Varlık özelliği başarıyla silindi',
+                        'delete-failed'   => 'Varlık özelliği silinemedi',
+                        'create-success'  => 'Varlık özelliği başarıyla oluşturuldu',
+                        'update-success'  => 'Varlık özelliği başarıyla güncellendi',
+                        'update-failure'  => 'Varlık özelliği güncellenemedi',
+                        'not-found'       => 'Özellik bulunamadı',
+                        'asset-not-found' => 'ID\'si :id olan varlık bulunamadı',
+                        'found-success'   => 'Özellik başarıyla bulundu',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Varlık etiketleri başarıyla kaldırıldı',
                 ],
                 'delete-success'                          => 'Varlık başarıyla silindi',
-                'delete-failed-due-to-attached-resources' => 'Varlık kullanımda. Silmeden önce bağlantıyı kaldırın',
+                'delete-failed-due-to-attached-resources' => '":assets" varlığı bir ürüne veya kategoriye bağlı. Silmeden önce bağlantısını kaldırın.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Toplu silme başarıyla tamamlandı.',
                     'mass-update-success'                 => 'Toplu güncelleme başarılı.',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Oluştur',
             'edit'             => 'Düzenle',
             'update'           => 'Güncelle',
-            'delete'           => 'Delete',
+            'delete'           => 'Sil',
             'list'             => 'Liste',
             'view'             => 'Görüntüle',
             'upload'           => 'Yükle',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Satır :row (:identifier), sütun ":column": ":path" yolunda varlık bulunamadı. Varlık atlandı, satırın geri kalanı yine de içe aktarılacak.',
             'asset-tree-misnamed'        => 'Arşiv, "assets" yerine ":name" adlı bir klasör içeriyor; bu nedenle varlıklarından hiçbiri içe aktarılamadı. Klasörü "assets" olarak yeniden adlandırın ve altındaki klasörlerin veri dosyanızdaki yollarla eşleşmesini sağlayın, örneğin "assets/Root/Seed/Tech Sheets/Cotton/". macOS, klasör adına yazılan "/" karakterini ":" olarak kaydeder; olağan neden budur.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Varlıklar',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => '"yol" sütunu her satırda zorunludur — kaynak dosyanın konumu veya herkese açık bir HTTPS bağlantısı.',
+                        'asset-not-found'              => 'Belirtilen yolda hiçbir varlık yok. Önce varlığı yükleyin, ardından meta verilerini içeri aktarın.',
+                        'asset-has-resources'          => 'Varlık diğer kayıtlarla bağlı olduğu için silinmedi.',
+                        'directory-required'           => '"directory" sütunu her satır için zorunludur — hedef klasör ağacı, örn. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Hedef dizinine yazma izniniz yok. Satır atlandı.',
+                        'asset-already-exists'         => 'Satır :row atlandı — ":path" konumunda zaten bir varlık var ve çakışma stratejisi "skip". Değiştirmek için "overwrite" veya "update metadata" seçin.',
+                        'asset-already-exists-summary' => 'Toplu iş #:batch — eşleşen bir varlık zaten bulunduğundan :count satır atlandı.',
+                        'media-source-not-found'       => 'Kaynak dosya bulunamadı: "path" alanına herkese açık bir https bağlantısı veya görseller dizininde "path" ile eşleşen bir dosya koyun.',
+                        'url-invalid'                  => '"path" içindeki https bağlantısı geçerli bir http veya https adresi değil.',
+                        'url-unreachable'              => '"path" içindeki https bağlantısı indirilemedi.',
+                        'url-blocked'                  => '"path" içindeki https bağlantısı engellenmiş bir ana bilgisayara çözümleniyor.',
+                        'file-too-large'               => 'Medya dosyası izin verilen en büyük boyutu aşıyor.',
+                        'forbidden-file'               => 'Medya dosyası türüne izin verilmiyor.',
+                        'import-failed'                => 'Beklenmeyen bir hata nedeniyle satır içe aktarılamadı.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Örnek ZIP (CSV + medya dosyaları)',
+                    'media'  => 'Örnek ZIP (yalnızca medya dosyaları)',
+                ],
+                'options' => [
+                    'title'    => 'Varlık İçe Aktarma Seçenekleri',
+                    'conflict' => [
+                        'label'           => 'Yolda zaten bir varlık varsa',
+                        'skip'            => 'Satırı atla',
+                        'overwrite'       => 'Dosyanın ve meta verilerin üzerine yaz',
+                        'update-metadata' => 'Yalnızca meta verileri güncelle',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'İçe aktarılan görselleri otomatik etiketle',
+                        'hint'  => 'İçe aktarılan her görsele yapay zekâ otomatik etiketlemesi uygula (yapılandırılmış bir Magic AI platformu gerektirir).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Hedef dizin (CSV içermeyen ZIP)',
+                        'hint'  => 'Yalnızca CSV içermeyen ZIP’ler için. Medya buraya yerleştirilir; ZIP klasörleri altına yerleşir. Varsayılan: Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Varlıklar',
+                'filters' => [
+                    'file-type'   => 'Dosya türü',
+                    'directories' => 'Dizinler',
+                    'tags'        => 'Etiketler',
+                    'file-types'  => [
+                        'image'    => 'Görsel',
+                        'video'    => 'Video',
+                        'audio'    => 'Ses',
+                        'document' => 'Belge',
+                    ],
+                    'title' => 'Varlık Filtreleri',
+                ],
+            ],
+        ],
+
     ],
 ];

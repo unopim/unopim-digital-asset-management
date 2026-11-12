@@ -10,12 +10,6 @@ use Webkul\DataTransfer\Helpers\Error;
 use Webkul\DataTransfer\Helpers\Importers\Category\Storage;
 use Webkul\DataTransfer\Models\JobTrack;
 
-/*
- * A blank asset column is an unlink instruction, and the importer owns the mappings the
- * category importer's bulk upsert never lets an event reach. Both failures left an asset
- * reporting resources it was no longer attached to, which blocks deleting it for good.
- */
-
 function damCategoryImporter(): Importer
 {
     $importer = app(Importer::class)->setErrorHelper(app(Error::class));

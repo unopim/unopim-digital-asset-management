@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => '資產已建立',
+            'updated' => '資產已更新',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM 概覽',
+        'asset-analytics'   => '資產分析',
+        'total-assets'      => '資產總數',
+        'storage-used'      => '已用儲存空間',
+        'total-directories' => '目錄',
+        'total-tags'        => '標籤',
+        'assets-by-type'    => '依類型分類的資產',
+        'recent-uploads'    => '最近上傳',
+        'no-assets'         => '尚無資產。',
+        'types'             => [
+            'image'    => '圖片',
+            'video'    => '影片',
+            'audio'    => '音訊',
+            'document' => '文件',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => '將檔案或資料夾拖放至此',
                         'upload-or'                 => '或瀏覽：',
                         'copy-directory-structured' => '複製目錄結構',
-                        'get'                       => 'Get',
+                        'get'                       => '取得',
                         'get-by-id'                 => '依 ID 取得',
                         'comment'                   => '留言',
                         'share'                     => '共享目錄',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => '編輯屬性',
                         ],
-                        'delete-success' => '資產屬性刪除成功',
-                        'delete-failed'  => '刪除資產屬性失敗',
-                        'create-success' => '資產屬性建立成功',
-                        'update-success' => '資產屬性更新成功',
-                        'update-failure' => '更新資產屬性失敗',
-                        'not-found'      => '找不到屬性',
-                        'found-success'  => '屬性尋找成功',
+                        'delete-success'  => '資產屬性刪除成功',
+                        'delete-failed'   => '刪除資產屬性失敗',
+                        'create-success'  => '資產屬性建立成功',
+                        'update-success'  => '資產屬性更新成功',
+                        'update-failure'  => '更新資產屬性失敗',
+                        'not-found'       => '找不到屬性',
+                        'asset-not-found' => '找不到 ID 為 :id 的資產',
+                        'found-success'   => '屬性尋找成功',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => '資產標籤移除成功',
                 ],
                 'delete-success'                          => '資產刪除成功',
-                'delete-failed-due-to-attached-resources' => '資產使用中，請先取消連結再刪除',
+                'delete-failed-due-to-attached-resources' => '資源「:assets」已連結到產品或分類。刪除前請先取消連結。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '大量刪除成功。',
                     'mass-update-success'                 => '批量更新成功。',
@@ -516,7 +541,7 @@ return [
                     'copy'               => '複製',
                     'copied'             => '連結已複製到剪貼簿',
                     'revoke'             => '撤銷',
-                    'delete'             => 'Delete',
+                    'delete'             => '刪除',
                     'revoked'            => '共享連結已撤銷',
                     'revoke-failed'      => '撤銷共享連結失敗。',
                     'expires-on'         => '到期日期',
@@ -639,7 +664,7 @@ return [
             'create'           => '建立',
             'edit'             => '編輯',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '刪除',
             'list'             => '列表',
             'view'             => '檢視',
             'upload'           => '上傳',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => '第 :row 列（:identifier），欄位「:column」：在路徑「:path」下找不到資產。已略過此資產，該列的其餘資料仍會繼續匯入。',
             'asset-tree-misnamed'        => '壓縮檔中包含名為「:name」的資料夾而非「assets」，因此無法匯入其中的任何資產。請將其重新命名為「assets」，並讓其下的資料夾與資料檔中的路徑一致，例如「assets/Root/Seed/Tech Sheets/Cotton/」。macOS 會將資料夾名稱中輸入的「/」儲存為「:」，這是常見原因。',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => '資產',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => '每一列都需要 "路徑" 欄位 — 原始檔案位置或公開的 HTTPS 連結。',
+                        'asset-not-found'              => '指定的路徑下不存在任何資產。請先上傳資產，再匯入其元資料。',
+                        'asset-has-resources'          => '該資產與其他記錄關聯，未被刪除。',
+                        'directory-required'           => '每列都必須填寫 "directory" 欄 — 目標資料夾樹狀結構，例如 "Root/Brand/Summer"。',
+                        'directory-forbidden'          => '你沒有權限寫入目標目錄。該列已被跳過。',
+                        'asset-already-exists'         => '已略過第 :row 列 — ":path" 已存在資產，且衝突策略為 "skip"。請選擇 "overwrite" 或 "update metadata" 以變更。',
+                        'asset-already-exists-summary' => '批次 #:batch — 因已存在相符的資產，略過了 :count 列。',
+                        'media-source-not-found'       => '找不到來源檔案：請在 "path" 中填入公開的 https 連結，或在圖片目錄中放置與 "path" 相符的檔案。',
+                        'url-invalid'                  => '"path" 中的 https 連結不是有效的 http 或 https 位址。',
+                        'url-unreachable'              => '無法下載 "path" 中的 https 連結。',
+                        'url-blocked'                  => '"path" 中的 https 連結解析到被封鎖的主機。',
+                        'file-too-large'               => '媒體檔案超過允許的最大大小。',
+                        'forbidden-file'               => '不允許該媒體檔案類型。',
+                        'import-failed'                => '由於非預期的錯誤，無法匯入該列。',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => '範例 ZIP（CSV + 媒體檔案）',
+                    'media'  => '範例 ZIP（僅媒體檔案）',
+                ],
+                'options' => [
+                    'title'    => '資產匯入選項',
+                    'conflict' => [
+                        'label'           => '當該路徑已存在資產時',
+                        'skip'            => '略過該列',
+                        'overwrite'       => '覆寫檔案與中繼資料',
+                        'update-metadata' => '僅更新中繼資料',
+                    ],
+                    'auto-tag' => [
+                        'label' => '自動為匯入的圖片加上標籤',
+                        'hint'  => '對每張匯入的圖片執行 AI 自動標籤（需要已設定的 Magic AI 平台）。',
+                    ],
+                    'import-directory' => [
+                        'label' => '目標目錄（不含 CSV 的 ZIP）',
+                        'hint'  => '僅適用於不含 CSV 的 ZIP。媒體檔案放置於此，ZIP 中的資料夾巢狀置於其下。預設為 Root。',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => '資產',
+                'filters' => [
+                    'file-type'   => '檔案類型',
+                    'directories' => '目錄',
+                    'tags'        => '標籤',
+                    'file-types'  => [
+                        'image'    => '圖片',
+                        'video'    => '影片',
+                        'audio'    => '音訊',
+                        'document' => '文件',
+                    ],
+                    'title' => '資產篩選器',
+                ],
+            ],
+        ],
+
     ],
 ];

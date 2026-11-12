@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Tillgång skapad',
+            'updated' => 'Tillgång uppdaterad',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-översikt',
+        'asset-analytics'   => 'Tillgångsanalys',
+        'total-assets'      => 'Totalt antal tillgångar',
+        'storage-used'      => 'Använt lagringsutrymme',
+        'total-directories' => 'Kataloger',
+        'total-tags'        => 'Taggar',
+        'assets-by-type'    => 'Tillgångar efter typ',
+        'recent-uploads'    => 'Senaste uppladdningar',
+        'no-assets'         => 'Inga tillgångar ännu.',
+        'types'             => [
+            'image'    => 'Bilder',
+            'video'    => 'Videor',
+            'audio'    => 'Ljud',
+            'document' => 'Dokument',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dra filer eller mappar hit',
                         'upload-or'                 => 'eller bläddra:',
                         'copy-directory-structured' => 'Kopiera katalogstruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hämta',
                         'get-by-id'                 => 'Hämta efter ID',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Dela katalog',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Redigera egenskap',
                         ],
-                        'delete-success' => 'Tillgångsegenskap borttagen',
-                        'delete-failed'  => 'Borttagning av tillgångsegenskap misslyckades',
-                        'create-success' => 'Tillgångsegenskap skapad',
-                        'update-success' => 'Tillgångsegenskap uppdaterad',
-                        'update-failure' => 'Uppdatering av tillgångsegenskap misslyckades',
-                        'not-found'      => 'Egenskap hittades inte',
-                        'found-success'  => 'Egenskap hittades',
+                        'delete-success'  => 'Tillgångsegenskap borttagen',
+                        'delete-failed'   => 'Borttagning av tillgångsegenskap misslyckades',
+                        'create-success'  => 'Tillgångsegenskap skapad',
+                        'update-success'  => 'Tillgångsegenskap uppdaterad',
+                        'update-failure'  => 'Uppdatering av tillgångsegenskap misslyckades',
+                        'not-found'       => 'Egenskap hittades inte',
+                        'asset-not-found' => 'Tillgång med ID :id hittades inte',
+                        'found-success'   => 'Egenskap hittades',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Tillgångstaggar borttagna',
                 ],
                 'delete-success'                          => 'Tillgång borttagen',
-                'delete-failed-due-to-attached-resources' => 'Tillgången används. Koppla bort innan du tar bort',
+                'delete-failed-due-to-attached-resources' => 'Tillgången ":assets" är kopplad till en produkt eller kategori. Koppla bort innan du tar bort.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massborttagning genomförd.',
                     'mass-update-success'                 => 'Massuppdatering slutförd.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopiera',
                     'copied'             => 'Länk kopierad till urklipp',
                     'revoke'             => 'Återkalla',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Ta bort',
                     'revoked'            => 'Delningslänk återkallad',
                     'revoke-failed'      => 'Det gick inte att återkalla delningslänken.',
                     'expires-on'         => 'Upphör den',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Skapa',
             'edit'             => 'Redigera',
             'update'           => 'Uppdatera',
-            'delete'           => 'Delete',
+            'delete'           => 'Ta bort',
             'list'             => 'Lista',
             'view'             => 'Visa',
             'upload'           => 'Ladda upp',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Rad :row (:identifier), kolumn ":column": ingen tillgång hittades på sökvägen ":path". Tillgången hoppades över och resten av raden importeras ändå.',
             'asset-tree-misnamed'        => 'Arkivet innehåller en mapp med namnet ":name" i stället för "assets", så inga av dess tillgångar kunde importeras. Byt namn till "assets" och låt mapparna under den motsvara sökvägarna i din datafil, till exempel "assets/Root/Seed/Tech Sheets/Cotton/". macOS sparar ett "/" som skrivs i ett mappnamn som ":", vilket är den vanliga orsaken.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Tillgångar',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Kolumnen "sökväg" är obligatorisk för varje rad — platsen för källfilen eller en offentlig HTTPS-länk.',
+                        'asset-not-found'              => 'Det finns ingen tillgång på den angivna sökvägen. Ladda upp tillgången först och importera sedan dess metadata.',
+                        'asset-has-resources'          => 'Tillgången är länkad till andra poster och togs inte bort.',
+                        'directory-required'           => 'Kolumnen "directory" krävs för varje rad — målmappens träd, t.ex. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Du har inte behörighet att skriva till destinationsmappen. Raden hoppades över.',
+                        'asset-already-exists'         => 'Rad :row hoppades över — en tillgång finns redan på ":path" och konfliktstrategin är "skip". Välj "overwrite" eller "update metadata" för att ändra det.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count rad(er) hoppades över eftersom en matchande tillgång redan finns.',
+                        'media-source-not-found'       => 'Ingen källfil hittades: ange en offentlig https-länk i "path", eller en fil som matchar "path" i bildkatalogen.',
+                        'url-invalid'                  => 'https-länken i "path" är inte en giltig http- eller https-adress.',
+                        'url-unreachable'              => 'https-länken i "path" kunde inte laddas ner.',
+                        'url-blocked'                  => 'https-länken i "path" pekar på en blockerad värd.',
+                        'file-too-large'               => 'Mediefilen överskrider den högsta tillåtna storleken.',
+                        'forbidden-file'               => 'Mediefiltypen är inte tillåten.',
+                        'import-failed'                => 'Raden kunde inte importeras på grund av ett oväntat fel.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Exempel-ZIP (CSV + mediefiler)',
+                    'media'  => 'Exempel-ZIP (endast mediefiler)',
+                ],
+                'options' => [
+                    'title'    => 'Alternativ för tillgångsimport',
+                    'conflict' => [
+                        'label'           => 'När det redan finns en tillgång på sökvägen',
+                        'skip'            => 'Hoppa över raden',
+                        'overwrite'       => 'Skriv över filen och metadata',
+                        'update-metadata' => 'Uppdatera endast metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tagga importerade bilder automatiskt',
+                        'hint'  => 'Kör AI-autotaggning på varje importerad bild (kräver en konfigurerad Magic AI-plattform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Målmapp (ZIP utan CSV)',
+                        'hint'  => 'Endast för ZIP-filer utan CSV. Media placeras här; ZIP-mappar kapslas nedanför. Standard är Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Tillgångar',
+                'filters' => [
+                    'file-type'   => 'Filtyp',
+                    'directories' => 'Kataloger',
+                    'tags'        => 'Taggar',
+                    'file-types'  => [
+                        'image'    => 'Bild',
+                        'video'    => 'Video',
+                        'audio'    => 'Ljud',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Tillgångsfilter',
+                ],
+            ],
+        ],
+
     ],
 ];

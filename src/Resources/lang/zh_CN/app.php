@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => '资产已创建',
+            'updated' => '资产已更新',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM 概览',
+        'asset-analytics'   => '资产分析',
+        'total-assets'      => '资产总数',
+        'storage-used'      => '已用存储',
+        'total-directories' => '目录',
+        'total-tags'        => '标签',
+        'assets-by-type'    => '按类型划分的资产',
+        'recent-uploads'    => '最近上传',
+        'no-assets'         => '暂无资产。',
+        'types'             => [
+            'image'    => '图片',
+            'video'    => '视频',
+            'audio'    => '音频',
+            'document' => '文档',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => '将文件或文件夹拖放到此处',
                         'upload-or'                 => '或浏览：',
                         'copy-directory-structured' => '复制目录结构',
-                        'get'                       => 'Get',
+                        'get'                       => '获取',
                         'get-by-id'                 => '通过 ID 获取',
                         'comment'                   => '评论',
                         'share'                     => '共享目录',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => '编辑属性',
                         ],
-                        'delete-success' => '资产属性删除成功',
-                        'delete-failed'  => '删除资产属性失败',
-                        'create-success' => '资产属性创建成功',
-                        'update-success' => '资产属性更新成功',
-                        'update-failure' => '更新资产属性失败',
-                        'not-found'      => '未找到属性',
-                        'found-success'  => '属性查找成功',
+                        'delete-success'  => '资产属性删除成功',
+                        'delete-failed'   => '删除资产属性失败',
+                        'create-success'  => '资产属性创建成功',
+                        'update-success'  => '资产属性更新成功',
+                        'update-failure'  => '更新资产属性失败',
+                        'not-found'       => '未找到属性',
+                        'asset-not-found' => '未找到 ID 为 :id 的资产',
+                        'found-success'   => '属性查找成功',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => '资产标签已成功移除',
                 ],
                 'delete-success'                          => '资产删除成功',
-                'delete-failed-due-to-attached-resources' => '资源正在使用中。删除前请先取消关联',
+                'delete-failed-due-to-attached-resources' => '资源":assets"已关联到产品或分类。删除前请先取消关联。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '批量删除成功。',
                     'mass-update-success'                 => '批量更新成功。',
@@ -516,7 +541,7 @@ return [
                     'copy'               => '复制',
                     'copied'             => '链接已复制到剪贴板',
                     'revoke'             => '撤销',
-                    'delete'             => 'Delete',
+                    'delete'             => '删除',
                     'revoked'            => '共享链接已撤销',
                     'revoke-failed'      => '撤销共享链接失败。',
                     'expires-on'         => '到期日期',
@@ -639,7 +664,7 @@ return [
             'create'           => '创建',
             'edit'             => '编辑',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '删除',
             'list'             => '列表',
             'view'             => '查看',
             'upload'           => '上传',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => '第 :row 行（:identifier），列“:column”：在路径“:path”下未找到资产。已跳过该资产，该行的其余数据仍会继续导入。',
             'asset-tree-misnamed'        => '压缩包中包含名为“:name”的文件夹而不是“assets”，因此无法导入其中的任何资源。请将其重命名为“assets”，并保持其下的文件夹与数据文件中的路径一致，例如“assets/Root/Seed/Tech Sheets/Cotton/”。macOS 会将文件夹名称中输入的“/”保存为“:”，这是常见原因。',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => '资产',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => '每一行都需要 "路径" 列 — 源文件位置或公开的 HTTPS 链接。',
+                        'asset-not-found'              => '给定路径下不存在任何资产。请先上传资产，再导入其元数据。',
+                        'asset-has-resources'          => '该资产与其他记录关联，未被删除。',
+                        'directory-required'           => '每行都必须填写 "directory" 列 — 目标文件夹树，例如 "Root/Brand/Summer"。',
+                        'directory-forbidden'          => '你没有权限写入目标目录。该行已被跳过。',
+                        'asset-already-exists'         => '已跳过第 :row 行 — ":path" 处已存在资产，且冲突策略为 "skip"。请选择 "overwrite" 或 "update metadata" 以更改。',
+                        'asset-already-exists-summary' => '批次 #:batch — 因已存在匹配的资产，跳过了 :count 行。',
+                        'media-source-not-found'       => '未找到源文件：请在 "path" 中填写公开的 https 链接，或在图片目录中放置与 "path" 匹配的文件。',
+                        'url-invalid'                  => '"path" 中的 https 链接不是有效的 http 或 https 地址。',
+                        'url-unreachable'              => '无法下载 "path" 中的 https 链接。',
+                        'url-blocked'                  => '"path" 中的 https 链接解析到被阻止的主机。',
+                        'file-too-large'               => '媒体文件超过允许的最大大小。',
+                        'forbidden-file'               => '不允许该媒体文件类型。',
+                        'import-failed'                => '由于意外错误，无法导入该行。',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => '示例 ZIP（CSV + 媒体文件）',
+                    'media'  => '示例 ZIP（仅媒体文件）',
+                ],
+                'options' => [
+                    'title'    => '资产导入选项',
+                    'conflict' => [
+                        'label'           => '当该路径已存在资产时',
+                        'skip'            => '跳过该行',
+                        'overwrite'       => '覆盖文件和元数据',
+                        'update-metadata' => '仅更新元数据',
+                    ],
+                    'auto-tag' => [
+                        'label' => '自动为导入的图片打标签',
+                        'hint'  => '对每张导入的图片运行 AI 自动打标签（需要已配置的 Magic AI 平台）。',
+                    ],
+                    'import-directory' => [
+                        'label' => '目标目录（不含 CSV 的 ZIP）',
+                        'hint'  => '仅适用于不含 CSV 的 ZIP。媒体文件放置于此，ZIP 中的文件夹嵌套在其下。默认为 Root。',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => '资产',
+                'filters' => [
+                    'file-type'   => '文件类型',
+                    'directories' => '目录',
+                    'tags'        => '标签',
+                    'file-types'  => [
+                        'image'    => '图片',
+                        'video'    => '视频',
+                        'audio'    => '音频',
+                        'document' => '文档',
+                    ],
+                    'title' => '资产筛选器',
+                ],
+            ],
+        ],
+
     ],
 ];

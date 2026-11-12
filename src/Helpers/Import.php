@@ -4,6 +4,7 @@ namespace Webkul\DAM\Helpers;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Webkul\DAM\Helpers\Importers\Asset\Importer as AssetImporter;
 use Webkul\DAM\Support\AssetBundleReader;
 use Webkul\DAM\Support\AssetTreeIngestor;
 use Webkul\DataTransfer\Helpers\Import as BaseImport;
@@ -15,7 +16,7 @@ class Import extends BaseImport
     {
         if ($this->isAssetBundle()) {
             $this->openAssetBundle();
-        } else {
+        } elseif (! $this->isAssetEntity()) {
             $this->ingestUploadedAssetTree();
         }
 
@@ -49,6 +50,11 @@ class Import extends BaseImport
     protected function isAssetBundle(): bool
     {
         return Str::endsWith(Str::lower((string) $this->import->file_path), '.zip');
+    }
+
+    protected function isAssetEntity(): bool
+    {
+        return ($this->import->jobInstance?->entity_type ?? null) === AssetImporter::ENTITY_TYPE;
     }
 
     public function completed(): void

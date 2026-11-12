@@ -127,7 +127,6 @@ class AssetController extends Controller
         return $files;
     }
 
-    /** Delegates to the shared SSRF validator; pair with SafeWebhookUrl::httpOptions($url) to pin the IP at fetch time. */
     private function isSafeRemoteUrl(string $url): bool
     {
         return SafeWebhookUrl::validate($url)['valid'] ?? false;
@@ -401,11 +400,6 @@ class AssetController extends Controller
         $asset->update(['meta_data' => array_merge($metaData, ['cover_art_path' => $coverPath])]);
     }
 
-    /**
-     * API requests authenticate on the 'api' guard via a personal API key, not the
-     * 'admin' guard bouncer() reads from — so this checks the key's own granted
-     * scopes instead of the web ACL, mirroring ScopeMiddleware's own permission check.
-     */
     protected function autoTagEligible(): bool
     {
         $user = auth()->guard('api')->user();
@@ -633,7 +627,7 @@ class AssetController extends Controller
         if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assets' => $asset->file_name]),
             ], 404);
         }
 

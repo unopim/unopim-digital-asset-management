@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => '자산이 생성되었습니다',
+            'updated' => '자산이 업데이트되었습니다',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM 개요',
+        'asset-analytics'   => '자산 분석',
+        'total-assets'      => '전체 자산',
+        'storage-used'      => '사용된 저장공간',
+        'total-directories' => '디렉터리',
+        'total-tags'        => '태그',
+        'assets-by-type'    => '유형별 자산',
+        'recent-uploads'    => '최근 업로드',
+        'no-assets'         => '아직 자산이 없습니다.',
+        'types'             => [
+            'image'    => '이미지',
+            'video'    => '동영상',
+            'audio'    => '오디오',
+            'document' => '문서',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => '파일 또는 폴더를 여기에 끌어다 놓으세요',
                         'upload-or'                 => '또는 탐색:',
                         'copy-directory-structured' => '디렉터리 구조 복사',
-                        'get'                       => 'Get',
+                        'get'                       => '가져오기',
                         'get-by-id'                 => 'ID로 가져오기',
                         'comment'                   => '댓글',
                         'share'                     => '디렉터리 공유',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => '속성 편집',
                         ],
-                        'delete-success' => '자산 속성이 성공적으로 삭제되었습니다',
-                        'delete-failed'  => '에셋 속성 삭제 실패',
-                        'create-success' => '자산 속성이 성공적으로 생성되었습니다',
-                        'update-success' => '자산 속성이 성공적으로 업데이트되었습니다',
-                        'update-failure' => '에셋 속성 업데이트 실패',
-                        'not-found'      => '속성을 찾을 수 없습니다',
-                        'found-success'  => '속성을 성공적으로 찾았습니다',
+                        'delete-success'  => '자산 속성이 성공적으로 삭제되었습니다',
+                        'delete-failed'   => '에셋 속성 삭제 실패',
+                        'create-success'  => '자산 속성이 성공적으로 생성되었습니다',
+                        'update-success'  => '자산 속성이 성공적으로 업데이트되었습니다',
+                        'update-failure'  => '에셋 속성 업데이트 실패',
+                        'not-found'       => '속성을 찾을 수 없습니다',
+                        'asset-not-found' => 'ID :id인 자산을 찾을 수 없습니다',
+                        'found-success'   => '속성을 성공적으로 찾았습니다',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => '자산 태그가 성공적으로 제거되었습니다',
                 ],
                 'delete-success'                          => '자산이 성공적으로 삭제되었습니다',
-                'delete-failed-due-to-attached-resources' => '자산이 사용 중입니다. 삭제 전에 연결을 해제하세요',
+                'delete-failed-due-to-attached-resources' => '애셋 ":assets"이(가) 제품 또는 카테고리에 연결되어 있습니다. 삭제하기 전에 연결을 해제하세요.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '대량 삭제가 성공적으로 완료되었습니다.',
                     'mass-update-success'                 => '대량 업데이트 완료.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => '복사',
                     'copied'             => '클립보드에 링크가 복사되었습니다',
                     'revoke'             => '취소',
-                    'delete'             => 'Delete',
+                    'delete'             => '삭제',
                     'revoked'            => '공유 링크가 취소되었습니다',
                     'revoke-failed'      => '공유 링크 취소에 실패했습니다.',
                     'expires-on'         => '만료 날짜',
@@ -639,7 +664,7 @@ return [
             'create'           => '생성',
             'edit'             => '편집',
             'update'           => '업데이트',
-            'delete'           => 'Delete',
+            'delete'           => '삭제',
             'list'             => '목록',
             'view'             => '보기',
             'upload'           => '업로드',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => ':row행 (:identifier), ":column" 열: ":path" 경로에서 에셋을 찾을 수 없습니다. 해당 에셋은 건너뛰었으며 행의 나머지 데이터는 계속 가져옵니다.',
             'asset-tree-misnamed'        => '아카이브에 "assets" 대신 ":name"이라는 폴더가 있어 에셋을 하나도 가져올 수 없었습니다. 이름을 "assets"로 바꾸고 그 아래 폴더가 데이터 파일의 경로(예: "assets/Root/Seed/Tech Sheets/Cotton/")와 일치하도록 유지하세요. macOS는 폴더 이름에 입력한 "/"를 ":"로 저장하며, 이것이 일반적인 원인입니다.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => '자산',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => '모든 행에 "경로" 열이 필요합니다 — 소스 파일 위치 또는 공개 HTTPS 링크.',
+                        'asset-not-found'              => '지정된 경로에 자산이 없습니다. 먼저 자산을 업로드한 후 해당 메타데이터를 가져오세요.',
+                        'asset-has-resources'          => '자산이 다른 레코드와 연결되어 삭제되지 않았습니다.',
+                        'directory-required'           => '"directory" 열은 모든 행에 필수입니다 — 대상 폴더 트리, 예: "Root/Brand/Summer".',
+                        'directory-forbidden'          => '대상 디렉토리에 쓸 권한이 없습니다. 행은 건너뛰었습니다.',
+                        'asset-already-exists'         => ':row 행을 건너뛰었습니다 — ":path"에 자산이 이미 있으며 충돌 전략이 "skip"입니다. 변경하려면 "overwrite" 또는 "update metadata"를 선택하세요.',
+                        'asset-already-exists-summary' => '배치 #:batch — 일치하는 자산이 이미 있어 :count개 행을 건너뛰었습니다.',
+                        'media-source-not-found'       => '원본 파일을 찾을 수 없습니다: "path"에 공개 https 링크를 입력하거나 이미지 디렉터리에서 "path"와 일치하는 파일을 배치하세요.',
+                        'url-invalid'                  => '"path"의 https 링크가 유효한 http 또는 https 주소가 아닙니다.',
+                        'url-unreachable'              => '"path"의 https 링크를 다운로드할 수 없습니다.',
+                        'url-blocked'                  => '"path"의 https 링크가 차단된 호스트로 확인됩니다.',
+                        'file-too-large'               => '미디어 파일이 허용된 최대 크기를 초과합니다.',
+                        'forbidden-file'               => '허용되지 않는 미디어 파일 형식입니다.',
+                        'import-failed'                => '예기치 않은 오류로 행을 가져오지 못했습니다.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => '샘플 ZIP (CSV + 미디어 파일)',
+                    'media'  => '샘플 ZIP (미디어 파일만)',
+                ],
+                'options' => [
+                    'title'    => '자산 가져오기 옵션',
+                    'conflict' => [
+                        'label'           => '경로에 자산이 이미 있는 경우',
+                        'skip'            => '행 건너뛰기',
+                        'overwrite'       => '파일과 메타데이터 덮어쓰기',
+                        'update-metadata' => '메타데이터만 업데이트',
+                    ],
+                    'auto-tag' => [
+                        'label' => '가져온 이미지 자동 태그 지정',
+                        'hint'  => '가져온 각 이미지에 AI 자동 태그 지정을 실행합니다(구성된 Magic AI 플랫폼이 필요함).',
+                    ],
+                    'import-directory' => [
+                        'label' => '대상 디렉터리 (CSV 없는 ZIP)',
+                        'hint'  => 'CSV가 없는 ZIP에만 적용됩니다. 미디어가 여기에 저장되고 ZIP 폴더가 그 아래에 중첩됩니다. 기본값은 Root입니다.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => '자산',
+                'filters' => [
+                    'file-type'   => '파일 유형',
+                    'directories' => '디렉터리',
+                    'tags'        => '태그',
+                    'file-types'  => [
+                        'image'    => '이미지',
+                        'video'    => '동영상',
+                        'audio'    => '오디오',
+                        'document' => '문서',
+                    ],
+                    'title' => '자산 필터',
+                ],
+            ],
+        ],
+
     ],
 ];

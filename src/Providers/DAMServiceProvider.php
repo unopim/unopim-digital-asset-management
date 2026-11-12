@@ -3,6 +3,7 @@
 namespace Webkul\DAM\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -23,13 +24,23 @@ use Webkul\DAM\Console\Commands\DamVersion;
 use Webkul\DAM\Console\Commands\GenerateScaleData;
 use Webkul\DAM\Console\Commands\MoveDamAssetsToS3;
 use Webkul\DAM\Console\Commands\SeedDamDemoData;
+use Webkul\DAM\Contracts\Adapters\CategoryResolver;
+use Webkul\DAM\Contracts\Adapters\ProductResolver;
+use Webkul\DAM\Helpers\Exporters\Product\Exporter as DamProductExporter;
 use Webkul\DAM\Helpers\Exporters\Product\MeasurementAwareExporter;
+use Webkul\DAM\Helpers\Importers\Product\Importer as DamProductImporter;
 use Webkul\DAM\Helpers\Importers\Product\MeasurementAwareImporter;
 use Webkul\DAM\Helpers\Normalizers\ProductValuesNormalizer;
 use Webkul\DAM\Http\Middleware\DAM;
+use Webkul\DAM\Integrations\Pim\PimCategoryResolver;
+use Webkul\DAM\Integrations\Pim\PimProductResolver;
+use Webkul\DAM\Integrations\Standalone\NullCategoryResolver;
+use Webkul\DAM\Integrations\Standalone\NullProductResolver;
 use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AssetWebhookDispatcher;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Support\PimIntegration;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Import;
 use Webkul\DataTransfer\Helpers\Importers\Product\Importer;
@@ -39,38 +50,53 @@ use Webkul\Measurement\Helpers\Exporters\ProductExporter as MeasurementExporter;
 use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter;
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
+use Webkul\Webhook\Registry\EventRegistry;
 
 class DAMServiceProvider extends ServiceProvider
 {
-    public $bindings = [
-        ProductAttributeValuesNormalizer::class                         => ProductValuesNormalizer::class,
-        \Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class => \Webkul\DAM\Helpers\Exporters\Category\Exporter::class,
-        \Webkul\DataTransfer\Helpers\Importers\Category\Importer::class => \Webkul\DAM\Helpers\Importers\Category\Importer::class,
-        Import::class                                                   => \Webkul\DAM\Helpers\Import::class,
-        ImportController::class                                         => \Webkul\DAM\Http\Controllers\Settings\DataTransfer\ImportController::class,
-        ProductJobValidator::class                                      => \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class,
-        CategoryJobValidator::class                                     => \Webkul\DAM\Validators\JobInstances\Import\CategoryJobValidator::class,
-        ProductForm::class                                              => \Webkul\DAM\Http\Requests\ProductForm::class,
-        Attribute::class                                                => \Webkul\DAM\Models\Attribute::class,
-        AttributeTranslation::class                                     => \Webkul\DAM\Models\AttributeTranslation::class,
-        ProductDataGrid::class                                          => \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class,
-    ];
+    protected function pimEnabled(): bool
+    {
+        return PimIntegration::enabled();
+    }
 
     /**
-     * Measurement binds the product exporter and importer inside register(), so a
-     * $bindings entry here loses to it. Every register() runs before any booted()
-     * callback fires, which makes these the bindings that survive.
+     * @param  class-string  $coreClass
+     * @param  callable():class-string  $damClass
      */
+    protected function bindPimAwareHandler(string $coreClass, callable $damClass): void
+    {
+        $this->app->bind($coreClass, fn (Application $app): object => $this->pimEnabled()
+            ? $app->make($damClass())
+            : $app->build($coreClass));
+    }
+
+    protected function registerAssetWebhookEvents(): void
+    {
+        if (
+            ! class_exists(EventRegistry::class)
+            || ! $this->app->bound(EventRegistry::class)
+        ) {
+            return;
+        }
+
+        $this->app->make(EventRegistry::class)->register('asset', [
+            AssetWebhookDispatcher::EVENT_ASSET_CREATED => 'dam::app.webhook-events.asset.created',
+            AssetWebhookDispatcher::EVENT_ASSET_UPDATED => 'dam::app.webhook-events.asset.updated',
+        ]);
+    }
+
     public function boot(Router $router)
     {
         $this->app->booted(function (): void {
-            $this->app->bind(Exporter::class, class_exists(MeasurementExporter::class)
+            $this->bindPimAwareHandler(Exporter::class, fn (): string => class_exists(MeasurementExporter::class)
                 ? MeasurementAwareExporter::class
-                : \Webkul\DAM\Helpers\Exporters\Product\Exporter::class);
+                : DamProductExporter::class);
 
-            $this->app->bind(Importer::class, class_exists(MeasurementImporter::class)
+            $this->bindPimAwareHandler(Importer::class, fn (): string => class_exists(MeasurementImporter::class)
                 ? MeasurementAwareImporter::class
-                : \Webkul\DAM\Helpers\Importers\Product\Importer::class);
+                : DamProductImporter::class);
+
+            $this->registerAssetWebhookEvents();
         });
 
         $router->aliasMiddleware('dam', DAM::class);
@@ -114,16 +140,21 @@ class DAMServiceProvider extends ServiceProvider
         $this->app->register(EventServiceProvider::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
+            $commands = [
                 DamInstaller::class,
                 BackfillThumbnails::class,
-                CleanupOrphanedAssetResourceMappings::class,
                 SeedDamDemoData::class,
                 GenerateScaleData::class,
                 DamVersion::class,
                 DamUpdate::class,
                 DamUpdateRestore::class,
-            ]);
+            ];
+
+            if ($this->pimEnabled()) {
+                $commands[] = CleanupOrphanedAssetResourceMappings::class;
+            }
+
+            $this->commands($commands);
         }
 
         Blade::anonymousComponentPath(__DIR__.'/../Resources/views/components', 'dam');
@@ -161,6 +192,10 @@ class DAMServiceProvider extends ServiceProvider
         ], 'dam-defaults');
 
         $this->publishes([
+            __DIR__.'/../Resources/samples' => storage_path('app/public/data-transfer/samples'),
+        ], 'dam-defaults');
+
+        $this->publishes([
             __DIR__.'/../../publishable' => public_path('themes'),
         ], 'dam-config');
     }
@@ -174,6 +209,38 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->app->scoped(DirectoryPermissionService::class);
 
+        $this->app->bind(ProductResolver::class, fn (): ProductResolver => $this->pimEnabled()
+            ? new PimProductResolver
+            : new NullProductResolver);
+
+        $this->app->bind(CategoryResolver::class, fn (): CategoryResolver => $this->pimEnabled()
+            ? new PimCategoryResolver
+            : new NullCategoryResolver);
+
+        $this->app->bind(Import::class, \Webkul\DAM\Helpers\Import::class);
+
+        $this->app->bind(ImportController::class, \Webkul\DAM\Http\Controllers\Settings\DataTransfer\ImportController::class);
+
+        if ($this->pimEnabled()) {
+            $this->app->bind(ProductAttributeValuesNormalizer::class, ProductValuesNormalizer::class);
+
+            $this->app->bind(\Webkul\DataTransfer\Helpers\Exporters\Category\Exporter::class, \Webkul\DAM\Helpers\Exporters\Category\Exporter::class);
+
+            $this->app->bind(\Webkul\DataTransfer\Helpers\Importers\Category\Importer::class, \Webkul\DAM\Helpers\Importers\Category\Importer::class);
+
+            $this->app->bind(ProductJobValidator::class, \Webkul\DAM\Validators\JobInstances\Import\ProductJobValidator::class);
+
+            $this->app->bind(CategoryJobValidator::class, \Webkul\DAM\Validators\JobInstances\Import\CategoryJobValidator::class);
+
+            $this->app->bind(ProductForm::class, \Webkul\DAM\Http\Requests\ProductForm::class);
+
+            $this->app->bind(Attribute::class, \Webkul\DAM\Models\Attribute::class);
+
+            $this->app->bind(AttributeTranslation::class, \Webkul\DAM\Models\AttributeTranslation::class);
+
+            $this->app->bind(ProductDataGrid::class, \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class);
+        }
+
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/acl.php', 'acl');
@@ -182,20 +249,26 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/dam.php', 'dam');
 
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/importers.php', 'importers');
+
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/exporters.php', 'exporters');
+
         $this->mergeConfigFrom(
             __DIR__.'/../Config/unopim-vite.php',
             'unopim-vite.viters'
         );
 
-        $this->mergeConfigFrom(
-            __DIR__.'/../Config/attribute_types.php',
-            'attribute_types'
-        );
+        if ($this->pimEnabled()) {
+            $this->mergeConfigFrom(
+                __DIR__.'/../Config/attribute_types.php',
+                'attribute_types'
+            );
 
-        $this->mergeConfigFrom(
-            __DIR__.'/../Config/category_field_types.php',
-            'category_field_types'
-        );
+            $this->mergeConfigFrom(
+                __DIR__.'/../Config/category_field_types.php',
+                'category_field_types'
+            );
+        }
 
         Route::prefix('api')
             ->middleware('api')

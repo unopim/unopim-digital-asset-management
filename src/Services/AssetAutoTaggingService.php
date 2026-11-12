@@ -24,21 +24,11 @@ class AssetAutoTaggingService
         protected AssetTagRepository $tagRepository,
     ) {}
 
-    /**
-     * The message from the most recent failed tagAsset() call, if any —
-     * lets a caller (e.g. the job tracker) surface why a run failed.
-     */
     public function lastError(): ?string
     {
         return $this->lastError;
     }
 
-    /**
-     * Best-effort: swallows every failure so a broken AI call never fails the upload.
-     * Returns false only on a genuine error (caller uses this to mark its tracking
-     * batch failed vs processed) — a disabled feature or an empty tag suggestion
-     * still count as a successful, if uneventful, run.
-     */
     public function tagAsset(Asset $asset, string $disk): bool
     {
         if (! $this->isEnabled() || $asset->file_type !== 'image') {
@@ -91,10 +81,6 @@ class AssetAutoTaggingService
         }
     }
 
-    /**
-     * Configured platform id, else the active default; null when nothing
-     * usable is resolvable so tagging can silently no-op.
-     */
     protected function resolvePlatform(): ?MagicAIPlatform
     {
         $platformId = $this->platformId();
@@ -110,12 +96,6 @@ class AssetAutoTaggingService
         return AiProvider::from($platform->provider)->supportsImages() ? $platform : null;
     }
 
-    /**
-     * Reads DAM_AI_TAGGING_ENABLED straight from the DB. config('dam.ai_tagging.*')
-     * is only populated by the DAM HTTP middleware, which a queue worker never runs.
-     * Public so callers can decide whether tagging is worth tracking (e.g. a
-     * tracking batch) before dispatching, not just whether the admin may do it.
-     */
     public function isEnabled(): bool
     {
         $value = DamConfiguration::find('DAM_AI_TAGGING_ENABLED')?->value;
@@ -147,11 +127,6 @@ class AssetAutoTaggingService
         return max(1, min(20, (int) $value));
     }
 
-    /**
-     * The whole binary has to be resident to be base64-encoded, and the encoding adds
-     * another third on top, so an oversized image is skipped before it is read rather
-     * than after — a single unbounded read is enough to exhaust a queue worker.
-     */
     protected function readAsDataUri(Asset $asset, string $disk): ?string
     {
         $storage = Storage::disk($disk);
@@ -176,9 +151,6 @@ class AssetAutoTaggingService
         return 'data:'.($asset->mime_type ?: 'image/jpeg').';base64,'.base64_encode($raw);
     }
 
-    /**
-     * Bytes; 0 or less disables the cap.
-     */
     protected function maxFileSize(): int
     {
         return (int) config('dam.ai_tagging.max_file_size', 10 * 1024 * 1024);

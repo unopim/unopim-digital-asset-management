@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'アセットを作成しました',
+            'updated' => 'アセットを更新しました',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM の概要',
+        'asset-analytics'   => 'アセット分析',
+        'total-assets'      => 'アセット総数',
+        'storage-used'      => '使用済みストレージ',
+        'total-directories' => 'ディレクトリ',
+        'total-tags'        => 'タグ',
+        'assets-by-type'    => 'タイプ別アセット',
+        'recent-uploads'    => '最近のアップロード',
+        'no-assets'         => 'アセットはまだありません。',
+        'types'             => [
+            'image'    => '画像',
+            'video'    => '動画',
+            'audio'    => '音声',
+            'document' => 'ドキュメント',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'ファイルまたはフォルダをここにドロップ',
                         'upload-or'                 => 'またはブラウズ:',
                         'copy-directory-structured' => 'ディレクトリ構造をコピー',
-                        'get'                       => 'Get',
+                        'get'                       => '取得',
                         'get-by-id'                 => 'IDで取得',
                         'comment'                   => 'コメント',
                         'share'                     => 'ディレクトリを共有',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'プロパティ編集',
                         ],
-                        'delete-success' => 'アセットプロパティが正常に削除されました',
-                        'delete-failed'  => 'アセットプロパティの削除に失敗しました',
-                        'create-success' => 'アセットプロパティが正常に作成されました',
-                        'update-success' => 'アセットプロパティが正常に更新されました',
-                        'update-failure' => 'アセットプロパティの更新に失敗しました',
-                        'not-found'      => 'プロパティが見つかりません',
-                        'found-success'  => 'プロパティが正常に見つかりました',
+                        'delete-success'  => 'アセットプロパティが正常に削除されました',
+                        'delete-failed'   => 'アセットプロパティの削除に失敗しました',
+                        'create-success'  => 'アセットプロパティが正常に作成されました',
+                        'update-success'  => 'アセットプロパティが正常に更新されました',
+                        'update-failure'  => 'アセットプロパティの更新に失敗しました',
+                        'not-found'       => 'プロパティが見つかりません',
+                        'asset-not-found' => 'ID :id のアセットが見つかりません',
+                        'found-success'   => 'プロパティが正常に見つかりました',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'アセットのタグが正常に削除されました',
                 ],
                 'delete-success'                          => 'アセットが正常に削除されました',
-                'delete-failed-due-to-attached-resources' => 'アセットは使用中です。削除する前にリンクを解除してください',
+                'delete-failed-due-to-attached-resources' => 'アセット「:assets」は製品またはカテゴリーにリンクされています。削除する前にリンクを解除してください。',
                 'datagrid'                                => [
                     'mass-delete-success'                 => '一括削除が正常に完了しました。',
                     'mass-update-success'                 => '一括更新が正常に完了しました。',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'コピー',
                     'copied'             => 'リンクをクリップボードにコピーしました',
                     'revoke'             => '取り消す',
-                    'delete'             => 'Delete',
+                    'delete'             => '削除',
                     'revoked'            => '共有リンクが取り消されました',
                     'revoke-failed'      => '共有リンクの取り消しに失敗しました。',
                     'expires-on'         => '有効期限',
@@ -639,7 +664,7 @@ return [
             'create'           => '作成',
             'edit'             => '編集',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '削除',
             'list'             => '一覧',
             'view'             => '表示',
             'upload'           => 'アップロード',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => '行 :row (:identifier)、列「:column」: パス「:path」にアセットが見つかりませんでした。このアセットはスキップされ、行の残りのデータは引き続きインポートされます。',
             'asset-tree-misnamed'        => 'アーカイブには「assets」ではなく「:name」という名前のフォルダーが含まれているため、アセットを一切インポートできませんでした。「assets」に名前を変更し、その下のフォルダーをデータファイル内のパス（例: 「assets/Root/Seed/Tech Sheets/Cotton/」）と一致させてください。macOS はフォルダー名に入力された「/」を「:」として保存するため、これが通常の原因です。',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'アセット',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'すべての行に "パス" 列が必要です — ソースファイルの場所または公開 HTTPS リンク。',
+                        'asset-not-found'              => '指定したパスにはアセットが存在しません。まずアセットをアップロードしてから、そのメタデータをインポートしてください。',
+                        'asset-has-resources'          => 'アセットは他のレコードとリンクされており、削除されませんでした。',
+                        'directory-required'           => '"directory" 列はすべての行で必須です — 宛先フォルダーツリー（例: "Root/Brand/Summer"）。',
+                        'directory-forbidden'          => '保存先ディレクトリに書き込む権限がありません。行はスキップされました。',
+                        'asset-already-exists'         => '行 :row をスキップしました — ":path" にアセットが既に存在し、競合方針が "skip" です。変更するには "overwrite" または "update metadata" を選択してください。',
+                        'asset-already-exists-summary' => 'バッチ #:batch — 一致するアセットが既に存在するため、:count 行をスキップしました。',
+                        'media-source-not-found'       => 'ソースファイルが見つかりません: "path" に公開 https リンクを指定するか、画像ディレクトリ内の "path" に一致するファイルを配置してください。',
+                        'url-invalid'                  => '"path" の https リンクは有効な http または https アドレスではありません。',
+                        'url-unreachable'              => '"path" の https リンクをダウンロードできませんでした。',
+                        'url-blocked'                  => '"path" の https リンクはブロックされたホストに解決されます。',
+                        'file-too-large'               => 'メディアファイルが許可された最大サイズを超えています。',
+                        'forbidden-file'               => 'このメディアファイルタイプは許可されていません。',
+                        'import-failed'                => '予期しないエラーにより行をインポートできませんでした。',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'サンプル ZIP（CSV + メディアファイル）',
+                    'media'  => 'サンプル ZIP（メディアファイルのみ）',
+                ],
+                'options' => [
+                    'title'    => 'アセットのインポートオプション',
+                    'conflict' => [
+                        'label'           => 'パスにアセットが既に存在する場合',
+                        'skip'            => '行をスキップ',
+                        'overwrite'       => 'ファイルとメタデータを上書き',
+                        'update-metadata' => 'メタデータのみ更新',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'インポートした画像を自動タグ付け',
+                        'hint'  => 'インポートした各画像に AI 自動タグ付けを実行します（設定済みの Magic AI プラットフォームが必要です）。',
+                    ],
+                    'import-directory' => [
+                        'label' => '保存先ディレクトリ（CSVなしのZIP）',
+                        'hint'  => 'CSVのないZIP専用です。メディアはここに配置され、ZIP内のフォルダーはその下にネストされます。デフォルトはRootです。',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'アセット',
+                'filters' => [
+                    'file-type'   => 'ファイルタイプ',
+                    'directories' => 'ディレクトリ',
+                    'tags'        => 'タグ',
+                    'file-types'  => [
+                        'image'    => '画像',
+                        'video'    => '動画',
+                        'audio'    => '音声',
+                        'document' => 'ドキュメント',
+                    ],
+                    'title' => 'アセットフィルター',
+                ],
+            ],
+        ],
+
     ],
 ];

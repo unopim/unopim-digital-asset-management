@@ -30,7 +30,7 @@ class ConfigurationController extends Controller
         $platforms = $this->visionCapablePlatforms();
 
         return view('dam::configuration.index', [
-            'settings' => [
+            'settings'       => [
                 'DAM_TREE_SHOW_ASSETS'            => config('dam.tree.show_assets'),
                 'DAM_EXPLORER_ENABLED'            => config('dam.explorer.enabled'),
                 'DAM_EXPLORER_BOOKMARKS_ENABLED'  => config('dam.explorer.bookmarks_enabled'),
@@ -45,10 +45,6 @@ class ConfigurationController extends Controller
         ]);
     }
 
-    /**
-     * Paginated option source for the async platform select, in the shape
-     * the shared v-async-select-handler component expects.
-     */
     public function aiTaggingPlatforms(Request $request): JsonResponse
     {
         if (! bouncer()->hasPermission('dam.configuration.index')) {
@@ -71,6 +67,17 @@ class ConfigurationController extends Controller
             'options'  => $options->all(),
             'page'     => 1,
             'lastPage' => 1,
+        ]);
+    }
+
+    public function bgImagePlatforms(): JsonResponse
+    {
+        if (! bouncer()->hasPermission('dam')) {
+            abort(403);
+        }
+
+        return new JsonResponse([
+            'platforms' => $this->visionCapablePlatforms()->all(),
         ]);
     }
 

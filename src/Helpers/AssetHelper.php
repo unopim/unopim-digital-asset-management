@@ -8,6 +8,33 @@ use Webkul\DAM\Models\Directory;
 
 class AssetHelper
 {
+    public const THUMBNAIL_DIRECTORY = 'thumbnails';
+
+    public const PREVIEW_DIRECTORY = 'preview';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function previewSizeDirectories(string $disk): array
+    {
+        return Storage::disk($disk)->directories(self::PREVIEW_DIRECTORY);
+    }
+
+    /**
+     * @param  array<int, string>|null  $previewDirectories
+     */
+    public static function clearDerivatives(string $path, string $disk, ?array $previewDirectories = null): void
+    {
+        $storage = Storage::disk($disk);
+
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path);
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path.'.jpg');
+
+        foreach ($previewDirectories ?? self::previewSizeDirectories($disk) as $sizeDirectory) {
+            $storage->delete($sizeDirectory.'/'.$path);
+        }
+    }
+
     public static function getMaxUploadSizeKb(): int
     {
         $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));
@@ -112,13 +139,6 @@ class AssetHelper
         return $fileName;
     }
 
-    /**
-     * Thumbnails and previews are addressed by the asset's path, which does not change
-     * when the binary behind it does, so a browser holding a render has no reason to ask
-     * for it again inside its cache window. Stamping the stored file's modification time
-     * into the URL turns a replaced binary into a new address and the render is fetched
-     * on the next paint instead of after a forced reload.
-     */
     public static function getThumbnailUrl(string $path): string
     {
         return route('admin.dam.file.thumbnail', [
@@ -127,10 +147,6 @@ class AssetHelper
         ]);
     }
 
-    /**
-     * S3 is left unstamped: its media is served straight from the bucket or through a
-     * signed URL that already carries its own query, so there is no local render to bust.
-     */
     public static function getRenderVersion(string $path): ?int
     {
         $disk = Directory::getAssetDisk();
@@ -187,7 +203,6 @@ class AssetHelper
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /** PDF/SVG are trusted here via the upload-time content scan, not sandboxed serving — Chrome's PDF viewer won't load in a sandboxed iframe at all. */
     public static function isInlineSafeMime(?string $mimeType): bool
     {
         $mimeType = strtolower(trim((string) $mimeType));
@@ -211,12 +226,6 @@ class AssetHelper
         ];
     }
 
-    /**
-     * Extensions that must never be stored, regardless of where they appear in the
-     * file name. Includes the numbered and alternate PHP handler suffixes, because a
-     * server configured with `AddHandler php-script .php5` executes them exactly as
-     * it would a `.php`.
-     */
     public const FORBIDDEN_EXTENSIONS = [
         'php',
         'php3',
@@ -290,14 +299,6 @@ class AssetHelper
         'cab',
     ];
 
-    /**
-     * Detected media types that must never be stored whatever the file is called.
-     *
-     * `text/x-php` matters as much as `application/x-php`: libmagic reports the former
-     * for a plain `<?php ...` script, so a backend script renamed `adminer.jpg` was
-     * detected correctly and still passed, because only the `application/*` spelling was
-     * listed.
-     */
     public const FORBIDDEN_MIME_TYPES = [
         'application/x-php',
         'text/x-php',
@@ -342,14 +343,6 @@ class AssetHelper
         'application/x-xz',
     ];
 
-    /**
-     * Detected types that say nothing about what a file really is.
-     *
-     * libmagic falls back to these for short, empty or unrecognised payloads, so they
-     * cannot contradict a declared extension — a `.jpg` reported as `text/plain` may be a
-     * truncated fixture as easily as an attack. Anything genuinely dangerous in this
-     * group is caught by FORBIDDEN_MIME_TYPES or by the executable-content scan instead.
-     */
     private const INCONCLUSIVE_MIME_TYPES = [
         'text/plain',
         'application/octet-stream',
@@ -357,11 +350,6 @@ class AssetHelper
         'inode/x-empty',
     ];
 
-    /**
-     * Extension families used to check a file's real content against the name it was
-     * given. Office and PDF types are deliberately absent: their detected types vary too
-     * much across libmagic builds to gate on, and they are covered by the blocklists.
-     */
     private const EXTENSION_MIME_PREFIXES = [
         'jpg'  => ['image/'],
         'jpeg' => ['image/'],
@@ -393,10 +381,8 @@ class AssetHelper
         'wma'  => ['audio/', 'video/x-ms-asf'],
     ];
 
-    /** Cap for hasPdfActiveContent()/hasSvgActiveContent() scans — avoids reading multi-GB files fully into memory. */
     protected const MAX_CONTENT_SCAN_BYTES = 2 * 1024 * 1024;
 
-    /** Matches the upload size limit already enforced before isForbiddenFile() runs, so padding past a fixed cap can't hide a marker. */
     protected static function maxScanBytes(): int
     {
         $maxUploadKb = self::getMaxUploadSizeKb();
@@ -484,7 +470,6 @@ class AssetHelper
         return self::hasExecutableContent($realPath, $extension);
     }
 
-    /** Reads up to self::MAX_CONTENT_SCAN_BYTES from the start of the file. */
     protected static function readScanPrefix(string $realPath): string
     {
         $handle = @fopen($realPath, 'rb');
@@ -493,14 +478,40 @@ class AssetHelper
             return '';
         }
 
+        $limit = self::maxScanBytes();
+
+        $size = @filesize($realPath);
+
+        if ($size !== false) {
+            $limit = min($limit, (int) $size);
+        }
+
+        if ($limit <= 0) {
+            @fclose($handle);
+
+            return '';
+        }
+
         try {
-            return (string) @fread($handle, self::maxScanBytes());
+            $buffer = '';
+            $chunkSize = 1024 * 1024;
+
+            while (strlen($buffer) < $limit && ! feof($handle)) {
+                $read = @fread($handle, min($chunkSize, $limit - strlen($buffer)));
+
+                if ($read === false || $read === '') {
+                    break;
+                }
+
+                $buffer .= $read;
+            }
+
+            return $buffer;
         } finally {
             @fclose($handle);
         }
     }
 
-    /** Rejects auto-run PDF scripting. */
     protected static function hasPdfActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -516,7 +527,6 @@ class AssetHelper
         return (bool) preg_match('/\/(OpenAction|AA|JavaScript|JS|Launch)\b/', $content);
     }
 
-    /** SVG is served inline, so <script>/event-handlers/javascript: URIs run in-origin like HTML. */
     protected static function hasSvgActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -544,7 +554,6 @@ class AssetHelper
         return (bool) preg_match('/<foreignObject[\s>]/i', $content);
     }
 
-    /** Rejects a cell starting with =, +, -, or @ — Excel/Sheets treats it as a formula, enabling DDE/command injection on open (OWASP CSV Injection). */
     protected static function hasCsvActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -568,7 +577,6 @@ class AssetHelper
         return false;
     }
 
-    /** Rejects an RTF carrying an embedded/linked OLE object (\object, \objdata, \objautlink) — a known parser-exploit and payload-delivery vector. */
     protected static function hasRtfActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -584,7 +592,6 @@ class AssetHelper
         return (bool) preg_match('/\\\\(object|objdata|objclass|objautlink|objupdate)\b/i', $content);
     }
 
-    /** Rejects a macro-enabled OOXML/ODF file: word|xl/vbaProject.bin, or an ODF Basic/ auto-run event listener. */
     protected static function hasOfficeZipMacroContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath) || ! class_exists(\ZipArchive::class)) {
@@ -624,7 +631,6 @@ class AssetHelper
         }
     }
 
-    /** Rejects a legacy OLE2 .doc/.xls carrying a VBA project; stream names stay plaintext UTF-16LE even when p-code is compiled. */
     protected static function hasLegacyOfficeMacroContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -646,18 +652,11 @@ class AssetHelper
         return false;
     }
 
-    /** UTF-16LE re-encode, used to match OLE2 directory-sector stream names against ASCII markers. */
     protected static function toUtf16Le(string $ascii): string
     {
         return implode('', array_map(fn (string $char) => $char."\x00", str_split($ascii)));
     }
 
-    /**
-     * Read the media type from the bytes on disk rather than trusting the client.
-     *
-     * `UploadedFile::getMimeType()` already guesses from content, but not every caller
-     * supplies one, and the browser-supplied type is attacker-controlled.
-     */
     protected static function detectMimeType(?string $realPath): ?string
     {
         if (! $realPath || ! is_file($realPath) || ! function_exists('finfo_open')) {
@@ -679,17 +678,6 @@ class AssetHelper
         }
     }
 
-    /**
-     * Reject a file whose bytes disagree with the extension it claims.
-     *
-     * Renaming `adminer.php` to `adminer.jpg` defeats every name-based rule — the name
-     * carries one plausible extension and nothing else looks wrong. Requiring a `.jpg` to
-     * actually contain an image closes that, and closes the same trick for every other
-     * media extension at once.
-     *
-     * Extensions outside the map are not gated here, so documents and archives keep
-     * relying on the blocklists above.
-     */
     protected static function mismatchesDeclaredExtension(?string $extension, ?string $detectedMime): bool
     {
         if (! $extension || ! $detectedMime) {
@@ -715,18 +703,6 @@ class AssetHelper
         return true;
     }
 
-    /**
-     * Reject media whose bytes carry a script the server could be tricked into running.
-     *
-     * A `GIF89a<?php ... ?>` polyglot is a genuine GIF by magic number, so the blocklists
-     * and the extension check both pass it; only reading the bytes catches it.
-     *
-     * Scoped to the media extensions because that is where such a marker is anomalous,
-     * and matched only against long markers. Scanning every type for short ones produced
-     * false positives on legitimate binaries — `<%` occurs by chance at offset 1544 of a
-     * perfectly ordinary generated PDF, and `<?=` is short enough to collide roughly once
-     * in two thousand 8 KB files. A shebang only means anything at offset 0.
-     */
     protected static function hasExecutableContent(?string $realPath, ?string $extension): bool
     {
         if (! $realPath || ! is_file($realPath) || ! $extension) {
@@ -764,19 +740,6 @@ class AssetHelper
         return (bool) preg_match('/<script[\s>]/i', $head);
     }
 
-    /**
-     * Reject a name carrying a forbidden extension anywhere in it, not just as the
-     * final segment.
-     *
-     * Callers derive `$extension` from `getClientOriginalExtension()` or
-     * `pathinfo(PATHINFO_EXTENSION)`, both of which return only the last segment, so
-     * `shell.php.jpg` presented as `jpg` passed every check and was stored verbatim.
-     * Apache's `mod_mime` matches handlers against *any* extension segment, so that
-     * file executes as PHP on a default LAMP host.
-     *
-     * Trailing dots and spaces are stripped per segment because Windows and some
-     * upload paths silently discard them, turning `shell.php.` back into `shell.php`.
-     */
     protected static function hasForbiddenExtensionSegment(?string $fileName, array $forbiddenExtensions): bool
     {
         if (! $fileName) {

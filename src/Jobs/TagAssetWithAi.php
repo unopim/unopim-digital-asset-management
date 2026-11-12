@@ -18,11 +18,6 @@ use Webkul\DAM\Traits\SettlesUploadBatch;
 use Webkul\DataTransfer\Models\JobTrack;
 use Webkul\DataTransfer\Models\JobTrackBatch;
 
-/**
- * Runs the AI tagging call on its own queue lifecycle, separate from
- * ProcessAssetUpload, so a slow/failed AI call can't delay metadata
- * extraction, thumbnail generation, or upload-batch completion.
- */
 class TagAssetWithAi implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, SettlesUploadBatch;
@@ -64,7 +59,6 @@ class TagAssetWithAi implements ShouldQueue
 
         $batch?->update(['state' => UploadBatch::STATE_PROCESSING]);
 
-        // No tracker session to aggregate under (e.g. an API upload) — track this run on its own.
         $jobTrack = $tracker
             ? ($tracker->job_track_id ? JobTrack::find($tracker->job_track_id) : null)
             : $jobTracker->startStandaloneJob($this->userId);

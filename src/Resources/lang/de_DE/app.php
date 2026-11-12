@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Asset erstellt',
+            'updated' => 'Asset aktualisiert',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-Übersicht',
+        'asset-analytics'   => 'Asset-Analyse',
+        'total-assets'      => 'Assets gesamt',
+        'storage-used'      => 'Belegter Speicher',
+        'total-directories' => 'Verzeichnisse',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Assets nach Typ',
+        'recent-uploads'    => 'Neueste Uploads',
+        'no-assets'         => 'Noch keine Assets.',
+        'types'             => [
+            'image'    => 'Bilder',
+            'video'    => 'Videos',
+            'audio'    => 'Audio',
+            'document' => 'Dokumente',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dateien oder Ordner hierher ziehen',
                         'upload-or'                 => 'oder durchsuchen:',
                         'copy-directory-structured' => 'Verzeichnisstruktur kopieren',
-                        'get'                       => 'Get',
+                        'get'                       => 'Abrufen',
                         'get-by-id'                 => 'Nach ID suchen',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Verzeichnis freigeben',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Eigenschaft bearbeiten',
                         ],
-                        'delete-success' => 'Asset-Eigenschaft erfolgreich gelöscht',
-                        'delete-failed'  => 'Asset-Eigenschaft konnte nicht gelöscht werden',
-                        'create-success' => 'Asset-Eigenschaft erfolgreich erstellt',
-                        'update-success' => 'Asset-Eigenschaft erfolgreich aktualisiert',
-                        'update-failure' => 'Asset-Eigenschaft konnte nicht aktualisiert werden',
-                        'not-found'      => 'Eigenschaft nicht gefunden',
-                        'found-success'  => 'Eigenschaft erfolgreich gefunden',
+                        'delete-success'  => 'Asset-Eigenschaft erfolgreich gelöscht',
+                        'delete-failed'   => 'Asset-Eigenschaft konnte nicht gelöscht werden',
+                        'create-success'  => 'Asset-Eigenschaft erfolgreich erstellt',
+                        'update-success'  => 'Asset-Eigenschaft erfolgreich aktualisiert',
+                        'update-failure'  => 'Asset-Eigenschaft konnte nicht aktualisiert werden',
+                        'not-found'       => 'Eigenschaft nicht gefunden',
+                        'asset-not-found' => 'Asset mit der ID :id wurde nicht gefunden',
+                        'found-success'   => 'Eigenschaft erfolgreich gefunden',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Asset-Tags erfolgreich gelöscht',
                 ],
                 'delete-success'                          => 'Asset erfolgreich gelöscht',
-                'delete-failed-due-to-attached-resources' => 'Asset wird verwendet. Vor dem Löschen bitte trennen',
+                'delete-failed-due-to-attached-resources' => 'Das Asset ":assets" ist mit einem Produkt oder einer Kategorie verknüpft. Vor dem Löschen bitte trennen.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Massenlöschung erfolgreich.',
                     'mass-update-success'                 => 'Massenaktualisierung erfolgreich.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopieren',
                     'copied'             => 'Link in die Zwischenablage kopiert',
                     'revoke'             => 'Widerrufen',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Löschen',
                     'revoked'            => 'Freigabe-Link widerrufen',
                     'revoke-failed'      => 'Freigabe-Link konnte nicht widerrufen werden.',
                     'expires-on'         => 'Läuft ab am',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Erstellen',
             'edit'             => 'Bearbeiten',
             'update'           => 'Aktualisieren',
-            'delete'           => 'Delete',
+            'delete'           => 'Löschen',
             'list'             => 'Auflisten',
             'view'             => 'Ansehen',
             'upload'           => 'Hochladen',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Zeile :row (:identifier), Spalte ":column": Unter dem Pfad ":path" wurde kein Asset gefunden. Das Asset wurde übersprungen, der Rest der Zeile wird trotzdem importiert.',
             'asset-tree-misnamed'        => 'Das Archiv enthält einen Ordner namens ":name" statt "assets", daher konnte keines seiner Assets importiert werden. Benennen Sie ihn in "assets" um und stellen Sie sicher, dass die Ordner darunter den Pfaden in Ihrer Datendatei entsprechen, z. B. "assets/Root/Seed/Tech Sheets/Cotton/". macOS speichert ein in einen Ordnernamen eingegebenes "/" als ":", was die übliche Ursache ist.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Medienobjekte',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Die Spalte "Pfad" ist in jeder Zeile erforderlich — der Speicherort der Quelldatei oder ein öffentlicher HTTPS-Link.',
+                        'asset-not-found'              => 'Es existiert kein Asset unter dem angegebenen Pfad. Laden Sie das Asset zuerst hoch und importieren Sie dann dessen Metadaten.',
+                        'asset-has-resources'          => 'Das Asset ist mit anderen Datensätzen verknüpft und wurde nicht gelöscht.',
+                        'directory-required'           => 'Die Spalte "directory" ist für jede Zeile erforderlich — der Zielordnerbaum, z. B. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Sie haben keine Berechtigung, in das Zielverzeichnis zu schreiben. Die Zeile wurde übersprungen.',
+                        'asset-already-exists'         => 'Zeile :row übersprungen — unter ":path" existiert bereits ein Asset und die Konfliktstrategie ist "skip". Wählen Sie "overwrite" oder "update metadata", um dies zu ändern.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count Zeile(n) übersprungen, da bereits ein passendes Asset vorhanden ist.',
+                        'media-source-not-found'       => 'Keine Quelldatei gefunden: Geben Sie in "path" einen öffentlichen https-Link an oder eine Datei, die "path" im Bilderverzeichnis entspricht.',
+                        'url-invalid'                  => 'Der https-Link in "path" ist keine gültige http- oder https-Adresse.',
+                        'url-unreachable'              => 'Der https-Link in "path" konnte nicht heruntergeladen werden.',
+                        'url-blocked'                  => 'Der https-Link in "path" verweist auf einen blockierten Host.',
+                        'file-too-large'               => 'Die Mediendatei überschreitet die maximal zulässige Größe.',
+                        'forbidden-file'               => 'Der Mediendateityp ist nicht zulässig.',
+                        'import-failed'                => 'Die Zeile konnte aufgrund eines unerwarteten Fehlers nicht importiert werden.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Beispiel-ZIP (CSV + Mediendateien)',
+                    'media'  => 'Beispiel-ZIP (nur Mediendateien)',
+                ],
+                'options' => [
+                    'title'    => 'Asset-Importoptionen',
+                    'conflict' => [
+                        'label'           => 'Wenn im Pfad bereits ein Asset vorhanden ist',
+                        'skip'            => 'Zeile überspringen',
+                        'overwrite'       => 'Datei und Metadaten überschreiben',
+                        'update-metadata' => 'Nur Metadaten aktualisieren',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Importierte Bilder automatisch taggen',
+                        'hint'  => 'KI-Auto-Tagging für jedes importierte Bild ausführen (erfordert eine konfigurierte Magic-AI-Plattform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Zielverzeichnis (ZIP ohne CSV)',
+                        'hint'  => 'Nur für ZIPs ohne CSV. Medien werden hier abgelegt; ZIP-Ordner werden darunter verschachtelt. Standard ist Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Medienobjekte',
+                'filters' => [
+                    'file-type'   => 'Dateityp',
+                    'directories' => 'Verzeichnisse',
+                    'tags'        => 'Schlagwörter',
+                    'file-types'  => [
+                        'image'    => 'Bild',
+                        'video'    => 'Video',
+                        'audio'    => 'Audio',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Asset-Filter',
+                ],
+            ],
+        ],
+
     ],
 ];

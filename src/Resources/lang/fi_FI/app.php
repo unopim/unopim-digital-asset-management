@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Resurssi luotu',
+            'updated' => 'Resurssi päivitetty',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-yleiskatsaus',
+        'asset-analytics'   => 'Resurssianalyysi',
+        'total-assets'      => 'Resursseja yhteensä',
+        'storage-used'      => 'Käytetty tallennustila',
+        'total-directories' => 'Hakemistot',
+        'total-tags'        => 'Tunnisteet',
+        'assets-by-type'    => 'Resurssit tyypeittäin',
+        'recent-uploads'    => 'Viimeisimmät lataukset',
+        'no-assets'         => 'Ei vielä resursseja.',
+        'types'             => [
+            'image'    => 'Kuvat',
+            'video'    => 'Videot',
+            'audio'    => 'Ääni',
+            'document' => 'Asiakirjat',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Vedä tiedostoja tai kansioita tähän',
                         'upload-or'                 => 'tai selaa:',
                         'copy-directory-structured' => 'Kopioi hakemistorakenne',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hae',
                         'get-by-id'                 => 'Hae tunnuksella',
                         'comment'                   => 'Kommentti',
                         'share'                     => 'Jaa hakemisto',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Muokkaa ominaisuutta',
                         ],
-                        'delete-success' => 'Resurssin ominaisuus poistettu onnistuneesti',
-                        'delete-failed'  => 'Omaisuuden ominaisuuden poistaminen epäonnistui',
-                        'create-success' => 'Resurssin ominaisuus luotu onnistuneesti',
-                        'update-success' => 'Resurssin ominaisuus päivitetty onnistuneesti',
-                        'update-failure' => 'Omaisuuden ominaisuuden päivitys epäonnistui',
-                        'not-found'      => 'Ominaisuutta ei löytynyt',
-                        'found-success'  => 'Ominaisuus löydetty onnistuneesti',
+                        'delete-success'  => 'Resurssin ominaisuus poistettu onnistuneesti',
+                        'delete-failed'   => 'Omaisuuden ominaisuuden poistaminen epäonnistui',
+                        'create-success'  => 'Resurssin ominaisuus luotu onnistuneesti',
+                        'update-success'  => 'Resurssin ominaisuus päivitetty onnistuneesti',
+                        'update-failure'  => 'Omaisuuden ominaisuuden päivitys epäonnistui',
+                        'not-found'       => 'Ominaisuutta ei löytynyt',
+                        'asset-not-found' => 'Omaisuutta, jonka tunnus on :id, ei löydy',
+                        'found-success'   => 'Ominaisuus löydetty onnistuneesti',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Resurssin tunnisteet poistettu onnistuneesti',
                 ],
                 'delete-success'                          => 'Resurssi poistettu onnistuneesti',
-                'delete-failed-due-to-attached-resources' => 'Resurssi on käytössä. Poista linkitys ennen poistamista',
+                'delete-failed-due-to-attached-resources' => 'Resurssi ":assets" on liitetty tuotteeseen tai luokkaan. Poista linkitys ennen poistamista.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Joukkopoisto onnistui.',
                     'mass-update-success'                 => 'Joukkomuutos onnistui.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopioi',
                     'copied'             => 'Linkki kopioitu leikepöydälle',
                     'revoke'             => 'Peruuta',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Poista',
                     'revoked'            => 'Jakolinkki peruutettu',
                     'revoke-failed'      => 'Jakolinkin peruuttaminen epäonnistui.',
                     'expires-on'         => 'Vanhenee',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Luo',
             'edit'             => 'Muokkaa',
             'update'           => 'Päivitä',
-            'delete'           => 'Delete',
+            'delete'           => 'Poista',
             'list'             => 'Luettelo',
             'view'             => 'Näytä',
             'upload'           => 'Lähetä',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Rivi :row (:identifier), sarake ":column": polusta ":path" ei löytynyt resurssia. Resurssi ohitettiin, ja rivin muut tiedot tuodaan silti.',
             'asset-tree-misnamed'        => 'Arkisto sisältää kansion nimeltä ":name" kansion "assets" sijaan, joten yhtään sen aineistoa ei voitu tuoda. Nimeä se uudelleen muotoon "assets" ja pidä sen alla olevat kansiot datatiedoston polkujen mukaisina, esimerkiksi "assets/Root/Seed/Tech Sheets/Cotton/". macOS tallentaa kansion nimeen kirjoitetun "/"-merkin muodossa ":", mikä on tavallisin syy.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Resurssit',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => '"Polku"-sarake vaaditaan jokaisella rivillä — lähdetiedoston sijainti tai julkinen HTTPS-linkki.',
+                        'asset-not-found'              => 'Polulla ei ole mitään omaisuutta. Lataa omaisuus ensin ja tuo sen metatiedot sitten.',
+                        'asset-has-resources'          => 'Omaisuus on linkitetty muihin tietueisiin eikä sitä poistettu.',
+                        'directory-required'           => 'Sarake "directory" vaaditaan jokaiselle riville — kohdekansion puu, esim. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Sinulla ei ole lupaa kirjoittaa kohdehakemistoon. Rivi ohitettiin.',
+                        'asset-already-exists'         => 'Rivi :row ohitettu — resurssi on jo kohteessa ":path" ja ristiriitastrategia on "skip". Valitse "overwrite" tai "update metadata" muuttaaksesi sitä.',
+                        'asset-already-exists-summary' => 'Erä #:batch — :count rivi(ä) ohitettu, koska vastaava resurssi on jo olemassa.',
+                        'media-source-not-found'       => 'Lähdetiedostoa ei löytynyt: lisää julkinen https-linkki kenttään "path", tai kuvahakemistossa "path"-arvoa vastaava tiedosto.',
+                        'url-invalid'                  => 'Kentän "path" https-linkki ei ole kelvollinen http- tai https-osoite.',
+                        'url-unreachable'              => 'Kentän "path" https-linkkiä ei voitu ladata.',
+                        'url-blocked'                  => 'Kentän "path" https-linkki osoittaa estettyyn isäntään.',
+                        'file-too-large'               => 'Mediatiedosto ylittää suurimman sallitun koon.',
+                        'forbidden-file'               => 'Mediatiedostotyyppi ei ole sallittu.',
+                        'import-failed'                => 'Riviä ei voitu tuoda odottamattoman virheen vuoksi.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Esimerkki-ZIP (CSV + mediatiedostot)',
+                    'media'  => 'Esimerkki-ZIP (vain mediatiedostot)',
+                ],
+                'options' => [
+                    'title'    => 'Resurssien tuontiasetukset',
+                    'conflict' => [
+                        'label'           => 'Kun polussa on jo resurssi',
+                        'skip'            => 'Ohita rivi',
+                        'overwrite'       => 'Korvaa tiedosto ja metatiedot',
+                        'update-metadata' => 'Päivitä vain metatiedot',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Merkitse tuodut kuvat automaattisesti',
+                        'hint'  => 'Suorita tekoälyn automaattinen tunnisteiden lisäys jokaiselle tuodulle kuvalle (vaatii määritetyn Magic AI -alustan).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Kohdehakemisto (ZIP ilman CSV:tä)',
+                        'hint'  => 'Vain CSV:ttömille ZIP-tiedostoille. Media sijoitetaan tähän; ZIP-kansiot sijoittuvat sen alle. Oletuksena Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Resurssit',
+                'filters' => [
+                    'file-type'   => 'Tiedostotyyppi',
+                    'directories' => 'Hakemistot',
+                    'tags'        => 'Tunnisteet',
+                    'file-types'  => [
+                        'image'    => 'Kuva',
+                        'video'    => 'Video',
+                        'audio'    => 'Ääni',
+                        'document' => 'Asiakirja',
+                    ],
+                    'title' => 'Resurssisuodattimet',
+                ],
+            ],
+        ],
+
     ],
 ];

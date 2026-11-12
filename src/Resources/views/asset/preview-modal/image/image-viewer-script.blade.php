@@ -345,7 +345,7 @@ window._damImageViewer = {
         async loadBgPlatforms() {
             if (this.bgPlatforms.length) return;
             try {
-                const { data } = await window.axios.get('{{ route('admin.magic_ai.platforms') }}');
+                const { data } = await window.axios.get('{{ Route::has('admin.magic_ai.platforms') ? route('admin.magic_ai.platforms') : route('admin.dam.configuration.image-platforms') }}');
                 const imagePlatforms = (data.platforms || []).filter(p => ['openai', 'gemini', 'xai'].includes(p.provider));
                 this.bgPlatforms = imagePlatforms;
                 if (!this.bgPlatforms.length) {

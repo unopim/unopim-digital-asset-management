@@ -19,13 +19,6 @@ class AssetRule implements ValidationRule
         protected ?int $productId = null,
     ) {}
 
-    /**
-     * Ids the product already stores for this attribute are accepted as they are, so a
-     * save that resubmits them does not fail for an editor who cannot open their
-     * directory. Every other id must exist and sit in a directory the user can access.
-     * Unknown and inaccessible ids share one message so the rule cannot be used to
-     * probe which restricted assets exist.
-     */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
         $value = array_filter(is_array($value)

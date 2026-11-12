@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Đã tạo tài sản',
+            'updated' => 'Đã cập nhật tài sản',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'Tổng quan DAM',
+        'asset-analytics'   => 'Phân tích tài sản',
+        'total-assets'      => 'Tổng số tài sản',
+        'storage-used'      => 'Dung lượng đã dùng',
+        'total-directories' => 'Thư mục',
+        'total-tags'        => 'Thẻ',
+        'assets-by-type'    => 'Tài sản theo loại',
+        'recent-uploads'    => 'Tải lên gần đây',
+        'no-assets'         => 'Chưa có tài sản nào.',
+        'types'             => [
+            'image'    => 'Hình ảnh',
+            'video'    => 'Video',
+            'audio'    => 'Âm thanh',
+            'document' => 'Tài liệu',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Kéo tệp hoặc thư mục vào đây',
                         'upload-or'                 => 'hoặc duyệt:',
                         'copy-directory-structured' => 'Sao chép cấu trúc thư mục',
-                        'get'                       => 'Get',
+                        'get'                       => 'Lấy',
                         'get-by-id'                 => 'Lấy theo ID',
                         'comment'                   => 'Bình luận',
                         'share'                     => 'Chia sẻ thư mục',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Chỉnh sửa thuộc tính',
                         ],
-                        'delete-success' => 'Đã xóa thuộc tính tài sản thành công',
-                        'delete-failed'  => 'Xóa thuộc tính tài sản thất bại',
-                        'create-success' => 'Đã tạo thuộc tính tài sản thành công',
-                        'update-success' => 'Đã cập nhật thuộc tính tài sản thành công',
-                        'update-failure' => 'Cập nhật thuộc tính tài sản thất bại',
-                        'not-found'      => 'Không tìm thấy thuộc tính',
-                        'found-success'  => 'Đã tìm thấy thuộc tính thành công',
+                        'delete-success'  => 'Đã xóa thuộc tính tài sản thành công',
+                        'delete-failed'   => 'Xóa thuộc tính tài sản thất bại',
+                        'create-success'  => 'Đã tạo thuộc tính tài sản thành công',
+                        'update-success'  => 'Đã cập nhật thuộc tính tài sản thành công',
+                        'update-failure'  => 'Cập nhật thuộc tính tài sản thất bại',
+                        'not-found'       => 'Không tìm thấy thuộc tính',
+                        'asset-not-found' => 'Không tìm thấy tài sản với ID :id',
+                        'found-success'   => 'Đã tìm thấy thuộc tính thành công',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Đã xóa thẻ tài sản thành công',
                 ],
                 'delete-success'                          => 'Đã xóa tài sản thành công',
-                'delete-failed-due-to-attached-resources' => 'Tài sản đang được sử dụng. Hủy liên kết trước khi xóa',
+                'delete-failed-due-to-attached-resources' => 'Tài sản ":assets" được liên kết với một sản phẩm hoặc danh mục. Hãy hủy liên kết trước khi xóa.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Đã xóa hàng loạt thành công.',
                     'mass-update-success'                 => 'Cập nhật hàng loạt thành công.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Sao chép',
                     'copied'             => 'Đã sao chép liên kết vào clipboard',
                     'revoke'             => 'Thu hồi',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Xóa',
                     'revoked'            => 'Liên kết chia sẻ đã bị thu hồi',
                     'revoke-failed'      => 'Không thể thu hồi liên kết chia sẻ.',
                     'expires-on'         => 'Hết hạn vào',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Tạo',
             'edit'             => 'Chỉnh sửa',
             'update'           => 'Cập nhật',
-            'delete'           => 'Delete',
+            'delete'           => 'Xóa',
             'list'             => 'Danh sách',
             'view'             => 'Xem',
             'upload'           => 'Tải lên',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Dòng :row (:identifier), cột ":column": không tìm thấy tài sản nào tại đường dẫn ":path". Tài sản đã bị bỏ qua và phần còn lại của dòng vẫn sẽ được nhập.',
             'asset-tree-misnamed'        => 'Kho lưu trữ chứa một thư mục tên ":name" thay vì "assets", nên không thể nhập bất kỳ tài sản nào của nó. Hãy đổi tên thành "assets" và giữ các thư mục bên dưới khớp với đường dẫn trong tệp dữ liệu của bạn, ví dụ "assets/Root/Seed/Tech Sheets/Cotton/". macOS lưu ký tự "/" gõ trong tên thư mục thành ":", đây là nguyên nhân thường gặp.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Tài sản',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Cột "đường dẫn" là bắt buộc trên mọi hàng — vị trí tệp nguồn hoặc liên kết HTTPS công khai.',
+                        'asset-not-found'              => 'Không có tài sản nào tại đường dẫn cho trước. Vui lòng tải tài sản lên trước, sau đó nhập metadata của nó.',
+                        'asset-has-resources'          => 'Tài sản được liên kết với các bản ghi khác và chưa bị xóa.',
+                        'directory-required'           => 'Cột "directory" là bắt buộc cho mỗi hàng — cây thư mục đích, ví dụ "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Bạn không có quyền ghi vào thư mục đích. Hàng đã bị bỏ qua.',
+                        'asset-already-exists'         => 'Đã bỏ qua hàng :row — đã tồn tại tài sản tại ":path" và chiến lược xung đột là "skip". Chọn "overwrite" hoặc "update metadata" để thay đổi.',
+                        'asset-already-exists-summary' => 'Lô #:batch — đã bỏ qua :count hàng vì đã tồn tại tài sản trùng khớp.',
+                        'media-source-not-found'       => 'Không tìm thấy tệp nguồn: đặt một liên kết https công khai trong "path", hoặc một tệp khớp với "path" trong thư mục hình ảnh.',
+                        'url-invalid'                  => 'Liên kết https trong "path" không phải là địa chỉ http hoặc https hợp lệ.',
+                        'url-unreachable'              => 'Không thể tải xuống liên kết https trong "path".',
+                        'url-blocked'                  => 'Liên kết https trong "path" trỏ đến một máy chủ bị chặn.',
+                        'file-too-large'               => 'Tệp phương tiện vượt quá kích thước tối đa cho phép.',
+                        'forbidden-file'               => 'Loại tệp phương tiện không được phép.',
+                        'import-failed'                => 'Không thể nhập hàng do lỗi không mong muốn.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'ZIP mẫu (CSV + tệp phương tiện)',
+                    'media'  => 'ZIP mẫu (chỉ tệp phương tiện)',
+                ],
+                'options' => [
+                    'title'    => 'Tùy chọn nhập tài sản',
+                    'conflict' => [
+                        'label'           => 'Khi đã tồn tại tài sản tại đường dẫn',
+                        'skip'            => 'Bỏ qua hàng',
+                        'overwrite'       => 'Ghi đè tệp và siêu dữ liệu',
+                        'update-metadata' => 'Chỉ cập nhật siêu dữ liệu',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tự động gắn thẻ hình ảnh đã nhập',
+                        'hint'  => 'Chạy gắn thẻ tự động bằng AI trên mỗi hình ảnh đã nhập (yêu cầu nền tảng Magic AI đã được cấu hình).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Thư mục đích (ZIP không có CSV)',
+                        'hint'  => 'Chỉ dành cho ZIP không có CSV. Phương tiện được đặt ở đây; các thư mục trong ZIP lồng bên dưới. Mặc định là Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Tài sản',
+                'filters' => [
+                    'file-type'   => 'Loại tệp',
+                    'directories' => 'Thư mục',
+                    'tags'        => 'Thẻ',
+                    'file-types'  => [
+                        'image'    => 'Hình ảnh',
+                        'video'    => 'Video',
+                        'audio'    => 'Âm thanh',
+                        'document' => 'Tài liệu',
+                    ],
+                    'title' => 'Bộ lọc tài sản',
+                ],
+            ],
+        ],
+
     ],
 ];

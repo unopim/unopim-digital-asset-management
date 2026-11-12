@@ -5,13 +5,6 @@ namespace Webkul\DAM\Support;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 
-/**
- * Resolves DAM asset paths to ids for an import batch.
- *
- * Importers previously queried once per asset value per row; a batch referencing the
- * same asset a thousand times issued a thousand queries. Paths are collected up front
- * and resolved in chunks instead, and lookups afterwards are in-memory.
- */
 class AssetPathStorage
 {
     /**
@@ -20,17 +13,11 @@ class AssetPathStorage
     protected array $items = [];
 
     /**
-     * Paths already looked up and not found, so a typo repeated across rows is
-     * queried once.
-     *
      * @var array<string, true>
      */
     protected array $missing = [];
 
     /**
-     * Resolve any of the given paths not already known, in chunks so a large batch
-     * cannot overflow the driver's bind-parameter limit.
-     *
      * @param  list<string>  $paths
      */
     public function load(array $paths): void

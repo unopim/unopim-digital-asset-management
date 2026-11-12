@@ -730,14 +730,6 @@ class AssetController extends Controller
         return $tracker->isActive() ? $tracker : null;
     }
 
-    /**
-     * Tagging eligibility (file_type, permission, feature flag) is fully known
-     * here already, synchronously, before any job runs — so the tag batch and
-     * its job_track_batches row are created right now too, not lazily inside
-     * the queued job. That keeps the live tracker's batch total fixed at the
-     * true count for the whole session instead of growing as each queued job
-     * happens to execute.
-     */
     protected function queueAssetFinalisation(Asset $asset, ?UploadTracker $tracker): void
     {
         $autoTagEligible = $this->autoTagEligible();
@@ -937,7 +929,9 @@ class AssetController extends Controller
         if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', [
+                    'assets' => $asset->file_name,
+                ]),
             ], 404);
         }
 
@@ -1021,7 +1015,9 @@ class AssetController extends Controller
 
             if (! empty($skippedAssetNames)) {
                 return new JsonResponse([
-                    'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources'),
+                    'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', [
+                        'assets' => implode(', ', $skippedAssetNames),
+                    ]),
                 ], 404);
             }
 

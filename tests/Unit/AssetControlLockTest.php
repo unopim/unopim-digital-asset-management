@@ -1,12 +1,5 @@
 <?php
 
-/*
- * A common Asset attribute is owned by the parent product. The control renders before
- * core's lock wrapper opens, so it has to apply the lock itself — otherwise the field
- * stays fully editable on the child and the child stores its own copy, which then
- * stops tracking the parent.
- */
-
 function renderAssetControl(array $data): string
 {
     return view('dam::asset.catalog.products.dynamic-attribute-fields.asset-control', array_merge([
@@ -52,11 +45,6 @@ it('stays editable when the host view sends no lock information', function () {
         ->and($html)->toContain(':readonly="false"');
 });
 
-/*
- * The lock only reaches this control if core forwards it with the attribute control
- * event, which older cores do not. The package degrades to an unlocked field there,
- * so the contract is asserted where it holds and reported as skipped where it does not.
- */
 $productControlView = dirname(__DIR__, 3)
     .'/Admin/src/Resources/views/components/products/dynamic-attribute-fields.blade.php';
 

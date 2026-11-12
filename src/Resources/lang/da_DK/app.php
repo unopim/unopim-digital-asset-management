@@ -1,6 +1,30 @@
 <?php
 
 return [
+    'webhook-events' => [
+        'asset' => [
+            'created' => 'Aktiv oprettet',
+            'updated' => 'Aktiv opdateret',
+        ],
+    ],
+    'dashboard' => [
+        'overview'          => 'DAM-oversigt',
+        'asset-analytics'   => 'Aktivanalyse',
+        'total-assets'      => 'Aktiver i alt',
+        'storage-used'      => 'Brugt lagerplads',
+        'total-directories' => 'Mapper',
+        'total-tags'        => 'Tags',
+        'assets-by-type'    => 'Aktiver efter type',
+        'recent-uploads'    => 'Seneste uploads',
+        'no-assets'         => 'Ingen aktiver endnu.',
+        'types'             => [
+            'image'    => 'Billeder',
+            'video'    => 'Videoer',
+            'audio'    => 'Lyd',
+            'document' => 'Dokumenter',
+        ],
+    ],
+
     'admin' => [
         'components' => [
             'layouts' => [
@@ -97,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Træk filer eller mapper hertil',
                         'upload-or'                 => 'eller gennemse:',
                         'copy-directory-structured' => 'Kopiér mappestruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hent',
                         'get-by-id'                 => 'Hent efter id',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Del mappe',
@@ -197,13 +221,14 @@ return [
                         'edit' => [
                             'title' => 'Rediger egenskab',
                         ],
-                        'delete-success' => 'Aktivegenskab slettet',
-                        'delete-failed'  => 'Sletning af aktivegenskab mislykkedes',
-                        'create-success' => 'Aktivegenskab oprettet',
-                        'update-success' => 'Aktivegenskab opdateret',
-                        'update-failure' => 'Opdatering af aktivegenskab mislykkedes',
-                        'not-found'      => 'Egenskab ikke fundet',
-                        'found-success'  => 'Egenskab fundet',
+                        'delete-success'  => 'Aktivegenskab slettet',
+                        'delete-failed'   => 'Sletning af aktivegenskab mislykkedes',
+                        'create-success'  => 'Aktivegenskab oprettet',
+                        'update-success'  => 'Aktivegenskab opdateret',
+                        'update-failure'  => 'Opdatering af aktivegenskab mislykkedes',
+                        'not-found'       => 'Egenskab ikke fundet',
+                        'asset-not-found' => 'Aktiv med ID :id blev ikke fundet',
+                        'found-success'   => 'Egenskab fundet',
                     ],
                 ],
                 'comments' => [
@@ -452,7 +477,7 @@ return [
                     'delete-success' => 'Aktivtags fjernet',
                 ],
                 'delete-success'                          => 'Aktiv slettet',
-                'delete-failed-due-to-attached-resources' => 'Aktivet er i brug. Fjern tilknytningen før sletning',
+                'delete-failed-due-to-attached-resources' => 'Aktivet ":assets" er knyttet til et produkt eller en kategori. Fjern tilknytningen før sletning.',
                 'datagrid'                                => [
                     'mass-delete-success'                 => 'Masseslettet.',
                     'mass-update-success'                 => 'Masseopdatering fuldført.',
@@ -516,7 +541,7 @@ return [
                     'copy'               => 'Kopiér',
                     'copied'             => 'Link kopieret til udklipsholder',
                     'revoke'             => 'Tilbagekald',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Slet',
                     'revoked'            => 'Delingslink tilbagekaldt',
                     'revoke-failed'      => 'Kunne ikke tilbagekalde delingslink.',
                     'expires-on'         => 'Udløber den',
@@ -639,7 +664,7 @@ return [
             'create'           => 'Opret',
             'edit'             => 'Rediger',
             'update'           => 'Opdater',
-            'delete'           => 'Delete',
+            'delete'           => 'Slet',
             'list'             => 'Liste',
             'view'             => 'Vis',
             'upload'           => 'Upload',
@@ -908,5 +933,69 @@ return [
             'asset-not-found'            => 'Række :row (:identifier), kolonne ":column": der blev ikke fundet noget aktiv på stien ":path". Aktivet blev sprunget over, og resten af rækken importeres stadig.',
             'asset-tree-misnamed'        => 'Arkivet indeholder en mappe ved navn ":name" i stedet for "assets", så ingen af dets aktiver kunne importeres. Omdøb den til "assets", og sørg for, at mapperne under den svarer til stierne i din datafil, f.eks. "assets/Root/Seed/Tech Sheets/Cotton/". macOS gemmer et "/" skrevet i et mappenavn som ":", hvilket er den sædvanlige årsag.',
         ],
+
+        'importers' => [
+            'assets' => [
+                'title'      => 'Aktiver',
+                'validation' => [
+                    'errors' => [
+                        'path-not-found'               => 'Kolonnen "stien" er påkrævet på hver række — kildens filplacering eller et offentligt HTTPS-link.',
+                        'asset-not-found'              => 'Der findes intet aktiv ved den angivne sti. Upload aktiver først, og importer derefter dets metadata.',
+                        'asset-has-resources'          => 'Aktivet er knyttet til andre poster og blev ikke slettet.',
+                        'directory-required'           => 'Kolonnen "directory" er påkrævet for hver række — destinationsmappens træ, f.eks. "Root/Brand/Summer".',
+                        'directory-forbidden'          => 'Du har ikke tilladelse til at skrive til destinationsmappen. Rækken blev sprunget over.',
+                        'asset-already-exists'         => 'Række :row sprunget over — der findes allerede et aktiv på ":path", og konfliktstrategien er "skip". Vælg "overwrite" eller "update metadata" for at ændre det.',
+                        'asset-already-exists-summary' => 'Batch #:batch — :count række(r) sprunget over, fordi et matchende aktiv allerede findes.',
+                        'media-source-not-found'       => 'Ingen kildefil fundet: angiv et offentligt https-link i "path", eller en fil der matcher "path" i billedmappen.',
+                        'url-invalid'                  => 'https-linket i "path" er ikke en gyldig http- eller https-adresse.',
+                        'url-unreachable'              => 'https-linket i "path" kunne ikke downloades.',
+                        'url-blocked'                  => 'https-linket i "path" peger på en blokeret vært.',
+                        'file-too-large'               => 'Mediefilen overstiger den maksimalt tilladte størrelse.',
+                        'forbidden-file'               => 'Mediefiltypen er ikke tilladt.',
+                        'import-failed'                => 'Rækken kunne ikke importeres på grund af en uventet fejl.',
+                    ],
+                ],
+                'samples' => [
+                    'bundle' => 'Eksempel-ZIP (CSV + mediefiler)',
+                    'media'  => 'Eksempel-ZIP (kun mediefiler)',
+                ],
+                'options' => [
+                    'title'    => 'Indstillinger for aktivimport',
+                    'conflict' => [
+                        'label'           => 'Når der allerede findes et aktiv på stien',
+                        'skip'            => 'Spring rækken over',
+                        'overwrite'       => 'Overskriv filen og metadata',
+                        'update-metadata' => 'Opdater kun metadata',
+                    ],
+                    'auto-tag' => [
+                        'label' => 'Tag automatisk importerede billeder',
+                        'hint'  => 'Kør AI-automatisk tagging på hvert importeret billede (kræver en konfigureret Magic AI-platform).',
+                    ],
+                    'import-directory' => [
+                        'label' => 'Destinationsmappe (ZIP uden CSV)',
+                        'hint'  => 'Kun for ZIP-filer uden CSV. Medier placeres her; ZIP-mapper placeres nedenunder. Standard er Root.',
+                    ],
+                ],
+            ],
+        ],
+
+        'exporters' => [
+            'assets' => [
+                'title'   => 'Aktiver',
+                'filters' => [
+                    'file-type'   => 'Filtype',
+                    'directories' => 'Mapper',
+                    'tags'        => 'Mærker',
+                    'file-types'  => [
+                        'image'    => 'Billede',
+                        'video'    => 'Video',
+                        'audio'    => 'Lyd',
+                        'document' => 'Dokument',
+                    ],
+                    'title' => 'Aktivfiltre',
+                ],
+            ],
+        ],
+
     ],
 ];

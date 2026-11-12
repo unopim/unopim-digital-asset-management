@@ -74,7 +74,7 @@
             ];
         }
 
-        if (bouncer()->hasPermission('dam.asset.linked_resources')) {
+        if (dam_pim_enabled() && bouncer()->hasPermission('dam.asset.linked_resources')) {
             $items[] = [
                 'url'   => '?linked-resources',
                 'code'  => 'linked-resources',
@@ -105,7 +105,7 @@
     <x-slot:add-tabs :items="$items"></x-slot:add-tabs>
 
     {!! view_render_event('unopim.dam.admin.asset.edit.before') !!}
-
+    
     <v-edit-asset></v-edit-asset>
 
     <x-slot:properties>
@@ -121,7 +121,7 @@
     </x-slot:comments>
 
     <x-slot:linked_resources>
-        @if (bouncer()->hasPermission('dam.asset.linked_resources.index'))
+        @if (dam_pim_enabled() && bouncer()->hasPermission('dam.asset.linked_resources.index'))
             @include('dam::asset.linked-resources.index', ['assetId' => $asset->id])
         @endif
     </x-slot:linked_resources>
@@ -136,14 +136,18 @@
         <v-share-link-modal></v-share-link-modal>
     </x-slot:navButtons>
 
-    {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
+    @if (dam_pim_enabled())
+        {!! view_render_event('unopim.dam.admin.asset.edit.after') !!}
+    @endif
 
     @pushOnce('scripts')
         <script
             type="text/x-template"
             id="v-edit-asset-template"
         >
-            {!! view_render_event('unopim.dam.asset.edit.before') !!}
+            @if (dam_pim_enabled())
+                {!! view_render_event('unopim.dam.asset.edit.before') !!}
+            @endif
 
             <x-admin::form
                 :action="route('admin.dam.assets.update', $asset->id)"
@@ -182,11 +186,15 @@
                                         <span class="text-2xl leading-none" aria-hidden="true">&#8250;</span>
                                     </button>
 
-                                    {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
+                                    @if (dam_pim_enabled())
+                                        {!! view_render_event('unopim.dam.asset.edit.card.general.before', ['asset' => $asset]) !!}
+                                    @endif
 
                                     <v-asset-preview-modal></v-asset-preview-modal>
 
-                                    {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
+                                    @if (dam_pim_enabled())
+                                        {!! view_render_event('unopim.dam.asset.edit.card.general.after', ['asset' => $asset]) !!}
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -233,7 +241,9 @@
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.tags.after', ['asset' => $asset]) !!}
 
-                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.before', ['asset' => $asset]) !!}
+                            @if (dam_pim_enabled())
+                                {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.before', ['asset' => $asset]) !!}
+                            @endif
 
                             <x-admin::accordion>
                                 <x-slot:header>
@@ -282,7 +292,9 @@
                                 </x-slot>
                             </x-admin::accordion>
 
-                            {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.after', ['asset' => $asset]) !!}
+                            @if (dam_pim_enabled())
+                                {!! view_render_event('unopim.dam.asset.edit.card.accordian.details.after', ['asset' => $asset]) !!}
+                            @endif
 
                             {!! view_render_event('unopim.dam.asset.edit.card.accordian.directory_path.before', ['asset' => $asset]) !!}
 
@@ -303,7 +315,9 @@
                 </div>
             </x-admin::form>
 
-            {!! view_render_event('unopim.dam.asset.edit.after') !!}
+            @if (dam_pim_enabled())
+                {!! view_render_event('unopim.dam.asset.edit.after') !!}
+            @endif
 
         </script>
 

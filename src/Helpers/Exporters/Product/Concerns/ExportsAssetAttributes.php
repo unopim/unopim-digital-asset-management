@@ -11,6 +11,10 @@ trait ExportsAssetAttributes
 
     protected function setAttributesValues(array $values, mixed $filePath, ?string $locale = null): array
     {
+        if (dam_pim_disabled()) {
+            return parent::setAttributesValues($values, $filePath, $locale);
+        }
+
         $attributeValues = parent::setAttributesValues($values, $filePath, $locale);
 
         $filters = $this->getFilters();
