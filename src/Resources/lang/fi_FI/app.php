@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Vedä tiedostoja tai kansioita tähän',
                         'upload-or'                 => 'tai selaa:',
                         'copy-directory-structured' => 'Kopioi hakemistorakenne',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hae',
                         'get-by-id'                 => 'Hae tunnuksella',
                         'comment'                   => 'Kommentti',
                         'share'                     => 'Jaa hakemisto',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopioi',
                     'copied'             => 'Linkki kopioitu leikepöydälle',
                     'revoke'             => 'Peruuta',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Poista',
                     'revoked'            => 'Jakolinkki peruutettu',
                     'revoke-failed'      => 'Jakolinkin peruuttaminen epäonnistui.',
                     'expires-on'         => 'Vanhenee',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Luo',
             'edit'             => 'Muokkaa',
             'update'           => 'Päivitä',
-            'delete'           => 'Delete',
+            'delete'           => 'Poista',
             'list'             => 'Luettelo',
             'view'             => 'Näytä',
             'upload'           => 'Lähetä',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Resurssit',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => '"Polku"-sarake vaaditaan jokaisella rivillä — lähdetiedoston sijainti tai julkinen HTTPS-linkki.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Resurssit',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tiedostotyyppi',
+                    'directories' => 'Hakemistot',
+                    'tags'        => 'Tunnisteet',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Kuva',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Ääni',
+                        'document' => 'Asiakirja',
                     ],
                     'title' => 'Resurssisuodattimet',
                 ],

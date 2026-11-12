@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Przeciągnij pliki lub foldery tutaj',
                         'upload-or'                 => 'lub przeglądaj:',
                         'copy-directory-structured' => 'Kopiuj strukturę katalogu',
-                        'get'                       => 'Get',
+                        'get'                       => 'Pobierz',
                         'get-by-id'                 => 'Pobierz według ID',
                         'comment'                   => 'Komentarz',
                         'share'                     => 'Udostępnij katalog',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopiuj',
                     'copied'             => 'Link skopiowany do schowka',
                     'revoke'             => 'Unieważnij',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Usuń',
                     'revoked'            => 'Link udostępniania unieważniony',
                     'revoke-failed'      => 'Nie udało się unieważnić linku udostępniania.',
                     'expires-on'         => 'Wygasa',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Utwórz',
             'edit'             => 'Edytuj',
             'update'           => 'Aktualizuj',
-            'delete'           => 'Delete',
+            'delete'           => 'Usuń',
             'list'             => 'Lista',
             'view'             => 'Podgląd',
             'upload'           => 'Prześlij',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Zasoby',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Kolumna "ścieżka" jest wymagana w każdym wierszu — lokalizacja pliku źródłowego lub publiczny link HTTPS.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Zasoby',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Typ pliku',
+                    'directories' => 'Katalogi',
+                    'tags'        => 'Tagi',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
+                        'image'    => 'Obraz',
+                        'video'    => 'Wideo',
                         'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Filtry zasobów',
                 ],

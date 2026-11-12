@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => '파일 또는 폴더를 여기에 끌어다 놓으세요',
                         'upload-or'                 => '또는 탐색:',
                         'copy-directory-structured' => '디렉터리 구조 복사',
-                        'get'                       => 'Get',
+                        'get'                       => '가져오기',
                         'get-by-id'                 => 'ID로 가져오기',
                         'comment'                   => '댓글',
                         'share'                     => '디렉터리 공유',
@@ -541,7 +541,7 @@ return [
                     'copy'               => '복사',
                     'copied'             => '클립보드에 링크가 복사되었습니다',
                     'revoke'             => '취소',
-                    'delete'             => 'Delete',
+                    'delete'             => '삭제',
                     'revoked'            => '공유 링크가 취소되었습니다',
                     'revoke-failed'      => '공유 링크 취소에 실패했습니다.',
                     'expires-on'         => '만료 날짜',
@@ -664,7 +664,7 @@ return [
             'create'           => '생성',
             'edit'             => '편집',
             'update'           => '업데이트',
-            'delete'           => 'Delete',
+            'delete'           => '삭제',
             'list'             => '목록',
             'view'             => '보기',
             'upload'           => '업로드',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => '자산',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => '모든 행에 "경로" 열이 필요합니다 — 소스 파일 위치 또는 공개 HTTPS 링크.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => '자산',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => '파일 유형',
+                    'directories' => '디렉터리',
+                    'tags'        => '태그',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => '이미지',
+                        'video'    => '동영상',
+                        'audio'    => '오디오',
+                        'document' => '문서',
                     ],
                     'title' => '자산 필터',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Ovdje povucite datoteke ili mape',
                         'upload-or'                 => 'ili pregledajte:',
                         'copy-directory-structured' => 'Kopiraj strukturu direktorija',
-                        'get'                       => 'Get',
+                        'get'                       => 'Dohvati',
                         'get-by-id'                 => 'Dohvati po ID-u',
                         'comment'                   => 'Komentar',
                         'share'                     => 'Dijeli direktorij',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopiraj',
                     'copied'             => 'Veza kopirana u međuspremnik',
                     'revoke'             => 'Opozovi',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Obriši',
                     'revoked'            => 'Veza za dijeljenje opozvana',
                     'revoke-failed'      => 'Opoziv veze za dijeljenje nije uspio.',
                     'expires-on'         => 'Ističe',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Stvori',
             'edit'             => 'Uredi',
             'update'           => 'Ažuriraj',
-            'delete'           => 'Delete',
+            'delete'           => 'Obriši',
             'list'             => 'Popis',
             'view'             => 'Pregled',
             'upload'           => 'Prenesi',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Resursi',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Stupac "put" je obavezno za svaki redak — lokacija izvorne datoteke ili javna HTTPS veza.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Resursi',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Vrsta datoteke',
+                    'directories' => 'Direktoriji',
+                    'tags'        => 'Oznake',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Slika',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Zvuk',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Filtri sredstava',
                 ],

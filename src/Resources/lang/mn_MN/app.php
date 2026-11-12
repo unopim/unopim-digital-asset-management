@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Файл эсвэл хавтасыг энд чирнэ үү',
                         'upload-or'                 => 'эсвэл хайх:',
                         'copy-directory-structured' => 'Директорыг бүтцийн дагуу хуулбарлах',
-                        'get'                       => 'Get',
+                        'get'                       => 'Авах',
                         'get-by-id'                 => 'Id-ээр авна уу',
                         'comment'                   => 'Сэтгэгдэл',
                         'share'                     => 'Директорыг хуваалцах',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Хуулах',
                     'copied'             => 'Холбоос санах ойд хуулагдлаа',
                     'revoke'             => 'Цуцлах',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Устгах',
                     'revoked'            => 'Хуваалцах холбоос цуцлагдлаа',
                     'revoke-failed'      => 'Хуваалцах холбоосыг цуцлахад алдаа гарлаа.',
                     'expires-on'         => 'Дуусах огноо',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Үүсгэх',
             'edit'             => 'Засварлах',
             'update'           => 'Шинэчлэх',
-            'delete'           => 'Delete',
+            'delete'           => 'Устгах',
             'list'             => 'Жагсаалт',
             'view'             => 'Үзэх',
             'upload'           => 'Ачуулах',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Хэрэглэгдэхүүнүүд',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Бүх мөрдөөс "цахилгаа" талбар шаардлагатай — гавь файлын байрлал эсвэл HTTPS холболт.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Хэрэглэгдэхүүнүүд',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Файлын төрөл',
+                    'directories' => 'Санууд',
+                    'tags'        => 'Тагууд',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'Зураг',
+                        'video'    => 'Видео',
+                        'audio'    => 'Аудио',
+                        'document' => 'Баримт',
                     ],
                     'title' => 'Нөөцийн шүүлтүүр',
                 ],

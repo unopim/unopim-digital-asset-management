@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Kéo tệp hoặc thư mục vào đây',
                         'upload-or'                 => 'hoặc duyệt:',
                         'copy-directory-structured' => 'Sao chép cấu trúc thư mục',
-                        'get'                       => 'Get',
+                        'get'                       => 'Lấy',
                         'get-by-id'                 => 'Lấy theo ID',
                         'comment'                   => 'Bình luận',
                         'share'                     => 'Chia sẻ thư mục',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Sao chép',
                     'copied'             => 'Đã sao chép liên kết vào clipboard',
                     'revoke'             => 'Thu hồi',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Xóa',
                     'revoked'            => 'Liên kết chia sẻ đã bị thu hồi',
                     'revoke-failed'      => 'Không thể thu hồi liên kết chia sẻ.',
                     'expires-on'         => 'Hết hạn vào',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Tạo',
             'edit'             => 'Chỉnh sửa',
             'update'           => 'Cập nhật',
-            'delete'           => 'Delete',
+            'delete'           => 'Xóa',
             'list'             => 'Danh sách',
             'view'             => 'Xem',
             'upload'           => 'Tải lên',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Tài sản',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Cột "đường dẫn" là bắt buộc trên mọi hàng — vị trí tệp nguồn hoặc liên kết HTTPS công khai.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Tài sản',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Loại tệp',
+                    'directories' => 'Thư mục',
+                    'tags'        => 'Thẻ',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Hình ảnh',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Âm thanh',
+                        'document' => 'Tài liệu',
                     ],
                     'title' => 'Bộ lọc tài sản',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'ファイルまたはフォルダをここにドロップ',
                         'upload-or'                 => 'またはブラウズ:',
                         'copy-directory-structured' => 'ディレクトリ構造をコピー',
-                        'get'                       => 'Get',
+                        'get'                       => '取得',
                         'get-by-id'                 => 'IDで取得',
                         'comment'                   => 'コメント',
                         'share'                     => 'ディレクトリを共有',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'コピー',
                     'copied'             => 'リンクをクリップボードにコピーしました',
                     'revoke'             => '取り消す',
-                    'delete'             => 'Delete',
+                    'delete'             => '削除',
                     'revoked'            => '共有リンクが取り消されました',
                     'revoke-failed'      => '共有リンクの取り消しに失敗しました。',
                     'expires-on'         => '有効期限',
@@ -664,7 +664,7 @@ return [
             'create'           => '作成',
             'edit'             => '編集',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '削除',
             'list'             => '一覧',
             'view'             => '表示',
             'upload'           => 'アップロード',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'アセット',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'すべての行に "パス" 列が必要です — ソースファイルの場所または公開 HTTPS リンク。',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'アセット',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'ファイルタイプ',
+                    'directories' => 'ディレクトリ',
+                    'tags'        => 'タグ',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => '画像',
+                        'video'    => '動画',
+                        'audio'    => '音声',
+                        'document' => 'ドキュメント',
                     ],
                     'title' => 'アセットフィルター',
                 ],

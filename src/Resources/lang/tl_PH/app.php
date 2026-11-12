@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'I-drag ang mga file o folder dito',
                         'upload-or'                 => 'o mag-browse:',
                         'copy-directory-structured' => 'Kopyahin ang Istruktura ng Direktoryo',
-                        'get'                       => 'Get',
+                        'get'                       => 'Kunin',
                         'get-by-id'                 => 'Kunin sa pamamagitan ng Id',
                         'comment'                   => 'Komento',
                         'share'                     => 'Ibahagi ang Direktoryo',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopyahin',
                     'copied'             => 'Nakopya ang link sa clipboard',
                     'revoke'             => 'Bawiin',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Tanggalin',
                     'revoked'            => 'Binawi ang share link',
                     'revoke-failed'      => 'Nabigo ang pag-bawi ng share link.',
                     'expires-on'         => 'Mag-e-expire sa',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Gumawa',
             'edit'             => 'I-edit',
             'update'           => 'I-update',
-            'delete'           => 'Delete',
+            'delete'           => 'Tanggalin',
             'list'             => 'Listahan',
             'view'             => 'Tingnan',
             'upload'           => 'Mag-upload',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Mga Asset',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Ang katawan ng "daan" ay kinakailangan sa bawat linya — ang lokasyon ng source file o pampublikong HTTPS link.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Mga Asset',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Uri ng file',
+                    'directories' => 'Mga Direktoryo',
+                    'tags'        => 'Mga Tag',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Larawan',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'document' => 'Dokumento',
                     ],
                     'title' => 'Mga Filter ng Asset',
                 ],

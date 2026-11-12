@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'फ़ाइलें या फ़ोल्डर यहाँ खींचें',
                         'upload-or'                 => 'या ब्राउज़ करें:',
                         'copy-directory-structured' => 'निर्देशिका संरचना कॉपी करें',
-                        'get'                       => 'Get',
+                        'get'                       => 'प्राप्त करें',
                         'get-by-id'                 => 'ID द्वारा प्राप्त करें',
                         'comment'                   => 'टिप्पणी',
                         'share'                     => 'निर्देशिका साझा करें',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'कॉपी करें',
                     'copied'             => 'लिंक क्लिपबोर्ड पर कॉपी हुआ',
                     'revoke'             => 'रद्द करें',
-                    'delete'             => 'Delete',
+                    'delete'             => 'हटाएं',
                     'revoked'            => 'साझा लिंक रद्द किया गया',
                     'revoke-failed'      => 'साझा लिंक रद्द करने में विफल।',
                     'expires-on'         => 'समाप्ति तिथि',
@@ -664,7 +664,7 @@ return [
             'create'           => 'बनाएं',
             'edit'             => 'संपादित करें',
             'update'           => 'अपडेट करें',
-            'delete'           => 'Delete',
+            'delete'           => 'हटाएं',
             'list'             => 'सूची',
             'view'             => 'देखें',
             'upload'           => 'अपलोड करें',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'संपत्तियाँ',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'प्रत्येक पंक्ति में "पथ" स्तंभ आवश्यक है — स्रोत फ़ाइल स्थान या एक सार्वजनिक HTTPS लिंक।',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'संपत्तियाँ',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'फ़ाइल प्रकार',
+                    'directories' => 'निर्देशिकाएँ',
+                    'tags'        => 'टैग्स',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'छवि',
+                        'video'    => 'वीडियो',
+                        'audio'    => 'ऑडियो',
+                        'document' => 'दस्तावेज़',
                     ],
                     'title' => 'एसेट फ़िल्टर',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Trascina file o cartelle qui',
                         'upload-or'                 => 'o sfoglia:',
                         'copy-directory-structured' => 'Copia Struttura Directory',
-                        'get'                       => 'Get',
+                        'get'                       => 'Ottieni',
                         'get-by-id'                 => 'Ottieni per Id',
                         'comment'                   => 'Commento',
                         'share'                     => 'Condividi directory',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Crea',
             'edit'             => 'Modifica',
             'update'           => 'Aggiorna',
-            'delete'           => 'Delete',
+            'delete'           => 'Elimina',
             'list'             => 'Elenco',
             'view'             => 'Visualizza',
             'upload'           => 'Carica',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Risorse',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'La colonna "percorso" è richiesta per ogni riga — l\'ubicazione del file di origine o un collegamento HTTPS pubblico.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Risorse',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tipo di file',
+                    'directories' => 'Directory',
+                    'tags'        => 'Tag',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Immagine',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'document' => 'Documento',
                     ],
                     'title' => 'Filtri asset',
                 ],

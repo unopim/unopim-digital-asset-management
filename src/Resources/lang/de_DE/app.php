@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dateien oder Ordner hierher ziehen',
                         'upload-or'                 => 'oder durchsuchen:',
                         'copy-directory-structured' => 'Verzeichnisstruktur kopieren',
-                        'get'                       => 'Get',
+                        'get'                       => 'Abrufen',
                         'get-by-id'                 => 'Nach ID suchen',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Verzeichnis freigeben',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopieren',
                     'copied'             => 'Link in die Zwischenablage kopiert',
                     'revoke'             => 'Widerrufen',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Löschen',
                     'revoked'            => 'Freigabe-Link widerrufen',
                     'revoke-failed'      => 'Freigabe-Link konnte nicht widerrufen werden.',
                     'expires-on'         => 'Läuft ab am',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Erstellen',
             'edit'             => 'Bearbeiten',
             'update'           => 'Aktualisieren',
-            'delete'           => 'Delete',
+            'delete'           => 'Löschen',
             'list'             => 'Auflisten',
             'view'             => 'Ansehen',
             'upload'           => 'Hochladen',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Medienobjekte',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Die Spalte "Pfad" ist in jeder Zeile erforderlich — der Speicherort der Quelldatei oder ein öffentlicher HTTPS-Link.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Medienobjekte',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Dateityp',
+                    'directories' => 'Verzeichnisse',
+                    'tags'        => 'Schlagwörter',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Bild',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Asset-Filter',
                 ],

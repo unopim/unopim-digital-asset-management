@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => '将文件或文件夹拖放到此处',
                         'upload-or'                 => '或浏览：',
                         'copy-directory-structured' => '复制目录结构',
-                        'get'                       => 'Get',
+                        'get'                       => '获取',
                         'get-by-id'                 => '通过 ID 获取',
                         'comment'                   => '评论',
                         'share'                     => '共享目录',
@@ -541,7 +541,7 @@ return [
                     'copy'               => '复制',
                     'copied'             => '链接已复制到剪贴板',
                     'revoke'             => '撤销',
-                    'delete'             => 'Delete',
+                    'delete'             => '删除',
                     'revoked'            => '共享链接已撤销',
                     'revoke-failed'      => '撤销共享链接失败。',
                     'expires-on'         => '到期日期',
@@ -664,7 +664,7 @@ return [
             'create'           => '创建',
             'edit'             => '编辑',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '删除',
             'list'             => '列表',
             'view'             => '查看',
             'upload'           => '上传',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => '资产',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => '每一行都需要 "路径" 列 — 源文件位置或公开的 HTTPS 链接。',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => '资产',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => '文件类型',
+                    'directories' => '目录',
+                    'tags'        => '标签',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => '图片',
+                        'video'    => '视频',
+                        'audio'    => '音频',
+                        'document' => '文档',
                     ],
                     'title' => '资产筛选器',
                 ],

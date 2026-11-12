@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Seret file atau folder ke sini',
                         'upload-or'                 => 'atau jelajahi:',
                         'copy-directory-structured' => 'Salin Struktur Direktori',
-                        'get'                       => 'Get',
+                        'get'                       => 'Ambil',
                         'get-by-id'                 => 'Dapatkan Berdasarkan Id',
                         'comment'                   => 'Komentar',
                         'share'                     => 'Bagikan Direktori',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Salin',
                     'copied'             => 'Tautan disalin ke clipboard',
                     'revoke'             => 'Cabut',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Hapus',
                     'revoked'            => 'Tautan berbagi telah dicabut',
                     'revoke-failed'      => 'Gagal mencabut tautan berbagi.',
                     'expires-on'         => 'Kadaluarsa pada',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Buat',
             'edit'             => 'Ubah',
             'update'           => 'Perbarui',
-            'delete'           => 'Delete',
+            'delete'           => 'Hapus',
             'list'             => 'Daftar',
             'view'             => 'Lihat',
             'upload'           => 'Unggah',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Aset',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Kolom "path" wajib ada pada setiap baris — lokasi file sumber atau tautan HTTPS publik.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Aset',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tipe file',
+                    'directories' => 'Direktori',
+                    'tags'        => 'Tag',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Gambar',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'document' => 'Dokumen',
                     ],
                     'title' => 'Filter Aset',
                 ],

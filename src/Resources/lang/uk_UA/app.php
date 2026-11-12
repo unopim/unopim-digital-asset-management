@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Перетягніть файли або папки сюди',
                         'upload-or'                 => 'або перегляньте:',
                         'copy-directory-structured' => 'Копіювати структуру каталогу',
-                        'get'                       => 'Get',
+                        'get'                       => 'Отримати',
                         'get-by-id'                 => 'Отримати за ID',
                         'comment'                   => 'Коментар',
                         'share'                     => 'Поділитися каталогом',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Копіювати',
                     'copied'             => 'Посилання скопійовано до буфера обміну',
                     'revoke'             => 'Скасувати',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Видалити',
                     'revoked'            => 'Посилання для спільного доступу скасовано',
                     'revoke-failed'      => 'Не вдалося скасувати посилання для спільного доступу.',
                     'expires-on'         => 'Закінчується',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Створити',
             'edit'             => 'Редагувати',
             'update'           => 'Оновити',
-            'delete'           => 'Delete',
+            'delete'           => 'Видалити',
             'list'             => 'Список',
             'view'             => 'Перегляд',
             'upload'           => 'Завантажити',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Активи',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Стовпець "шлях" обов\'язковий для кожного рядка — розташування вихідного файлу або публічне посилання HTTPS.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Активи',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Тип файлу',
+                    'directories' => 'Каталоги',
+                    'tags'        => 'Теги',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'Зображення',
+                        'video'    => 'Відео',
+                        'audio'    => 'Аудіо',
+                        'document' => 'Документ',
                     ],
                     'title' => 'Фільтри ресурсів',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Træk filer eller mapper hertil',
                         'upload-or'                 => 'eller gennemse:',
                         'copy-directory-structured' => 'Kopiér mappestruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hent',
                         'get-by-id'                 => 'Hent efter id',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Del mappe',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopiér',
                     'copied'             => 'Link kopieret til udklipsholder',
                     'revoke'             => 'Tilbagekald',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Slet',
                     'revoked'            => 'Delingslink tilbagekaldt',
                     'revoke-failed'      => 'Kunne ikke tilbagekalde delingslink.',
                     'expires-on'         => 'Udløber den',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Opret',
             'edit'             => 'Rediger',
             'update'           => 'Opdater',
-            'delete'           => 'Delete',
+            'delete'           => 'Slet',
             'list'             => 'Liste',
             'view'             => 'Vis',
             'upload'           => 'Upload',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Aktiver',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Kolonnen "stien" er påkrævet på hver række — kildens filplacering eller et offentligt HTTPS-link.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Aktiver',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Filtype',
+                    'directories' => 'Mapper',
+                    'tags'        => 'Mærker',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Billede',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Lyd',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Aktivfiltre',
                 ],

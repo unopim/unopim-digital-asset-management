@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'اسحب الملفات أو المجلدات هنا',
                         'upload-or'                 => 'أو تصفح:',
                         'copy-directory-structured' => 'نسخ الدليل مع الهيكلية',
-                        'get'                       => 'Get',
+                        'get'                       => 'جلب',
                         'get-by-id'                 => 'الحصول على معرف',
                         'comment'                   => 'تعليق',
                         'share'                     => 'مشاركة الدليل',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'نسخ',
                     'copied'             => 'تم نسخ الرابط إلى الحافظة',
                     'revoke'             => 'إلغاء',
-                    'delete'             => 'Delete',
+                    'delete'             => 'حذف',
                     'revoked'            => 'تم إلغاء رابط المشاركة',
                     'revoke-failed'      => 'فشل إلغاء رابط المشاركة.',
                     'expires-on'         => 'ينتهي في',
@@ -664,7 +664,7 @@ return [
             'create'           => 'إنشاء',
             'edit'             => 'تحرير',
             'update'           => 'تحديث',
-            'delete'           => 'Delete',
+            'delete'           => 'حذف',
             'list'             => 'قائمة',
             'view'             => 'عرض',
             'upload'           => 'تحميل',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'الأصول',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'عمود "المسار" مطلوب في كل صف — موقع الملف المصدر أو رابط عام عبر HTTPS.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'الأصول',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'نوع الملف',
+                    'directories' => 'الأدلة',
+                    'tags'        => 'الوسوم',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'صورة',
+                        'video'    => 'فيديو',
+                        'audio'    => 'الصوت',
+                        'document' => 'مستند',
                     ],
                     'title' => 'عوامل تصفية الأصول',
                 ],

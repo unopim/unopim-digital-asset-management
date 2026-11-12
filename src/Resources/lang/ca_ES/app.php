@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Arrossegueu fitxers o carpetes aquí',
                         'upload-or'                 => 'o navegueu:',
                         'copy-directory-structured' => 'Copiar Estructura del Directori',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obtenir',
                         'get-by-id'                 => 'Obtenir per Id',
                         'comment'                   => 'Comentari',
                         'share'                     => 'Compartir directori',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Recursos',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'La columna "camí" és requerida en cada fila — la ubicació del fitxer font o un enllaç públic HTTPS.',
@@ -981,15 +981,15 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Recursos',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tipus de fitxer',
+                    'directories' => 'Directoris',
+                    'tags'        => 'Etiquetes',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
+                        'image'    => 'Imatge',
+                        'video'    => 'Vídeo',
+                        'audio'    => 'Àudio',
                         'document' => 'Document',
                     ],
                     'title' => 'Filtres de recursos',

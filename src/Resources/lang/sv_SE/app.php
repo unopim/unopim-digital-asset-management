@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dra filer eller mappar hit',
                         'upload-or'                 => 'eller bläddra:',
                         'copy-directory-structured' => 'Kopiera katalogstruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hämta',
                         'get-by-id'                 => 'Hämta efter ID',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Dela katalog',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopiera',
                     'copied'             => 'Länk kopierad till urklipp',
                     'revoke'             => 'Återkalla',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Ta bort',
                     'revoked'            => 'Delningslänk återkallad',
                     'revoke-failed'      => 'Det gick inte att återkalla delningslänken.',
                     'expires-on'         => 'Upphör den',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Skapa',
             'edit'             => 'Redigera',
             'update'           => 'Uppdatera',
-            'delete'           => 'Delete',
+            'delete'           => 'Ta bort',
             'list'             => 'Lista',
             'view'             => 'Visa',
             'upload'           => 'Ladda upp',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Tillgångar',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Kolumnen "sökväg" är obligatorisk för varje rad — platsen för källfilen eller en offentlig HTTPS-länk.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Tillgångar',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Filtyp',
+                    'directories' => 'Kataloger',
+                    'tags'        => 'Taggar',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Bild',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Ljud',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Tillgångsfilter',
                 ],

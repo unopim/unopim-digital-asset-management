@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dosya veya klasörleri buraya sürükleyin',
                         'upload-or'                 => 'veya gözat:',
                         'copy-directory-structured' => 'Dizin yapısını kopyala',
-                        'get'                       => 'Get',
+                        'get'                       => 'Al',
                         'get-by-id'                 => 'Kimliğe göre al',
                         'comment'                   => 'Yorum',
                         'share'                     => 'Dizini paylaş',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Oluştur',
             'edit'             => 'Düzenle',
             'update'           => 'Güncelle',
-            'delete'           => 'Delete',
+            'delete'           => 'Sil',
             'list'             => 'Liste',
             'view'             => 'Görüntüle',
             'upload'           => 'Yükle',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Varlıklar',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => '"yol" sütunu her satırda zorunludur — kaynak dosyanın konumu veya herkese açık bir HTTPS bağlantısı.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Varlıklar',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Dosya türü',
+                    'directories' => 'Dizinler',
+                    'tags'        => 'Etiketler',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Görsel',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Ses',
+                        'document' => 'Belge',
                     ],
                     'title' => 'Varlık Filtreleri',
                 ],

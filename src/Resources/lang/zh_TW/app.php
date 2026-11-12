@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => '將檔案或資料夾拖放至此',
                         'upload-or'                 => '或瀏覽：',
                         'copy-directory-structured' => '複製目錄結構',
-                        'get'                       => 'Get',
+                        'get'                       => '取得',
                         'get-by-id'                 => '依 ID 取得',
                         'comment'                   => '留言',
                         'share'                     => '共享目錄',
@@ -541,7 +541,7 @@ return [
                     'copy'               => '複製',
                     'copied'             => '連結已複製到剪貼簿',
                     'revoke'             => '撤銷',
-                    'delete'             => 'Delete',
+                    'delete'             => '刪除',
                     'revoked'            => '共享連結已撤銷',
                     'revoke-failed'      => '撤銷共享連結失敗。',
                     'expires-on'         => '到期日期',
@@ -664,7 +664,7 @@ return [
             'create'           => '建立',
             'edit'             => '編輯',
             'update'           => '更新',
-            'delete'           => 'Delete',
+            'delete'           => '刪除',
             'list'             => '列表',
             'view'             => '檢視',
             'upload'           => '上傳',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => '資產',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => '每一列都需要 "路徑" 欄位 — 原始檔案位置或公開的 HTTPS 連結。',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => '資產',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => '檔案類型',
+                    'directories' => '目錄',
+                    'tags'        => '標籤',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => '圖片',
+                        'video'    => '影片',
+                        'audio'    => '音訊',
+                        'document' => '文件',
                     ],
                     'title' => '資產篩選器',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Trageți fișiere sau foldere aici',
                         'upload-or'                 => 'sau răsfoiți:',
                         'copy-directory-structured' => 'Copiază Structura Directorului',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obține',
                         'get-by-id'                 => 'Obține după Id',
                         'comment'                   => 'Comentariu',
                         'share'                     => 'Partajează directorul',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Copiază',
                     'copied'             => 'Link copiat în clipboard',
                     'revoke'             => 'Revocă',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Șterge',
                     'revoked'            => 'Linkul de partajare a fost revocat',
                     'revoke-failed'      => 'Revocarea linkului de partajare a eșuat.',
                     'expires-on'         => 'Expiră la',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Creează',
             'edit'             => 'Editează',
             'update'           => 'Actualizează',
-            'delete'           => 'Delete',
+            'delete'           => 'Șterge',
             'list'             => 'Listă',
             'view'             => 'Vizualizează',
             'upload'           => 'Încarcă',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Resurse',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Coloana "calea" este obligatorie pentru fiecare rând — locația fișierului sursă sau un link HTTPS public.',
@@ -981,13 +981,13 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Resurse',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tip fișier',
+                    'directories' => 'Directoare',
+                    'tags'        => 'Etichete',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Imagine',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
                         'document' => 'Document',

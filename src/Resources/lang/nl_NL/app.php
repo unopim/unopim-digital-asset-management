@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Sleep bestanden of mappen hierheen',
                         'upload-or'                 => 'of bladeren:',
                         'copy-directory-structured' => 'Mapstructuur Kopiëren',
-                        'get'                       => 'Get',
+                        'get'                       => 'Ophalen',
                         'get-by-id'                 => 'Kom langs, ID',
                         'comment'                   => 'Opmerking',
                         'share'                     => 'Map delen',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopiëren',
                     'copied'             => 'Link gekopieerd naar klembord',
                     'revoke'             => 'Intrekken',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Verwijderen',
                     'revoked'            => 'Deellink ingetrokken',
                     'revoke-failed'      => 'Kan deellink niet intrekken.',
                     'expires-on'         => 'Verloopt op',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Aanmaken',
             'edit'             => 'Bewerken',
             'update'           => 'Bijwerken',
-            'delete'           => 'Delete',
+            'delete'           => 'Verwijderen',
             'list'             => 'Lijst',
             'view'             => 'Bekijken',
             'upload'           => 'Uploaden',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Bestanden',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'De kolom "pad" is vereist voor elke rij — de locatie van het bronbestand of een openbare HTTPS-link.',
@@ -981,13 +981,13 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Bestanden',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Bestandstype',
+                    'directories' => 'Mappen',
+                    'tags'        => 'Labels',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Afbeelding',
                         'video'    => 'Video',
                         'audio'    => 'Audio',
                         'document' => 'Document',

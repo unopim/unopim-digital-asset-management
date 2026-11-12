@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Arraste ficheiros ou pastas para aqui',
                         'upload-or'                 => 'ou navegar:',
                         'copy-directory-structured' => 'Copiar Estrutura do Diretório',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obter',
                         'get-by-id'                 => 'Obter por Id',
                         'comment'                   => 'Comentário',
                         'share'                     => 'Partilhar diretório',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Copiar',
                     'copied'             => 'Ligação copiada para a área de transferência',
                     'revoke'             => 'Revogar',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Eliminar',
                     'revoked'            => 'Ligação de partilha revogada',
                     'revoke-failed'      => 'Falha ao revogar a ligação de partilha.',
                     'expires-on'         => 'Expira em',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Criar',
             'edit'             => 'Editar',
             'update'           => 'Atualizar',
-            'delete'           => 'Delete',
+            'delete'           => 'Eliminar',
             'list'             => 'Listar',
             'view'             => 'Ver',
             'upload'           => 'Carregar',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Recursos',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'A coluna "caminho" é obrigatória em cada linha — a localização do ficheiro de origem ou uma ligação HTTPS pública.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Recursos',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Tipo de ficheiro',
+                    'directories' => 'Diretórios',
+                    'tags'        => 'Etiquetas',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'Imagem',
+                        'video'    => 'Vídeo',
+                        'audio'    => 'Áudio',
+                        'document' => 'Documento',
                     ],
                     'title' => 'Filtros de recursos',
                 ],

@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Déposer des fichiers ou dossiers ici',
                         'upload-or'                 => 'ou parcourir :',
                         'copy-directory-structured' => 'Copier la Structure du Répertoire',
-                        'get'                       => 'Get',
+                        'get'                       => 'Obtenir',
                         'get-by-id'                 => 'Obtenir par identifiant',
                         'comment'                   => 'Commentaire',
                         'share'                     => 'Partager le répertoire',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Créer',
             'edit'             => 'Modifier',
             'update'           => 'Mettre à jour',
-            'delete'           => 'Delete',
+            'delete'           => 'Supprimer',
             'list'             => 'Liste',
             'view'             => 'Voir',
             'upload'           => 'Télécharger',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Ressources',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'La colonne "chemin" est requise pour chaque ligne — l\'emplacement du fichier source ou un lien HTTPS public.',
@@ -981,14 +981,14 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Ressources',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Type de fichier',
+                    'directories' => 'Répertoires',
+                    'tags'        => 'Étiquettes',
                     'file-types'  => [
                         'image'    => 'Image',
-                        'video'    => 'Video',
+                        'video'    => 'Vidéo',
                         'audio'    => 'Audio',
                         'document' => 'Document',
                     ],

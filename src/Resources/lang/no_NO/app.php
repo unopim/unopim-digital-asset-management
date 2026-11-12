@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Dra filer eller mapper hit',
                         'upload-or'                 => 'eller bla:',
                         'copy-directory-structured' => 'Kopier mappestruktur',
-                        'get'                       => 'Get',
+                        'get'                       => 'Hent',
                         'get-by-id'                 => 'Hent etter ID',
                         'comment'                   => 'Kommentar',
                         'share'                     => 'Del mappe',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Kopier',
                     'copied'             => 'Lenke kopiert til utklippstavlen',
                     'revoke'             => 'Tilbakekall',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Slett',
                     'revoked'            => 'Delingslenke tilbakekalt',
                     'revoke-failed'      => 'Kunne ikke tilbakekalle delingslenken.',
                     'expires-on'         => 'Utløper den',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Opprett',
             'edit'             => 'Rediger',
             'update'           => 'Oppdater',
-            'delete'           => 'Delete',
+            'delete'           => 'Slett',
             'list'             => 'Liste',
             'view'             => 'Vis',
             'upload'           => 'Last opp',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Ressurser',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Kolonnen "stien" er påkrevd på hver rad — kildens filplassering eller en offentlig HTTPS-lenke.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Ressurser',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Filtype',
+                    'directories' => 'Kataloger',
+                    'tags'        => 'Tagger',
                     'file-types'  => [
-                        'image'    => 'Image',
+                        'image'    => 'Bilde',
                         'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'audio'    => 'Lyd',
+                        'document' => 'Dokument',
                     ],
                     'title' => 'Ressursfiltre',
                 ],

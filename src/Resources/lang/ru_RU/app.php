@@ -121,7 +121,7 @@ return [
                         'upload-drop-hint'          => 'Перетащите файлы или папки сюда',
                         'upload-or'                 => 'или обзор:',
                         'copy-directory-structured' => 'Копировать структуру директории',
-                        'get'                       => 'Get',
+                        'get'                       => 'Получить',
                         'get-by-id'                 => 'Получить по идентификатору',
                         'comment'                   => 'Комментарий',
                         'share'                     => 'Поделиться директорией',
@@ -541,7 +541,7 @@ return [
                     'copy'               => 'Копировать',
                     'copied'             => 'Ссылка скопирована в буфер обмена',
                     'revoke'             => 'Отозвать',
-                    'delete'             => 'Delete',
+                    'delete'             => 'Удалить',
                     'revoked'            => 'Ссылка для общего доступа отозвана',
                     'revoke-failed'      => 'Не удалось отозвать ссылку для общего доступа.',
                     'expires-on'         => 'Истекает',
@@ -664,7 +664,7 @@ return [
             'create'           => 'Создать',
             'edit'             => 'Редактировать',
             'update'           => 'Обновить',
-            'delete'           => 'Delete',
+            'delete'           => 'Удалить',
             'list'             => 'Список',
             'view'             => 'Просмотр',
             'upload'           => 'Загрузить',
@@ -936,7 +936,7 @@ return [
 
         'importers' => [
             'assets' => [
-                'title'      => 'Assets',
+                'title'      => 'Активы',
                 'validation' => [
                     'errors' => [
                         'path-not-found'               => 'Колонка "путь" обязательна для каждой строки — расположение исходного файла или общедоступная HTTPS-ссылка.',
@@ -981,16 +981,16 @@ return [
 
         'exporters' => [
             'assets' => [
-                'title'   => 'Assets',
+                'title'   => 'Активы',
                 'filters' => [
-                    'file-type'   => 'File Type',
-                    'directories' => 'Directories',
-                    'tags'        => 'Tags',
+                    'file-type'   => 'Тип файла',
+                    'directories' => 'Каталоги',
+                    'tags'        => 'Теги',
                     'file-types'  => [
-                        'image'    => 'Image',
-                        'video'    => 'Video',
-                        'audio'    => 'Audio',
-                        'document' => 'Document',
+                        'image'    => 'Изображение',
+                        'video'    => 'Видео',
+                        'audio'    => 'Аудио',
+                        'document' => 'Документ',
                     ],
                     'title' => 'Фильтры ресурсов',
                 ],
