@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Die Spalte "Pfad" ist in jeder Zeile erforderlich — der Speicherort der Quelldatei oder ein öffentlicher HTTPS-Link.',
+                        'asset-not-found'              => 'Es existiert kein Asset unter dem angegebenen Pfad. Laden Sie das Asset zuerst hoch und importieren Sie dann dessen Metadaten.',
+                        'asset-has-resources'          => 'Das Asset ist mit anderen Datensätzen verknüpft und wurde nicht gelöscht.',
                         'directory-required'           => 'Die Spalte "directory" ist für jede Zeile erforderlich — der Zielordnerbaum, z. B. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Sie haben keine Berechtigung, in das Zielverzeichnis zu schreiben. Die Zeile wurde übersprungen.',
                         'asset-already-exists'         => 'Zeile :row übersprungen — unter ":path" existiert bereits ein Asset und die Konfliktstrategie ist "skip". Wählen Sie "overwrite" oder "update metadata", um dies zu ändern.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count Zeile(n) übersprungen, da bereits ein passendes Asset vorhanden ist.',
                         'media-source-not-found'       => 'Keine Quelldatei gefunden: Geben Sie in "path" einen öffentlichen https-Link an oder eine Datei, die "path" im Bilderverzeichnis entspricht.',

@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => '"yol" sütunu her satırda zorunludur — kaynak dosyanın konumu veya herkese açık bir HTTPS bağlantısı.',
+                        'asset-not-found'              => 'Belirtilen yolda hiçbir varlık yok. Önce varlığı yükleyin, ardından meta verilerini içeri aktarın.',
+                        'asset-has-resources'          => 'Varlık diğer kayıtlarla bağlı olduğu için silinmedi.',
                         'directory-required'           => '"directory" sütunu her satır için zorunludur — hedef klasör ağacı, örn. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Hedef dizinine yazma izniniz yok. Satır atlandı.',
                         'asset-already-exists'         => 'Satır :row atlandı — ":path" konumunda zaten bir varlık var ve çakışma stratejisi "skip". Değiştirmek için "overwrite" veya "update metadata" seçin.',
                         'asset-already-exists-summary' => 'Toplu iş #:batch — eşleşen bir varlık zaten bulunduğundan :count satır atlandı.',
                         'media-source-not-found'       => 'Kaynak dosya bulunamadı: "path" alanına herkese açık bir https bağlantısı veya görseller dizininde "path" ile eşleşen bir dosya koyun.',

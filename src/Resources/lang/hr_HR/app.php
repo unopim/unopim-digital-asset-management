@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Stupac "put" je obavezno za svaki redak — lokacija izvorne datoteke ili javna HTTPS veza.',
+                        'asset-not-found'              => 'Na navedenoj putanji ne postoji nijedan resurs. Prvo preuzmite resurs, a zatim uvezite njegove metapodatke.',
+                        'asset-has-resources'          => 'Resurs je povezan s drugim zapisima i nije obrisan.',
                         'directory-required'           => 'Stupac "directory" obavezan je za svaki redak — stablo odredišne mape, npr. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Nemate dozvolu za pisanje u odredišni direktorij. Redak je preskočen.',
                         'asset-already-exists'         => 'Redak :row preskočen — sredstvo već postoji na ":path", a strategija sukoba je "skip". Odaberite "overwrite" ili "update metadata" za promjenu.',
                         'asset-already-exists-summary' => 'Serija #:batch — preskočeno redaka: :count jer odgovarajuće sredstvo već postoji.',
                         'media-source-not-found'       => 'Izvorna datoteka nije pronađena: stavite javnu https poveznicu u "path" ili datoteku koja odgovara "path" u direktoriju slika.',

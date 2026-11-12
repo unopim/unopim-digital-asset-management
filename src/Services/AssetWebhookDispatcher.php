@@ -17,10 +17,6 @@ class AssetWebhookDispatcher
     public const EVENT_ASSET_UPDATED = 'asset.updated';
 
     /**
-     * Columns whose change is worth a webhook. System re-saves (meta_data,
-     * thumbnails) are excluded so a single upload does not emit asset.updated
-     * right after asset.created.
-     *
      * @var array<int, string>
      */
     protected const MEANINGFUL_COLUMNS = ['file_name', 'path', 'file_type', 'mime_type', 'extension', 'file_size'];
@@ -61,10 +57,6 @@ class AssetWebhookDispatcher
         $this->fire($asset, self::EVENT_ASSET_UPDATED);
     }
 
-    /**
-     * Suppress per-row webhooks and accumulate ids for one batch dispatch.
-     * Called when an asset import batch starts.
-     */
     public static function beginBatch(): void
     {
         self::$batching = true;
@@ -72,10 +64,6 @@ class AssetWebhookDispatcher
         self::$batchUpdated = [];
     }
 
-    /**
-     * Flush the accumulated batch as at most one job per event, then stop
-     * batching. Called when an asset import batch finishes.
-     */
     public static function flushBatch(?int $userId = null): void
     {
         if (! self::$batching) {

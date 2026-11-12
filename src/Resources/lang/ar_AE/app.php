@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'عمود "المسار" مطلوب في كل صف — موقع الملف المصدر أو رابط عام عبر HTTPS.',
+                        'asset-not-found'              => 'لا يوجد أصل على المسار المحدد. قم برفع الأصل أولاً ثم استورد بياناته الوصفية.',
+                        'asset-has-resources'          => 'الأصل مرتبط بسجلات أخرى ولم يتم حذفه.',
                         'directory-required'           => 'العمود "directory" مطلوب لكل صف — شجرة المجلد الوجهة، مثل "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'لا تملك إذنًا للكتابة في دليل الوجهة. تم تخطي الصف.',
                         'asset-already-exists'         => 'تم تخطّي الصف :row — يوجد أصل بالفعل في ":path" واستراتيجية التعارض هي "skip". اختر "overwrite" أو "update metadata" لتغيير ذلك.',
                         'asset-already-exists-summary' => 'الدفعة #:batch — تم تخطّي :count صف/صفوف لوجود أصل مطابق بالفعل.',
                         'media-source-not-found'       => 'لم يُعثر على ملف مصدر: ضع رابط https عامًا في "path"، أو ملفًا يطابق "path" ضمن دليل الصور.',

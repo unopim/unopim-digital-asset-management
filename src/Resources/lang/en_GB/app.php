@@ -939,7 +939,7 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
+                        'path-not-found'               => 'The "path" column is required for every row — the source file location or a public https link.',
                         'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
                         'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
                         'directory-required'           => 'The "directory" column is required for every row — the destination folder tree, e.g. "Root/Brand/Summer".',

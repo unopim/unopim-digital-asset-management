@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => '每一行都需要 "路径" 列 — 源文件位置或公开的 HTTPS 链接。',
+                        'asset-not-found'              => '给定路径下不存在任何资产。请先上传资产，再导入其元数据。',
+                        'asset-has-resources'          => '该资产与其他记录关联，未被删除。',
                         'directory-required'           => '每行都必须填写 "directory" 列 — 目标文件夹树，例如 "Root/Brand/Summer"。',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => '你没有权限写入目标目录。该行已被跳过。',
                         'asset-already-exists'         => '已跳过第 :row 行 — ":path" 处已存在资产，且冲突策略为 "skip"。请选择 "overwrite" 或 "update metadata" 以更改。',
                         'asset-already-exists-summary' => '批次 #:batch — 因已存在匹配的资产，跳过了 :count 行。',
                         'media-source-not-found'       => '未找到源文件：请在 "path" 中填写公开的 https 链接，或在图片目录中放置与 "path" 匹配的文件。',

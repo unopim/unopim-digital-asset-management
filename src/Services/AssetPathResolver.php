@@ -14,10 +14,6 @@ class AssetPathResolver
     protected array $cache = [];
 
     /**
-     * Ids of directories this resolver created during the current run. A freshly
-     * created directory is writable by whoever created it (its parent was already
-     * permission-checked), so the leaf write-check skips these.
-     *
      * @var array<int, true>
      */
     protected array $createdDirectoryIds = [];
@@ -42,12 +38,6 @@ class AssetPathResolver
         return $this->resolveSegments($segments);
     }
 
-    /**
-     * Resolve a directory tree path (e.g. "Root/Brand/Summer") to the id of its
-     * leaf directory, creating missing segments along the way. Unlike matching a
-     * bare directory name, this anchors the lookup by full path so duplicate names
-     * in different branches are unambiguous.
-     */
     public function resolveDirectory(string $treePath): int
     {
         $segments = $this->splitAndValidate($this->stripPrefix($treePath));
@@ -59,19 +49,12 @@ class AssetPathResolver
         return $this->resolveSegments($segments);
     }
 
-    /**
-     * Whether the given directory id was created during this run.
-     */
     public function wasCreated(int $directoryId): bool
     {
         return isset($this->createdDirectoryIds[$directoryId]);
     }
 
     /**
-     * Anchor the segments under the single seeded Root instead of creating new
-     * top-level directories. When the tree is empty (fresh install / tests) the
-     * first segment bootstraps the root.
-     *
      * @param  array<int, string>  $segments
      */
     protected function resolveSegments(array $segments): int
@@ -84,8 +67,6 @@ class AssetPathResolver
             return $this->resolveChildren($this->bootstrapRoot($rootName), $segments);
         }
 
-        // A leading segment that already names the seeded root is the base itself,
-        // not a child to create beneath it.
         if ($segments !== [] && $segments[0] === $base->name) {
             array_shift($segments);
         }
@@ -103,9 +84,6 @@ class AssetPathResolver
         return $this->baseDirectory;
     }
 
-    /**
-     * Create the top-level root when none exists yet (fresh install / tests).
-     */
     protected function bootstrapRoot(string $name): int
     {
         $cacheKey = 'root/'.$name;
@@ -201,11 +179,6 @@ class AssetPathResolver
         return $parentId;
     }
 
-    /**
-     * Create a child directory, enforcing the same write permission the admin UI
-     * requires (write access to the parent), and through DirectoryRepository so
-     * the storage folder and filesystem-writability check happen.
-     */
     protected function createChild(int $parentId, string $segment): int
     {
         if (! $this->permissionService->bypass() && ! $this->permissionService->canAccess($parentId)) {

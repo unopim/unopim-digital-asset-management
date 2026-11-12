@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'La colonna "percorso" è richiesta per ogni riga — l\'ubicazione del file di origine o un collegamento HTTPS pubblico.',
+                        'asset-not-found'              => 'Non esiste alcun asset al percorso indicato. Carica l\'asset prima, poi importa i suoi metadati.',
+                        'asset-has-resources'          => 'L\'asset è collegato ad altri record e non è stato eliminato.',
                         'directory-required'           => 'La colonna "directory" è obbligatoria per ogni riga — l’albero della cartella di destinazione, ad es. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Non hai il permesso di scrivere nella directory di destinazione. La riga è stata saltata.',
                         'asset-already-exists'         => 'Riga :row saltata — esiste già un asset in ":path" e la strategia di conflitto è "skip". Scegli "overwrite" o "update metadata" per modificarla.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count riga/e saltata/e perché esiste già un asset corrispondente.',
                         'media-source-not-found'       => 'Nessun file di origine trovato: inserisci un link https pubblico in "path" oppure un file corrispondente a "path" nella directory delle immagini.',

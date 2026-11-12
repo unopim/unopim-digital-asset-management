@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Колонка "путь" обязательна для каждой строки — расположение исходного файла или общедоступная HTTPS-ссылка.',
+                        'asset-not-found'              => 'По указанному пути нет ни одного актива. Сначала загрузите актив, а затем импортируйте его метаданные.',
+                        'asset-has-resources'          => 'Актив связан с другими записями и не был удалён.',
                         'directory-required'           => 'Столбец "directory" обязателен для каждой строки — дерево целевой папки, например "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'У вас нет разрешения на запись в целевую директорию. Строка была пропущена.',
                         'asset-already-exists'         => 'Строка :row пропущена — ресурс уже существует по пути ":path", а стратегия конфликта — "skip". Выберите "overwrite" или "update metadata", чтобы изменить это.',
                         'asset-already-exists-summary' => 'Пакет #:batch — пропущено строк: :count, так как соответствующий ресурс уже существует.',
                         'media-source-not-found'       => 'Исходный файл не найден: укажите публичную https-ссылку в "path" или файл, соответствующий "path", в каталоге изображений.',

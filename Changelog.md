@@ -17,6 +17,7 @@
 * Fixed the asset import validator so the `action` and `validation_strategy` rules are enforced (a malformed rule was skipping the `in:` check).
 * Delete-action import rows that match no asset, or an asset with linked resources, are now reported instead of being skipped silently.
 * Asset export now streams records instead of loading the whole library into memory.
+* Fixed an unhandled 500 error when referencing a non-existent asset property, now correctly returning a 404.
 
 ## Version 3.1.1
 

@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => '"Polku"-sarake vaaditaan jokaisella rivillä — lähdetiedoston sijainti tai julkinen HTTPS-linkki.',
+                        'asset-not-found'              => 'Polulla ei ole mitään omaisuutta. Lataa omaisuus ensin ja tuo sen metatiedot sitten.',
+                        'asset-has-resources'          => 'Omaisuus on linkitetty muihin tietueisiin eikä sitä poistettu.',
                         'directory-required'           => 'Sarake "directory" vaaditaan jokaiselle riville — kohdekansion puu, esim. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Sinulla ei ole lupaa kirjoittaa kohdehakemistoon. Rivi ohitettiin.',
                         'asset-already-exists'         => 'Rivi :row ohitettu — resurssi on jo kohteessa ":path" ja ristiriitastrategia on "skip". Valitse "overwrite" tai "update metadata" muuttaaksesi sitä.',
                         'asset-already-exists-summary' => 'Erä #:batch — :count rivi(ä) ohitettu, koska vastaava resurssi on jo olemassa.',
                         'media-source-not-found'       => 'Lähdetiedostoa ei löytynyt: lisää julkinen https-linkki kenttään "path", tai kuvahakemistossa "path"-arvoa vastaava tiedosto.',

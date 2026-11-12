@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Kolonnen "stien" er påkrævet på hver række — kildens filplacering eller et offentligt HTTPS-link.',
+                        'asset-not-found'              => 'Der findes intet aktiv ved den angivne sti. Upload aktiver først, og importer derefter dets metadata.',
+                        'asset-has-resources'          => 'Aktivet er knyttet til andre poster og blev ikke slettet.',
                         'directory-required'           => 'Kolonnen "directory" er påkrævet for hver række — destinationsmappens træ, f.eks. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Du har ikke tilladelse til at skrive til destinationsmappen. Rækken blev sprunget over.',
                         'asset-already-exists'         => 'Række :row sprunget over — der findes allerede et aktiv på ":path", og konfliktstrategien er "skip". Vælg "overwrite" eller "update metadata" for at ændre det.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count række(r) sprunget over, fordi et matchende aktiv allerede findes.',
                         'media-source-not-found'       => 'Ingen kildefil fundet: angiv et offentligt https-link i "path", eller en fil der matcher "path" i billedmappen.',

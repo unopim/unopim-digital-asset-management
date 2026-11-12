@@ -50,7 +50,6 @@ beforeEach(function () {
     Storage::fake(Directory::getAssetDisk());
     Bus::fake();
 
-    // Seed the tree: Root → Brand (granted) + Private (denied).
     $disk = Directory::getAssetDisk();
     $this->root = Directory::create(['name' => 'Root', 'parent_id' => null]);
     Storage::disk($disk)->makeDirectory('assets/Root');
@@ -59,7 +58,6 @@ beforeEach(function () {
     $this->brand = $repository->create(['name' => 'Brand', 'parent_id' => $this->root->id]);
     $this->private = $repository->create(['name' => 'Private', 'parent_id' => $this->root->id]);
 
-    // A custom-role admin granted write access to Brand only.
     $role = Role::factory()->create(['permission_type' => 'custom', 'permissions' => ['dam', 'data_transfer']]);
     $this->admin = Admin::factory()->create(['role_id' => $role->id]);
 

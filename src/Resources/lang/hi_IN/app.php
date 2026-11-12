@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'प्रत्येक पंक्ति में "पथ" स्तंभ आवश्यक है — स्रोत फ़ाइल स्थान या एक सार्वजनिक HTTPS लिंक।',
+                        'asset-not-found'              => 'दिए गए पथ पर कोई संपत्ति मौजूद नहीं है। पहले संपत्ति अपलोड करें, फिर उसका मेटाडेटा आयात करें।',
+                        'asset-has-resources'          => 'संपत्ति अन्य रिकॉर्ड से जुड़ी है और हटाई नहीं गई।',
                         'directory-required'           => 'प्रत्येक पंक्ति के लिए "directory" कॉलम आवश्यक है — गंतव्य फ़ोल्डर ट्री, उदा. "Root/Brand/Summer"।',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'आपके पास गंतव्य निर्देशिका में लिखने की अनुमति नहीं है। पंक्ति छोड़ दी गई।',
                         'asset-already-exists'         => 'पंक्ति :row छोड़ी गई — ":path" पर पहले से एक एसेट मौजूद है और टकराव रणनीति "skip" है। इसे बदलने के लिए "overwrite" या "update metadata" चुनें।',
                         'asset-already-exists-summary' => 'बैच #:batch — मिलान करने वाला एसेट पहले से मौजूद होने के कारण :count पंक्ति(याँ) छोड़ी गईं।',
                         'media-source-not-found'       => 'कोई स्रोत फ़ाइल नहीं मिली: "path" में एक सार्वजनिक https लिंक डालें, या छवि निर्देशिका में "path" से मेल खाती फ़ाइल रखें।',

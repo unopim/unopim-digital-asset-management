@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Cột "đường dẫn" là bắt buộc trên mọi hàng — vị trí tệp nguồn hoặc liên kết HTTPS công khai.',
+                        'asset-not-found'              => 'Không có tài sản nào tại đường dẫn cho trước. Vui lòng tải tài sản lên trước, sau đó nhập metadata của nó.',
+                        'asset-has-resources'          => 'Tài sản được liên kết với các bản ghi khác và chưa bị xóa.',
                         'directory-required'           => 'Cột "directory" là bắt buộc cho mỗi hàng — cây thư mục đích, ví dụ "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Bạn không có quyền ghi vào thư mục đích. Hàng đã bị bỏ qua.',
                         'asset-already-exists'         => 'Đã bỏ qua hàng :row — đã tồn tại tài sản tại ":path" và chiến lược xung đột là "skip". Chọn "overwrite" hoặc "update metadata" để thay đổi.',
                         'asset-already-exists-summary' => 'Lô #:batch — đã bỏ qua :count hàng vì đã tồn tại tài sản trùng khớp.',
                         'media-source-not-found'       => 'Không tìm thấy tệp nguồn: đặt một liên kết https công khai trong "path", hoặc một tệp khớp với "path" trong thư mục hình ảnh.',

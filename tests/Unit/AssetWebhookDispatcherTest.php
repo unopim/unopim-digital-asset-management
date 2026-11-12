@@ -28,7 +28,6 @@ it('dispatches asset.created once and skips a meta_data-only update', function (
 
     Queue::assertPushed(SendAssetWebhook::class, 1);
 
-    // The post-upload re-save only touches meta_data: must NOT emit asset.updated.
     $asset->update(['meta_data' => ['width' => 10, 'height' => 10]]);
 
     Queue::assertPushed(SendAssetWebhook::class, 1);
@@ -40,7 +39,6 @@ it('dispatches asset.updated on a meaningful column change', function () {
 
     $asset->update(['file_name' => 'renamed.jpg']);
 
-    // created + updated
     Queue::assertPushed(SendAssetWebhook::class, 2);
 });
 
@@ -51,11 +49,9 @@ it('suppresses per-row webhooks during a batch and sends one bulk job', function
     Asset::factory()->create();
     Asset::factory()->create();
 
-    // Nothing per-row while batching.
     Queue::assertNotPushed(SendAssetWebhook::class);
 
     AssetWebhookDispatcher::flushBatch(null);
 
-    // Exactly one bulk job for the created event.
     Queue::assertPushed(SendBulkAssetWebhook::class, 1);
 });

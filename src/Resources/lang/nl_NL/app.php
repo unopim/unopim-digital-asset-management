@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'De kolom "pad" is vereist voor elke rij — de locatie van het bronbestand of een openbare HTTPS-link.',
+                        'asset-not-found'              => 'Er bestaat geen asset op het opgegeven pad. Upload de asset eerst en importeer vervolgens de metadata.',
+                        'asset-has-resources'          => 'De asset is gelinkt aan andere records en is niet verwijderd.',
                         'directory-required'           => 'De kolom "directory" is voor elke rij verplicht — de doelmappenboom, bijv. "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'U heeft geen toestemming om naar de doelmap te schrijven. De rij werd overgeslagen.',
                         'asset-already-exists'         => 'Rij :row overgeslagen — er bestaat al een asset op ":path" en de conflictstrategie is "skip". Kies "overwrite" of "update metadata" om dit te wijzigen.',
                         'asset-already-exists-summary' => 'Batch #:batch — :count rij(en) overgeslagen omdat er al een overeenkomende asset bestaat.',
                         'media-source-not-found'       => 'Geen bronbestand gevonden: zet een openbare https-link in "path", of een bestand dat overeenkomt met "path" in de afbeeldingenmap.',

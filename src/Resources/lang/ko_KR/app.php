@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => '모든 행에 "경로" 열이 필요합니다 — 소스 파일 위치 또는 공개 HTTPS 링크.',
+                        'asset-not-found'              => '지정된 경로에 자산이 없습니다. 먼저 자산을 업로드한 후 해당 메타데이터를 가져오세요.',
+                        'asset-has-resources'          => '자산이 다른 레코드와 연결되어 삭제되지 않았습니다.',
                         'directory-required'           => '"directory" 열은 모든 행에 필수입니다 — 대상 폴더 트리, 예: "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => '대상 디렉토리에 쓸 권한이 없습니다. 행은 건너뛰었습니다.',
                         'asset-already-exists'         => ':row 행을 건너뛰었습니다 — ":path"에 자산이 이미 있으며 충돌 전략이 "skip"입니다. 변경하려면 "overwrite" 또는 "update metadata"를 선택하세요.',
                         'asset-already-exists-summary' => '배치 #:batch — 일치하는 자산이 이미 있어 :count개 행을 건너뛰었습니다.',
                         'media-source-not-found'       => '원본 파일을 찾을 수 없습니다: "path"에 공개 https 링크를 입력하거나 이미지 디렉터리에서 "path"와 일치하는 파일을 배치하세요.',

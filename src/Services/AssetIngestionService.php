@@ -22,7 +22,7 @@ class AssetIngestionService
     ) {}
 
     /**
-     * @param  array<int, string>  $extraDirectoryNames  additional directory names to also map
+     * @param  array<int, string>  $extraDirectoryNames
      */
     public function ingest(
         string $localPath,
@@ -134,8 +134,6 @@ class AssetIngestionService
 
                 $ids[] = $extraId;
             } catch (DirectoryAccessDeniedException) {
-                // Skip secondary directories the importing user may not write to;
-                // the asset still lands in its primary directory.
                 continue;
             }
         }
@@ -143,11 +141,6 @@ class AssetIngestionService
         $asset->directories()->syncWithoutDetaching(array_unique($ids));
     }
 
-    /**
-     * Enforce the importing user's write access to a target directory, mirroring
-     * the admin UI (DirectoryController). A directory created during this run is
-     * allowed (its parent was already checked when it was created).
-     */
     protected function assertDirectoryWritable(int $directoryId): void
     {
         if ($this->permissionService->bypass()) {

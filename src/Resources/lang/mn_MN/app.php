@@ -939,11 +939,11 @@ return [
                 'title'      => 'Assets',
                 'validation' => [
                     'errors' => [
-                        'path-not-found'               => 'The "path" column is required for every row.',
-                        'asset-not-found'              => 'No asset exists at the given path. Upload the asset first, then import its metadata.',
-                        'asset-has-resources'          => 'The asset is linked to other records and was not deleted.',
+                        'path-not-found'               => 'Бүх мөрдөөс "цахилгаа" талбар шаардлагатай — гавь файлын байрлал эсвэл HTTPS холболт.',
+                        'asset-not-found'              => 'Засвалын замын байрлалд ажил байхгүй байна. Эхлээд засвалыг татаж авна уу, metadata-гийг импортоорой.',
+                        'asset-has-resources'          => 'Засвал бас бусад тögсгөлдөөр харилцаж байна боловч устгагдсан байхгүй байна.',
                         'directory-required'           => '"directory" багана мөр бүрд заавал байх ёстой — очих хавтасны мод, жишээ нь "Root/Brand/Summer".',
-                        'directory-forbidden'          => 'You do not have permission to write to the destination directory. The row was skipped.',
+                        'directory-forbidden'          => 'Целевыйн дүрсийг бичлэх зөвшөөрөлгүй байна. Мөр шүүгээсэн байна.',
                         'asset-already-exists'         => ':row мөрийг алгаслаа — ":path" дээр нөөц аль хэдийн байгаа бөгөөд зөрчлийн стратеги нь "skip" байна. Үүнийг өөрчлөхийн тулд "overwrite" эсвэл "update metadata"-г сонгоно уу.',
                         'asset-already-exists-summary' => 'Багц #:batch — тохирох нөөц аль хэдийн байгаа тул :count мөрийг алгаслаа.',
                         'media-source-not-found'       => 'Эх файл олдсонгүй: "path"-д нийтийн https холбоос, эсвэл зургийн санд "path"-тай тохирох файл байрлуулна уу.',
