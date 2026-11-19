@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Дижитал хөрөнгийн удирдлага (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Нөөц үүсгэгдлээ',

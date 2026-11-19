@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Webkul\DAM\Console\Commands;
 
 use Illuminate\Console\Command;
+use Webkul\Core\Platform\ModuleGate;
 use Webkul\DAM\Helpers\DamDemoDataInstaller;
+use Webkul\Installer\Helpers\PlatformModules;
 
 use function Laravel\Prompts\confirm;
 
@@ -25,6 +27,8 @@ class DamInstaller extends Command
             'dam-config',
             'dam-defaults',
         ]);
+
+        $this->enablePlatformModule();
 
         $this->info('Unopim DAM package installed successfully!');
 
@@ -49,6 +53,30 @@ class DamInstaller extends Command
     {
         foreach ($tags as $tag) {
             $this->call('vendor:publish', ['--tag' => $tag, '--force' => true]);
+        }
+    }
+
+    /**
+     * Add the DAM module to the platform selection so its menus and routes
+     * become visible, preserving any already-enabled modules (e.g. PIM).
+     */
+    protected function enablePlatformModule(): void
+    {
+        try {
+            $current = app(ModuleGate::class)->modules();
+
+            if (in_array('dam', $current, true)) {
+                return;
+            }
+
+            $modules = array_values(array_unique([...$current, 'dam']));
+
+            app(PlatformModules::class)->store($modules);
+
+            $this->info('DAM enabled in platform modules ['.implode(', ', $modules).'].');
+        } catch (\Throwable $e) {
+            $this->warn('Could not update platform modules automatically: '.$e->getMessage());
+            $this->warn('Enable DAM manually under Configure → General → Platform.');
         }
     }
 

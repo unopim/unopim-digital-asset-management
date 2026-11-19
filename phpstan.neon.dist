@@ -6,6 +6,9 @@ parameters:
     excludePaths:
         - src/Helpers/Importers/Product/MeasurementAwareImporter.php
         - src/Helpers/Exporters/Product/MeasurementAwareExporter.php
+        # ModuleGate (Core) and PlatformModules (Installer) exist only in the unreleased
+        # platform-selector UnoPim; the installer guards their use in a try/catch at runtime.
+        - src/Console/Commands/DamInstaller.php
 
     # Core's ignore patterns target the whole monorepo, so some never match inside DAM alone.
     reportUnmatchedIgnoredErrors: false

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => '디지털 자산 관리(DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => '자산이 생성되었습니다',

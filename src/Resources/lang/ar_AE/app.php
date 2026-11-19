@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'إدارة الأصول الرقمية (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'تم إنشاء الأصل',

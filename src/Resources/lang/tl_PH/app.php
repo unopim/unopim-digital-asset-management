@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Pamamahala ng Digital na Asset (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Nalikha ang asset',

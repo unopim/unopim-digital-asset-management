@@ -13,8 +13,12 @@ use Illuminate\Support\ServiceProvider;
 use Webkul\Admin\DataGrids\Catalog\ProductDataGrid;
 use Webkul\Admin\Http\Controllers\Settings\DataTransfer\ImportController;
 use Webkul\Admin\Http\Requests\ProductForm;
+use Webkul\AdminApi\ApiDataSource\Catalog\ConfigurableProductDataSource as BaseConfigurableProductDataSource;
+use Webkul\AdminApi\ApiDataSource\Catalog\SimpleProductDataSource as BaseSimpleProductDataSource;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeTranslation;
+use Webkul\DAM\ApiDataSource\Catalog\ConfigurableProductDataSource;
+use Webkul\DAM\ApiDataSource\Catalog\SimpleProductDataSource;
 use Webkul\DAM\Console\Commands\BackfillThumbnails;
 use Webkul\DAM\Console\Commands\CleanupOrphanedAssetResourceMappings;
 use Webkul\DAM\Console\Commands\DamInstaller;
@@ -40,6 +44,7 @@ use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
 use Webkul\DAM\Services\AssetWebhookDispatcher;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Services\WebhookService;
 use Webkul\DAM\Support\PimIntegration;
 use Webkul\DataTransfer\Helpers\Exporters\Product\Exporter;
 use Webkul\DataTransfer\Helpers\Import;
@@ -51,12 +56,26 @@ use Webkul\Measurement\Helpers\Importers\Product\Importer as MeasurementImporter
 use Webkul\Product\Normalizer\ProductAttributeValuesNormalizer;
 use Webkul\User\Models\Role;
 use Webkul\Webhook\Registry\EventRegistry;
+use Webkul\Webhook\Services\WebhookService as BaseWebhookService;
 
 class DAMServiceProvider extends ServiceProvider
 {
     protected function pimEnabled(): bool
     {
         return PimIntegration::enabled();
+    }
+
+    /**
+     * Swap in a DAM handler over a core one, but only if nothing else already did.
+     *
+     * @param  class-string  $base
+     * @param  class-string  $damReplacement
+     */
+    protected function extendWithAssetPathResolver(string $base, string $damReplacement): void
+    {
+        $this->app->extend($base, static fn (object $handler, Application $app): object => $handler::class === $base
+            ? $app->make($damReplacement)
+            : $handler);
     }
 
     /**
@@ -239,6 +258,14 @@ class DAMServiceProvider extends ServiceProvider
             $this->app->bind(AttributeTranslation::class, \Webkul\DAM\Models\AttributeTranslation::class);
 
             $this->app->bind(ProductDataGrid::class, \Webkul\DAM\DataGrids\Catalog\ProductDataGrid::class);
+
+            $this->extendWithAssetPathResolver(BaseSimpleProductDataSource::class, SimpleProductDataSource::class);
+
+            $this->extendWithAssetPathResolver(BaseConfigurableProductDataSource::class, ConfigurableProductDataSource::class);
+
+            if (class_exists(BaseWebhookService::class)) {
+                $this->extendWithAssetPathResolver(BaseWebhookService::class, WebhookService::class);
+            }
         }
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/menu.php', 'menu.admin');
@@ -246,6 +273,8 @@ class DAMServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/acl.php', 'acl');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/api-acl.php', 'api-acl');
+
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/platform_modules.php', 'platform_modules');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/dam.php', 'dam');
 

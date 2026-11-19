@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Quản lý tài sản số (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Đã tạo tài sản',
