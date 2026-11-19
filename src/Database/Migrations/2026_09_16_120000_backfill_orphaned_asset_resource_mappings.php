@@ -9,15 +9,12 @@ use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 return new class extends Migration
 {
     /**
-     * Disable PostgreSQL's default single-transaction wrap so each batch's DELETE
-     * commits on its own instead of locking every row until up() finishes.
+     * Each batch commits on its own; PostgreSQL would otherwise hold every row lock until up() finishes.
      */
     public $withinTransaction = false;
 
     /**
-     * Clear mapping rows orphaned by a category field or product attribute deleted
-     * before the auto-clean listeners existed. The stale `related_field` code blocks
-     * the asset from ever being deleted ("Asset in use. Unlink before deleting").
+     * Clears mapping rows orphaned by field or attribute deletes made before the cleanup listeners existed.
      */
     public function up(): void
     {
@@ -41,11 +38,7 @@ return new class extends Migration
     }
 
     /**
-     * Delete in bounded batches, each its own committed transaction (see
-     * $withinTransaction above), so a mapping table with millions of rows never holds
-     * one giant lock - a handful of orphans shouldn't block concurrent asset
-     * reads/writes while this runs. `DELETE ... LIMIT` isn't portable to PostgreSQL,
-     * so batch by id instead.
+     * Batches by id because `DELETE ... LIMIT` is not portable to PostgreSQL.
      */
     protected function dropOrphans(string $type, Collection $liveFieldCodes): void
     {

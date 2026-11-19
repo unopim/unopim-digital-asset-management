@@ -5,6 +5,8 @@ namespace Webkul\DAM\Traits;
 trait CollectsAssetIds
 {
     /**
+     * Reads every scope because a queued import has no request channel or locale to narrow it to.
+     *
      * @return list<int|string>
      */
     protected function collectAssetIdsAcrossScopes(array $values, string $fieldCode): array

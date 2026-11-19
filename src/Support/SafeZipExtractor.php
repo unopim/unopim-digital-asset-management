@@ -2,6 +2,9 @@
 
 namespace Webkul\DAM\Support;
 
+/**
+ * Zip-bomb and zip-slip hardened extraction for import bundles; file-type policy is left to the caller.
+ */
 class SafeZipExtractor
 {
     protected int $maxEntrySize;
@@ -72,6 +75,8 @@ class SafeZipExtractor
     }
 
     /**
+     * Streams each acceptable entry beneath $extractPath; $accepts decides whether a staged file is kept.
+     *
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
      * @return list<string>
      */
@@ -151,6 +156,9 @@ class SafeZipExtractor
         return $relativePath;
     }
 
+    /**
+     * Confirms the directory resolves inside the root, catching traversal through symlinks.
+     */
     protected function prepareTargetDirectory(string $targetPath, string $realBase): bool
     {
         $targetDir = dirname($targetPath);

@@ -5,6 +5,9 @@ namespace Webkul\DAM\Helpers\Importers\Concerns;
 use Webkul\DAM\Support\AssetPathStorage;
 use Webkul\DataTransfer\Helpers\Import;
 
+/**
+ * Unresolved paths are skipped and warned about at validation, the only stage that knows the row number.
+ */
 trait ResolvesAssetPaths
 {
     protected ?AssetPathStorage $assetPathStorage = null;
@@ -37,6 +40,8 @@ trait ResolvesAssetPaths
     }
 
     /**
+     * Warns once per row, since core re-validates rows it has already seen.
+     *
      * @param  iterable<string>  $columns
      */
     protected function warnAboutMissingAssets(array $rowData, int $rowNumber, bool $firstValidation, string $identifier, iterable $columns): void

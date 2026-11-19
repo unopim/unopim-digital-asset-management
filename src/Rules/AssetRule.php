@@ -19,6 +19,9 @@ class AssetRule implements ValidationRule
         protected ?int $productId = null,
     ) {}
 
+    /**
+     * Already-stored ids are accepted; unknown and inaccessible ids share one message so restricted assets cannot be probed.
+     */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
         $value = array_filter(is_array($value)

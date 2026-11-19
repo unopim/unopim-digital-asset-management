@@ -6,12 +6,16 @@ use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Helpers\AssetHelper;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Models\Directory;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Traits\AutoTagEligibility;
 use Webkul\DataGrid\DataGrid;
 use Webkul\DataGrid\Enums\ColumnTypeEnum;
 
 class AssetDataGrid extends DataGrid
 {
+    use AutoTagEligibility;
+
     protected $sortColumn = 'dam_assets.updated_at';
 
     protected $sortOrder = 'desc';
@@ -325,6 +329,15 @@ class AssetDataGrid extends DataGrid
                 'url'     => route('admin.dam.assets.mass_assign_tags'),
                 'method'  => 'POST',
                 'options' => ['actionType' => 'assign-tags'],
+            ]);
+        }
+
+        if ($this->autoTagEligible() && app(AssetAutoTaggingService::class)->isAvailable()) {
+            $this->addMassAction([
+                'title'   => trans('dam::app.admin.dam.tag.mass-action.ai-tag'),
+                'url'     => route('admin.dam.assets.mass_ai_tag'),
+                'method'  => 'POST',
+                'options' => ['actionType' => 'ai-tag'],
             ]);
         }
 

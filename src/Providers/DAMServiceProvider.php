@@ -38,6 +38,7 @@ use Webkul\DAM\Integrations\Standalone\NullCategoryResolver;
 use Webkul\DAM\Integrations\Standalone\NullProductResolver;
 use Webkul\DAM\Models\DamConfiguration;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AssetAutoTaggingService;
 use Webkul\DAM\Services\AssetWebhookDispatcher;
 use Webkul\DAM\Services\DirectoryPermissionService;
 use Webkul\DAM\Support\PimIntegration;
@@ -158,6 +159,12 @@ class DAMServiceProvider extends ServiceProvider
         }
 
         Blade::anonymousComponentPath(__DIR__.'/../Resources/views/components', 'dam');
+
+        view()->composer('dam::components.explorer.toolbar', function ($view) {
+            $view->with('canAiTag', bouncer()->hasPermission('dam.asset.update')
+                && bouncer()->hasPermission('dam.tags.create')
+                && app(AssetAutoTaggingService::class)->isAvailable());
+        });
 
         view()->composer('dam::admin.roles.dam-permissions-tab', function ($view) {
             $roleId = request()->route('id');

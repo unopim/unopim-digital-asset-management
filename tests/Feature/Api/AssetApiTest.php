@@ -50,7 +50,7 @@ it('returns edit payload for an asset via api', function () {
     $asset = Asset::factory()->create();
 
     $response = $this->withHeaders($this->headers)
-        ->putJson(route('admin.api.dam.assets.edit', $asset->id));
+        ->getJson(route('admin.api.dam.assets.edit', $asset->id));
 
     $response->assertOk()
         ->assertJsonPath('success', true)
@@ -59,7 +59,7 @@ it('returns edit payload for an asset via api', function () {
 
 it('returns 404 when editing a non-existent asset via api', function () {
     $this->withHeaders($this->headers)
-        ->putJson(route('admin.api.dam.assets.edit', 999999))
+        ->getJson(route('admin.api.dam.assets.edit', 999999))
         ->assertStatus(404);
 });
 
@@ -465,7 +465,7 @@ it('returns 403 when editing an asset in a denied directory via api', function (
     $headers = makeCustomAssetApiHeaders($granted);
 
     $this->withHeaders($headers)
-        ->putJson(route('admin.api.dam.assets.edit', $asset->id))
+        ->getJson(route('admin.api.dam.assets.edit', $asset->id))
         ->assertStatus(403);
 });
 

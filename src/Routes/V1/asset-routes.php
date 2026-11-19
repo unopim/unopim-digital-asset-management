@@ -16,10 +16,11 @@ Route::group([
 ], function () {
     Route::controller(AssetController::class)->prefix('assets')->group(function () {
         Route::get('', 'index')->name('admin.api.dam.assets.index');
-        Route::put('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
+        Route::get('/edit/{id}', 'edit')->name('admin.api.dam.assets.edit');
         Route::get('/{id}', 'show')->name('admin.api.dam.assets.show');
         Route::post('/reupload', 'reUpload')->name('admin.api.dam.assets.reUpload');
         Route::get('/{id}/metadata', 'metadata')->whereNumber('id')->name('admin.api.dam.assets.metadata');
+        Route::get('/{id}/tags', 'tags')->whereNumber('id')->name('admin.api.dam.assets.tags');
         Route::put('/{id}', 'update')->name('admin.api.dam.assets.update');
         Route::post('', 'upload')->name('admin.api.dam.assets.upload');
         Route::delete('/{id}', 'destroy')->name('admin.api.dam.assets.destroy');
@@ -44,6 +45,7 @@ Route::group([
     Route::controller(TagController::class)->prefix('tags')->group(function () {
         Route::get('', 'allTags')->name('admin.api.dam.tags.all');
         Route::post('/bulk', 'bulkAssign')->name('admin.api.dam.tags.bulk_assign');
+        Route::post('/ai', 'aiTag')->name('admin.api.dam.tags.ai_tag');
         Route::get('{id}', 'tags')->whereNumber('id')->name('admin.api.dam.tags.get');
         Route::post('', 'addTag')->name('admin.api.dam.tag.add');
         Route::delete('', 'removeTag')->name('admin.api.dam.tag.delete');

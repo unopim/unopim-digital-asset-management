@@ -167,10 +167,7 @@ class DamDemoDataSeeder extends Seeder
     }
 
     /**
-     * Run each seeded asset through the real upload job so demo rows get metadata and
-     * thumbnails. Forcing `sync` runs the nested thumbnail dispatches inline, so
-     * `dam:demo-data` returns only once the library is complete. Missing
-     * ffmpeg/ghostscript/exiftool falls back to `meta_data => null` without failing.
+     * Forces the sync queue so nested thumbnail jobs finish before the seed returns; missing media tools must not fail it.
      */
     protected function finaliseAssets(array $assetIds): void
     {

@@ -16,6 +16,9 @@ class Product
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
+    /**
+     * Maps asset attributes after an import batch, whose bulk upsert fires no product events; accepts ids or a `product_id` wrapper.
+     */
     public function afterImportBatch(array $payload): void
     {
         $productIds = array_filter(
