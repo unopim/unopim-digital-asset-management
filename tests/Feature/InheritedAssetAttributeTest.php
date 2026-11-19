@@ -16,12 +16,6 @@ use Webkul\Product\Type\AbstractType;
 
 uses(DatabaseTransactions::class);
 
-/*
- * Rendering the lock needs core to forward it with the attribute control event, which
- * older cores do not. The package degrades to an unlocked field there, so the render
- * expectations report as skipped rather than failing; the enforcement below is pure
- * DAM and holds on every core.
- */
 function damCoreForwardsLockState(): bool
 {
     $productControlView = dirname(__DIR__, 3)
@@ -30,14 +24,6 @@ function damCoreForwardsLockState(): bool
     return is_file($productControlView)
         && str_contains(file_get_contents($productControlView), "'isLocked' => \$isLocked");
 }
-
-/*
- * An asset attribute placed at the common level belongs to the configurable. Its
- * variants render it locked, read it through the ancestor chain, and must never
- * store a copy of it — a stored copy wins the merge and the parent would stop
- * being the source of truth. Placed at the variant level the same attribute stays
- * the variant's own, and every other attribute type keeps working as it did.
- */
 
 function damInheritanceFixture(
     string $assetPlacement = 'common',

@@ -127,7 +127,6 @@ class AssetController extends Controller
         return $files;
     }
 
-    /** Delegates to the shared SSRF validator; pair with SafeWebhookUrl::httpOptions($url) to pin the IP at fetch time. */
     private function isSafeRemoteUrl(string $url): bool
     {
         return SafeWebhookUrl::validate($url)['valid'] ?? false;
@@ -658,7 +657,7 @@ class AssetController extends Controller
         if ($asset->resources()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assetNames' => $asset->file_name]),
+                'message' => trans('dam::app.admin.dam.asset.delete-failed-due-to-attached-resources', ['assets' => $asset->file_name]),
             ], 404);
         }
 

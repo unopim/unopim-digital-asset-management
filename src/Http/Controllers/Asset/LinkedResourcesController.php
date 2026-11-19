@@ -12,6 +12,10 @@ class LinkedResourcesController extends Controller
 
     public function index()
     {
+        if (dam_pim_disabled()) {
+            abort(404);
+        }
+
         $assetId = request()->get('dam_asset_id');
 
         if ($assetId) {

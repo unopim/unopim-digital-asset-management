@@ -32,9 +32,6 @@ trait CopiesDamMedia
         return Storage::url($filePath);
     }
 
-    /**
-     * Resolved lazily and held per exporter instance so the dedupe set survives a batch.
-     */
     protected function assetBundleWriter(): AssetBundleWriter
     {
         return $this->assetBundleWriter ??= app(AssetBundleWriter::class);

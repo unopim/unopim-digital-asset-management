@@ -5,9 +5,13 @@ namespace Webkul\DAM\Providers;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Webkul\DAM\Helpers\Importers\Asset\Importer as AssetImporter;
+use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Repositories\DirectoryRolePermissionRepository;
+use Webkul\DAM\Services\AssetWebhookDispatcher;
 use Webkul\DAM\Services\DirectoryPermissionService;
+use Webkul\DAM\Support\PimIntegration;
 use Webkul\Theme\ViewRenderEventManager;
 
 class EventServiceProvider extends ServiceProvider
@@ -50,26 +54,75 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
-    public function boot()
+    public function listens(): array
     {
-        Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
-            $viewRenderEventManager->addTemplate('dam::asset.catalog.categories.dynamic-fields.asset-control');
+        return PimIntegration::enabled() ? $this->listen : [];
+    }
+
+    public function boot(): void
+    {
+        Asset::created(static function (Asset $asset): void {
+            app(AssetWebhookDispatcher::class)->created($asset);
         });
 
-        Event::listen('unopim.admin.products.dynamic-attribute-fields.control.'.self::ASSET_ATTRIBUTE_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
-            $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
+        Asset::updated(static function (Asset $asset): void {
+            app(AssetWebhookDispatcher::class)->updated($asset);
         });
 
-        Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
-            if (! request()->routeIs('admin.catalog.products.bulkedit')) {
+        Event::listen('data_transfer.imports.batch.import.before', static function ($batch): void {
+            if (($batch->jobTrack?->jobInstance?->entity_type ?? null) === AssetImporter::ENTITY_TYPE) {
+                AssetWebhookDispatcher::beginBatch();
+            }
+        });
+
+        Event::listen('data_transfer.imports.batch.import.after', static function ($batch): void {
+            if (($batch->jobTrack?->jobInstance?->entity_type ?? null) !== AssetImporter::ENTITY_TYPE) {
                 return;
             }
 
-            $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
+            AssetWebhookDispatcher::flushBatch(auth('admin')->id() ?? auth('api')->id());
         });
+
+        if (PimIntegration::enabled()) {
+            Event::listen('unopim.admin.categories.dynamic-fields.control.'.self::ASSET_CATEGORY_FIELD_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
+                $viewRenderEventManager->addTemplate('dam::asset.catalog.categories.dynamic-fields.asset-control');
+            });
+
+            Event::listen('unopim.admin.products.dynamic-attribute-fields.control.'.self::ASSET_ATTRIBUTE_TYPE.'.before', static function (ViewRenderEventManager $viewRenderEventManager) {
+                $viewRenderEventManager->addTemplate('dam::asset.catalog.products.dynamic-attribute-fields.asset-control');
+            });
+
+            Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+                if (! request()->routeIs('admin.catalog.products.bulkedit')) {
+                    return;
+                }
+
+                $viewRenderEventManager->addTemplate('dam::catalog.products.bulk-edit.asset');
+            });
+        }
 
         Event::listen('unopim.admin.layout.head.before', static function (ViewRenderEventManager $viewRenderEventManager) {
             $viewRenderEventManager->addTemplate('dam::style');
+        });
+
+        Event::listen('unopim.admin.layout.content.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            if (! auth()->guard('admin')->check()) {
+                return;
+            }
+
+            if (! bouncer()->hasPermission('dam.asset.upload')) {
+                return;
+            }
+
+            $viewRenderEventManager->addTemplate('dam::asset.upload-overlay-global');
+        });
+
+        Event::listen('unopim.admin.dashboard.index.cards.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::dashboard.cards');
+        });
+
+        Event::listen('unopim.admin.dashboard.index.product-stats.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::dashboard.stats');
         });
 
         Event::listen('unopim.admin.layout.head', static function (ViewRenderEventManager $viewRenderEventManager) {
@@ -88,7 +141,19 @@ class EventServiceProvider extends ServiceProvider
             $viewRenderEventManager->addTemplate('dam::admin.roles.dam-permissions-tab');
         });
 
-        $syncDirectoryGrants = static function ($role) {
+        Event::listen('unopim.admin.settings.data_transfer.exports.create.card.scope.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.exports.asset-filters');
+        });
+
+        Event::listen('unopim.admin.settings.data_transfer.exports.edit.card.general.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.exports.asset-filters-edit');
+        });
+
+        Event::listen('unopim.admin.settings.data_transfer.imports.create.card.accordion.settings.after', static function (ViewRenderEventManager $viewRenderEventManager) {
+            $viewRenderEventManager->addTemplate('dam::data-transfer.imports.asset-options');
+        });
+
+        $syncDirectoryGrants = static function ($role): void {
             if (! $role) {
                 return;
             }

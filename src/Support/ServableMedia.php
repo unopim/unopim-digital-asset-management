@@ -7,7 +7,7 @@ use Webkul\DAM\Helpers\AssetHelper;
 
 class ServableMedia
 {
-    protected const EXECUTABLE_EXTENSIONS = ['svg', 'svgz'];
+    protected const EXECUTABLE_EXTENSIONS = ['svgz'];
 
     public static function permits(string $extension, string $sourceFile, ?string $fileName = null): bool
     {

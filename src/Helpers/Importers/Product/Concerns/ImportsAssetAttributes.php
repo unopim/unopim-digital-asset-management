@@ -32,10 +32,6 @@ trait ImportsAssetAttributes
         return true;
     }
 
-    /**
-     * Assets are applied after the delegation so their ids overwrite nothing the
-     * importer above wrote for the same attribute.
-     */
     public function prepareAttributeValues(array $rowData, array &$attributeValues): void
     {
         $assetAttributes = $this->assetAttributesFor($rowData);

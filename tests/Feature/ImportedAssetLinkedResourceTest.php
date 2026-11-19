@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Webkul\Attribute\Models\Attribute;
 use Webkul\Attribute\Models\AttributeFamily;
@@ -46,6 +47,12 @@ function damImportedProductFixture(string $scope = 'common', bool $scoped = fals
 
     return ['product' => $product->fresh(), 'asset' => $asset, 'assetCode' => $assetCode];
 }
+
+beforeEach(function (): void {
+    Schema::disableForeignKeyConstraints();
+    DB::table('dam_asset_resource_mappings')->delete();
+    Schema::enableForeignKeyConstraints();
+});
 
 it('links an imported asset to its product for every value scope', function (string $scope, bool $scoped) {
     $fixture = damImportedProductFixture($scope, $scoped);

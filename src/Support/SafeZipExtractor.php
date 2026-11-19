@@ -28,9 +28,7 @@ class SafeZipExtractor
     }
 
     /**
-     * Inspect the archive before extracting anything.
-     *
-     * @return array{key: string, replace: array<string, mixed>}|null null when the archive is acceptable
+     * @return array{key: string, replace: array<string, mixed>}|null
      */
     public function rejectionReason(\ZipArchive $zip): ?array
     {
@@ -80,7 +78,7 @@ class SafeZipExtractor
      * Streams each acceptable entry beneath $extractPath; $accepts decides whether a staged file is kept.
      *
      * @param  callable(string, string, string): bool|null  $accepts  ($relativePath, $extension, $stagedPath)
-     * @return list<string> relative paths actually extracted
+     * @return list<string>
      */
     public function extract(\ZipArchive $zip, string $extractPath, ?callable $accepts = null): array
     {
@@ -143,9 +141,6 @@ class SafeZipExtractor
         return $extracted;
     }
 
-    /**
-     * Reject directories and any name that tries to climb out of the extraction root.
-     */
     protected function normaliseEntryName(string|false $entryName): ?string
     {
         if ($entryName === false || str_ends_with($entryName, '/')) {
@@ -178,10 +173,6 @@ class SafeZipExtractor
             && str_starts_with($realDir.DIRECTORY_SEPARATOR, $realBase.DIRECTORY_SEPARATOR);
     }
 
-    /**
-     * Copy one entry to a sibling temp file, enforcing the per-entry byte cap while
-     * streaming so a lying header cannot exhaust memory.
-     */
     protected function stageEntry(\ZipArchive $zip, string $relativePath, string $targetPath): ?string
     {
         $stream = $zip->getStream($relativePath);

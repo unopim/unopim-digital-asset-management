@@ -3,11 +3,6 @@
 use Illuminate\Support\Facades\Storage;
 use Webkul\DAM\Support\AssetBundleWriter;
 
-/*
- * Asset binaries must reach the disk the download archive is built from, and an asset
- * shared by many rows must be streamed once rather than once per reference.
- */
-
 beforeEach(function (): void {
     Storage::fake('private');
 

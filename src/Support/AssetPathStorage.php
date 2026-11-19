@@ -16,17 +16,11 @@ class AssetPathStorage
     protected array $items = [];
 
     /**
-     * Paths already looked up and not found, so a typo repeated across rows is
-     * queried once.
-     *
      * @var array<string, true>
      */
     protected array $missing = [];
 
     /**
-     * Resolve any of the given paths not already known, in chunks so a large batch
-     * cannot overflow the driver's bind-parameter limit.
-     *
      * @param  list<string>  $paths
      */
     public function load(array $paths): void

@@ -3,11 +3,6 @@
 use Illuminate\Support\Facades\File;
 use Webkul\DAM\Support\AssetTreeIngestor;
 
-/*
- * macOS stores a "/" typed into a folder name as ":", so an archive meant to carry
- * "assets/" arrives as "assets:" and used to ingest nothing while reporting success.
- */
-
 beforeEach(function (): void {
     $this->root = sys_get_temp_dir().'/dam-ingest-'.uniqid();
     File::ensureDirectoryExists($this->root);

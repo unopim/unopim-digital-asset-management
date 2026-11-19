@@ -8,6 +8,33 @@ use Webkul\DAM\Models\Directory;
 
 class AssetHelper
 {
+    public const THUMBNAIL_DIRECTORY = 'thumbnails';
+
+    public const PREVIEW_DIRECTORY = 'preview';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function previewSizeDirectories(string $disk): array
+    {
+        return Storage::disk($disk)->directories(self::PREVIEW_DIRECTORY);
+    }
+
+    /**
+     * @param  array<int, string>|null  $previewDirectories
+     */
+    public static function clearDerivatives(string $path, string $disk, ?array $previewDirectories = null): void
+    {
+        $storage = Storage::disk($disk);
+
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path);
+        $storage->delete(self::THUMBNAIL_DIRECTORY.'/'.$path.'.jpg');
+
+        foreach ($previewDirectories ?? self::previewSizeDirectories($disk) as $sizeDirectory) {
+            $storage->delete($sizeDirectory.'/'.$path);
+        }
+    }
+
     public static function getMaxUploadSizeKb(): int
     {
         $phpLimitKb = self::iniValueToKb((string) ini_get('upload_max_filesize'));
@@ -182,7 +209,6 @@ class AssetHelper
             Str::startsWith($mimeType, 'audio/');
     }
 
-    /** PDF/SVG are trusted here via the upload-time content scan, not sandboxed serving — Chrome's PDF viewer won't load in a sandboxed iframe at all. */
     public static function isInlineSafeMime(?string $mimeType): bool
     {
         $mimeType = strtolower(trim((string) $mimeType));
@@ -373,10 +399,8 @@ class AssetHelper
         'wma'  => ['audio/', 'video/x-ms-asf'],
     ];
 
-    /** Cap for hasPdfActiveContent()/hasSvgActiveContent() scans — avoids reading multi-GB files fully into memory. */
     protected const MAX_CONTENT_SCAN_BYTES = 2 * 1024 * 1024;
 
-    /** Matches the upload size limit already enforced before isForbiddenFile() runs, so padding past a fixed cap can't hide a marker. */
     protected static function maxScanBytes(): int
     {
         $maxUploadKb = self::getMaxUploadSizeKb();
@@ -472,8 +496,35 @@ class AssetHelper
             return '';
         }
 
+        $limit = self::maxScanBytes();
+
+        $size = @filesize($realPath);
+
+        if ($size !== false) {
+            $limit = min($limit, (int) $size);
+        }
+
+        if ($limit <= 0) {
+            @fclose($handle);
+
+            return '';
+        }
+
         try {
-            return (string) @fread($handle, self::maxScanBytes());
+            $buffer = '';
+            $chunkSize = 1024 * 1024;
+
+            while (strlen($buffer) < $limit && ! feof($handle)) {
+                $read = @fread($handle, min($chunkSize, $limit - strlen($buffer)));
+
+                if ($read === false || $read === '') {
+                    break;
+                }
+
+                $buffer .= $read;
+            }
+
+            return $buffer;
         } finally {
             @fclose($handle);
         }
@@ -494,7 +545,6 @@ class AssetHelper
         return (bool) preg_match('/\/(OpenAction|AA|JavaScript|JS|Launch)\b/', $content);
     }
 
-    /** SVG is served inline, so <script>/event-handlers/javascript: URIs run in-origin like HTML. */
     protected static function hasSvgActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -522,7 +572,6 @@ class AssetHelper
         return (bool) preg_match('/<foreignObject[\s>]/i', $content);
     }
 
-    /** Rejects a cell starting with =, +, -, or @ — Excel/Sheets treats it as a formula, enabling DDE/command injection on open (OWASP CSV Injection). */
     protected static function hasCsvActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -546,7 +595,6 @@ class AssetHelper
         return false;
     }
 
-    /** Rejects an RTF carrying an embedded/linked OLE object (\object, \objdata, \objautlink) — a known parser-exploit and payload-delivery vector. */
     protected static function hasRtfActiveContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {
@@ -562,7 +610,6 @@ class AssetHelper
         return (bool) preg_match('/\\\\(object|objdata|objclass|objautlink|objupdate)\b/i', $content);
     }
 
-    /** Rejects a macro-enabled OOXML/ODF file: word|xl/vbaProject.bin, or an ODF Basic/ auto-run event listener. */
     protected static function hasOfficeZipMacroContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath) || ! class_exists(\ZipArchive::class)) {
@@ -602,7 +649,6 @@ class AssetHelper
         }
     }
 
-    /** Rejects a legacy OLE2 .doc/.xls carrying a VBA project; stream names stay plaintext UTF-16LE even when p-code is compiled. */
     protected static function hasLegacyOfficeMacroContent(?string $realPath): bool
     {
         if (! $realPath || ! is_file($realPath)) {

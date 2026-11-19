@@ -12,6 +12,7 @@ use Webkul\DAM\Http\Controllers\Asset\UploadController;
 use Webkul\DAM\Http\Controllers\AssetPickerController;
 use Webkul\DAM\Http\Controllers\ConfigurationController;
 use Webkul\DAM\Http\Controllers\DAMController;
+use Webkul\DAM\Http\Controllers\DataTransfer\AssetExportFilterController;
 use Webkul\DAM\Http\Controllers\DirectoryController;
 use Webkul\DAM\Http\Controllers\FileController;
 use Webkul\DAM\Http\Controllers\ImageEditController;
@@ -172,6 +173,16 @@ Route::group([
             Route::post('/', 'update')->name('update');
             Route::get('/ai-tagging/platforms', 'aiTaggingPlatforms')->name('ai-tagging.platforms');
             Route::get('/ai-tagging/models', 'aiTaggingModels')->name('ai-tagging.models');
+            Route::get('/image-platforms', 'bgImagePlatforms')->name('image-platforms');
+        });
+
+    Route::controller(AssetExportFilterController::class)
+        ->prefix('data-transfer/export-filters')
+        ->name('admin.dam.data_transfer.export_filters.')
+        ->group(function () {
+            Route::get('/directories', 'directories')->name('directories');
+            Route::get('/tags', 'tags')->name('tags');
+            Route::get('/file-types', 'fileTypes')->name('file_types');
         });
 
 });

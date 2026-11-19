@@ -24,9 +24,6 @@ class AssetPickerController extends Controller
         }
     }
 
-    /**
-     * Resolve the requested asset ids, returned in the order they were requested.
-     */
     public function fetchAssets(): JsonResponse
     {
         $assetIds = request()->get('assetIds') ?? '';

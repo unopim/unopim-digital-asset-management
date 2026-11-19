@@ -6,7 +6,10 @@ use Webkul\DAM\Models\Asset;
 use Webkul\DAM\Models\Directory;
 use Webkul\DAM\Models\Tag;
 
-beforeEach(fn () => $this->loginAsAdmin());
+beforeEach(function () {
+    $this->damResetAssetTables();
+    $this->loginAsAdmin();
+});
 
 it('finds an asset by its tag name via the explorer global search', function () {
     $dir = Directory::factory()->create(['name' => 'Campaign', 'parent_id' => null]);

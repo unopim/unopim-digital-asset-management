@@ -4,11 +4,11 @@ namespace Webkul\DAM\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Webkul\Category\Models\CategoryProxy;
+use Webkul\DAM\Contracts\Adapters\CategoryResolver;
+use Webkul\DAM\Contracts\Adapters\ProductResolver;
 use Webkul\DAM\Contracts\AssetResourceMapping as AssetResourceMappingContract;
 use Webkul\HistoryControl\Contracts\HistoryAuditable;
 use Webkul\HistoryControl\Traits\HistoryTrait;
-use Webkul\Product\Models\ProductProxy;
 
 class AssetResourceMapping extends Model implements AssetResourceMappingContract, HistoryAuditable
 {
@@ -37,12 +37,16 @@ class AssetResourceMapping extends Model implements AssetResourceMappingContract
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(ProductProxy::class, 'product_id');
+        $related = app(ProductResolver::class)->modelClass() ?? self::class;
+
+        return $this->belongsTo($related, 'product_id');
     }
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(CategoryProxy::class, 'category_id');
+        $related = app(CategoryResolver::class)->modelClass() ?? self::class;
+
+        return $this->belongsTo($related, 'category_id');
     }
 
     public function getPrimaryModelIdForHistory(): int

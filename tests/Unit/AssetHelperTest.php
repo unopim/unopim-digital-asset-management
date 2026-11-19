@@ -271,10 +271,6 @@ it('still permits legitimate asset uploads', function (string $fileName, string 
     'svg logo'        => ['meridian-logo.svg', 'svg', 'image/svg+xml'],
 ]);
 
-/**
- * A backend script renamed to a media extension carries one plausible extension and
- * nothing else suspicious in its name, so only its bytes give it away.
- */
 it('rejects a script renamed to a media extension', function (string $fileName, string $content) {
     $path = tempnam(sys_get_temp_dir(), 'damsec_');
     file_put_contents($path, $content);

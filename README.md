@@ -66,6 +66,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
 
 ![Asset Assignment via Export / Import](https://github.com/unopim/temp-media/blob/92aa1fc9e1164339fa3f601eac71d15b7d08a9f8/UnoPim-DAM/asset-assignment.png)
 
+- **Asset Import & Export**  
+  Export your DAM assets to a CSV or XLSX file, and import assets in bulk from one. Both run as queued jobs that you can track from the core Job Tracker page.
+
 - **Secure Asset Handling**  
   Uploads reject executable and HTML/script file types, and stored files are served with safe content types so they never execute inline in the browser. Bulk delete, property mass-delete, and folder uploads enforce the same per-directory permissions as their single-item counterparts.
 
@@ -83,12 +86,9 @@ If you run UnoPim in Docker, add the same packages to your `apt-get install` lin
    ```
 - Start the queue to execute actions, such as job operations, by running the following command:
     ```bash
-      php artisan queue:work
-    ```
-- By default all DAM jobs run on the `default` queue, so the command above is all you need. To isolate DAM's workload (fast DB housekeeping, filesystem/DB-tree bulk operations, and CPU-heavy media processing) onto dedicated queues instead, set `DAM_QUEUE_DAM`, `DAM_QUEUE_BULK`, and `DAM_QUEUE_MEDIA` in `.env` (e.g. to `dam`, `dam-bulk`, `dam-media`) and point a worker at them:
-    ```bash
       php artisan queue:work --queue=default,dam,dam-bulk,dam-media
     ```
+    
 - If the queue:work command is managed by a process manager like Supervisor, restart the relevant service after installing the module to apply the changes. Replace unopim-worker with your actual worker name, if different:
      ```bash
      sudo supervisorctl restart unopim-worker

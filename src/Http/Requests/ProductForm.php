@@ -15,9 +15,6 @@ use Webkul\Product\Type\AbstractType;
  */
 class ProductForm extends BaseProductForm
 {
-    /**
-     * Value buckets an attribute code can appear in, and how many keys sit above it.
-     */
     protected const VALUE_SCOPES = [
         AbstractType::COMMON_VALUES_KEY         => 0,
         AbstractType::LOCALE_VALUES_KEY         => 1,
