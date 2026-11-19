@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'डिजिटल एसेट प्रबंधन (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'एसेट बनाया गया',

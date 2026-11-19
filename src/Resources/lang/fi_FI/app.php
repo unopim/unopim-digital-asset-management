@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Digitaalisen aineiston hallinta (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Resurssi luotu',

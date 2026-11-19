@@ -274,6 +274,8 @@ class DAMServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/api-acl.php', 'api-acl');
 
+        $this->mergeConfigFrom(dirname(__DIR__).'/Config/platform_modules.php', 'platform_modules');
+
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/dam.php', 'dam');
 
         $this->mergeConfigFrom(dirname(__DIR__).'/Config/importers.php', 'importers');

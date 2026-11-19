@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Hantering av digitala tillgångar (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Tillgång skapad',

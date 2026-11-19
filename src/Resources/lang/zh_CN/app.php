@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => '数字资产管理（DAM）',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => '资产已创建',

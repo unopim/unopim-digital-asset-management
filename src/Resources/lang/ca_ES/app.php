@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Gestió d\'actius digitals (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Recurs creat',

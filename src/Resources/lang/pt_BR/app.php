@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Gestão de ativos digitais (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Ativo criado',
