@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Upravljanje digitalnom imovinom (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Sredstvo stvoreno',

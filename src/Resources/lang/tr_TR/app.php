@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Dijital Varlık Yönetimi (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Varlık oluşturuldu',

@@ -2,10 +2,11 @@
 
 return [
     [
-        'key'   => 'api.dam',
-        'name'  => 'dam::app.admin.dam.index.title',
-        'route' => 'admin.api.dam.assets.index',
-        'sort'  => 3,
+        'key'    => 'api.dam',
+        'name'   => 'dam::app.admin.dam.index.title',
+        'route'  => 'admin.api.dam.assets.index',
+        'sort'   => 3,
+        'module' => 'dam',
     ], [
         'key'   => 'api.dam.assets',
         'name'  => 'dam::app.admin.acl.asset',

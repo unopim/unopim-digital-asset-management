@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Zarządzanie zasobami cyfrowymi (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Zasób utworzony',

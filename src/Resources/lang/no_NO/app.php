@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'platform-module' => [
+        'name' => 'Digital ressursforvaltning (DAM)',
+    ],
+
     'webhook-events' => [
         'asset' => [
             'created' => 'Ressurs opprettet',
