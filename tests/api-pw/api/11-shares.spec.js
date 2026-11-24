@@ -71,7 +71,7 @@ test.describe('Share — list', () => {
   test('lists share links including a freshly created one → 200', async ({ api }) => {
     const created = await shareHelper.createForAssetOrThrow(api, { assetId, name: 'listed share' });
 
-    const res = await shareHelper.list(api);
+    const res = await shareHelper.list(api, { search_after: created.id - 1 });
     expect(res.status).toBe(STATUS.OK);
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data.some((s) => s.id === created.id)).toBe(true);

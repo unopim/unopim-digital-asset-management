@@ -6,6 +6,9 @@ use Illuminate\Support\Collection;
 use Webkul\DAM\Helpers\Importers\Concerns\ResolvesAssetPaths;
 use Webkul\DAM\Models\Asset;
 
+/**
+ * Asset columns are stripped before delegating, so the parent importer never stores a raw path.
+ */
 trait ImportsAssetAttributes
 {
     use ResolvesAssetPaths;

@@ -56,6 +56,9 @@ class AssetTreeIngestor
         return $ingested;
     }
 
+    /**
+     * Looks one level down too, for archives compressed from the folder rather than its contents.
+     */
     protected function resolveAssetTreeRoot(string $sourceRoot): ?string
     {
         if (! is_dir($sourceRoot)) {
@@ -79,6 +82,9 @@ class AssetTreeIngestor
         return null;
     }
 
+    /**
+     * Finds a tree the exact match misses, such as macOS's "assets:", instead of silently ingesting nothing.
+     */
     protected function findMisnamedAssetDirectory(string $sourceRoot): ?string
     {
         foreach ($this->childDirectories($sourceRoot) as $child) {
@@ -184,6 +190,9 @@ class AssetTreeIngestor
         return $asset->id;
     }
 
+    /**
+     * A changed binary at a known path is a new revision of that asset; an identical one is left alone.
+     */
     protected function refreshAsset(Asset $asset, string $entry, string $sourceFile): int
     {
         if (! $this->hasChanged($entry, $sourceFile)) {
@@ -237,6 +246,9 @@ class AssetTreeIngestor
         $this->purgeDerivatives($entry);
     }
 
+    /**
+     * Cached renders ignore the binary, so they are dropped for a replaced image to show.
+     */
     protected function purgeDerivatives(string $entry): void
     {
         AssetHelper::clearDerivatives($entry, Directory::getAssetDisk());

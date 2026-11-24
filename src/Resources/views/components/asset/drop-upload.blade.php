@@ -331,10 +331,6 @@
 
             data() {
                 return {
-                    /**
-                     * Upload progress copy is built in JS from live counters, so the strings are
-                     * handed over as translated templates and the placeholders filled client-side.
-                     */
                     i18n: {
                         uploading:           @json(trans('dam::app.admin.dam.index.upload-session.uploading')),
                         paused:              @json(trans('dam::app.admin.dam.index.upload-session.paused')),
@@ -770,9 +766,6 @@
                 sessionFileJobCount(session) {
                     return session.jobs.filter(u => ! u.isFolder).length;
                 },
-                /**
-                 * Fill :placeholders in a translated template.
-                 */
                 transLine(template, replacements) {
                     return Object.entries(replacements).reduce(
                         (line, [key, value]) => line.replaceAll(`:${key}`, value),

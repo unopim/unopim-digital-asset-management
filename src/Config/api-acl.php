@@ -53,6 +53,11 @@ return [
         'route' => 'admin.api.dam.assets.metadata',
         'sort'  => 7,
     ], [
+        'key'   => 'api.dam.assets.tags',
+        'name'  => 'dam::app.admin.dam.index.datagrid.tags',
+        'route' => 'admin.api.dam.assets.tags',
+        'sort'  => 8,
+    ], [
         'key'   => 'api.dam.directory',
         'name'  => 'dam::app.admin.acl.directory',
         'route' => 'admin.api.dam.directory.index',
@@ -157,6 +162,11 @@ return [
         'name'  => 'dam::app.admin.acl.delete',
         'route' => 'admin.api.dam.tags.destroy',
         'sort'  => 5,
+    ], [
+        'key'   => 'api.dam.tags.ai-tag',
+        'name'  => 'dam::app.admin.dam.tag.mass-action.ai-tag',
+        'route' => 'admin.api.dam.tags.ai_tag',
+        'sort'  => 6,
     ], [
         'key'   => 'api.dam.linked-resource',
         'name'  => 'dam::app.admin.dam.index.directory.linked-resources',

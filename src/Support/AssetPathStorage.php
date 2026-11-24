@@ -5,6 +5,9 @@ namespace Webkul\DAM\Support;
 use Illuminate\Support\Facades\DB;
 use Webkul\DAM\Models\Asset;
 
+/**
+ * Resolves asset paths to ids in chunks up front, so repeated paths cost no extra queries.
+ */
 class AssetPathStorage
 {
     /**

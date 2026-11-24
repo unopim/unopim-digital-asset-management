@@ -6,6 +6,16 @@
 
 * **Asset Import & Export** - Added queued import and export jobs for DAM assets, so asset data can be bulk exported to and imported from CSV/XLSX files and tracked from the core Job Tracker page.
 
+* **AI tagging for existing assets via the API** — Added `POST /api/v1/rest/tags/ai` to queue AI tagging for existing image assets, and `GET /api/v1/rest/assets/{id}/tags` to read an asset's tags along with whether AI tagging is still pending. Each endpoint has its own API key scope (`api.dam.tags.ai-tag`, `api.dam.assets.tags`).
+
+* **AI tagging for existing assets (admin UI)** — Added a **Generate AI Tags** button on the asset edit page (single asset), plus a datagrid mass action and an explorer-toolbar button to bulk-tag selected images. Available only to admins holding both the asset-update and tag-create permissions.
+
+* **Real-time tag updates** — Generated tags appear on the asset edit page without a manual refresh, with a "generating…" state shown while tagging is still pending.
+
+* **AI Tagging configuration** — The DAM Configuration page now lets you choose the Magic AI platform and model used for tagging, offering only vision-capable models.
+
+* `/api/v1/rest/assets/edit/{id}` now also accepts `GET`, since it only reads data. `PUT` continues to work, so existing clients are unaffected.
+
 ### Security
 
 * Asset import now respects folder permissions: a user can only import into folders their role is allowed to use, and all imported folders are placed under the main Root folder.
@@ -18,6 +28,11 @@
 * Delete-action import rows that match no asset, or an asset with linked resources, are now reported instead of being skipped silently.
 * Asset export now streams records instead of loading the whole library into memory.
 * Fixed an unhandled 500 error when referencing a non-existent asset property, now correctly returning a 404.
+* AI tagging now uses only vision-capable models; a non-vision model in a platform's list no longer causes tagging to fail.
+* Reasoning models (OpenAI `o*`, `gpt-5+`, `chat-latest`) now receive temperature `1.0`, so their tagging requests are no longer rejected.
+* Background image editing excludes generation-only models (such as `dall-e-3`) that cannot edit an attached image, and the AI-prompt issue on the edit page is fixed.
+* Fixed the invisible border on the tag input box.
+* Pending AI-tagging state is now tracked per job, so the UI stops polling only once every tagging job settles and bulk runs no longer stay stuck processing.
 
 ## Version 3.1.1
 

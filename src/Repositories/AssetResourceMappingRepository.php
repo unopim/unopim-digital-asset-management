@@ -102,6 +102,9 @@ class AssetResourceMappingRepository extends Repository
             ->delete();
     }
 
+    /**
+     * Batches by id so a large mapping table never holds one giant lock; `DELETE ... LIMIT` is not portable to PostgreSQL.
+     */
     public function deleteOrphanedMappings(string $type, array $liveCodes): void
     {
         do {

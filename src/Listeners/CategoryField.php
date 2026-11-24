@@ -12,6 +12,9 @@ class CategoryField
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
+    /**
+     * Matches live field codes, since the event fires after the row is gone; this also clears earlier orphans.
+     */
     public function afterDelete(): void
     {
         $liveFieldCodes = $this->categoryFieldRepository->all(['code'])->pluck('code')->all();

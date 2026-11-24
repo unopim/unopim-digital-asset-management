@@ -800,10 +800,14 @@
                                                 type: 'success',
                                                 message: response.data.message
                                             });
-                                            this.$emitter.emit('delete-assets', {
-                                                actionType: 'mass-action',
-                                                count: selectedCount,
-                                            });
+
+                                            if ('delete' === actionType) {
+                                                this.$emitter.emit('delete-assets', {
+                                                    actionType: 'mass-action',
+                                                    count: selectedCount,
+                                                });
+                                            }
+
                                             this.get();
                                         })
                                         .catch((error) => {

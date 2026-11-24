@@ -40,7 +40,7 @@ it('should return the asset detail page', function () {
 
 it('show endpoint includes tags in response', function () {
     $asset = Asset::factory()->create();
-    $tag = Tag::create(['name' => 'sunset']);
+    $tag = Tag::firstOrCreate(['name' => 'sunset']);
     $asset->tags()->attach($tag);
 
     $this->get(route('admin.dam.assets.show', $asset->id))
