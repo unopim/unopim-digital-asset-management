@@ -12,6 +12,9 @@ class Attribute
         protected AssetResourceMappingRepository $assetResourceMappingRepository
     ) {}
 
+    /**
+     * Matches live attribute codes, since the event fires after the row is gone; this also clears earlier orphans.
+     */
     public function afterDelete(): void
     {
         $liveAttributeCodes = $this->attributeRepository->all(['code'])->pluck('code')->all();

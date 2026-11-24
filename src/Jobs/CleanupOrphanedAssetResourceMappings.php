@@ -13,6 +13,9 @@ use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Category\Repositories\CategoryFieldRepository;
 use Webkul\DAM\Repositories\AssetResourceMappingRepository;
 
+/**
+ * Sweeps mapping rows orphaned by field or attribute deletes made before the cleanup listeners existed.
+ */
 class CleanupOrphanedAssetResourceMappings implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

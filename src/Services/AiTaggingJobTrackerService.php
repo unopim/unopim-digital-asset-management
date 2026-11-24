@@ -14,6 +14,9 @@ use Webkul\DataTransfer\Repositories\JobTrackBatchRepository;
 use Webkul\DataTransfer\Repositories\JobTrackRepository;
 use Webkul\DataTransfer\Services\JobLogger;
 
+/**
+ * Surfaces AI tagging on the core Job Tracker page as a 'system' job.
+ */
 class AiTaggingJobTrackerService
 {
     protected const JOB_INSTANCE_CODE = 'dam_ai_tagging';
@@ -24,6 +27,9 @@ class AiTaggingJobTrackerService
         protected JobTrackBatchRepository $jobTrackBatchRepository,
     ) {}
 
+    /**
+     * Race-safe: concurrent jobs in one upload session share a single job_track row.
+     */
     public function ensureSessionJob(UploadTracker $tracker): ?JobTrack
     {
         if ($tracker->job_track_id) {
@@ -47,11 +53,17 @@ class AiTaggingJobTrackerService
         return $jobTrack;
     }
 
+    /**
+     * Job track for a tagging run outside any upload session, such as an API upload.
+     */
     public function startStandaloneJob(?int $userId): JobTrack
     {
         return $this->createJobTrack($userId);
     }
 
+    /**
+     * The tracker's live view counts these rows, so one is created per tagged image.
+     */
     public function startBatch(JobTrack $jobTrack): JobTrackBatch
     {
         return $this->jobTrackBatchRepository->create([
@@ -69,6 +81,9 @@ class AiTaggingJobTrackerService
         ], $batch->id);
     }
 
+    /**
+     * Writes to the downloadable job log, since a session job never flips to failed.
+     */
     public function logFailure(JobTrack $jobTrack, int $assetId, string $message): void
     {
         JobLogger::make($jobTrack->id)->error("Asset {$assetId}: {$message}");
@@ -83,6 +98,9 @@ class AiTaggingJobTrackerService
         );
     }
 
+    /**
+     * Only a standalone run is marked failed; a session job completes with its invalid rows counted.
+     */
     public function complete(JobTrack $jobTrack, bool $failed = false, ?string $errorMessage = null): void
     {
         $jobTrack->refresh();

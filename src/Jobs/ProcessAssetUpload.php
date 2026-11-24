@@ -24,6 +24,8 @@ class ProcessAssetUpload implements ShouldQueue
 
     public int $timeout = 300;
 
+    protected ?string $pendingClaim = null;
+
     public function __construct(
         protected int $assetId,
         protected ?int $batchId = null,
@@ -33,6 +35,18 @@ class ProcessAssetUpload implements ShouldQueue
         protected ?int $userId = null,
     ) {
         $this->queue = config('dam.queues.media');
+
+        if ($this->flagsAiTaggingPending()) {
+            $this->pendingClaim = app(AssetAutoTaggingService::class)->markPending($assetId);
+        }
+    }
+
+    /**
+     * Releases this job's pending claim when the worker dies outside handle(), such as on a timeout.
+     */
+    public function failed(?\Throwable $exception = null): void
+    {
+        $this->releaseAiTaggingPending(resolve(AssetAutoTaggingService::class));
     }
 
     public function handle(MetadataExtractionService $metadataService, AssetAutoTaggingService $taggingService, AiTaggingJobTrackerService $jobTracker): void
@@ -41,12 +55,16 @@ class ProcessAssetUpload implements ShouldQueue
         $tracker = $batch?->tracker;
 
         if ($tracker && $tracker->shouldStop()) {
+            $this->releaseAiTaggingPending($taggingService);
+
             return;
         }
 
         $asset = Asset::find($this->assetId);
 
         if (! $asset) {
+            $this->releaseAiTaggingPending($taggingService);
+
             $this->settleBatch($batch, $tracker, failed: false);
 
             return;
@@ -73,8 +91,12 @@ class ProcessAssetUpload implements ShouldQueue
                 $this->dispatchTaggingJob($asset, $disk, $tracker, $jobTracker);
             }
 
+            $this->releaseAiTaggingPending($taggingService);
+
             $this->settleBatch($batch, $tracker, failed: false);
         } catch (\Throwable $e) {
+            $this->releaseAiTaggingPending($taggingService);
+
             Log::warning('DAM asset finalisation failed.', [
                 'asset'   => $this->assetId,
                 'batch'   => $this->batchId,
@@ -82,6 +104,22 @@ class ProcessAssetUpload implements ShouldQueue
             ]);
 
             $this->settleBatch($batch, $tracker, failed: true, error: $e->getMessage());
+        }
+    }
+
+    protected function flagsAiTaggingPending(): bool
+    {
+        return $this->autoTagEligible || $this->tagBatchId !== null;
+    }
+
+    /**
+     * Only the claim this job raised is released; a tagging job it handed off to holds
+     * its own claim, so the edit page keeps polling until that job settles too.
+     */
+    protected function releaseAiTaggingPending(AssetAutoTaggingService $taggingService): void
+    {
+        if ($this->flagsAiTaggingPending()) {
+            $taggingService->clearPending($this->assetId, $this->pendingClaim);
         }
     }
 
@@ -152,6 +190,9 @@ class ProcessAssetUpload implements ShouldQueue
         }
     }
 
+    /**
+     * Creates the tag batch and its job-track batch at dispatch, so the tracker's total covers every queued image immediately.
+     */
     protected function dispatchTaggingJob(Asset $asset, string $disk, ?UploadTracker $tracker, AiTaggingJobTrackerService $jobTracker): void
     {
         $tagBatchId = null;

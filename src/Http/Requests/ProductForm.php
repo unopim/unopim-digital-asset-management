@@ -10,6 +10,9 @@ use Webkul\Product\Models\Product;
 use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Product\Type\AbstractType;
 
+/**
+ * Drops asset values an ancestor owns, so a stale or crafted form cannot store a copy that overrides inheritance.
+ */
 class ProductForm extends BaseProductForm
 {
     protected const VALUE_SCOPES = [
@@ -54,6 +57,8 @@ class ProductForm extends BaseProductForm
     }
 
     /**
+     * Asset attribute codes an ancestor owns; empty outside a variant structure.
+     *
      * @return list<string>
      */
     protected function inheritedAssetCodes(Product $product): array

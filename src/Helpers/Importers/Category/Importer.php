@@ -131,6 +131,9 @@ class Importer extends CategoryImporter
         }
     }
 
+    /**
+     * A blank cell unlinks the field; an unresolved path keeps the current value, since validation already warned.
+     */
     protected function resolveAssetFieldValue(string $rawValue, string $currentValue): string
     {
         if (trim($rawValue) === '') {
@@ -142,6 +145,9 @@ class Importer extends CategoryImporter
         return $assets === [] ? $currentValue : implode(',', $assets);
     }
 
+    /**
+     * Syncs Linked Resources, since the bulk upsert fires no per-category event.
+     */
     public function saveCategories(array $categories): void
     {
         parent::saveCategories($categories);
@@ -209,6 +215,8 @@ class Importer extends CategoryImporter
     }
 
     /**
+     * Reads every scope because a queued import has no request locale to narrow it to.
+     *
      * @return list<string>
      */
     protected function collectAssetIdsAcrossScopes(array $additionalData, string $fieldCode): array

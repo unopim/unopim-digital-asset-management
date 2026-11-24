@@ -2,6 +2,9 @@
 
 namespace Webkul\DAM\Validators\JobInstances\Import\Concerns;
 
+/**
+ * Widens the core file rule to accept an export archive as well as a bare data file.
+ */
 trait AcceptsAssetBundle
 {
     public function getRules(array $options): array

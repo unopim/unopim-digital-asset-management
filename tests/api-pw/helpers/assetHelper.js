@@ -61,7 +61,7 @@ const assetHelper = {
   },
 
   edit(api, id) {
-    return api.put(ENDPOINTS.assets.edit(id));
+    return api.get(ENDPOINTS.assets.edit(id));
   },
 
   update(api, id, data) {

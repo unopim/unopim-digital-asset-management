@@ -139,6 +139,9 @@ class AssetHelper
         return $fileName;
     }
 
+    /**
+     * Stamps the file's mtime into the URL so a replaced binary is fetched fresh instead of served from cache.
+     */
     public static function getThumbnailUrl(string $path): string
     {
         return route('admin.dam.file.thumbnail', [
@@ -147,6 +150,9 @@ class AssetHelper
         ]);
     }
 
+    /**
+     * S3 is left unstamped: its media is served from the bucket or through an already signed URL.
+     */
     public static function getRenderVersion(string $path): ?int
     {
         $disk = Directory::getAssetDisk();
@@ -226,6 +232,9 @@ class AssetHelper
         ];
     }
 
+    /**
+     * Includes alternate PHP handler suffixes, which `AddHandler php-script .php5` executes like `.php`.
+     */
     public const FORBIDDEN_EXTENSIONS = [
         'php',
         'php3',
@@ -299,6 +308,9 @@ class AssetHelper
         'cab',
     ];
 
+    /**
+     * Lists `text/x-php` too: libmagic reports it for a plain `<?php` script.
+     */
     public const FORBIDDEN_MIME_TYPES = [
         'application/x-php',
         'text/x-php',
@@ -343,6 +355,9 @@ class AssetHelper
         'application/x-xz',
     ];
 
+    /**
+     * Types libmagic falls back to for short or unrecognised payloads, so they cannot contradict a declared extension.
+     */
     private const INCONCLUSIVE_MIME_TYPES = [
         'text/plain',
         'application/octet-stream',
@@ -350,6 +365,9 @@ class AssetHelper
         'inode/x-empty',
     ];
 
+    /**
+     * Office and PDF are absent: their detected types vary too much across libmagic builds to gate on.
+     */
     private const EXTENSION_MIME_PREFIXES = [
         'jpg'  => ['image/'],
         'jpeg' => ['image/'],
@@ -657,6 +675,9 @@ class AssetHelper
         return implode('', array_map(fn (string $char) => $char."\x00", str_split($ascii)));
     }
 
+    /**
+     * Detects the type from the bytes on disk; the browser-supplied type is attacker-controlled.
+     */
     protected static function detectMimeType(?string $realPath): ?string
     {
         if (! $realPath || ! is_file($realPath) || ! function_exists('finfo_open')) {
@@ -678,6 +699,9 @@ class AssetHelper
         }
     }
 
+    /**
+     * Rejects bytes that disagree with the claimed extension, so `adminer.php` renamed to `.jpg` is caught.
+     */
     protected static function mismatchesDeclaredExtension(?string $extension, ?string $detectedMime): bool
     {
         if (! $extension || ! $detectedMime) {
@@ -703,6 +727,9 @@ class AssetHelper
         return true;
     }
 
+    /**
+     * Scans media for long script markers only; short ones such as `<%` collide by chance in ordinary binaries.
+     */
     protected static function hasExecutableContent(?string $realPath, ?string $extension): bool
     {
         if (! $realPath || ! is_file($realPath) || ! $extension) {
@@ -740,6 +767,9 @@ class AssetHelper
         return (bool) preg_match('/<script[\s>]/i', $head);
     }
 
+    /**
+     * Checks every extension segment, because Apache's mod_mime executes `shell.php.jpg` as PHP.
+     */
     protected static function hasForbiddenExtensionSegment(?string $fileName, array $forbiddenExtensions): bool
     {
         if (! $fileName) {
